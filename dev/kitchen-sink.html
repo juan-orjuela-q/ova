@@ -8,13 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=PT+Serif:wght@700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=PT+Serif:wght@400;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
     rel="stylesheet"
   />
 
   <link rel="stylesheet" href="../src/styles/tokens.css" />
   <link rel="stylesheet" href="../src/styles/base.css" />
   <link rel="stylesheet" href="../src/styles/layouts.css" />
+  <link rel="stylesheet" href="../src/styles/components.css" />
 
   <style>
     /* ============================================================
@@ -149,8 +150,6 @@
     }
 
     .ks-layout-bloque {
-      max-width: 75rem;
-      margin-inline: auto;
       margin-block-end: var(--sp-10);
     }
     .ks-layout-bloque__etiqueta {
@@ -162,9 +161,8 @@
       margin-block-end: var(--sp-3);
     }
     .ks-layout-marco {
-      border: 1px dashed var(--border-strong);
-      border-radius: var(--r-lg);
-      overflow: hidden;
+      /* sin borde punteado ni radio: eran ruido visual encima del
+         marco real de cada componente. */
     }
     .ks-marcador {
       display: flex;
@@ -329,10 +327,24 @@
         <span class="ks-layout-bloque__etiqueta">L01 · Portada de unidad</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l01">
-            <span class="layout__kicker tipo-etiqueta">Unidad 1</span>
-            <h1 class="layout__titulo tipo-display-2">Contexto sobre el mercado, la bolsa y las acciones</h1>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo-lg">¿Quieres aprender los fundamentos de la inversión en acciones? Es muy probable que en algún momento hayas querido obtener rentabilidad por tu capital, pero la falta de experiencia no te ha dejado aventurarte en el mercado accionario.</p>
+            <div class="layout__panel">
+              <img class="layout__union layout__union--mobile-bottom" src="../public/graf/union_graf_nuam_mobile_bottom.svg" alt="" aria-hidden="true" />
+              <span class="layout__kicker tipo-etiqueta">Unidad 1</span>
+              <h1 class="layout__titulo tipo-portada-titulo">Contexto:<br /><strong>el mercado, la bolsa y las acciones</strong></h1>
+              <div class="layout__cuerpo">
+                <p class="tipo-portada-cuerpo">¿Quieres aprender los fundamentos de la inversión en acciones? Es muy probable que en algún momento hayas querido obtener <strong>rentabilidad por tu capital</strong>, pero la falta de experiencia no te ha dejado aventurarte en el mercado accionario.</p>
+              </div>
+              <button type="button" class="boton boton--portada">
+                Comenzar
+                <span class="boton__icono" aria-hidden="true">arrow_forward</span>
+              </button>
+              <img class="layout__union layout__union--desktop" src="../public/graf/union_graf_nuam.svg" alt="" aria-hidden="true" />
+            </div>
+            <div class="layout__media">
+              <video autoplay muted loop playsinline aria-hidden="true">
+                <source src="../public/videos/woman_Businesswoman_1920x1010.mp4" type="video/mp4" />
+              </video>
+              <img class="layout__union layout__union--mobile-top" src="../public/graf/union_graf_nuam_mobile_top.svg" alt="" aria-hidden="true" />
             </div>
           </div>
         </div>

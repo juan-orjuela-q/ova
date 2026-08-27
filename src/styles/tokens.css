@@ -89,4 +89,40 @@
   /* ---- Foco (no negociable) -------------------------------------- */
   --focus-ring: 3px solid var(--nuam-orange-500);
   --focus-offset: 2px;
+
+  /* ---- Movimiento ------------------------------------------------ */
+  /* Duraciones. Nada rutinario pasa de 320ms. */
+  --dur-instant: 0ms;
+  --dur-fast:    120ms;   /* hover, press, cambios de estado micro */
+  --dur-base:    200ms;   /* entradas y salidas de elementos */
+  --dur-slow:    320ms;   /* transición entre pantallas */
+  --dur-reveal:  480ms;   /* solo momentos de recompensa: insignia, resultado */
+
+  /* Curvas. Entradas desaceleran, salidas aceleran. */
+  --ease-out:    cubic-bezier(0.20, 0.00, 0.00, 1.00);
+  --ease-in:     cubic-bezier(0.30, 0.00, 1.00, 1.00);
+  --ease-in-out: cubic-bezier(0.40, 0.00, 0.20, 1.00);
+
+  /* Desplazamiento de entrada. Sutil: si se nota, es demasiado. */
+  --shift-sm: 8px;
+  --shift-md: 16px;
+
+  /* Escalonado de listas y grids */
+  --stagger: 45ms;
+}
+
+/* Movimiento reducido: no se apaga todo, se apaga el desplazamiento.
+   Las opacidades cortas se conservan para que el cambio de estado
+   siga siendo perceptible. Duración 1ms y no 0 para no romper los
+   listeners de transitionend y animationend. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast:   1ms;
+    --dur-base:   1ms;
+    --dur-slow:   1ms;
+    --dur-reveal: 1ms;
+    --shift-sm:   0px;
+    --shift-md:   0px;
+    --stagger:    0ms;
+  }
 }

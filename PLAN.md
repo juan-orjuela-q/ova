@@ -23,6 +23,32 @@ que se derive ni se reinterprete.
 
 ---
 
+## T1.5 · Refinamiento visual, movimiento y navegación en maqueta
+
+Sesión acotada a un día. Tiene fecha de cierre porque es la clase de tarea que
+se come tres días sin avisar.
+
+Tres cosas, en este orden:
+
+1. **Pulir los trece layouts** con una crítica de diseño previa, no a ojo.
+   Es el último momento barato para cambiarlos: a partir de T5 habrá componentes
+   viviendo dentro y mover un layout costará el triple.
+2. **Sistema de movimiento** aplicado a los layouts: entrada de contenido
+   escalonada y micro-interacciones de controles, usando exclusivamente los
+   tokens de movimiento. Verificar con movimiento reducido activado.
+3. **Barra superior, barra inferior y drawer de índice en maqueta estática**
+   dentro de la kitchen sink. Solo aspecto y estados. Sin cablear nada: la
+   lógica es de T3, después de que exista el router.
+
+**Cierre:** los trece layouts revisados, el movimiento funcionando con sus
+tokens y degradando correctamente bajo `prefers-reduced-motion`, y el chrome
+de navegación visible en la kitchen sink en sus estados.
+
+**Lo que NO entra:** cablear la navegación, animar transiciones entre pantallas
+(no hay pantallas todavía), tocar `tokens.css`.
+
+---
+
 ## T2 · Motor
 
 `router.js`, `state.js`, `storage.js`, `scorm.js`, `a11y.js` y el cargador de

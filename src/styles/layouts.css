@@ -37,8 +37,6 @@
   flex-direction: column;
   gap: var(--sp-6);
   width: 100%;
-  max-width: 75rem;
-  margin-inline: auto;
   padding-block: var(--sp-10);
   padding-inline: var(--sp-6);
 }
@@ -51,15 +49,200 @@
 }
 
 /* ---- L01 · Portada de unidad -------------------------------------------
-   Centrado, sin media. kicker + título display + cuerpo breve.
+   Pantalla de apertura a pantalla completa. Dos rectángulos —panel de
+   texto y panel de media— que se traslapan un 10 % del ancho; el
+   gráfico `union_graf_nuam*.svg` se dibuja encima del traslape y, al
+   ser del mismo negro que el fondo, "corta" el borde recto de ambos
+   rectángulos en la curva de la marca. `.layout__panel` es la única
+   envoltura nueva del catálogo: los demás layouts posicionan
+   kicker/título/cuerpo como hijos directos porque comparten el fondo
+   del layout completo. Aquí no —el naranja pertenece solo al panel de
+   texto—, así que necesitan agruparse para compartir ese fondo.
    Ej.: apertura de "Unidad 1: Contexto sobre el mercado..." -------------- */
 .layout--l01 {
-  max-width: 46rem;
-  text-align: center;
-  padding-block: var(--sp-16);
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* marco: el negro del fondo asoma parejo alrededor de los dos
+     paneles. 12px en móvil, 24px en desktop (ver media query). El
+     marco en sí es cuadrado —sin border-radius aquí—; la curva va
+     hacia adentro, en las esquinas de cada panel que tocan el marco
+     (ver .layout__panel / .layout__media más abajo). */
+  padding: var(--sp-3);
+  gap: 0;
+  overflow: hidden;
+  background: var(--surface-inverse);
+}
+.layout--l01 .layout__panel {
+  order: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sp-4);
+  /* redondeado solo hacia el marco: en móvil el panel de texto va
+     abajo, así que solo sus esquinas inferiores tocan el marco. */
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  /* padding-top con piso en vw: reserva el espacio de
+     .layout__union--mobile-bottom (viewBox 1080×185, o sea 17.13 %
+     de su propio ancho) para que el kicker/título no arranquen
+     debajo del gráfico, que es absolute y no empuja contenido. */
+  padding: max(var(--sp-10), 17.2vw) var(--sp-6) var(--sp-10);
+  background: var(--surface-brand);
+}
+.layout--l01 .layout__kicker {
+  color: var(--text-on-brand);
+}
+.layout--l01 .layout__titulo {
+  color: var(--text-on-brand-display);
 }
 .layout--l01 .layout__cuerpo {
-  margin-inline: auto;
+  /* sin max-width en vertical: el panel ya es angosto por sí solo
+     (100% del ancho de pantalla menos marco y padding), no compite
+     con el gráfico como en desktop. */
+  /* más aire que el resto del ritmo del panel (gap: var(--sp-4)):
+     título-cuerpo y cuerpo-botón necesitaban más separación que
+     kicker-título. */
+  margin-block-start: var(--sp-4);
+}
+.layout--l01 .layout__panel > .boton {
+  margin-block-start: var(--sp-4);
+}
+.layout--l01 .layout__cuerpo p {
+  color: var(--text-on-brand-display);
+}
+.layout--l01 .layout__media {
+  order: -1;
+  position: relative;
+  /* móvil: media va arriba, solo sus esquinas superiores tocan el
+     marco (simétrico a las inferiores de .layout__panel). */
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  /* alto en vh, no flex-basis en % : el contenedor mide min-height,
+     no height, así que su tamaño es "indefinido" para el algoritmo
+     de flex y una base en % se resuelve como auto (cae al alto del
+     contenido, no al 42% real) — vh no depende de eso. */
+  flex: 0 0 auto;
+  height: 48vh;
+  overflow: hidden;
+}
+/* :not(.layout__union) — el reset de abajo no debe pisar el ancho e
+   alto propios del recorte de unión que vive dentro de media (ver
+   .layout__union--mobile-top). */
+.layout--l01 .layout__media img:not(.layout__union),
+.layout--l01 .layout__media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* El gráfico es decorativo y se dibuja encima de ambos rectángulos
+   —por eso el texto necesita su propio colchón de seguridad (arriba
+   y en max-width) en vez de depender de que el gráfico "respete" un
+   límite: su forma no es rectangular y no hay un solo punto de corte
+   que sirva para las dos variantes. */
+.layout--l01 .layout__union {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  left: 0;
+  width: 100%;
+  height: auto;
+}
+.layout--l01 .layout__union--desktop {
+  display: none;
+}
+/* En vertical el gráfico único (un solo svg estirado con transform)
+   nunca terminaba de encajar: su forma no es simétrica y cualquier
+   combinación de top/translateY es una aproximación. La solución real
+   es partirlo en dos svg ya recortados por separado (union_graf_
+   nuam_mobile_top.svg / _bottom.svg) y anclar cada uno al borde real
+   de su propio panel — sin cálculo, sin transform, siempre exacto
+   porque ambos miden el mismo ancho (el de la tarjeta) sin importar
+   la altura de cada panel. */
+.layout--l01 .layout__union--mobile-top {
+  bottom: 0;
+}
+.layout--l01 .layout__union--mobile-bottom {
+  top: 0;
+}
+
+@media (min-width: 64em) {
+  .layout--l01 {
+    display: grid;
+    grid-template-columns: 55% 10% 35%;
+    grid-template-rows: minmax(0, 1fr);
+    padding: var(--sp-6);
+  }
+  .layout--l01 .layout__panel {
+    grid-column: 1 / 3;
+    grid-row: 1;
+    /* desktop: el texto va a la izquierda, solo sus esquinas
+       izquierdas tocan el marco (reemplaza el redondeo inferior de
+       la versión móvil). */
+    border-radius: var(--r-lg) 0 0 var(--r-lg);
+    padding: var(--sp-16) var(--sp-12);
+  }
+  /* max-width en min(rem, %): el % es lo que de verdad protege contra
+     el gráfico bajo zoom de texto — un rem crece con la fuente pero la
+     posición del gráfico está en vh/vw/%, así que a 200% un límite
+     solo en rem deja de alcanzar y el texto termina bajo el corte. */
+  .layout--l01 .layout__titulo {
+    max-width: min(45rem, 90%);
+  }
+  .layout--l01 .layout__cuerpo {
+    max-width: min(45rem, 90%);
+  }
+  .layout--l01 .layout__media {
+    grid-column: 2 / 4;
+    grid-row: 1;
+    /* desktop: la media va a la derecha, solo sus esquinas derechas
+       tocan el marco (reemplaza el redondeo superior de móvil). */
+    border-radius: 0 var(--r-lg) var(--r-lg) 0;
+    height: 100%;
+  }
+  .layout--l01 .layout__union--mobile-top,
+  .layout--l01 .layout__union--mobile-bottom {
+    display: none;
+  }
+  /* Vive dentro de .layout__panel (el naranja), no como hijo directo
+     de .layout--l01: así right:0 la ancla al borde derecho real del
+     panel —el que ya respeta el marco— sin recalcular nada si cambia
+     el padding del marco. El svg mide 613×1080 (h/w = 1.7616) y su
+     "cintura" (el punto donde se cruzan las dos curvas) no está al
+     50 % de su ancho sino al 55.37 %, o sea a 44.63 % contando desde
+     el borde derecho. Con right:0 la cintura queda 44.63 % del ancho
+     del svg a la izquierda de la costura; translateX(44.63%) —en %
+     de la propia caja, no del contenedor— la recorre exactamente esa
+     distancia para que la cintura caiga sobre la costura real. */
+  .layout--l01 .layout__union--desktop {
+    display: block;
+    top: 0;
+    right: 0;
+    left: auto;
+    width: auto;
+    height: 100%;
+    transform: translateX(44.63%);
+  }
+}
+
+/* Pantallas muy anchas: 60/40 en vez de 65/45. Ojo con la aritmética:
+   panel(60%) + media(40%) ya suman 100%, así que no queda margen para
+   una columna de traslape en el medio (por eso aquí son 2 columnas
+   limpias, no 3 como en 64em) — un gutter aquí restaría ancho real a
+   alguna de las dos en vez de superponerse. El punto de unión no se
+   recalcula: sigue viviendo dentro de .layout__panel y anclado a su
+   propio borde derecho (right:0 + translateX(44.63%)), así que
+   cambiar el ancho del panel no rompe nada. */
+@media (min-width: 100em) {
+  .layout--l01 {
+    grid-template-columns: 60% 40%;
+  }
+  .layout--l01 .layout__panel {
+    grid-column: 1;
+  }
+  .layout--l01 .layout__media {
+    grid-column: 2;
+  }
 }
 
 /* ---- L02 · Texto a una columna ------------------------------------------

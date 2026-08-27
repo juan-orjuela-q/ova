@@ -142,6 +142,23 @@ a:active {
   font: var(--text-button);
 }
 
+/* Escalón de portada (L01/L13): más grande que la escala general.
+   No sale de un token porque T1.5 tiene prohibido tocar tokens.css
+   esta sesión — ver decisión en ESTADO.md. Escalar a token real la
+   próxima vez que se revisen los valores de tipografía. */
+.tipo-portada-titulo {
+  /* regular por defecto: el "Contexto:" va en PT Serif regular, y
+     solo la frase siguiente (marcada con <strong> en el contenido)
+     pasa a negrita. */
+  font: 400 clamp(2.25rem, 5vw, 4.5rem)/1.02 var(--font-display);
+}
+.tipo-portada-titulo strong {
+  font-weight: 700;
+}
+.tipo-portada-cuerpo {
+  font: 400 clamp(1.125rem, 2.5vw, 1.5rem)/1.5 var(--font-ui);
+}
+
 /* ---- Foco (no negociable: outline: none está prohibido) -------------- */
 :focus-visible {
   outline: var(--focus-ring);
