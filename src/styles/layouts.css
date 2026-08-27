@@ -1,0 +1,240 @@
+/* ============================================================
+   Layouts — catálogo L01..L13.
+
+   Bloque .layout, elementos reutilizables (.layout__kicker,
+   .layout__titulo, .layout__cuerpo, .layout__media, .layout__figura,
+   .layout__interaccion), modificadores de arreglo .layout--l01..l13.
+
+   Mobile-first con flex, no grid, en la base: .layout es
+   `display:flex; flex-direction:column`, así que a 320px los
+   elementos se apilan en orden de documento sin ninguna condición
+   — no es un caso especial que haya que acordarse de probar.
+
+   Los modificadores que necesitan más de una columna activan
+   `display:grid` únicamente dentro de su propio @media, y ahí mismo
+   —en el mismo bloque— declaran `grid-template-areas` y los
+   `grid-area` de sus elementos, todo con selectores prefijados por
+   `.layout--l0X`. Esto es deliberado: `grid-area` en un elemento sin
+   un `grid-template-areas` que respalde ese nombre no cae a
+   colocación automática como cabría esperar — el navegador trata el
+   nombre como una línea implícita nueva y los elementos que
+   comparten nombres sin definir terminan superpuestos. Por eso
+   ningún elemento recibe `grid-area` fuera del alcance exacto donde
+   `grid-template-areas` ya lo define.
+
+   Breakpoints usados en este archivo (sin variables: los media
+   queries no leen custom properties):
+     40em (~640px) — layouts que pasan a dos columnas
+     48em (~768px) — layouts con panel de media o proporción 2:1
+
+   Un layout define arreglo espacial, no tipografía. El tamaño visual
+   de kicker/título/cuerpo lo pone la clase .tipo-* (base.css) o la
+   etiqueta semántica que elija el motor de contenido.
+   ============================================================ */
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+  max-width: 75rem;
+  margin-inline: auto;
+  padding-block: var(--sp-10);
+  padding-inline: var(--sp-6);
+}
+
+.layout__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  max-width: 42rem;
+}
+
+/* ---- L01 · Portada de unidad -------------------------------------------
+   Centrado, sin media. kicker + título display + cuerpo breve.
+   Ej.: apertura de "Unidad 1: Contexto sobre el mercado..." -------------- */
+.layout--l01 {
+  max-width: 46rem;
+  text-align: center;
+  padding-block: var(--sp-16);
+}
+.layout--l01 .layout__cuerpo {
+  margin-inline: auto;
+}
+
+/* ---- L02 · Texto a una columna ------------------------------------------
+   Cuerpo con ancho de lectura acotado, sin centrar. Para explicación
+   densa sin apoyo visual. -------------------------------------------- */
+.layout--l02 .layout__cuerpo {
+  max-width: 38rem;
+}
+
+/* ---- L03 · Texto + media lateral (50/50) --------------------------------
+   Cápsula con video de apoyo junto al texto. ----------------------------- */
+@media (min-width: 48em) {
+  .layout--l03 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    grid-template-areas:
+      "kicker media"
+      "titulo media"
+      "cuerpo media";
+  }
+  .layout--l03 .layout__kicker { grid-area: kicker; }
+  .layout--l03 .layout__titulo { grid-area: titulo; }
+  .layout--l03 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
+  .layout--l03 .layout__media { grid-area: media; }
+}
+
+/* ---- L04 · Media protagonista --------------------------------------------
+   Video/imagen a ancho completo arriba, texto debajo. Sigue en flex
+   —solo se reordena—, funciona igual desde 320px. ----------------------- */
+.layout--l04 .layout__media {
+  order: -1;
+}
+
+/* ---- L05 · Cifra destacada ------------------------------------------------
+   kicker de contexto + cifra grande junto a su explicación.
+   Ej.: "77 % de los colombianos ahorra guardando efectivo en casa". --- */
+@media (min-width: 40em) {
+  .layout--l05 {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    grid-template-areas:
+      "kicker kicker"
+      "titulo cuerpo";
+  }
+  .layout--l05 .layout__kicker { grid-area: kicker; }
+  .layout--l05 .layout__titulo { grid-area: titulo; white-space: nowrap; }
+  .layout--l05 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
+}
+
+/* ---- L06 · Cita o dato curioso --------------------------------------------
+   Bloque enmarcado sobre superficie subtle-2, sin cambio de grid.
+   Ej.: dato del Mercado Global Colombiano. ------------------------------ */
+.layout--l06 {
+  max-width: 40rem;
+  padding: var(--sp-8);
+  background: var(--surface-subtle-2);
+  border-radius: var(--r-lg);
+}
+
+/* ---- L07 · Comparación de dos columnas ------------------------------------
+   El cuerpo mismo se divide en tarjetas comparables: el contenedor
+   .layout sigue apilado, solo su cuerpo pasa a fila. --------------------
+   Ej.: renta fija vs. renta variable, ordinarias vs. preferenciales. --- */
+@media (min-width: 40em) {
+  .layout--l07 .layout__cuerpo {
+    flex-direction: row;
+    max-width: none;
+  }
+  .layout--l07 .layout__cuerpo > * {
+    flex: 1 1 0;
+    padding: var(--sp-5);
+    background: var(--surface-subtle);
+    border-radius: var(--r-md);
+  }
+}
+
+/* ---- L08 · Checklist con media de apoyo -----------------------------------
+   Lista principal en 2fr, media de apoyo más angosta que L03.
+   Ej.: los 3 mercados de Bolsa de Valores de Colombia. ------------------ */
+@media (min-width: 48em) {
+  .layout--l08 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
+    grid-template-areas:
+      "kicker kicker"
+      "titulo media"
+      "cuerpo media";
+  }
+  .layout--l08 .layout__kicker { grid-area: kicker; }
+  .layout--l08 .layout__titulo { grid-area: titulo; }
+  .layout--l08 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
+  .layout--l08 .layout__media { grid-area: media; }
+}
+
+/* ---- L09 · Proceso / línea de tiempo ---------------------------------------
+   Pasos en <ol> dentro de cuerpo: columna en móvil, fila en desktop.
+   Ej.: cálculo de valorización paso a paso. ----------------------------- */
+@media (min-width: 48em) {
+  .layout--l09 .layout__cuerpo ol {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--sp-6);
+  }
+  .layout--l09 .layout__cuerpo ol > li {
+    flex: 1 1 12rem;
+  }
+}
+
+/* ---- L10 · Interacción a pantalla completa ---------------------------------
+   Chrome mínimo: kicker y título centrados y compactos, la interacción
+   ocupa el espacio principal. Ej.: quiz, calculadora paramétrica. ------ */
+.layout--l10 {
+  max-width: 56rem;
+}
+.layout--l10 .layout__kicker,
+.layout--l10 .layout__titulo {
+  text-align: center;
+}
+.layout--l10 .layout__interaccion {
+  min-height: min(28rem, 60vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-subtle);
+  border-radius: var(--r-lg);
+  padding: var(--sp-8);
+}
+
+/* ---- L11 · Término de glosario ---------------------------------------------
+   Tarjeta centrada y angosta con borde. Ej.: definición de "acción". --- */
+.layout--l11 {
+  max-width: 34rem;
+  text-align: center;
+  padding: var(--sp-10);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+}
+
+/* ---- L12 · Recurso descargable ----------------------------------------------
+   Figura fija junto al texto, acción a ancho completo debajo. ---------- */
+.layout--l12 .layout__figura {
+  width: 4rem;
+  aspect-ratio: 1;
+  background: var(--surface-subtle-2);
+  border-radius: var(--r-md);
+}
+@media (min-width: 40em) {
+  .layout--l12 {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    grid-template-areas:
+      "figura kicker"
+      "figura titulo"
+      "figura cuerpo"
+      "interaccion interaccion";
+  }
+  .layout--l12 .layout__figura { grid-area: figura; }
+  .layout--l12 .layout__kicker { grid-area: kicker; }
+  .layout--l12 .layout__titulo { grid-area: titulo; }
+  .layout--l12 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
+  .layout--l12 .layout__interaccion { grid-area: interaccion; }
+}
+
+/* ---- L13 · Cierre de unidad --------------------------------------------------
+   Igual arreglo que L01, más una interacción centrada (insignia). ------ */
+.layout--l13 {
+  max-width: 46rem;
+  text-align: center;
+  padding-block: var(--sp-16);
+}
+.layout--l13 .layout__cuerpo,
+.layout--l13 .layout__interaccion {
+  margin-inline: auto;
+}

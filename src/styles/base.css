@@ -1,0 +1,181 @@
+/* ============================================================
+   Base — reset, tipografía, foco, reduced-motion, utilidades.
+   Todo color sale de tokens.css. Ningún hex en este archivo.
+   ============================================================ */
+
+/* ---- Reset ------------------------------------------------------ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+ul,
+ol {
+  padding-inline-start: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+a:not([class]) {
+  color: inherit;
+}
+
+/* ---- Documento ---------------------------------------------------- */
+body {
+  min-height: 100vh;
+  font: var(--text-body);
+  color: var(--text-primary);
+  background: var(--surface-default);
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+}
+
+/* ---- Encabezados por defecto --------------------------------------- */
+h1 {
+  font: var(--text-h1);
+}
+h2 {
+  font: var(--text-h2);
+}
+h3 {
+  font: var(--text-h3);
+}
+h4 {
+  font: var(--text-h4);
+}
+h5,
+h6 {
+  font: var(--text-h5);
+}
+
+/* ---- Enlaces ---------------------------------------------------------- */
+a {
+  color: var(--text-brand);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+a:hover {
+  color: var(--nuam-orange-600);
+}
+a:active {
+  color: var(--nuam-orange-700);
+}
+
+/* ---- Utilidades tipográficas (familia .tipo-) --------------------------
+   Los layouts (layouts.css) solo definen arreglo espacial. La escala
+   visual de un texto sale de aquí, independiente de la etiqueta HTML
+   que use el motor de contenido. ------------------------------------- */
+.tipo-display-1 {
+  font: var(--text-display-1);
+}
+.tipo-display-2 {
+  font: var(--text-display-2);
+}
+.tipo-h1 {
+  font: var(--text-h1);
+}
+.tipo-h2 {
+  font: var(--text-h2);
+}
+.tipo-h3 {
+  font: var(--text-h3);
+}
+.tipo-h4 {
+  font: var(--text-h4);
+}
+.tipo-h5 {
+  font: var(--text-h5);
+}
+.tipo-cuerpo-lg {
+  font: var(--text-body-lg);
+}
+.tipo-cuerpo {
+  font: var(--text-body);
+}
+.tipo-cuerpo-sm {
+  font: var(--text-body-sm);
+}
+.tipo-caption {
+  font: var(--text-caption);
+}
+.tipo-etiqueta {
+  font: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.tipo-boton {
+  font: var(--text-button);
+}
+
+/* ---- Foco (no negociable: outline: none está prohibido) -------------- */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* ---- Movimiento reducido ---------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Utilidades generales (familia .u-) -------------------------------- */
+.u-contenedor {
+  width: 100%;
+  max-width: 75rem;
+  margin-inline: auto;
+  padding-inline: var(--sp-6);
+}
+
+.u-oculto-visualmente {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
