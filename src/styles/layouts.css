@@ -464,3 +464,24 @@
 .layout__interaccion {
   animation-delay: calc(var(--stagger) * 4);
 }
+
+/* ---- Movimiento — transición entre pantallas (T2) ----------------------
+   Ítem 1 del inventario, la animación más importante del OVA. Aparte de
+   la entrada de contenido de arriba: esa la dispara cualquier aparición
+   de .layout__* en el documento (incluida la kitchen sink, que muestra
+   las trece a la vez sin navegar); esta la dispara router.js a propósito
+   con .layout--transicion, solo cuando monta una pantalla nueva de
+   verdad. Solo opacity: nunca width/height/top/left. Bajo
+   prefers-reduced-motion, tokens.css ya colapsa --dur-slow a 1ms — no se
+   duplica ese media query aquí. */
+@keyframes pantalla-transicion {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.layout--transicion {
+  animation: pantalla-transicion var(--dur-slow) var(--ease-out) both;
+}

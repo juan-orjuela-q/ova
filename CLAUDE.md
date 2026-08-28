@@ -79,7 +79,7 @@ src/
     quiz.js             motor de evaluación
     charts.js           gráficos en SVG o canvas
   content/
-    ova-u1.json         contenido declarativo de la OVA
+    ova-u1.js           contenido declarativo de la OVA (ver nota abajo)
   assets/
 dev/
   kitchen-sink.html     todos los componentes en una página
@@ -117,6 +117,14 @@ Reglas del contrato: `layout` sale del catálogo L01..L13. `interaccion.tipo`
 sale del catálogo I01..I14. Si el JSON pide algo que no existe en el catálogo,
 el motor falla ruidosamente en consola — nunca renderiza a medias en silencio.
 
+**El archivo físico es `.js`, no `.json`.** `fetch()` y `XMLHttpRequest` no
+pueden leer un archivo local bajo `file://` (Chromium lo bloquea por CORS,
+verificado con Playwright al construir T2) — imposible de evitar sin violar la
+regla dura 4. `content/ova-u1.js` envuelve el mismo objeto de arriba en
+`window.OVA_CONTENIDO = { … };` y se carga con un `<script src>` clásico, que
+sí puede leer archivos locales. El contenido en sí sigue siendo JSON puro; el
+wrapper es solo el mecanismo de carga, no cambia lo que Jose entrega.
+
 ## Modos de ejecución
 
 El mismo build corre en dos contextos y `scorm.js` los distingue solo:
@@ -138,7 +146,12 @@ hay que capturarlo y degradar, no dejarlo reventar.
   `.cap-`, `.quiz-`, `.media-`, `.nav-`. Los átomos transversales (usados por
   varias familias) van sin prefijo: `.boton`, `.eyebrow`, `.tarjeta`,
   `.numero-indice`, `.regla`, `.anillo`, `.icono`.
-- JavaScript en módulos ES nativos. Sin transpilación.
+- JavaScript en scripts clásicos (`<script src="…">`), no módulos ES: Chromium
+  bloquea por CORS la carga de `type="module"` bajo `file://` (verificado con
+  Playwright al construir T2), y la regla dura 4 exige que el OVA abra sin
+  servidor. Sin `import`/`export`; cada archivo es un IIFE que cuelga su API en
+  `window.OVA.<nombre>` (`OVA.router`, `OVA.state`, etc.), y `index.html` los
+  carga en orden de dependencia. Sin transpilación.
 - Cada componente interactivo expone su estado por atributos ARIA reales, no por
   clases CSS que un lector de pantalla no ve.
 - Comentarios y textos de interfaz en español.

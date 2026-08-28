@@ -18,7 +18,40 @@
   <link rel="stylesheet" href="styles/components.css" />
 </head>
 <body>
+  <!-- Región de anuncios de a11y.js. Vacía en reposo; router.js la
+       llena en cada cambio de pantalla (nunca en la carga inicial). -->
+  <div id="anuncios" class="u-oculto-visualmente" aria-live="polite" aria-atomic="true"></div>
+
   <!-- El router (T2) monta aquí la pantalla activa. -->
-  <div id="app"></div>
+  <main id="app"></main>
+
+  <!-- Barra inferior mínima para navegar entre pantallas. Es el
+       mismo componente .nav-inferior de la kitchen sink (T1.5),
+       cableado por primera vez aquí. El chrome completo —barra
+       superior, drawer, skip link, indicador de guardado— es de T3;
+       esto solo cubre lo que T2 necesita para poder recorrer las
+       pantallas del contenido. -->
+  <footer class="nav-inferior">
+    <button id="nav-anterior" class="boton boton--outline" type="button">
+      <span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior
+    </button>
+    <span id="nav-paso" class="nav-inferior__paso"></span>
+    <button id="nav-siguiente" class="boton" type="button">
+      Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span>
+    </button>
+  </footer>
+
+  <!-- Scripts clásicos, no type="module": Chromium bloquea por CORS
+       la carga de módulos ES (y fetch/XHR) bajo file://, verificado
+       con Playwright en T2 — ver la nota de convenciones en
+       CLAUDE.md. Cada archivo cuelga su export de window.OVA; el
+       orden importa porque no hay import/export real. -->
+  <script src="content/ova-u1.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/scorm.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/a11y.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

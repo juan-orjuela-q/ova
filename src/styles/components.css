@@ -35,6 +35,18 @@
   background: var(--nuam-grey-700);
 }
 
+/* Deshabilitado (T2: lo necesita "Anterior" en la primera pantalla y
+   "Siguiente" en la última de la barra inferior). Opacidad, no un color
+   nuevo; `pointer-events: none` en vez de pisar el fondo de cada
+   variante (blanco/naranja/outline) por separado, para que ningún
+   :hover de la matriz de color se dispare mientras está deshabilitado.
+   Fuera del foco tabulable por el atributo nativo `disabled`. */
+.boton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .boton__icono {
   font-family: "Material Symbols Outlined";
   font-weight: normal;

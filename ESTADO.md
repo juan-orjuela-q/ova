@@ -13,7 +13,7 @@ cambien algo para el futuro. Si una decisión cambia una **regla**, va a
 
 - [x] **T1 · Andamiaje y sistema visual** — completada 27 ago
 - [x] **T1.5 · Refinamiento visual, movimiento y navegación en maqueta** — completada 28 ago
-- [ ] T2 · Motor
+- [x] **T2 · Motor** — completada 28 ago
 - [ ] T3 · Chrome del OVA
 - [ ] T4 · Reproductor de media
 - [ ] T5 · Componentes de contenido
@@ -154,6 +154,97 @@ cada uno se use de verdad, en vez de como una pasada de pulido aparte. Si
 algún layout necesita esa crítica antes de T5, hay que pedirla explícitamente
 — no va a pasar sola.
 
+**28 ago — T2 cerrada: motor de navegación, con un cambio de arquitectura no
+negociable descubierto en el camino.**
+
+Antes de escribir código se probó con Playwright (Chromium) si un `<script
+type="module">`, un `fetch()` y un `XMLHttpRequest` podían cargar un archivo
+local bajo `file://`. Los tres fallan por CORS ("URL scheme 'file' is not
+supported" / bloqueo de módulos entre orígenes) — un `<script src>` clásico sí
+funciona. Esto choca de frente con dos cosas que CLAUDE.md daba por sentadas:
+la convención de "JavaScript en módulos ES nativos" y que
+`content/ova-u1.json` se cargara por red. Como la regla dura 4 (abrir desde
+`file://` sin servidor) no se negocia y la convención de módulos sí es
+convención, se resolvió a favor de la regla dura:
+
+- **Los cinco archivos de T2 son scripts clásicos**, no módulos: cada uno es
+  un IIFE que cuelga su API en `window.OVA.<nombre>` (`OVA.router`,
+  `OVA.state`, `OVA.storage`, `OVA.scorm`, `OVA.a11y`), cargados en
+  `index.html` en orden de dependencia. `CLAUDE.md` ya quedó actualizado con
+  esta convención — no es una excepción de esta sesión, es la regla desde
+  ahora para T3 en adelante también.
+- **El contenido se renombró a `content/ova-u1.js`.** Envuelve el mismo JSON
+  del contrato en `window.OVA_CONTENIDO = { … };` y se carga con
+  `<script src>`. El contenido sigue siendo JSON puro adentro; Jose sigue sin
+  tocar código. `CLAUDE.md` documenta el porqué en la sección del contrato de
+  contenido.
+
+**Qué se construyó, con ese punto de partida:**
+
+- `storage.js` — `obtener`/`establecer` namespaced por `contenidoId`
+  (`ova:<id>:<clave>`), con caída silenciosa a un objeto en memoria si
+  `localStorage` no está disponible.
+- `scorm.js` — descubre `window.API` subiendo por `window.parent` hasta 10
+  niveles, capturando `SecurityError`; fuera de Moodle, `disponible()` es
+  `false` y cada método es un no-op silencioso. Reporta
+  `cmi.core.lesson_location` y `cmi.core.lesson_status` en cada navegación
+  cuando sí hay LMS.
+- `state.js` — dueño de índice actual, pantallas visitadas y el snapshot de
+  solo lectura (`instantanea()`); persiste por `storage.js`/`scorm.js` en cada
+  `ir()` y notifica a suscriptores. No sabe de URL ni de DOM.
+- `a11y.js` — región `#anuncios` (`aria-live="polite"`, ya en `index.html`) y
+  `enfocarEncabezado()`, que agrega `tabindex="-1"` si hace falta y mueve el
+  foco.
+- `router.js` — enrutamiento por **hash** (`#s01`…), no `pushState`: el hash
+  sobrevive un F5 sin ayuda de JS y no depende de que nadie resuelva rutas en
+  el servidor. Registro `PLANTILLAS` por código de layout (JSON → DOM con
+  `createElement`/`textContent`, nunca `innerHTML`); esta sesión solo
+  implementa **L02, L05, L06 y L11** —los que usa el JSON de prueba—. Cualquier
+  otro código de layout, exista o no en el catálogo L01–L13, cae por la misma
+  rama de fallo ruidoso (`console.error` + estado de error visible en `#app`,
+  nunca un render a medias): T3+ agrega su entrada a `PLANTILLAS` según lo
+  vaya necesitando. En la carga inicial no se roba el foco (el usuario no ha
+  interactuado todavía); en cada navegación posterior sí se mueve el foco al
+  `<h2 class="layout__titulo">` de la pantalla nueva y se anuncia por
+  `aria-live`. La transición entre pantallas (ítem 1 del inventario de
+  movimiento, `--dur-slow`) es una clase nueva `.layout--transicion` en
+  `layouts.css`, separada de la entrada de contenido por elemento que ya
+  existía (ítem 2): la kitchen sink muestra los trece layouts a la vez sin
+  navegar, así que la transición de pantalla no le aplica y no se le agregó
+  ahí.
+- `app.js` — valida la forma mínima del contenido (`id`, `titulo`,
+  `pantallas[]` con `id`/`layout`/`titulo`) antes de arrancar el router; si
+  falla, `console.error` + un estado de error visible en `#app`, igual que el
+  fallo por layout desconocido.
+- **Nav inferior real**, en `index.html`: se reutilizó el componente
+  `.nav-inferior` que T1.5 dejó como maqueta sin cablear (botones Anterior /
+  Siguiente + "Pantalla X de Y") y se cableó por primera vez. No es el chrome
+  completo de T3 (sin barra superior, sin drawer, sin skip link) — es lo
+  mínimo que T2 necesita para poder recorrer las cuatro pantallas del cierre.
+  Se agregó `.boton:disabled` a `components.css` (opacidad + `pointer-events:
+  none`, sin color nuevo) porque no existía y Anterior/Siguiente lo necesitan
+  en los extremos.
+- JSON de prueba (`content/ova-u1.js`): cuatro pantallas de relleno BVC en
+  L02, L05, L06, L11 — los cuatro layouts de texto puro que ya existían, sin
+  media ni interacción (eso es T4/T6).
+
+**Verificado con Playwright, abriendo `src/index.html` directo por
+`file://` (doble clic, no servido):** las cuatro pantallas se recorren con
+clic y con teclado (Tab hasta "Siguiente", Enter); foco salta al `<h2>` de
+cada pantalla nueva salvo la primera; `aria-live` anuncia cada cambio;
+Anterior/Siguiente se deshabilitan en los extremos; recargar a mitad de la
+unidad conserva la pantalla (hash) y una visita fresca sin hash retoma desde
+`localStorage` en vez de reiniciar en s01; 320px sin scroll horizontal y zoom
+de texto 200% en las cuatro pantallas; `prefers-reduced-motion` colapsa la
+duración de `.layout--transicion`; cero errores de consola en toda la corrida.
+Cero hex nuevo en los archivos tocados.
+
+**Kitchen sink:** T2 no es un componente visual, así que no se le fabricó una
+demo estática que falsearía lo que hace. Se agregó una sección "Motor" que
+explica esto, linkea a `src/index.html` como superficie de revisión real, y
+documenta la nota de arquitectura de scripts clásicos / `.js` en vez de
+`.json`.
+
 ## Pendientes y avisos
 
 - El contenido de Jose no bloquea nada hasta T8.
@@ -161,3 +252,11 @@ algún layout necesita esa crítica antes de T5, hay que pedirla explícitamente
 - L02–L13 no tuvieron la crítica de diseño ni el catálogo de componentes que
   preveía el punto 1 de T1.5 (ver decisión del 28 ago) — quedó descartado,
   no diferido a otra sesión.
+- El motor (T2) solo tiene plantillas de render para L02, L05, L06 y L11.
+  Cualquier tarea que monte una pantalla con otro layout (L01, L03, L04, L07,
+  L08, L09, L10, L12, L13) necesita agregar su entrada a `PLANTILLAS` en
+  `router.js` antes de que esa pantalla renderice — hoy cae en el estado de
+  error visible, a propósito.
+- T3 (chrome) recibe el `.nav-inferior` ya cableado por T2, tal cual está en
+  `index.html`; ahí se agrega la barra superior, el drawer y el skip link
+  alrededor de lo que ya existe, no se reescribe la navegación básica.

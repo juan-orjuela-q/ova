@@ -218,6 +218,7 @@
     <a href="#superficies">Superficies</a>
     <a href="#componentes">Componentes</a>
     <a href="#movimiento">Movimiento</a>
+    <a href="#motor">Motor</a>
     <a href="#layouts">Layouts</a>
     <a href="#l01">L01</a>
     <a href="#l02">L02</a>
@@ -623,6 +624,41 @@
           Hover y press en <code>--dur-fast</code>: botones, migas de pan, ítem del drawer, disclosure de transcripción y los controles del chrome de audio/video de la sección de <a href="#componentes">Componentes</a>. Pasa el mouse sobre cualquiera para verlo.
         </p>
       </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="motor" class="ks-seccion" aria-labelledby="motor-h">
+      <h2 id="motor-h">Motor (T2)</h2>
+      <p class="ks-intro">
+        T2 no agrega un componente visual: agrega <code>router.js</code>,
+        <code>state.js</code>, <code>storage.js</code>, <code>scorm.js</code> y
+        <code>a11y.js</code>, el motor que convierte el contrato de contenido en
+        pantallas navegables. No hay nada que mostrar en estático aquí sin
+        falsear lo que hace — la superficie de revisión real es
+        <a href="../src/index.html">src/index.html</a>, con el JSON de prueba de
+        cuatro pantallas (<code>content/ova-u1.js</code>) usando los layouts
+        L02, L05, L06 y L11 ya construidos arriba.
+      </p>
+      <p class="ks-intro">
+        Qué verificar ahí: recorrer las cuatro pantallas con clic y con
+        teclado (Tab hasta «Siguiente», Enter), confirmar que el foco salta al
+        encabezado de cada pantalla nueva y que se anuncia por
+        <code>aria-live</code>, recargar la página a mitad de la unidad y
+        comprobar que retoma la misma pantalla, y abrir el archivo por
+        <strong>doble clic</strong> (protocolo <code>file://</code>, sin
+        servidor) para confirmar que funciona igual que servido.
+      </p>
+      <p class="ks-intro">
+        Nota de arquitectura: los cinco archivos son scripts clásicos
+        (<code>&lt;script src&gt;</code>), no módulos ES. Chromium bloquea por
+        CORS la carga de <code>type="module"</code>, <code>fetch()</code> y
+        <code>XMLHttpRequest</code> bajo <code>file://</code> — verificado con
+        Playwright al construir esta tarea —, así que el contenido también se
+        carga como script clásico (<code>content/ova-u1.js</code> asigna
+        <code>window.OVA_CONTENIDO</code> en vez de pedirse por red). El
+        detalle completo y el porqué quedan en <code>CLAUDE.md</code> y en
+        <code>ESTADO.md</code>.
+      </p>
     </section>
 
     <!-- ============================================================ -->
