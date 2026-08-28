@@ -63,3 +63,619 @@
 .boton--portada {
   font-size: clamp(1rem, 4vw, 2rem);
 }
+
+/* ---- Matriz de botón (T1.5, componentes) -----------------------------
+   .boton solo (sin modificador de color) es el relleno negro de siempre
+   —no se toca, L01 ya depende de ese comportamiento por defecto. Los
+   modificadores de color son aditivos: --blanco y --naranja cambian el
+   relleno; --outline vacía el relleno y usa borde + currentColor sobre
+   la variante de color que lo acompañe. */
+.boton--blanco {
+  background: var(--nuam-grey-0);
+  color: var(--nuam-grey-950);
+}
+.boton--blanco:hover {
+  background: var(--nuam-grey-100);
+}
+.boton--blanco:active {
+  background: var(--nuam-grey-200);
+}
+
+/* Botón naranja: deliberadamente no existe `.boton--naranja` a secas.
+   CLAUDE.md prohíbe el botón naranja pequeño —la etiqueta blanca sobre
+   naranja-500 no cumple contraste bajo 19px/600— así que el relleno
+   naranja solo se define combinado con `.boton--grande`. Aplicar
+   `.boton--naranja` solo deja el botón en su relleno negro por defecto:
+   un error de este tipo falla de forma segura, nunca en silencio con
+   texto blanco ilegible. */
+.boton--grande {
+  font: var(--text-button); /* 600 19px/1 — la talla mínima del naranja */
+}
+.boton--naranja.boton--grande {
+  background: var(--surface-brand);
+  color: var(--text-on-brand-display);
+}
+.boton--naranja.boton--grande:hover {
+  background: var(--nuam-orange-600);
+}
+.boton--naranja.boton--grande:active {
+  background: var(--nuam-orange-700);
+}
+
+.boton--outline {
+  background: transparent;
+  color: var(--nuam-grey-950);
+  border: 1.5px solid var(--nuam-grey-950);
+  /* compensa el grosor del borde para no crecer respecto al relleno */
+  padding-block: calc(0.75em - 1.5px);
+}
+.boton--outline:hover {
+  background: var(--nuam-grey-950);
+  color: var(--text-on-inverse);
+}
+.boton--outline:active {
+  background: var(--nuam-grey-800);
+}
+.boton--outline.boton--blanco {
+  color: var(--nuam-grey-0);
+  border-color: var(--nuam-grey-0);
+  background: transparent;
+}
+.boton--outline.boton--blanco:hover {
+  background: var(--nuam-grey-0);
+  color: var(--nuam-grey-950);
+}
+.boton--outline.boton--blanco:active {
+  background: var(--nuam-grey-100);
+}
+/* Outline naranja: mismo candado que el relleno, exige --grande. El
+   texto usa naranja-700 (regla general de CLAUDE.md para texto sobre
+   claro); el borde sí puede ser naranja-500 porque ahí es borde, no
+   texto. En hover se comporta como el relleno —ya cumple el mínimo de
+   tamaño— así que puede pasar a blanco sobre naranja sin problema. */
+.boton--outline.boton--naranja.boton--grande {
+  background: transparent;
+  color: var(--text-brand);
+  border-color: var(--border-brand);
+}
+.boton--outline.boton--naranja.boton--grande:hover {
+  background: var(--surface-brand);
+  color: var(--text-on-brand-display);
+  border-color: var(--surface-brand);
+}
+.boton--outline.boton--naranja.boton--grande:active {
+  background: var(--nuam-orange-600);
+  border-color: var(--nuam-orange-600);
+}
+
+/* ---- Icono genérico (T1.5, componentes) -------------------------------
+   Independiente de `.boton__icono` (que además anima el translateX en
+   hover del botón): esta es la base tipográfica de Material Symbols
+   para usar en piezas que no son botones —reproductor de audio, chrome
+   de video, drawer de índice. */
+.icono {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1em;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+  -webkit-font-feature-settings: "liga";
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Eyebrow (T1.5, componentes) --------------------------------------
+   Reemplaza el uso suelto de `.tipo-etiqueta` como kicker cuando hace
+   falta más peso visual. Sin pill: nada de fondo ni borde-radio —con eso
+   se leía como botón chico, no como kicker. Es texto informativo, no
+   decorativo: por eso `--subtle` usa naranja-700 (texto), nunca
+   naranja-500 de fondo con texto encima —el mismo problema de contraste
+   que ya resolvió la regla del botón naranja pequeño, aplicado aquí
+   porque un eyebrow puede ser tan chico como uno. `--outline` ahora es
+   un subrayado, no una caja, para marcar énfasis sin volver a parecer un
+   chip. `--inverse` no fija color: hereda `currentColor` del contenedor
+   que ya resuelve el contraste correcto (p. ej. `.layout__panel` de L01,
+   que pone `--text-on-brand` en su kicker) para no duplicar esa decisión
+   por superficie. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.eyebrow--subtle {
+  color: var(--text-brand);
+}
+.eyebrow--outline {
+  color: var(--text-brand);
+  border-block-end: 1px solid var(--border-brand);
+  padding-block-end: 0.2em;
+}
+.eyebrow--inverse {
+  color: inherit;
+}
+
+/* ---- Número índice (T1.5, componentes) --------------------------------
+   Numeral grande estilo grid suizo para identificar secciones/pasos
+   (badges "01", "02"…). Terciario por defecto: acompaña al título, no
+   compite con él. */
+.numero-indice {
+  display: block;
+  font: var(--text-display-2);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Regla (T1.5, componentes) ----------------------------------------
+   Línea divisoria delgada como utilidad reusable en vez de repetir
+   `border-block-start` suelto en cada bloque nuevo. */
+.regla {
+  border: none;
+  border-block-start: 1px solid var(--border-default);
+  width: 100%;
+}
+.regla--fuerte {
+  border-block-start-color: var(--border-strong);
+}
+
+/* ---- Tarjeta (T1.5, componentes) --------------------------------------
+   Base de comparación, recurso, glosario y stat. Dos superficies, sin
+   mezclarlas: borde sobre default, o relleno subtle sin borde. */
+.tarjeta {
+  padding: var(--sp-6);
+  border-radius: var(--r-md);
+}
+.tarjeta--borde {
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+}
+.tarjeta--subtle {
+  background: var(--surface-subtle);
+}
+.tarjeta--stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+/* ---- Anillo de cifra (T1.5, componentes) -------------------------------
+   Variante decorativa y estática de L05 (cifra destacada), no el motor
+   de gráficos real —ese es T7/charts.js, con datos vivos y alternativa
+   de tabla. Aquí el valor va fijo en el markup y es, además, texto real
+   (`.anillo__cifra`): el anillo nunca es el único portador del dato, así
+   que cumple la regla de que el color no es el único código de estado
+   incluso siendo puramente ilustrativo. El SVG es decorativo
+   (`aria-hidden`); los colores del trazo salen de tokens.css vía
+   `style` porque los atributos de presentación SVG no leen `var()` de
+   forma consistente entre navegadores, y así igual queda una sola
+   fuente de verdad de color. */
+.anillo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* En rem, no en los px del atributo width/height del SVG: bajo zoom de
+   texto al 200% el número (que sí crece, es tipo-display-2 en rem) tiene
+   que crecer junto con el anillo o se sale del trazo. El viewBox interno
+   (120×120, radio 52) no cambia — solo la caja que lo contiene; el
+   trazo se adelgazó (12→10, ver los `stroke-width` en el markup) para
+   que el radio interior deje más aire al número más grande de abajo. */
+.anillo svg {
+  width: 10rem;
+  height: 10rem;
+}
+.anillo__cifra {
+  position: absolute;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.1em;
+  color: var(--text-primary);
+}
+.anillo__numero {
+  font: var(--text-display-2);
+}
+.anillo__signo {
+  font: var(--text-h4);
+  color: var(--text-secondary);
+}
+
+/* ---- Migas de pan (T1.5, componentes) ---------------------------------- */
+.nav-migas ol {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  list-style: none;
+  padding-inline-start: 0;
+  font: var(--text-body-sm);
+}
+.nav-migas li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.nav-migas li:not(:last-child)::after {
+  content: "/";
+  color: var(--text-tertiary);
+}
+.nav-migas a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.nav-migas a:hover {
+  color: var(--text-brand);
+  text-decoration: underline;
+}
+.nav-migas [aria-current="page"] {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ---- Barra superior (T1.5, componentes — maqueta, sin cablear) --------
+   Aspecto y estados únicamente: la lógica de progreso real es de T2/T3.
+   `accent-color` en vez de estilizar el `<progress>` a mano: toma el
+   naranja de marca sin declarar ningún hex nuevo. */
+.nav-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  padding-block: var(--sp-3);
+  padding-inline: var(--sp-6);
+  background: var(--surface-default);
+  border-block-end: 1px solid var(--border-default);
+}
+.nav-barra__titulo {
+  font: var(--text-h5);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-barra__progreso {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--text-secondary);
+  font: var(--text-caption);
+}
+.nav-barra__progreso progress {
+  accent-color: var(--nuam-orange-500);
+  width: 8rem;
+  max-width: 30vw;
+}
+.nav-barra__guardado {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--text-secondary);
+  font: var(--text-caption);
+}
+
+/* ---- Barra inferior (T1.5, componentes — maqueta, sin cablear) -------- */
+.nav-inferior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  padding-block: var(--sp-3);
+  padding-inline: var(--sp-6);
+  background: var(--surface-default);
+  border-block-start: 1px solid var(--border-default);
+}
+.nav-inferior__paso {
+  color: var(--text-tertiary);
+  font: var(--text-caption);
+}
+
+/* ---- Drawer de índice (T1.5, componentes — maqueta, sin cablear) ------
+   Los tres estados de cápsula (completado, en curso, bloqueado) llevan
+   icono y texto, nunca solo color —regla dura de CLAUDE.md—; el color
+   de `--disabled` en bloqueado es apoyo, no el único código. */
+.nav-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-6);
+  max-width: 22rem;
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-lg);
+}
+.nav-drawer__titulo {
+  font: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  margin-block-end: var(--sp-2);
+}
+.nav-drawer__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-block: var(--sp-2);
+  padding-inline: var(--sp-2);
+  border-radius: var(--r-sm);
+  font: var(--text-body-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.nav-drawer__item:hover {
+  background: var(--surface-subtle);
+}
+.nav-drawer__item[aria-current="step"] {
+  background: var(--surface-subtle-2);
+  font-weight: 600;
+}
+.nav-drawer__item[data-estado="bloqueado"] {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+.nav-drawer__item[data-estado="bloqueado"]:hover {
+  background: transparent;
+}
+.nav-drawer__item .icono {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+.nav-drawer__item[data-estado="completado"] .icono {
+  color: var(--nuam-green-700);
+}
+
+/* ---- Tarjeta de audio (T1.5, componentes — maqueta, sin cablear) ------
+   El disclosure de transcripción usa `<details>` nativo: estado abierto
+   o cerrado accesible sin una línea de JavaScript. Play/pausa se
+   documentan como dos instancias estáticas (mismo patrón que el resto
+   de la kitchen sink), no como un botón que de verdad alterna. */
+.media-audio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border-radius: var(--r-lg);
+  background: var(--surface-subtle);
+  max-width: 26rem;
+}
+.media-audio__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.media-audio__avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--surface-muted);
+}
+.media-audio__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.media-audio__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.media-audio__titulo {
+  font: var(--text-h5);
+}
+.media-audio__play {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.media-audio__play:hover {
+  background: var(--nuam-grey-800);
+}
+.media-audio__controles {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.media-audio__progreso {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--surface-muted);
+  position: relative;
+}
+.media-audio__progreso__relleno {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  border-radius: inherit;
+  background: var(--nuam-orange-500);
+}
+.media-audio__tiempo {
+  font: var(--text-caption);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.media-audio__transcripcion summary {
+  font: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--text-brand);
+  cursor: pointer;
+  width: fit-content;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.media-audio__transcripcion summary:hover {
+  color: var(--nuam-orange-600);
+}
+.media-audio__transcripcion[open] summary {
+  margin-block-end: var(--sp-2);
+}
+.media-audio__transcripcion p {
+  color: var(--text-secondary);
+}
+
+/* ---- Chrome de video (T1.5, componentes — maqueta, sin cablear) -------
+   El botón de CC distingue estado por relleno/borde, no solo por color:
+   activo es relleno, inactivo es outline —además de `aria-pressed`—
+   porque el texto "CC" no cambia entre estados. */
+.media-video {
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--surface-inverse);
+  max-width: 34rem;
+}
+.media-video__marcador {
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-on-inverse-2);
+  font: var(--text-body-sm);
+  text-align: center;
+  padding: var(--sp-4);
+}
+.media-video__controles {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+}
+.media-video__play {
+  color: var(--text-on-inverse);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.media-video__play:hover {
+  opacity: 0.7;
+}
+.media-video__scrubber {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--nuam-grey-700);
+  position: relative;
+}
+.media-video__scrubber__relleno {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  border-radius: inherit;
+  background: var(--nuam-orange-300);
+}
+.media-video__tiempo {
+  font: var(--text-caption);
+  color: var(--text-on-inverse-2);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.media-video__cc {
+  /* 14px: el piso de la escala, no `--text-caption` —el CC necesita quedar
+     compacto (padding chico, mayúsculas) y `--text-caption` ya trae su
+     propio line-height/peso pensados para párrafo, no para una etiqueta
+     de un carácter. */
+  font: 700 0.875rem/1 var(--font-ui);
+  letter-spacing: 0.04em;
+  padding: 0.4em 0.6em;
+  border-radius: var(--r-sm);
+  color: var(--text-on-inverse);
+  border: 1px solid var(--border-inverse);
+  background: transparent;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.media-video__cc[aria-pressed="true"] {
+  background: var(--nuam-grey-700);
+  border-color: var(--nuam-grey-700);
+}
+.media-video__cc:hover:not([aria-pressed="true"]) {
+  background: var(--nuam-grey-800);
+  border-color: var(--nuam-grey-800);
+}
+.media-video__velocidad {
+  font: var(--text-caption);
+  color: var(--text-on-inverse);
+  padding-inline: 0.4em;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.media-video__velocidad:hover {
+  opacity: 0.7;
+}
+.media-video__pantalla-completa {
+  color: var(--text-on-inverse);
+  flex-shrink: 0;
+  display: flex;
+  margin-inline-start: auto;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.media-video__pantalla-completa:hover {
+  opacity: 0.7;
+}
+
+/* ---- Línea de tiempo conectada (T1.5, componentes) --------------------
+   Vertical por ahora: la variante horizontal (para caer dentro de L09
+   en desktop) se resuelve la próxima sesión, cuando se aplique dentro
+   del layout real y su propio @media. El nodo mide 2.5rem, así que el
+   conector se ancla a 1.25rem —su mitad— sin necesitar recalcular nada
+   si cambia el gap entre pasos. */
+.linea-tiempo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  list-style: none;
+  padding-inline-start: 0;
+}
+.linea-tiempo::before {
+  content: "";
+  position: absolute;
+  left: 1.25rem;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  width: 1px;
+  background: var(--border-default);
+}
+.linea-tiempo__paso {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: flex-start;
+}
+.linea-tiempo__nodo {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-subtle-2);
+  color: var(--text-primary);
+  font: var(--text-h5);
+}
+.linea-tiempo__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding-block-start: var(--sp-1);
+}

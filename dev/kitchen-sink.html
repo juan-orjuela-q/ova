@@ -176,12 +176,48 @@
       padding: var(--sp-3);
       font: var(--text-caption);
     }
+
+    /* ---- Componentes (T1.5) — solo andamiaje de esta página ------------ */
+    .ks-muestras {
+      max-width: 75rem;
+      margin-inline: auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--sp-4);
+    }
+    .ks-muestras--inverse {
+      width: fit-content;
+      margin-inline: 0;
+      padding: var(--sp-6);
+      border-radius: var(--r-lg);
+      background: var(--surface-inverse);
+    }
+    .ks-muestras--brand {
+      width: fit-content;
+      margin-inline: 0;
+      padding: var(--sp-6);
+      border-radius: var(--r-lg);
+      background: var(--surface-brand);
+    }
+    .ks-numero-muestra {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      width: 9rem;
+    }
+    .ks-ancho-marco {
+      max-width: 75rem;
+      margin-inline: auto;
+    }
   </style>
 </head>
 <body>
   <nav class="ks-nav" aria-label="Secciones de la kitchen sink">
     <a href="#tipografia">Tipografía</a>
     <a href="#superficies">Superficies</a>
+    <a href="#componentes">Componentes</a>
+    <a href="#movimiento">Movimiento</a>
     <a href="#layouts">Layouts</a>
     <a href="#l01">L01</a>
     <a href="#l02">L02</a>
@@ -315,6 +351,277 @@
           <p class="ks-superficie__regla">Secundario: <span style="color: var(--text-on-inverse-2)">texto de apoyo en gris 400.</span></p>
           <p class="ks-superficie__regla">Acento: <a href="#tipografia" style="color: var(--nuam-orange-300)">naranja 300 sobre inverse.</a></p>
         </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="componentes" class="ks-seccion" aria-labelledby="componentes-h">
+      <h2 id="componentes-h">Componentes</h2>
+      <p class="ks-intro">Átomos y moléculas nuevos de T1.5, antes de aplicarlos a los trece layouts. Los marcados como "maqueta" son solo aspecto y estados — sin cablear, la lógica llega en T2–T4.</p>
+
+      <div class="ks-layout-bloque" id="c-botones-negro">
+        <span class="ks-layout-bloque__etiqueta">Botón — negro (relleno / outline)</span>
+        <div class="ks-layout-marco ks-muestras">
+          <button class="boton" type="button">Continuar <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
+          <button class="boton boton--outline" type="button">Continuar <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-botones-blanco">
+        <span class="ks-layout-bloque__etiqueta">Botón — blanco (sobre superficie inverse)</span>
+        <div class="ks-layout-marco ks-muestras ks-muestras--inverse">
+          <button class="boton boton--blanco" type="button">Continuar <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
+          <button class="boton boton--blanco boton--outline" type="button">Continuar <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-botones-naranja">
+        <span class="ks-layout-bloque__etiqueta">Botón — naranja (solo talla grande)</span>
+        <p class="ks-intro">No existe una variante pequeña: <code>.boton--naranja</code> sin <code>.boton--grande</code> cae al relleno negro por defecto en vez de romper el contraste — ver la regla del botón naranja pequeño en CLAUDE.md.</p>
+        <div class="ks-layout-marco ks-muestras">
+          <button class="boton boton--naranja boton--grande" type="button">Comenzar</button>
+          <button class="boton boton--naranja boton--grande boton--outline" type="button">Comenzar</button>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-eyebrow">
+        <span class="ks-layout-bloque__etiqueta">Eyebrow</span>
+        <div class="ks-layout-marco ks-muestras">
+          <span class="eyebrow eyebrow--subtle">Unidad 1</span>
+          <span class="eyebrow eyebrow--outline">Unidad 1</span>
+        </div>
+        <div class="ks-layout-marco ks-muestras ks-muestras--brand" style="margin-block-start: var(--sp-4)">
+          <span class="eyebrow eyebrow--inverse" style="color: var(--text-on-brand)">Sobre brand</span>
+        </div>
+        <div class="ks-layout-marco ks-muestras ks-muestras--inverse" style="margin-block-start: var(--sp-4)">
+          <span class="eyebrow eyebrow--inverse" style="color: var(--nuam-orange-300)">Sobre inverse</span>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-numero-regla">
+        <span class="ks-layout-bloque__etiqueta">Número índice + regla</span>
+        <div class="ks-layout-marco ks-muestras">
+          <div class="ks-numero-muestra">
+            <span class="numero-indice">01</span>
+            <hr class="regla" />
+            <span class="tipo-caption">Regla estándar</span>
+          </div>
+          <div class="ks-numero-muestra">
+            <span class="numero-indice">02</span>
+            <hr class="regla regla--fuerte" />
+            <span class="tipo-caption">Regla fuerte</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-tarjeta">
+        <span class="ks-layout-bloque__etiqueta">Tarjeta</span>
+        <div class="ks-layout-marco ks-muestras">
+          <div class="tarjeta tarjeta--borde" style="max-width: 18rem">
+            <p class="tipo-h5">Renta variable</p>
+            <p class="tipo-cuerpo-sm">La rentabilidad no se conoce de forma anticipada.</p>
+          </div>
+          <div class="tarjeta tarjeta--subtle" style="max-width: 18rem">
+            <p class="tipo-h5">Renta fija</p>
+            <p class="tipo-cuerpo-sm">La rentabilidad se conoce desde el inicio de la negociación.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-anillo">
+        <span class="ks-layout-bloque__etiqueta">Anillo de cifra</span>
+        <p class="ks-intro">Variante decorativa de L05. El valor real siempre va como texto (<code>.anillo__cifra</code>), nunca solo en el trazo — el motor de gráficos con datos vivos es T7.</p>
+        <div class="ks-layout-marco ks-muestras">
+          <div class="anillo">
+            <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
+              <circle cx="60" cy="60" r="52" fill="none" stroke-width="10" style="stroke: var(--surface-muted)" />
+              <circle cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round" style="stroke: var(--nuam-orange-500)" stroke-dasharray="326.73" stroke-dashoffset="75.15" transform="rotate(-90 60 60)" />
+            </svg>
+            <span class="anillo__cifra">
+              <span class="anillo__numero">77</span><span class="anillo__signo">%</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-migas">
+        <span class="ks-layout-bloque__etiqueta">Migas de pan</span>
+        <div class="ks-layout-marco ks-ancho-marco">
+          <nav class="nav-migas" aria-label="Ruta de navegación de ejemplo">
+            <ol>
+              <li><a href="#l02">Unidad 1</a></li>
+              <li><a href="#l03">Cápsula 1</a></li>
+              <li aria-current="page">¿Qué es una acción?</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-nav-barra">
+        <span class="ks-layout-bloque__etiqueta">Barra superior (maqueta)</span>
+        <div class="ks-layout-marco">
+          <header class="nav-barra">
+            <p class="nav-barra__titulo">Unidad 1 · Contexto sobre el mercado</p>
+            <div class="nav-barra__progreso">
+              <label class="u-oculto-visualmente" for="ks-progreso">Progreso de la unidad</label>
+              <progress id="ks-progreso" max="13" value="5"></progress>
+              <span>5 / 13 pantallas</span>
+            </div>
+            <p class="nav-barra__guardado"><span class="icono" aria-hidden="true">cloud_done</span> Guardado</p>
+          </header>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-nav-inferior">
+        <span class="ks-layout-bloque__etiqueta">Barra inferior (maqueta)</span>
+        <div class="ks-layout-marco">
+          <footer class="nav-inferior">
+            <button class="boton boton--outline" type="button"><span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior</button>
+            <span class="nav-inferior__paso">Pantalla 5 de 13</span>
+            <button class="boton" type="button">Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
+          </footer>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-nav-drawer">
+        <span class="ks-layout-bloque__etiqueta">Drawer de índice (maqueta)</span>
+        <div class="ks-layout-marco">
+          <nav class="nav-drawer" aria-label="Índice de la unidad (ejemplo)">
+            <p class="nav-drawer__titulo">Unidad 1</p>
+            <a class="nav-drawer__item" href="#" data-estado="completado"><span class="icono" aria-hidden="true">check_circle</span> Contexto del mercado</a>
+            <a class="nav-drawer__item" href="#" aria-current="step" data-estado="actual"><span class="icono" aria-hidden="true">radio_button_checked</span> ¿Qué es una acción?</a>
+            <a class="nav-drawer__item" href="#" data-estado="bloqueado" aria-disabled="true"><span class="icono" aria-hidden="true">lock</span> Valorización de una acción</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-media-audio">
+        <span class="ks-layout-bloque__etiqueta">Tarjeta de audio (maqueta)</span>
+        <div class="ks-layout-marco ks-muestras">
+          <div class="media-audio">
+            <div class="media-audio__fila">
+              <div class="media-audio__avatar" aria-hidden="true"></div>
+              <div class="media-audio__info">
+                <p class="media-audio__titulo">Cápsula narrada — Unidad 1</p>
+                <p class="tipo-caption">Voz: equipo docente BVC</p>
+              </div>
+            </div>
+            <div class="media-audio__controles">
+              <button class="media-audio__play" type="button" aria-label="Pausar">
+                <span class="icono" aria-hidden="true">pause</span>
+              </button>
+              <div class="media-audio__progreso">
+                <span class="media-audio__progreso__relleno" style="width: 40%"></span>
+              </div>
+              <span class="media-audio__tiempo">01:12 / 03:05</span>
+            </div>
+            <details class="media-audio__transcripcion">
+              <summary>Ver transcripción</summary>
+              <p class="tipo-cuerpo-sm">Una acción es un título valor participativo que representa un porcentaje mínimo de propiedad de una empresa…</p>
+            </details>
+          </div>
+
+          <div class="media-audio">
+            <div class="media-audio__fila">
+              <div class="media-audio__avatar" aria-hidden="true"></div>
+              <div class="media-audio__info">
+                <p class="media-audio__titulo">Cápsula narrada — Unidad 1</p>
+                <p class="tipo-caption">Voz: equipo docente BVC</p>
+              </div>
+            </div>
+            <div class="media-audio__controles">
+              <button class="media-audio__play" type="button" aria-label="Reproducir">
+                <span class="icono" aria-hidden="true">play_arrow</span>
+              </button>
+              <div class="media-audio__progreso">
+                <span class="media-audio__progreso__relleno" style="width: 0%"></span>
+              </div>
+              <span class="media-audio__tiempo">00:00 / 03:05</span>
+            </div>
+            <details class="media-audio__transcripcion">
+              <summary>Ver transcripción</summary>
+              <p class="tipo-cuerpo-sm">Una acción es un título valor participativo que representa un porcentaje mínimo de propiedad de una empresa…</p>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-media-video">
+        <span class="ks-layout-bloque__etiqueta">Chrome de video (maqueta)</span>
+        <div class="ks-layout-marco ks-muestras">
+          <div class="media-video">
+            <div class="media-video__marcador">Video · Unidad 1, cápsula 1<br />(marcador — reproductor real en T4)</div>
+            <div class="media-video__controles">
+              <button class="media-video__play icono" type="button" aria-label="Reproducir">play_arrow</button>
+              <div class="media-video__scrubber"><span class="media-video__scrubber__relleno" style="width: 30%"></span></div>
+              <span class="media-video__tiempo">00:42 / 03:10</span>
+              <button class="media-video__velocidad" type="button">1×</button>
+              <button class="media-video__cc" type="button" aria-pressed="true">CC</button>
+              <button class="media-video__pantalla-completa icono" type="button" aria-label="Pantalla completa">fullscreen</button>
+            </div>
+          </div>
+
+          <div class="media-video">
+            <div class="media-video__marcador">Video · Unidad 1, cápsula 2<br />(marcador — reproductor real en T4)</div>
+            <div class="media-video__controles">
+              <button class="media-video__play icono" type="button" aria-label="Reproducir">play_arrow</button>
+              <div class="media-video__scrubber"><span class="media-video__scrubber__relleno" style="width: 60%"></span></div>
+              <span class="media-video__tiempo">01:54 / 03:10</span>
+              <button class="media-video__velocidad" type="button">1×</button>
+              <button class="media-video__cc" type="button" aria-pressed="false">CC</button>
+              <button class="media-video__pantalla-completa icono" type="button" aria-label="Pantalla completa">fullscreen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-linea-tiempo">
+        <span class="ks-layout-bloque__etiqueta">Línea de tiempo conectada</span>
+        <div class="ks-layout-marco ks-ancho-marco">
+          <ol class="linea-tiempo" style="max-width: 28rem">
+            <li class="linea-tiempo__paso">
+              <span class="linea-tiempo__nodo" aria-hidden="true">01</span>
+              <div class="linea-tiempo__contenido">
+                <p class="tipo-h5">Compra en el mercado primario</p>
+                <p class="tipo-cuerpo-sm">Petrocaribe vende cada acción a $1.000; un inversionista compra 500.</p>
+              </div>
+            </li>
+            <li class="linea-tiempo__paso">
+              <span class="linea-tiempo__nodo" aria-hidden="true">02</span>
+              <div class="linea-tiempo__contenido">
+                <p class="tipo-h5">Ocho meses después</p>
+                <p class="tipo-cuerpo-sm">El precio sube a $1.500 en el mercado secundario.</p>
+              </div>
+            </li>
+            <li class="linea-tiempo__paso">
+              <span class="linea-tiempo__nodo" aria-hidden="true">03</span>
+              <div class="linea-tiempo__contenido">
+                <p class="tipo-h5">Cálculo de la valorización</p>
+                <p class="tipo-cuerpo-sm">La diferencia es $500: 500/1.000 = 50 % de valorización.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="movimiento" class="ks-seccion" aria-labelledby="movimiento-h">
+      <h2 id="movimiento-h">Movimiento</h2>
+      <p class="ks-intro">
+        Dos de los siete ítems del inventario de movimiento de CLAUDE.md, aplicados con los tokens de <code>tokens.css</code> — ningún valor de duración o curva escrito a mano. Los otros cinco llegan con lo que animan: transición entre pantallas y barra de progreso en T2/T3, retroalimentación de quiz en T6, insignia e interacciones I09–I12 en T5/T8.
+      </p>
+      <div class="ks-layout-bloque" id="m-entrada">
+        <span class="ks-layout-bloque__etiqueta">Entrada de contenido — escalonada</span>
+        <p class="ks-intro">
+          Cada <code>.layout__kicker</code>, <code>.layout__titulo</code>, <code>.layout__cuerpo</code>, <code>.layout__media</code>/<code>.layout__figura</code> e <code>.layout__interaccion</code> entra con <code>--dur-base</code>, desplazado <code>--shift-sm</code> y escalonado con <code>--stagger</code>, en orden de lectura. Se ve al recargar esta página: los trece layouts de la sección de abajo entran en cascada. Verificado con Playwright emulando <code>prefers-reduced-motion: reduce</code>: el desplazamiento desaparece (<code>--shift-sm</code> cae a 0) y la opacidad se conserva, así el cambio de estado sigue siendo perceptible sin movimiento.
+        </p>
+      </div>
+      <div class="ks-layout-bloque" id="m-controles">
+        <span class="ks-layout-bloque__etiqueta">Micro-interacciones de controles</span>
+        <p class="ks-intro">
+          Hover y press en <code>--dur-fast</code>: botones, migas de pan, ítem del drawer, disclosure de transcripción y los controles del chrome de audio/video de la sección de <a href="#componentes">Componentes</a>. Pasa el mouse sobre cualquiera para verlo.
+        </p>
       </div>
     </section>
 

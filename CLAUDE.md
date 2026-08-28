@@ -43,6 +43,15 @@ El naranja de marca tiene la luminancia de un gris 450. De ahí sale todo esto:
   ni icono. No llega ni a 3:1.
 - **No existe el botón naranja pequeño.** La etiqueta blanca sobre naranja solo
   cumple como texto grande: mínimo 19 px en peso 600.
+- **La regla anterior no es solo del botón.** Cualquier componente con texto
+  informativo sobre relleno naranja-500 —eyebrow, chip, badge— tiene el mismo
+  problema de contraste si el texto es chico. Ahí el naranja va de borde o de
+  texto (naranja-700) sobre un fondo neutro, nunca de relleno. En código, la
+  variante bloqueada por tamaño (p. ej. `.boton--naranja` sin `.boton--grande`)
+  se deja deliberadamente sin estilos propios en vez de validarse en JS: cae al
+  tratamiento por defecto (relleno negro) en lugar de romper el contraste en
+  silencio. Sigue este mismo patrón para cualquier componente nuevo con la
+  misma restricción.
 - El verde 500 y el rojo 500 son para rellenos e iconos. Como texto sobre claro
   van los 700.
 - El gris 400 no es texto informativo sobre superficies claras. Sobre superficie
@@ -126,7 +135,9 @@ hay que capturarlo y degradar, no dejarlo reventar.
 - CSS con propiedades personalizadas y `gap`. Nada de márgenes por elemento para
   separar hermanos.
 - Nombres de clase en español, en kebab-case, con prefijo por familia:
-  `.cap-`, `.quiz-`, `.media-`, `.nav-`.
+  `.cap-`, `.quiz-`, `.media-`, `.nav-`. Los átomos transversales (usados por
+  varias familias) van sin prefijo: `.boton`, `.eyebrow`, `.tarjeta`,
+  `.numero-indice`, `.regla`, `.anillo`, `.icono`.
 - JavaScript en módulos ES nativos. Sin transpilación.
 - Cada componente interactivo expone su estado por atributos ARIA reales, no por
   clases CSS que un lector de pantalla no ve.

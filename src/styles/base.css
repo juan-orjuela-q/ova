@@ -88,6 +88,7 @@ a {
   color: var(--text-brand);
   text-decoration: underline;
   text-underline-offset: 0.15em;
+  transition: color var(--dur-fast) var(--ease-out);
 }
 a:hover {
   color: var(--nuam-orange-600);

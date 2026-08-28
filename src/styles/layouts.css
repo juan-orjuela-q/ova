@@ -421,3 +421,46 @@
 .layout--l13 .layout__interaccion {
   margin-inline: auto;
 }
+
+/* ---- Movimiento — entrada de contenido (T1.5, punto 2) -----------------
+   Inventario ítem 2 de CLAUDE.md: entrada escalonada con --dur-base,
+   --stagger y --shift-sm. El escalón sigue el orden de lectura
+   (kicker → título → cuerpo → media/figura → interacción), no el orden
+   del DOM —en L12 .layout__figura va primero en el markup pero entra en
+   el mismo tercio que .layout__media—: es la jerarquía visual la que
+   importa, no la posición en el HTML. Solo opacity + transform: nunca
+   width/height/top/left. Bajo prefers-reduced-motion, tokens.css ya
+   colapsa --dur-base a 1ms y --shift-sm a 0 (la opacidad se conserva, el
+   desplazamiento no) — no se duplica ese media query aquí. */
+@keyframes layout-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(var(--shift-sm));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.layout__kicker,
+.layout__titulo,
+.layout__cuerpo,
+.layout__media,
+.layout__figura,
+.layout__interaccion {
+  animation: layout-entrada var(--dur-base) var(--ease-out) both;
+}
+.layout__titulo {
+  animation-delay: var(--stagger);
+}
+.layout__cuerpo {
+  animation-delay: calc(var(--stagger) * 2);
+}
+.layout__media,
+.layout__figura {
+  animation-delay: calc(var(--stagger) * 3);
+}
+.layout__interaccion {
+  animation-delay: calc(var(--stagger) * 4);
+}
