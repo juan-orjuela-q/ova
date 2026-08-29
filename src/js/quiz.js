@@ -57,12 +57,12 @@
    Si una revisión futura lo pide, es tarea aparte.
 
    ---------------------------------------------------------------------
-   T8 — interacciones insignia (I09–I12). CLAUDE.md/PLAN.md piden cuatro
-   sesiones separadas, en orden I10 → I11 → I09 → I12; van dos (I10, I11).
-   No hay archivo dedicado a I09–I12 en la Estructura de CLAUDE.md, y
-   router.js ya solo conoce un punto de entrada para cualquier
-   `interaccion` (crearInteraccion → OVA.quiz.crear) — así que estas
-   cuatro viven aquí también, no en un archivo nuevo.
+   T8 — interacciones insignia (I09–I12). CLAUDE.md/PLAN.md pidieron
+   cuatro sesiones separadas, en orden I10 → I11 → I09 → I12; las cuatro
+   están hechas. No hay archivo dedicado a I09–I12 en la Estructura de
+   CLAUDE.md, y router.js ya solo conoce un punto de entrada para
+   cualquier `interaccion` (crearInteraccion → OVA.quiz.crear) — así que
+   estas cuatro viven aquí también, no en un archivo nuevo.
 
    A diferencia de I01–I08, una interacción insignia NO es una pregunta
    con intentos/Comprobar/Reintentar: es un widget exploratorio con su
@@ -151,6 +151,67 @@
          objeto compatible con reportarSCORM() (tipoScorm 'other',
          sin correct_responses) y puede reenviarse cuantas veces se
          quiera tras ajustar los sliders.
+
+     I09 linea_tiempo_ordenable { enunciado?, operacion?, eventos:[{id,texto}], ordenCorrecto:[id…] }
+       - Base de C1 (cápsula de "los tres mercados"). `eventos` llega en
+         un orden que NO es el correcto —el contenido decide el
+         desorden inicial, igual que `pasos`/`orden` en I05 (T6)—;
+         `ordenCorrecto` es la secuencia cronológica real.
+       - Reusa `.linea-tiempo` (T1.5/T7) para el armazón visual (nodo +
+         contenido), siempre en su variante vertical: la horizontal
+         (`--horizontal`, T7) se diseñó para un diagrama de solo
+         lectura con texto centrado, no para filas con controles de
+         reordenar — mezclar los dos habría exigido pelear contra ese
+         layout en vez de reusarlo limpio.
+       - La alternativa de teclado al arrastre, explícita en PLAN.md,
+         son dos .boton-icono reales por paso ("Mover antes"/"Mover
+         después", texto en .u-oculto-visualmente, mismo patrón que el
+         botón del drawer en index.html) que intercambian el paso con
+         su vecino inmediato — sin arrastre, sin manejador de tecla a
+         mano, el navegador ya resuelve foco y activación de un
+         <button>. El arrastre nativo (draggable, dragstart/dragover/
+         drop) es una mejora progresiva solo de mouse sobre el mismo
+         estado; ambos caminos llaman a la misma función de reordenar.
+         Cada movimiento se anuncia con OVA.a11y.anunciar() (la región
+         compartida de a11y.js, no una región propia) y el foco vuelve
+         al botón del paso movido en su nueva posición — nunca se
+         pierde tras reordenar.
+       - Única de las cuatro insignia con una respuesta objetivamente
+         correcta o incorrecta (a diferencia del explorador de
+         escenarios de I10/I11): «Comprobar orden» sí evalúa contra
+         ordenCorrecto y reporta el resultado real (correct/wrong, no
+         siempre neutral) vía tipoScorm: 'sequencing' — el mismo mapeo
+         que ya usa I05 para el tipo SCORM, aplicado aquí porque el
+         dato de fondo es el mismo (secuenciar). Sigue sin tocar
+         cmi.core.score: eso es exclusivo de las preguntas gradables
+         I01–I08, ninguna insignia lo toca. No hay bloqueo ni límite de
+         intentos — se puede reordenar y volver a comprobar cuantas
+         veces se quiera, mismo criterio que I10/I11.
+
+     I12 distribucion_capital { enunciado?, categorias:[{id,etiqueta,valorInicial}] }
+       - Base de C3 (junto con I10) — portafolio: reparte un total fijo
+         de 100 % entre categorías (retoma los tres mercados de s01:
+         renta variable, renta fija, derivados). Un <input
+         type="range"> 0–100 por categoría, mismo criterio que I10/I11.
+       - Reusa OVA.charts.crear({tipo:'distribucion', …}) de T7 para la
+         vista viva, en vez de duplicar el SVG de barra apilada: cada
+         input recalcula los segmentos y reemplaza la figura completa.
+         Es la misma barra apilada + leyenda de texto real que ya
+         construyó T7 (charts.js sigue siendo la única fuente de
+         verdad de ese dibujo), ahora alimentada con datos que cambian
+         en vivo en vez de estáticos.
+       - Validación de dominio, mismo patrón que el error de I10 (tasa
+         de descuento ≤ crecimiento): si la suma de las categorías no
+         es exactamente 100, .calc-calculadora__resultado pasa a
+         data-estado="error" (ícono + texto, nunca solo el borde) y
+         «Registrar distribución» se deshabilita mientras dure. Al
+         llegar a 100 el botón se habilita y el resultado muestra el
+         total en su estilo neutro por defecto (data-estado="ok",
+         igual que I10 en su estado válido).
+       - Reporte igual a I10/I11: tipoScorm 'other', sin
+         correct_responses (no hay una única distribución "correcta"
+         en un ejercicio de armar portafolio), reenviable cuantas veces
+         se quiera con la distribución vigente.
    ============================================================ */
 (function () {
   'use strict';
@@ -1043,9 +1104,294 @@
     return raiz;
   }
 
+  /* I09, línea de tiempo ordenable (secuenciar etapas de una operación
+     —repo, TTV—, base de C1). Reusa `.linea-tiempo` (T1.5/T7) para el
+     nodo/contenido de cada paso, siempre en su variante vertical (la
+     `--horizontal` de T7 es de solo lectura, centrada, no pensada para
+     llevar controles). La alternativa de teclado al arrastre que exige
+     PLAN.md son dos `.boton-icono` por paso que intercambian con el
+     vecino inmediato; el arrastre nativo (mouse) llama a la misma
+     función de reordenar. A diferencia de I10/I11 (exploradores de
+     escenario sin "correcta"), aquí sí hay un orden objetivamente
+     correcto: «Comprobar orden» evalúa contra `ordenCorrecto` y
+     reporta correct/wrong de verdad, sin tocar cmi.core.score (eso
+     sigue siendo exclusivo de I01–I08) ni bloquear el widget. */
+  function construirLineaTiempoOrdenable(idBase, idScorm, datos) {
+    var eventos = datos.eventos || [];
+    var ordenCorrecto = datos.ordenCorrecto || [];
+    var textos = {};
+    eventos.forEach(function (evento) { textos[evento.id] = evento.texto; });
+    var orden = eventos.map(function (evento) { return evento.id; });
+
+    var raiz = crear_('div', 'calc-calculadora');
+    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
+    if (datos.operacion) raiz.appendChild(crear_('p', 'tipo-h5', datos.operacion));
+
+    var lista = crear_('ol', 'linea-tiempo calc-linea-tiempo');
+    raiz.appendChild(lista);
+
+    var arrastrado = null;
+
+    function mover(indice, delta) {
+      var destino = indice + delta;
+      if (destino < 0 || destino >= orden.length) return;
+      var id = orden.splice(indice, 1)[0];
+      orden.splice(destino, 0, id);
+      renderizar();
+      OVA.a11y.anunciar('"' + textos[id] + '" ahora en la posición ' + (destino + 1) + ' de ' + orden.length + '.');
+      var pasoNuevo = lista.children[destino];
+      var botones = pasoNuevo.querySelectorAll('.boton-icono');
+      var preferido = delta < 0 ? botones[0] : botones[1];
+      if (preferido && !preferido.disabled) preferido.focus();
+      else if (botones[0] && !botones[0].disabled) botones[0].focus();
+      else if (botones[1]) botones[1].focus();
+    }
+
+    function renderizar() {
+      lista.textContent = '';
+      orden.forEach(function (id, i) {
+        var li = crear_('li', 'linea-tiempo__paso calc-linea-tiempo__paso');
+        li.draggable = true;
+
+        var nodo = crear_('span', 'linea-tiempo__nodo', String(i + 1));
+        nodo.setAttribute('aria-hidden', 'true');
+        li.appendChild(nodo);
+
+        var contenido = crear_('div', 'linea-tiempo__contenido');
+        contenido.appendChild(crear_('p', 'tipo-cuerpo-sm', textos[id]));
+        li.appendChild(contenido);
+
+        var controles = crear_('div', 'calc-linea-tiempo__controles');
+
+        var antes = crear_('button', 'boton-icono');
+        antes.type = 'button';
+        var iconoAntes = crear_('span', 'icono', 'arrow_upward');
+        iconoAntes.setAttribute('aria-hidden', 'true');
+        antes.appendChild(iconoAntes);
+        antes.appendChild(crear_('span', 'u-oculto-visualmente', 'Mover "' + textos[id] + '" antes'));
+        antes.disabled = i === 0;
+        (function (indice) { antes.addEventListener('click', function () { mover(indice, -1); }); })(i);
+
+        var despues = crear_('button', 'boton-icono');
+        despues.type = 'button';
+        var iconoDespues = crear_('span', 'icono', 'arrow_downward');
+        iconoDespues.setAttribute('aria-hidden', 'true');
+        despues.appendChild(iconoDespues);
+        despues.appendChild(crear_('span', 'u-oculto-visualmente', 'Mover "' + textos[id] + '" después'));
+        despues.disabled = i === orden.length - 1;
+        (function (indice) { despues.addEventListener('click', function () { mover(indice, 1); }); })(i);
+
+        controles.appendChild(antes);
+        controles.appendChild(despues);
+        li.appendChild(controles);
+
+        (function (indice) {
+          li.addEventListener('dragstart', function () { arrastrado = indice; });
+          li.addEventListener('dragover', function (evento) { evento.preventDefault(); });
+          li.addEventListener('drop', function (evento) {
+            evento.preventDefault();
+            if (arrastrado === null || arrastrado === indice) return;
+            mover(arrastrado, indice - arrastrado);
+            arrastrado = null;
+          });
+        })(i);
+
+        lista.appendChild(li);
+      });
+    }
+
+    renderizar();
+
+    var acciones = crear_('div', 'calc-acciones');
+    var botonComprobar = crear_('button', 'boton', 'Comprobar orden');
+    botonComprobar.type = 'button';
+    acciones.appendChild(botonComprobar);
+    raiz.appendChild(acciones);
+
+    var resultado = crear_('div', 'calc-calculadora__resultado');
+    resultado.hidden = true;
+    var resultadoIcono = crear_('span', 'icono calc-calculadora__resultado-icono');
+    resultadoIcono.setAttribute('aria-hidden', 'true');
+    var resultadoTexto = crear_('div', 'calc-calculadora__resultado-texto');
+    var resultadoValor = document.createElement('output');
+    resultadoValor.className = 'tipo-h5 calc-calculadora__resultado-valor';
+    resultadoTexto.appendChild(resultadoValor);
+    resultado.appendChild(resultadoIcono);
+    resultado.appendChild(resultadoTexto);
+    raiz.appendChild(resultado);
+
+    var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
+    resumen.setAttribute('role', 'status');
+    raiz.appendChild(resumen);
+
+    function ordenIgual(a, b) {
+      if (a.length !== b.length) return false;
+      for (var i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+      }
+      return true;
+    }
+
+    function comprobar() {
+      var correcto = ordenIgual(orden, ordenCorrecto);
+      resultado.hidden = false;
+      resultado.dataset.estado = correcto ? 'correcto' : 'incorrecto';
+      resultadoIcono.textContent = correcto ? 'check_circle' : 'cancel';
+      resultadoValor.textContent = correcto
+        ? 'El orden es correcto.'
+        : 'Todavía no es el orden correcto — sigue ajustando con los botones o arrastrando.';
+      var pregunta = {
+        idScorm: idScorm,
+        tipoScorm: 'sequencing',
+        textoRespuesta: function () { return orden.join(','); },
+        textoCorrecta: function () { return ordenCorrecto.join(','); }
+      };
+      reportarSCORM(pregunta, correcto ? 'correcto' : 'incorrecto');
+      resumen.textContent = correcto
+        ? 'Resultado registrado: orden correcto.'
+        : 'Resultado registrado: orden incorrecto. Puedes seguir intentando.';
+    }
+
+    botonComprobar.addEventListener('click', comprobar);
+
+    return raiz;
+  }
+
+  /* I12, distribución de capital (armar un portafolio, base de C3 junto
+     con I10). Reusa OVA.charts.crear({tipo:'distribucion'}) de T7 para
+     la barra apilada en vivo en vez de duplicar ese SVG — cada slider
+     recalcula los segmentos y reemplaza la figura completa. Validación
+     de dominio con el mismo patrón que el error de I10: la suma debe
+     ser exactamente 100, si no lo es el resultado pasa a
+     data-estado="error" y el registro se deshabilita mientras dure. */
+  function construirDistribucionCapital(idBase, idScorm, datos) {
+    var categorias = datos.categorias || [];
+    var TOTAL_OBJETIVO = 100;
+
+    var raiz = crear_('div', 'calc-calculadora');
+    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
+
+    var campos = crear_('div', 'calc-calculadora__entradas');
+    raiz.appendChild(campos);
+
+    var controles = {};
+    categorias.forEach(function (cat) {
+      var controlId = idBase + '-dist-' + cat.id;
+      var valorId = controlId + '-valor';
+
+      var campo = crear_('div', 'calc-campo');
+      var cabecera = crear_('div', 'calc-campo__cabecera');
+      var etiqueta = crear_('label', 'calc-campo__etiqueta', cat.etiqueta);
+      etiqueta.setAttribute('for', controlId);
+      var valor = document.createElement('output');
+      valor.className = 'calc-campo__valor';
+      valor.id = valorId;
+      valor.setAttribute('for', controlId);
+      cabecera.appendChild(etiqueta);
+      cabecera.appendChild(valor);
+      campo.appendChild(cabecera);
+
+      var control = document.createElement('input');
+      control.type = 'range';
+      control.id = controlId;
+      control.min = '0';
+      control.max = '100';
+      control.step = '1';
+      control.value = String(cat.valorInicial != null ? cat.valorInicial : 0);
+      control.className = 'calc-campo__control';
+      control.setAttribute('aria-describedby', valorId);
+      campo.appendChild(control);
+      campos.appendChild(campo);
+
+      controles[cat.id] = { input: control, output: valor, etiqueta: cat.etiqueta };
+    });
+
+    var vista = crear_('div', 'calc-calculadora__vista');
+    raiz.appendChild(vista);
+
+    var resultado = crear_('div', 'calc-calculadora__resultado');
+    var resultadoIcono = crear_('span', 'icono calc-calculadora__resultado-icono');
+    resultadoIcono.setAttribute('aria-hidden', 'true');
+    var resultadoTexto = crear_('div', 'calc-calculadora__resultado-texto');
+    var resultadoEtiqueta = crear_('p', 'calc-calculadora__resultado-etiqueta');
+    var resultadoValor = document.createElement('output');
+    resultadoValor.className = 'tipo-h5 calc-calculadora__resultado-valor';
+    resultadoTexto.appendChild(resultadoEtiqueta);
+    resultadoTexto.appendChild(resultadoValor);
+    resultado.appendChild(resultadoIcono);
+    resultado.appendChild(resultadoTexto);
+    raiz.appendChild(resultado);
+
+    var acciones = crear_('div', 'calc-acciones');
+    var botonRegistrar = crear_('button', 'boton', 'Registrar distribución');
+    botonRegistrar.type = 'button';
+    acciones.appendChild(botonRegistrar);
+    raiz.appendChild(acciones);
+
+    var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
+    resumen.setAttribute('role', 'status');
+    raiz.appendChild(resumen);
+
+    var totalValido = false;
+
+    function recalcular() {
+      var total = 0;
+      var segmentos = [];
+      Object.keys(controles).forEach(function (id) {
+        var c = controles[id];
+        var v = parseFloat(c.input.value);
+        c.output.textContent = formatearNumero(v, 0) + ' %';
+        total += v;
+        segmentos.push({ etiqueta: c.etiqueta, valor: v });
+      });
+
+      vista.textContent = '';
+      vista.appendChild(OVA.charts.crear({ tipo: 'distribucion', segmentos: segmentos }));
+
+      totalValido = total === TOTAL_OBJETIVO;
+      resultadoValor.textContent = formatearNumero(total, 0) + ' %';
+      if (totalValido) {
+        resultado.dataset.estado = 'ok';
+        resultadoIcono.textContent = 'check_circle';
+        resultadoEtiqueta.textContent = 'Total asignado';
+      } else {
+        resultado.dataset.estado = 'error';
+        resultadoIcono.textContent = 'error';
+        resultadoEtiqueta.textContent = 'Debes asignar exactamente ' + TOTAL_OBJETIVO + ' % en total';
+      }
+      botonRegistrar.disabled = !totalValido;
+    }
+
+    Object.keys(controles).forEach(function (id) {
+      controles[id].input.addEventListener('input', recalcular);
+    });
+    recalcular();
+
+    function registrar() {
+      if (!totalValido) return;
+      var pregunta = {
+        idScorm: idScorm,
+        tipoScorm: 'other',
+        textoRespuesta: function () {
+          return Object.keys(controles).map(function (id) { return id + '=' + controles[id].input.value; }).join(',');
+        },
+        textoCorrecta: function () { return null; }
+      };
+      reportarSCORM(pregunta, 'neutral');
+      resumen.textContent = 'Distribución registrada: ' + TOTAL_OBJETIVO + ' % asignado entre ' +
+        Object.keys(controles).length + ' categorías.';
+    }
+
+    botonRegistrar.addEventListener('click', registrar);
+
+    return raiz;
+  }
+
   var CONSTRUCTORES_INSIGNIA = {
+    I09: construirLineaTiempoOrdenable,
     I10: construirCalculadoraParametrica,
-    I11: construirBoletaCompra
+    I11: construirBoletaCompra,
+    I12: construirDistribucionCapital
   };
 
   var CONSTRUCTORES = {
@@ -1084,7 +1430,7 @@
 
     var constructor = CONSTRUCTORES[interaccion.tipo];
     if (!constructor) {
-      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I08, I10 ni I11.');
+      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I08 ni I09–I12.');
     }
     var pregunta = constructor(idBase, idScorm, datos);
 

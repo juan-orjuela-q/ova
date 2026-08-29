@@ -1631,10 +1631,8 @@ a.cap-tarjeta:hover {
 }
 
 /* ============================================================
-   T8 — Interacciones insignia. Familia `.calc-`.
-
-   I10, calculadora paramétrica (la primera de las cuatro: I10 → I11 →
-   I09 → I12, orden de PLAN.md). No reutiliza `.quiz-` a propósito —
+   T8 — Interacciones insignia. Familia `.calc-`, las cuatro (I10 → I11
+   → I09 → I12, orden de PLAN.md). No reutiliza `.quiz-` a propósito —
    es una familia de componente distinta aunque comparta el mismo
    punto de entrada en JS (OVA.quiz.crear), ver quiz.js.
    ============================================================ */
@@ -1708,12 +1706,22 @@ a.cap-tarjeta:hover {
    de un estado (regla dura de CLAUDE.md) — el ícono cambia (insights →
    error) y el texto pasa de un número a la explicación, no solo el
    borde/color. */
-.calc-calculadora__resultado[data-estado="error"] {
+.calc-calculadora__resultado[data-estado="error"],
+.calc-calculadora__resultado[data-estado="incorrecto"] {
   border-inline-start-color: var(--nuam-red-500);
 }
-.calc-calculadora__resultado[data-estado="error"] .calc-calculadora__resultado-icono {
+.calc-calculadora__resultado[data-estado="error"] .calc-calculadora__resultado-icono,
+.calc-calculadora__resultado[data-estado="incorrecto"] .calc-calculadora__resultado-icono {
   color: var(--nuam-red-500);
 }
+.calc-calculadora__resultado[data-estado="incorrecto"] .calc-calculadora__resultado-valor {
+  color: var(--nuam-red-700);
+}
+/* El error de dominio de I10 es una explicación larga en vez de una
+   cifra corta (su .resultado-valor por defecto es tipo-display-2): baja
+   a text-body para esa oración. I09 ("incorrecto", arriba) ya monta su
+   resultado-valor en tipo-h5 como una oración desde el origen, así que
+   no necesita este ajuste de tamaño — solo el color se comparte. */
 .calc-calculadora__resultado[data-estado="error"] .calc-calculadora__resultado-valor {
   font: var(--text-body);
   color: var(--nuam-red-700);
@@ -1768,12 +1776,34 @@ a.cap-tarjeta:hover {
    .quiz-retro[data-estado="correcto"]. "pendiente" no tiene regla
    propia a propósito: no es un error, así que usa el estilo neutro por
    defecto de .calc-calculadora__resultado (ver la nota en quiz.js). */
-.calc-calculadora__resultado[data-estado="ejecutada"] {
+.calc-calculadora__resultado[data-estado="ejecutada"],
+.calc-calculadora__resultado[data-estado="correcto"] {
   border-inline-start-color: var(--nuam-green-500);
 }
-.calc-calculadora__resultado[data-estado="ejecutada"] .calc-calculadora__resultado-icono {
+.calc-calculadora__resultado[data-estado="ejecutada"] .calc-calculadora__resultado-icono,
+.calc-calculadora__resultado[data-estado="correcto"] .calc-calculadora__resultado-icono {
   color: var(--nuam-green-500);
 }
-.calc-calculadora__resultado[data-estado="ejecutada"] .calc-calculadora__resultado-valor {
+.calc-calculadora__resultado[data-estado="ejecutada"] .calc-calculadora__resultado-valor,
+.calc-calculadora__resultado[data-estado="correcto"] .calc-calculadora__resultado-valor {
   color: var(--nuam-green-700);
+}
+
+/* ---- Línea de tiempo ordenable (I09) ------------------------------
+   Reusa `.linea-tiempo` (T1.5/T7) tal cual, siempre en su variante
+   vertical — la `--horizontal` es de solo lectura y centra el texto,
+   pensada para el diagrama de proceso de T7, no para filas con
+   controles de reordenar. El número de nodo sigue aria-hidden: el
+   orden real del <ol> ya se anuncia solo a quien navega por lista. */
+.calc-linea-tiempo__paso {
+  align-items: center;
+}
+.calc-linea-tiempo__paso .linea-tiempo__contenido {
+  flex: 1 1 auto;
+  padding-block-start: 0;
+}
+.calc-linea-tiempo__controles {
+  display: flex;
+  gap: var(--sp-1);
+  flex-shrink: 0;
 }

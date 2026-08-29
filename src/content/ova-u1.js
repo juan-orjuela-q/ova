@@ -62,6 +62,19 @@
    de mercado primario de Petrocaribe ($1.000) para que el estudiante
    decida entre una orden a mercado o una orden límite y explore cuándo
    una orden límite se ejecuta y cuándo queda pendiente.
+
+   T8 cierra con s13 (L10 + interacción I09, línea de tiempo ordenable)
+   y s14 (L10 + interacción I12, distribución de capital) — la tercera
+   y cuarta de las cuatro interacciones insignia, con lo que T8 queda
+   completa. s13 retoma la cápsula 1 (los tres mercados de s01) con las
+   etapas de una operación repo, en un orden deliberadamente revuelto
+   para que el estudiante las reordene; el orden correcto vive en
+   `ordenCorrecto`, documentado junto al resto del catálogo I09–I12 en
+   el encabezado de quiz.js. s14 retoma esos mismos tres mercados
+   (renta variable, renta fija, derivados) como las categorías de un
+   portafolio que el estudiante arma repartiendo 100 % entre ellas —
+   reusa OVA.charts.crear({tipo:'distribucion'}) de T7 para la vista
+   viva en vez de un gráfico nuevo.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -262,6 +275,47 @@ window.OVA_CONTENIDO = {
           "enunciado": "Vas a comprar acciones de Petrocaribe. Elige el tipo de orden y ajusta los precios para ver cuándo se ejecutaría tu boleta.",
           "mercado": { "etiqueta": "Precio de mercado (simulado)", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 1000 },
           "limite": { "etiqueta": "Tu precio límite de compra", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 950 }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s13",
+      "layout": "L10",
+      "titulo": "Ordena una operación repo",
+      "kicker": "Unidad 1 · Cápsula 1",
+      "interaccion": {
+        "tipo": "I09",
+        "datos": {
+          "id": "u1-p4-orden-repo",
+          "enunciado": "Ordena las etapas de una operación repo, desde el pacto inicial hasta el cierre.",
+          "operacion": "Operación repo",
+          "eventos": [
+            { "id": "vencimiento", "texto": "Al vencimiento, el originador recompra el título pagando el monto inicial más intereses (pata final)." },
+            { "id": "pacto", "texto": "Las partes pactan el título, el plazo y la tasa de la operación repo." },
+            { "id": "uso", "texto": "Durante el plazo, el receptor puede usar el título como si fuera propio." },
+            { "id": "transferencia", "texto": "El originador transfiere el título y recibe el dinero pactado (pata inicial)." }
+          ],
+          "ordenCorrecto": ["pacto", "transferencia", "uso", "vencimiento"]
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s14",
+      "layout": "L10",
+      "titulo": "Arma tu portafolio",
+      "kicker": "Unidad 1 · Cápsula 3",
+      "interaccion": {
+        "tipo": "I12",
+        "datos": {
+          "id": "u1-p5-distribucion-portafolio",
+          "enunciado": "Ajusta el porcentaje que destinarías a cada uno de los tres mercados de BVC hasta que la suma llegue a 100 %.",
+          "categorias": [
+            { "id": "rentaVariable", "etiqueta": "Renta variable", "valorInicial": 40 },
+            { "id": "rentaFija", "etiqueta": "Renta fija", "valorInicial": 45 },
+            { "id": "derivados", "etiqueta": "Derivados", "valorInicial": 15 }
+          ]
         }
       },
       "progreso": true

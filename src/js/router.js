@@ -20,7 +20,7 @@
    usaba su JSON de prueba); T4 agrega L03 y L04, los dos únicos con
    columna de media; T6 agrega L10, el único con columna de
    interacción (delega en OVA.quiz.crear, catálogo I01–I08 — ver
-   quiz.js; T8 agrega I10/I11 por el mismo punto de entrada); T7 agrega L09 (columna de datos obligatoria, diagrama de
+   quiz.js; T8 agrega I09–I12 por el mismo punto de entrada); T7 agrega L09 (columna de datos obligatoria, diagrama de
    proceso) y hace "datos" opcional en L02 (delega en OVA.charts.crear,
    catálogo cifra/tabla/variación/línea/barras/distribución/proceso —
    ver charts.js). Cualquier otro código, aunque exista en el catálogo
@@ -95,10 +95,10 @@
 
   // T6: única entrada de layout que renderiza pantalla.interaccion.
   // Delega en OVA.quiz.crear, que falla ruidoso si interaccion.tipo no
-  // existe en el catálogo I01–I08/I10/I11 — mismo criterio que crearMedia
+  // existe en el catálogo I01–I08/I09–I12 — mismo criterio que crearMedia
   // con media.tipo. Sin interaccion en absoluto, también falla: L10 no
-  // tiene sentido sin ella. (T8 agrega I10/I11, las dos primeras de las
-  // cuatro interacciones insignia, por el mismo punto de entrada.)
+  // tiene sentido sin ella. (T8 agrega las cuatro interacciones insignia
+  // I09–I12 por el mismo punto de entrada.)
   function crearInteraccion(interaccion) {
     if (!interaccion) throw new Error('Esta pantalla no trae "interaccion" y su layout lo necesita.');
     var contenedor = document.createElement('div');

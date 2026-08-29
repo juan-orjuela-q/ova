@@ -19,7 +19,7 @@ cambien algo para el futuro. Si una decisión cambia una **regla**, va a
 - [x] **T5 · Componentes de contenido** — completada 29 ago
 - [x] **T6 · Motor de evaluación** — completada 29 ago
 - [x] **T7 · Datos y gráficos** — completada 29 ago
-- [ ] T8 · Interacciones insignia — I10 e I11 hechas (29 ago); faltan I09, I12 (sesiones separadas, ese orden)
+- [x] **T8 · Interacciones insignia** — completada 29 ago (I10/I11 el mismo día, I09/I12 después)
 - [ ] T9 · Empaquetado y auditoría
 
 ---
@@ -1100,6 +1100,125 @@ Chromium real:**
 "Interacciones insignia (T8)", montado con `OVA.quiz.crear()` en su
 propio `<script>` — mismo criterio que I10.
 
+**29 ago — T8 cerrada: I09 e I12, las dos últimas interacciones insignia.
+El usuario pidió explícitamente terminar T8 tras una sesión anterior en la
+que se detuvo el trabajo en vez de saltar a T9 con T8 a la mitad (T9
+necesita el paquete completo, no uno con dos interacciones insignia
+faltantes).**
+
+**I09, línea de tiempo ordenable (Repo/TTV, base de C1) — la única de
+las cuatro con una respuesta objetivamente correcta.** A diferencia de
+I10/I11 (exploradores de escenario sin "correcta"), ordenar
+cronológicamente sí tiene un resultado objetivo, así que «Comprobar
+orden» evalúa contra `ordenCorrecto` y reporta `correct`/`wrong` de
+verdad (tipoScorm `sequencing`, mismo mapeo que I05) — pero sigue sin
+tocar `cmi.core.score` (exclusivo de I01–I08) ni bloquear el widget: se
+puede reordenar y volver a comprobar cuantas veces se quiera, mismo
+criterio que I10/I11. Decisiones de construcción:
+
+- **Reusa `.linea-tiempo` (T1.5/T7) siempre en su variante vertical.**
+  La `--horizontal` de T7 es de solo lectura y centra el texto —pensada
+  para el diagrama de proceso—, no para filas con controles de
+  reordenar; forzarla ahí habría sido pelear contra ese layout en vez
+  de reusarlo limpio.
+- **La alternativa de teclado al arrastre que exige `PLAN.md`, resuelta
+  con controles reales, no con un manejador de tecla escrito a mano.**
+  Cada paso trae dos `.boton-icono` ("Mover antes"/"Mover después",
+  texto en `.u-oculto-visualmente`, mismo patrón que el botón del
+  drawer en `index.html`) que intercambian el paso con su vecino
+  inmediato. El arrastre nativo (`draggable`, dragstart/dragover/drop)
+  es una mejora progresiva de solo mouse sobre la misma función de
+  reordenar — los dos caminos convergen en el mismo código, verificado
+  con Playwright: `dragTo` reordena igual que los botones.
+- **Cada movimiento se anuncia por la región compartida de `a11y.js`
+  (`OVA.a11y.anunciar()`), no una región `role="status"` propia** — y
+  el foco vuelve al botón del paso movido en su nueva posición, nunca
+  se pierde. Esto expuso un hallazgo real: `dev/kitchen-sink.html` no
+  tenía el elemento `#anuncios` que sí existe en `index.html` (nada en
+  la página llamaba antes a `OVA.a11y.anunciar()` fuera del router, así
+  que el hueco no se había notado). Se agregó el mismo `<div id="anuncios"
+  aria-live="polite">` a la kitchen sink — sin él, el anuncio se perdía
+  en silencio (a11y.js no falla, solo no hay nada que rellenar).
+- El número de nodo sigue `aria-hidden`: el orden real del `<ol>` ya se
+  anuncia solo a quien navega por lista, no hace falta duplicarlo.
+
+**I12, distribución de capital (armar un portafolio, base de C3 junto
+con I10) — reusa `OVA.charts.crear({tipo:'distribucion'})` de T7 para
+la vista viva en vez de duplicar el SVG de barra apilada.** Cada
+slider (uno por categoría, retoman los tres mercados de s01: renta
+variable, renta fija, derivados) recalcula los segmentos y reemplaza
+la figura completa — la misma barra apilada + leyenda de texto real
+que ya construyó T7, ahora con datos que cambian en vivo. Validación
+de dominio con el mismo patrón que el error de I10 (tasa de descuento
+≤ crecimiento): si la suma de categorías no es exactamente 100,
+`.calc-calculadora__resultado` pasa a `data-estado="error"` (ícono +
+texto) y «Registrar distribución» se deshabilita mientras dure; al
+llegar a 100 el botón se habilita. Reporte igual a I10/I11: tipoScorm
+`other`, sin `correct_responses` (no hay una única distribución
+"correcta"), reenviable cuantas veces se quiera.
+
+**Generalización, no duplicación, en `components.css`.** Los estados
+verde/rojo de `.calc-calculadora__resultado` que I10 (`error`) e I11
+(`ejecutada`) ya tenían se generalizaron agregando los selectores
+`correcto`/`incorrecto` de I09 a las mismas reglas de color (mismo
+verde-500/700 y rojo-500/700), sin duplicar el bloque completo — solo
+el ajuste de tamaño de fuente del error de dominio de I10 (una
+oración larga sobre un `.resultado-valor` que por defecto es
+`tipo-display-2`) se dejó exclusivo de `error`, porque el
+`resultado-valor` de I09 ya nace en `tipo-h5` como oración y no lo
+necesita.
+
+**Contenido de prueba:** `s13` (L10 + I09, kicker "Cápsula 1") con las
+cuatro etapas de una operación repo en un orden deliberadamente
+revuelto, y `s14` (L10 + I12, kicker "Cápsula 3") con los tres
+mercados de s01 como categorías del portafolio, valores de demo que ya
+suman 100 (40/45/15) para que la pantalla cargue en estado válido.
+
+**Verificado con Playwright (mismo atajo de `NODE_PATH`, Chromium
+real), dos páginas:**
+
+- `dev/kitchen-sink.html`: I09 monta 4 pasos; el primer botón "Mover
+  antes" nace `disabled` (es el primero); mover con teclado (foco real
+  + Enter, sin clic) intercambia el paso correctamente, anuncia por
+  `#anuncios` y devuelve el foco a un `.boton-icono` real, nunca lo
+  pierde; arrastrar y soltar con mouse (`dragTo`) reordena igual;
+  «Comprobar orden» marca `incorrecto` tras revolver y `correcto` con
+  una instancia de prueba en el orden ya correcto, en ambos casos sin
+  deshabilitar el botón (se puede repetir); recorrido de Tab real
+  desde el primer botón habilitado hasta «Comprobar orden» sin
+  paradas fuera de orden. I12 monta 3 sliders, total inicial 100 %,
+  la vista viva dibuja 3 `<rect>`; mover un slider con teclado
+  (`ArrowRight`/`ArrowLeft`, foco real) cambia el total, marca error y
+  deshabilita «Registrar distribución» al salirse de 100, y revierte
+  al volver a 100; recorrido de Tab desde el primer slider alcanza
+  «Registrar distribución». 320 px y zoom de texto 200 % aislados a
+  ambas secciones, sin desborde propio (0 px de diferencia en los
+  cuatro casos); `prefers-reduced-motion` sin errores de consola en
+  toda la página.
+- `src/index.html`, con una API SCORM 1.2 simulada como en T6/T7/T8
+  anteriores: `s13` monta 4 pasos con foco en el `<h2>`; comprobar
+  reporta `cmi.interactions.0.type` `sequencing` con el id correcto y
+  sin tocar `cmi.core.score.raw`. `s14` monta 3 sliders con total
+  inicial 100 %; registrar reporta `cmi.interactions.1.type` `other`
+  con el id correcto. Cero errores de consola en toda la corrida.
+
+**Hallazgo de HTML, no relacionado con T8 en sí pero encontrado al
+tocar esta misma sección — arreglado.** `dev/kitchen-sink.html` tenía
+dos elementos con `id="c-insignia"` (el bloque de insignia de T5 y la
+sección entera de interacciones insignia de T8): un id duplicado hace
+que el navegador resuelva cualquier ancla/selector contra el primero
+que aparece en el documento, así que el link de navegación
+"Interacciones insignia" saltaba al bloque equivocado (el de T5) en
+vez de a T8. Renombrado el contenedor de T8 a `id="c-insignia-t8"` y
+actualizado el link de navegación — los ids internos
+(`c-insignia-i09`…`i12`) ya eran únicos, no se tocaron.
+
+**Kitchen sink:** sección "Interacciones insignia (T8)" ahora dice
+"las cuatro, cableadas reales" en vez de anunciar que faltan I09/I12;
+nuevos bloques `#c-insignia-i09` y `#c-insignia-i12` con la misma
+estructura (etiqueta + intro + marco) que I10/I11, montados en su
+propio `<script>` cada uno, mismo criterio que las dos anteriores.
+
 ## Pendientes y avisos
 
 - El contenido de Jose no bloquea nada hasta T8.
@@ -1185,14 +1304,14 @@ propio `<script>` — mismo criterio que I10.
   condición en `CLAUDE.md`, así que esto no es una regresión de ninguna
   tarea puntual — pero si T9 prueba la combinación sobre la página
   completa, la va a encontrar.
-- **T8 va a la mitad: I10 e I11 hechas.** Faltan, en el orden que fija
-  PLAN.md, I09 (línea de tiempo Repo/TTV, base de C1 — "necesita
-  alternativa de teclado al arrastre", la única de las dos que falta que
-  sí involucra arrastre de verdad, a diferencia de I10/I11 que no lo
-  necesitaron) e I12 (distribución de capital, base de C3, "la primera
-  que se cae si el plan se atrasa"). Las dos siguen el mismo patrón de
-  despacho que dejaron I10/I11 en `quiz.js` (`CONSTRUCTORES_INSIGNIA`),
-  documentado en el encabezado del archivo.
+- **T8 completa: I10, I11, I09 e I12 hechas**, en el orden que fijó
+  PLAN.md. Las cuatro siguen el mismo patrón de despacho en `quiz.js`
+  (`CONSTRUCTORES_INSIGNIA`), documentado en el encabezado del archivo.
+  I09 (Repo/TTV) es la única con arrastre real (nativo, mejora
+  progresiva de mouse) y su alternativa de teclado (dos `.boton-icono`
+  por paso); el contenido de demo de I09/I12 usa Repo y los tres
+  mercados de s01 como relleno — no es el guion final de Jose para
+  las cápsulas C1/C3, igual que el resto del contenido del proyecto.
 - **`cifra`, `tabla`, `linea` y `distribucion` (T7) no se enchufaron al
   router esta sesión** — viven cableados de verdad en la kitchen sink
   (vía `OVA.charts.crear()`, no maqueta) pero ninguna pantalla de

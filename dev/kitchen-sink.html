@@ -230,12 +230,19 @@
        explica el comentario junto al skip link real. -->
   <a href="#ks-cuerpo" class="u-skip-link">Saltar al contenido (demo viva)</a>
 
+  <!-- Región de anuncios de a11y.js (mismo elemento que index.html) —
+       I09 (T8) es el primer componente de esta página que llama a
+       OVA.a11y.anunciar() fuera del router; sin este elemento el
+       anuncio se pierde en silencio (a11y.js no falla, solo no hay
+       nada que rellenar). -->
+  <div id="anuncios" class="u-oculto-visualmente" aria-live="polite" aria-atomic="true"></div>
+
   <nav class="ks-nav" aria-label="Secciones de la kitchen sink">
     <a href="#tipografia">Tipografía</a>
     <a href="#superficies">Superficies</a>
     <a href="#componentes">Componentes</a>
     <a href="#c-datos">Datos y gráficos</a>
-    <a href="#c-insignia">Interacciones insignia</a>
+    <a href="#c-insignia-t8">Interacciones insignia</a>
     <a href="#movimiento">Movimiento</a>
     <a href="#motor">Motor</a>
     <a href="#chrome">Chrome</a>
@@ -913,13 +920,12 @@
         </div>
       </div>
 
-      <div class="ks-layout-bloque" id="c-insignia">
-        <span class="ks-layout-bloque__etiqueta">Interacciones insignia (T8) — I10, cableada real</span>
+      <div class="ks-layout-bloque" id="c-insignia-t8">
+        <span class="ks-layout-bloque__etiqueta">Interacciones insignia (T8) — las cuatro, cableadas reales</span>
         <p class="ks-intro">
-          Primera de las cuatro interacciones insignia de <code>PLAN.md</code>
-          (I10 → I11 → I09 → I12, en ese orden — esta sesión solo construye
-          I10, "la más simple, sirve de patrón"). Se monta con el mismo
-          <code>OVA.quiz.crear()</code> del motor de evaluación de arriba:
+          Las cuatro interacciones insignia de <code>PLAN.md</code>, en el
+          orden que pedía (I10 → I11 → I09 → I12). Todas se montan con el
+          mismo <code>OVA.quiz.crear()</code> del motor de evaluación de arriba:
           router.js no distingue el punto de entrada, solo el tipo. Cada
           entrada es un <code>&lt;input type="range"&gt;</code> nativo — el
           teclado (flechas, Inicio/Fin) viene gratis del navegador, así que
@@ -950,6 +956,35 @@
             mercado por encima: queda pendiente al cargar — baja el precio
             de mercado o sube tu límite para verla ejecutarse. "Pendiente"
             no es un error: usa el estilo neutro, no el rojo.
+          </p>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-insignia-i09">
+          <span class="ks-layout-bloque__etiqueta">I09 · Línea de tiempo ordenable — operación repo</span>
+          <p class="ks-intro">
+            Reusa <code>.linea-tiempo</code> (T1.5/T7) en su variante
+            vertical: cada paso trae dos botones "Mover antes"/"Mover
+            después" — la alternativa de teclado al arrastre que exige
+            <code>PLAN.md</code>, sin manejador de tecla escrito a mano.
+            El arrastre con mouse (nativo, <code>draggable</code>) llama a
+            la misma función de reordenar. Cada movimiento se anuncia por
+            la región compartida de <code>a11y.js</code>. A diferencia de
+            I10/I11, aquí sí hay un orden correcto: «Comprobar orden»
+            evalúa contra <code>ordenCorrecto</code> y reporta
+            correcto/incorrecto de verdad (tipo <code>sequencing</code>),
+            sin tocar <code>cmi.core.score</code> ni bloquear el widget.
+          </p>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-insignia-i12">
+          <span class="ks-layout-bloque__etiqueta">I12 · Distribución de capital — arma un portafolio</span>
+          <p class="ks-intro">
+            Reusa <code>OVA.charts.crear({tipo:'distribucion'})</code> de
+            T7 para la barra apilada en vivo — cada slider recalcula los
+            segmentos y reemplaza la figura completa, sin un SVG nuevo.
+            Si la suma no es exactamente 100 %, el resultado pasa a su
+            estado de error (ícono y texto, mismo patrón que I10) y
+            «Registrar distribución» se deshabilita mientras dure.
           </p>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
@@ -1609,6 +1644,55 @@
           enunciado: 'Vas a comprar acciones de Petrocaribe. Elige el tipo de orden y ajusta los precios para ver cuándo se ejecutaría tu boleta.',
           mercado: { etiqueta: 'Precio de mercado (simulado)', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 1000 },
           limite: { etiqueta: 'Tu precio límite de compra', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 950 }
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+
+  <!-- Interacciones insignia (T8): I09, montada con OVA.quiz.crear() —
+       mismo criterio que I10/I11 de arriba. Mismos datos que s13 en
+       content/ova-u1.js, recorrible de extremo a extremo en
+       src/index.html. -->
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-insignia-i09');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I09',
+        datos: {
+          id: 'u1-p4-orden-repo',
+          enunciado: 'Ordena las etapas de una operación repo, desde el pacto inicial hasta el cierre.',
+          operacion: 'Operación repo',
+          eventos: [
+            { id: 'vencimiento', texto: 'Al vencimiento, el originador recompra el título pagando el monto inicial más intereses (pata final).' },
+            { id: 'pacto', texto: 'Las partes pactan el título, el plazo y la tasa de la operación repo.' },
+            { id: 'uso', texto: 'Durante el plazo, el receptor puede usar el título como si fuera propio.' },
+            { id: 'transferencia', texto: 'El originador transfiere el título y recibe el dinero pactado (pata inicial).' }
+          ],
+          ordenCorrecto: ['pacto', 'transferencia', 'uso', 'vencimiento']
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+
+  <!-- Interacciones insignia (T8): I12, montada con OVA.quiz.crear() —
+       mismo criterio que las tres anteriores. Mismos datos que s14 en
+       content/ova-u1.js, recorrible de extremo a extremo en
+       src/index.html. -->
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-insignia-i12');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I12',
+        datos: {
+          id: 'u1-p5-distribucion-portafolio',
+          enunciado: 'Ajusta el porcentaje que destinarías a cada uno de los tres mercados de BVC hasta que la suma llegue a 100 %.',
+          categorias: [
+            { id: 'rentaVariable', etiqueta: 'Renta variable', valorInicial: 40 },
+            { id: 'rentaFija', etiqueta: 'Renta fija', valorInicial: 45 },
+            { id: 'derivados', etiqueta: 'Derivados', valorInicial: 15 }
+          ]
         }
       });
       if (contenedor && nodo) contenedor.appendChild(nodo);
