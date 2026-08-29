@@ -210,6 +210,15 @@
       max-width: 75rem;
       margin-inline: auto;
     }
+    /* El componente en sí no trae max-width (PLAN.md: "ancho fluido") —
+       lo acota quien lo monta. .layout__media ya lo hace dentro de un
+       layout real; aquí, sin layout de por medio, esta clase cumple ese
+       mismo papel para que las dos tarjetas de demo no se estiren a
+       todo el ancho de .ks-muestras. */
+    .ks-media-marco {
+      max-width: 26rem;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -367,7 +376,7 @@
     <!-- ============================================================ -->
     <section id="componentes" class="ks-seccion" aria-labelledby="componentes-h">
       <h2 id="componentes-h">Componentes</h2>
-      <p class="ks-intro">Átomos y moléculas nuevos de T1.5, antes de aplicarlos a los trece layouts. Los marcados como "maqueta" son solo aspecto y estados — sin cablear, la lógica llega en T2–T4.</p>
+      <p class="ks-intro">Átomos y moléculas del sistema visual. Los marcados como "maqueta" son solo aspecto y estados, sin cablear — barra superior, inferior y drawer (T3) solo se verifican de verdad en <a href="../src/index.html">src/index.html</a>. El reproductor de video (T4) es la excepción: no depende del router, así que abajo está cableado y funcionando de verdad, no simulado.</p>
 
       <div class="ks-layout-bloque" id="c-botones-negro">
         <span class="ks-layout-bloque__etiqueta">Botón — negro (relleno / outline)</span>
@@ -584,31 +593,21 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-media-video">
-        <span class="ks-layout-bloque__etiqueta">Chrome de video (maqueta)</span>
+        <span class="ks-layout-bloque__etiqueta">Reproductor de video (T4, cableado real)</span>
+        <p class="ks-intro">
+          A diferencia del resto de esta sección, esto no es una maqueta: son
+          dos instancias reales de <code>OVA.media.crear()</code>, montadas
+          por el script al final de esta página. Pruébalos con teclado
+          (Tab hasta cada control, flechas en la barra de progreso), dale
+          play a los dos a la vez para confirmar que el segundo pausa al
+          primero, y abre «Ver transcripción» en el de la izquierda. El de
+          la derecha no trae <code>vtt</code> en sus datos, a propósito: el
+          botón CC directamente no se construye, en vez de aparecer y no
+          hacer nada.
+        </p>
         <div class="ks-layout-marco ks-muestras">
-          <div class="media-video">
-            <div class="media-video__marcador">Video · Unidad 1, cápsula 1<br />(marcador — reproductor real en T4)</div>
-            <div class="media-video__controles">
-              <button class="media-video__play icono" type="button" aria-label="Reproducir">play_arrow</button>
-              <div class="media-video__scrubber"><span class="media-video__scrubber__relleno" style="width: 30%"></span></div>
-              <span class="media-video__tiempo">00:42 / 03:10</span>
-              <button class="media-video__velocidad" type="button">1×</button>
-              <button class="media-video__cc" type="button" aria-pressed="true">CC</button>
-              <button class="media-video__pantalla-completa icono" type="button" aria-label="Pantalla completa">fullscreen</button>
-            </div>
-          </div>
-
-          <div class="media-video">
-            <div class="media-video__marcador">Video · Unidad 1, cápsula 2<br />(marcador — reproductor real en T4)</div>
-            <div class="media-video__controles">
-              <button class="media-video__play icono" type="button" aria-label="Reproducir">play_arrow</button>
-              <div class="media-video__scrubber"><span class="media-video__scrubber__relleno" style="width: 60%"></span></div>
-              <span class="media-video__tiempo">01:54 / 03:10</span>
-              <button class="media-video__velocidad" type="button">1×</button>
-              <button class="media-video__cc" type="button" aria-pressed="false">CC</button>
-              <button class="media-video__pantalla-completa icono" type="button" aria-label="Pantalla completa">fullscreen</button>
-            </div>
-          </div>
+          <div class="ks-media-marco" id="c-media-video-a"></div>
+          <div class="ks-media-marco" id="c-media-video-b"></div>
         </div>
       </div>
 
@@ -795,7 +794,7 @@
             <div class="layout__cuerpo">
               <p class="tipo-cuerpo">Una acción es un título valor participativo que representa un porcentaje mínimo de propiedad de una empresa. Si adquieres una acción, es como si fueras dueño de una mínima parte de esa compañía.</p>
             </div>
-            <div class="layout__media ks-marcador">Video · Unidad 1, cápsula 1<br />(marcador — reproductor en T4)</div>
+            <div class="layout__media" id="l03-media"></div>
           </div>
         </div>
       </div>
@@ -809,7 +808,7 @@
             <div class="layout__cuerpo">
               <p class="tipo-cuerpo">La empresa Petrocaribe vende cada acción a $1.000 en el mercado primario. Un inversionista compra 500 acciones y, ocho meses después, el precio sube a $1.500 en el mercado secundario.</p>
             </div>
-            <div class="layout__media ks-marcador">Video · Grabación del docente<br />(marcador — reproductor en T4)</div>
+            <div class="layout__media" id="l04-media"></div>
           </div>
         </div>
       </div>
@@ -951,5 +950,61 @@
       </div>
     </section>
   </main>
+
+  <!-- Único script real de la kitchen sink: media.js no depende del
+       router/hash como el resto del motor (T2/T3), así que aquí sí se
+       puede montar una demo viva en vez de una maqueta que finja su
+       comportamiento — mismo criterio que llevó a documentar "Motor" y
+       "Chrome" como texto en vez de HTML falso, aplicado al revés. -->
+  <script src="../src/js/media.js"></script>
+  <script>
+    (function () {
+      function montar(id, datos) {
+        var contenedor = document.getElementById(id);
+        if (!contenedor) return;
+        var reproductor = OVA.media.crear(datos);
+        if (reproductor) contenedor.appendChild(reproductor);
+      }
+
+      var VIDEO_DEMO = '../public/videos/woman_Businesswoman_1920x1010.mp4';
+      var TRANSCRIPCION_DEMO =
+        'Bienvenida a la Academia Virtual nuam.\n' +
+        'Este es un video de relleno para probar subtítulos y transcripción reales.';
+      // Texto WebVTT completo, no una ruta: un <track src="archivo.vtt">
+      // real falla bajo file:// en Chromium (cada documento file:// es su
+      // propio origen único, incluso entre archivos hermanos) —
+      // verificado con Playwright al construir T4. media.js arma el
+      // <track> con un Blob a partir de este texto, igual que ya hace
+      // con la transcripción descargable.
+      var VTT_DEMO =
+        'WEBVTT\n\n' +
+        '00:00:00.000 --> 00:00:01.800\nBienvenida a la Academia Virtual nuam.\n\n' +
+        '00:00:01.800 --> 00:00:03.600\nEste es un video de relleno para probar\n\n' +
+        '00:00:03.600 --> 00:00:05.100\nsubtítulos y transcripción reales.';
+
+      montar('c-media-video-a', {
+        tipo: 'video',
+        src: VIDEO_DEMO,
+        vtt: VTT_DEMO,
+        transcripcion: TRANSCRIPCION_DEMO
+      });
+      // Sin vtt a propósito: demuestra que el botón CC se omite cuando
+      // no hay subtítulos, en vez de quedar visible sin hacer nada.
+      montar('c-media-video-b', { tipo: 'video', src: VIDEO_DEMO });
+
+      montar('l03-media', {
+        tipo: 'video',
+        src: VIDEO_DEMO,
+        vtt: VTT_DEMO,
+        transcripcion: TRANSCRIPCION_DEMO
+      });
+      montar('l04-media', {
+        tipo: 'video',
+        src: VIDEO_DEMO,
+        vtt: VTT_DEMO,
+        transcripcion: TRANSCRIPCION_DEMO
+      });
+    })();
+  </script>
 </body>
 </html>

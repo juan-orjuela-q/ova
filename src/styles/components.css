@@ -620,25 +620,36 @@
   color: var(--text-secondary);
 }
 
-/* ---- Chrome de video (T1.5, componentes — maqueta, sin cablear) -------
-   El botón de CC distingue estado por relleno/borde, no solo por color:
-   activo es relleno, inactivo es outline —además de `aria-pressed`—
-   porque el texto "CC" no cambia entre estados. */
+/* ---- Reproductor de video (T4) -----------------------------------------
+   Cableado real sobre media.js: el <video> no lleva el atributo
+   `controls` nativo — cada control de abajo es un elemento HTML real
+   (button, input[type="range"], details/summary, a[download]), así que
+   la operación por teclado la da el navegador, no un manejador de tecla
+   escrito a mano. El botón de CC distingue estado por relleno/borde, no
+   solo por color: activo es relleno, inactivo es outline —además de
+   `aria-pressed`— porque el texto "CC" no cambia entre estados.
+
+   Sin max-width propio a propósito: PLAN.md pide "caja aspect-ratio
+   16/9 de ancho fluido" — el ancho lo decide el contenedor
+   (.layout__media en L03/L04, o un marco de demo en la kitchen sink),
+   nunca el componente. */
 .media-video {
   border-radius: var(--r-lg);
   overflow: hidden;
   background: var(--surface-inverse);
-  max-width: 34rem;
 }
-.media-video__marcador {
+.media-video__lienzo {
   aspect-ratio: 16 / 9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-on-inverse-2);
-  font: var(--text-body-sm);
-  text-align: center;
-  padding: var(--sp-4);
+  background: var(--nuam-grey-950);
+  overflow: hidden;
+}
+.media-video__elemento {
+  width: 100%;
+  height: 100%;
+  /* contain, no cover: recortar la imagen del docente/gráfico real de
+     Jose no es aceptable solo para llenar el marco — el letterboxing
+     sobre el mismo negro de .media-video__lienzo es invisible. */
+  object-fit: contain;
 }
 .media-video__controles {
   display: flex;
@@ -656,19 +667,16 @@
 .media-video__play:hover {
   opacity: 0.7;
 }
+/* input[type="range"] nativo, no un div a medida: el teclado (flechas,
+   Inicio/Fin, RePág/AvPág) y el rol de slider para lectores de pantalla
+   vienen gratis del navegador — reimplementarlos a mano es la clase de
+   pieza que se rompe en silencio. accent-color pinta el track/thumb sin
+   tocar la apariencia nativa por navegador (single-purpose, sin hex). */
 .media-video__scrubber {
   flex: 1;
-  height: 4px;
-  border-radius: var(--r-pill);
-  background: var(--nuam-grey-700);
-  position: relative;
-}
-.media-video__scrubber__relleno {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  border-radius: inherit;
-  background: var(--nuam-orange-300);
+  min-width: 0;
+  accent-color: var(--nuam-orange-500);
+  cursor: pointer;
 }
 .media-video__tiempo {
   font: var(--text-caption);
@@ -716,6 +724,51 @@
 }
 .media-video__pantalla-completa:hover {
   opacity: 0.7;
+}
+
+/* Transcripción del video (T4): visible al abrir el <details> y
+   descargable como .txt real (media.js arma un Blob y lo cuelga de un
+   <a download>, sin red). Vive dentro de la misma tarjeta oscura que el
+   video —por eso los tokens son "sobre inverse" (naranja 300, no 700:
+   la regla de CLAUDE.md de usar 700 es para texto sobre superficie
+   clara)—, no la superficie clara del disclosure de audio. */
+.media-video__transcripcion {
+  padding: 0 var(--sp-4) var(--sp-4);
+}
+.media-video__transcripcion summary {
+  font: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--text-on-inverse);
+  cursor: pointer;
+  width: fit-content;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.media-video__transcripcion summary:hover {
+  color: var(--nuam-orange-300);
+}
+.media-video__transcripcion[open] summary {
+  margin-block-end: var(--sp-3);
+}
+.media-video__transcripcion-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.media-video__transcripcion-cuerpo p {
+  color: var(--text-on-inverse-2);
+}
+.media-video__transcripcion-descarga {
+  color: var(--nuam-orange-300);
+  width: fit-content;
+}
+/* El :hover/:active genéricos de base.css asumen texto sobre claro
+   (naranja 600/700); aquí el fondo es --surface-inverse, así que se
+   pisan a propósito con la pareja de naranjas pensada para inverse. */
+.media-video__transcripcion-descarga:hover {
+  color: var(--nuam-orange-200);
+}
+.media-video__transcripcion-descarga:active {
+  color: var(--nuam-orange-300);
 }
 
 /* ---- Línea de tiempo conectada (T1.5, componentes) --------------------

@@ -16,15 +16,15 @@
    sepa resolver rutas — imprescindible para abrir desde file:// y
    para un paquete SCORM que no tiene servidor propio.
 
-   Catálogo de layouts: esta sesión solo implementa L02, L05, L06 y
-   L11 —los que usa el JSON de prueba de T2—. Cualquier otro código,
-   aunque exista en el catálogo L01–L13 de CLAUDE.md, todavía no
-   tiene plantilla aquí y cae por la misma rama de fallo ruidoso que
-   un código inventado: cada tarea futura (T3+) que dependa de un
-   layout nuevo agrega su entrada a PLANTILLAS, nunca reinterpreta
-   esta función. El mismo patrón aplica cuando media.js/quiz.js
-   agreguen interacción — no existe todavía porque el JSON de prueba
-   no la usa.
+   Catálogo de layouts: T2 implementó L02, L05, L06 y L11 (los que
+   usaba su JSON de prueba); T4 agrega L03 y L04, los dos únicos con
+   columna de media. Cualquier otro código, aunque exista en el
+   catálogo L01–L13 de CLAUDE.md, todavía no tiene plantilla aquí y
+   cae por la misma rama de fallo ruidoso que un código inventado:
+   cada tarea futura que dependa de un layout nuevo agrega su entrada
+   a PLANTILLAS, nunca reinterpreta esta función. El mismo patrón
+   aplica cuando quiz.js agregue interacción — no existe todavía
+   porque el JSON de prueba no la usa.
 
    Nada de innerHTML con texto del contenido: todo nodo de texto se
    arma con createElement/textContent.
@@ -75,6 +75,21 @@
     return div;
   }
 
+  // T4: única entrada de layout que renderiza pantalla.media. Solo
+  // sabe construir video (OVA.media.crear falla ruidoso para
+  // cualquier otro tipo.tipo); si la pantalla no trae media en
+  // absoluto, cae por fallarPantalla igual que un layout inventado —
+  // L03/L04 no tienen sentido sin su columna de media.
+  function crearMedia(media) {
+    if (!media) throw new Error('Esta pantalla no trae "media" y su layout lo necesita.');
+    var contenedor = document.createElement('div');
+    contenedor.className = 'layout__media';
+    var reproductor = OVA.media.crear(media);
+    if (!reproductor) throw new Error('No se pudo construir el reproductor de media (ver consola).');
+    contenedor.appendChild(reproductor);
+    return contenedor;
+  }
+
   function crearRaiz(modificador) {
     var raiz = document.createElement('div');
     // .layout--transicion es la animación de cambio de pantalla
@@ -92,6 +107,31 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  PLANTILLAS.L03 = function (pantalla) {
+    var raiz = crearRaiz('l03');
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    raiz.appendChild(titulo);
+    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    raiz.appendChild(crearMedia(pantalla.media));
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  PLANTILLAS.L04 = function (pantalla) {
+    // .layout--l04 .layout__media usa order:-1 (layouts.css) para
+    // aparecer primero visualmente; el DOM sigue el orden de lectura
+    // kicker → título → cuerpo → media (mismo criterio que .layout__figura
+    // en L12 — es la jerarquía visual la que decide el orden en pantalla,
+    // no el orden del documento).
+    var raiz = crearRaiz('l04');
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    raiz.appendChild(titulo);
+    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    raiz.appendChild(crearMedia(pantalla.media));
     return { raiz: raiz, titulo: titulo };
   };
 
@@ -156,7 +196,16 @@
     if (!plantilla) {
       return fallarPantalla(pantalla, 'El layout "' + pantalla.layout + '" es válido pero todavía no está implementado en el motor.');
     }
-    var resultado = plantilla(pantalla);
+    // Desde T4 una plantilla puede fallar en tiempo real (media.tipo
+    // inválido, media ausente en un layout que la exige): el mismo
+    // criterio de "nunca renderizar a medias en silencio" aplica aquí,
+    // no solo al layout inexistente.
+    var resultado;
+    try {
+      resultado = plantilla(pantalla);
+    } catch (error) {
+      return fallarPantalla(pantalla, error.message);
+    }
     var app = limpiarApp();
     app.appendChild(resultado.raiz);
     return resultado;

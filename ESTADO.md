@@ -15,7 +15,7 @@ cambien algo para el futuro. Si una decisión cambia una **regla**, va a
 - [x] **T1.5 · Refinamiento visual, movimiento y navegación en maqueta** — completada 28 ago
 - [x] **T2 · Motor** — completada 28 ago
 - [x] **T3 · Chrome del OVA** — completada 28 ago
-- [ ] T4 · Reproductor de media
+- [x] **T4 · Reproductor de media** — completada 29 ago
 - [ ] T5 · Componentes de contenido
 - [ ] T6 · Motor de evaluación
 - [ ] T7 · Datos y gráficos
@@ -368,6 +368,106 @@ falsear con JS aparte lo que depende del router real). El skip link de
 la propia kitchen sink sí es una demo viva y funcional —esa página no
 tiene router con hash propio, así que no choca con nada.
 
+**29 ago — T4 cerrada: reproductor de video real, sobre lo que T1.5 había
+dejado como maqueta, con un bug de arquitectura real encontrado (y resuelto)
+por Playwright antes de dar la tarea por cerrada.**
+
+**Qué se construyó:**
+
+- **`src/js/media.js`** (nuevo) — `window.OVA.media.crear(datos)` construye
+  un `<video>` sin el atributo `controls` nativo: cada control es un
+  elemento HTML real (`button`, `input[type="range"]`, `details`/`summary`,
+  `a[download]`), así que la operación por teclado la da el navegador, no
+  un manejador de tecla escrito a mano. El scrubber es un
+  `input[type="range"]` con `accent-color`, no un slider ARIA armado a
+  mano — mismo razonamiento: Home/Fin/RePág/AvPág/flechas y el rol de
+  slider vienen gratis, reimplementarlos es la pieza que se rompe en
+  silencio. "Un solo reproductor activo a la vez" (PLAN.md) es un registro
+  de instancias a nivel de módulo: cualquier `play` pausa cualquier otro
+  `<video>` que este archivo haya creado en la página, sin importar cuántas
+  instancias haya montadas (la kitchen sink monta cuatro a la vez y las
+  cuatro comparten el registro).
+- **Botón de pantalla completa condicional.** Se construye solo si
+  `document.fullscreenEnabled` es `true`; si el OVA queda embebido en un
+  iframe sin permiso de fullscreen, el botón directamente no aparece —
+  mismo criterio que el indicador de guardado de T3 (nunca un control que
+  siempre va a fallar al pulsarlo).
+- **Botón de CC condicional.** Se construye solo si la pantalla trae `vtt`;
+  sin subtítulos, no hay botón que no haga nada.
+- **Transcripción visible y descargable.** `<details>`/`<summary>` nativo
+  con los párrafos reales en el DOM, más un `<a download>` cuyo `href` es
+  un `Blob` de ese mismo texto (sin red, funciona bajo `file://`).
+- **`router.js`**: `PLANTILLAS.L03` y `PLANTILLAS.L04` (los dos únicos
+  layouts con columna de media), más una `crearMedia()` compartida que
+  delega en `OVA.media.crear` y falla ruidoso si la pantalla no trae
+  `media` o si `media.tipo` no es `"video"` — `montarPantalla()` ahora
+  envuelve la llamada a la plantilla en `try/catch` y cualquier error
+  cae por `fallarPantalla()`, el mismo estado visible de siempre. Antes de
+  T4 ninguna plantilla podía fallar en tiempo real (L02/L05/L06/L11 son
+  puro texto); L03/L04 sí, porque dependen de que el contenido traiga
+  `media` bien formado.
+- **`content/ova-u1.js`**: dos pantallas nuevas, `s05` (L03) y `s06` (L04),
+  con `media` real — para que T4 se verifique de punta a punta en
+  `src/index.html`, no solo en la kitchen sink.
+- **CSS (`components.css`)**: `.media-video` se reescribió sobre la misma
+  familia de clases que T1.5 dejó como maqueta (`.media-video__play`,
+  `__cc`, `__velocidad`, `__pantalla-completa` se mantienen; `__marcador`
+  y `__scrubber__relleno` desaparecen, reemplazados por
+  `.media-video__lienzo`/`__elemento` y el `input[range]` real).
+  **Deliberadamente sin `max-width` propio**: PLAN.md pide "caja
+  aspect-ratio 16/9 de ancho fluido" — el ancho lo decide quien monta el
+  componente (`.layout__media` en L03/L04; en la kitchen sink, una clase
+  de demo `.ks-media-marco` nueva, ajena al componente).
+
+**Bug real encontrado con Playwright, no hipotético — y su arreglo:**
+`<track src="archivo.vtt">` apuntando a un archivo `.vtt` real falla bajo
+`file://` en Chromium ("Unsafe attempt to load URL... 'file:' URLs are
+treated as unique security origins"), incluso para un archivo hermano en
+la misma carpeta — cada documento `file://` es su propio origen único.
+`track.cues.length` se quedaba en 0: los subtítulos nunca se dibujaban,
+aunque el botón CC siguiera alternando `aria-pressed` de forma cosmética.
+Es exactamente el mismo problema que ya forzó a que el contenido general
+se cargue como `.js` y no `.json` + `fetch` (T2) — mismo arreglo: el
+contrato de contenido cambió `media.vtt` de "ruta a un archivo" a "texto
+WebVTT completo" (igual que `media.transcripcion` ya no era una ruta),
+y `media.js` arma el `<track>` con un `Blob` de ese texto en vez de un
+`src` a archivo. `public/videos/demo-cc.vtt` se eliminó (quedaba muerto y
+engañoso: sugería una ruta que ya no se usa). Reverificado con Playwright
+tras el arreglo: cero errores de consola, `track.cues.length === 3` y
+`mode === "showing"` tanto en la kitchen sink como en `src/index.html`.
+
+**Verificado con Playwright, abriendo ambas páginas por `file://`:**
+recorrido de teclado completo en una instancia real de la kitchen sink
+(play → scrubber → velocidad → CC → pantalla completa → transcripción),
+foco visible en cada parada; Enter/Espacio alterna play/pausa; flechas en
+el scrubber (foco) cambian `currentTime`; Enter en CC alterna
+`aria-pressed` y `track.mode` juntos; Enter en velocidad cambia el texto
+visible, el `aria-label` y `playbackRate` juntos (nunca un cambio sin el
+otro — regla dura de `CLAUDE.md`); el enlace de descarga es un `<a>`
+tabulable con `href` `blob:` y `download="transcripcion.txt"`. Reproducir
+una segunda instancia pausa la primera (estado real de `video.paused`, no
+solo visual). El botón CC no existe en absoluto en la instancia sin
+`vtt` (omitido, no deshabilitado). 320px sin scroll horizontal; zoom de
+texto 200% sin romper los controles; `prefers-reduced-motion` colapsa la
+transición de `.media-video__play` al valor reducido de `--dur-fast`.
+`.media-video__lienzo` mide 16:9 real y `.media-video` no fuerza un ancho
+fijo — en la ranura ancha de L04 ocupa el contenedor completo. Fullscreen
+se degrada correctamente dentro de un iframe sin permiso (el botón no se
+construye) y aparece cuando el iframe sí lo permite. En `src/index.html`,
+recorrer hasta s05/s06 con "Siguiente" monta un reproductor real cada vez
+y no deja ningún `<video>` huérfano reproduciendo tras navegar; cero
+errores de consola en toda la corrida. Cero hex nuevo en los archivos
+tocados.
+
+**Kitchen sink:** el bloque "Chrome de video (maqueta)" de T1.5 pasó a
+"Reproductor de video (T4, cableado real)" — a diferencia de "Motor" y
+"Chrome del OVA", esta pieza no depende del router con hash, así que sí
+puede montarse viva en la página (dos instancias reales via
+`OVA.media.crear()`, una con subtítulos y otra sin —para probar que el
+botón CC se omite—, más las dos instancias dentro de L03/L04 en la
+sección de layouts). Es el primer `<script>` real que corre en
+`dev/kitchen-sink.html`.
+
 ## Pendientes y avisos
 
 - El contenido de Jose no bloquea nada hasta T8.
@@ -375,16 +475,28 @@ tiene router con hash propio, así que no choca con nada.
 - L02–L13 no tuvieron la crítica de diseño ni el catálogo de componentes que
   preveía el punto 1 de T1.5 (ver decisión del 28 ago) — quedó descartado,
   no diferido a otra sesión.
-- El motor (T2) solo tiene plantillas de render para L02, L05, L06 y L11.
-  Cualquier tarea que monte una pantalla con otro layout (L01, L03, L04, L07,
-  L08, L09, L10, L12, L13) necesita agregar su entrada a `PLANTILLAS` en
-  `router.js` antes de que esa pantalla renderice — hoy cae en el estado de
-  error visible, a propósito.
+- El motor (T2/T4) solo tiene plantillas de render para L02, L03, L04, L05,
+  L06 y L11. Cualquier tarea que monte una pantalla con otro layout (L01,
+  L07, L08, L09, L10, L12, L13) necesita agregar su entrada a `PLANTILLAS`
+  en `router.js` antes de que esa pantalla renderice — hoy cae en el
+  estado de error visible, a propósito.
 - El botón de reanudar de T3 es una interpretación propia del alcance —
   ver la decisión del 28 ago—, no una especificación literal de
   `PLAN.md`. Confirmar con el usuario si el comportamiento esperado era
   otro.
-- T4/T5 deberían reutilizar lo que T3 dejó genérico en vez de duplicarlo:
+- T5 debería reutilizar lo que T3 dejó genérico en vez de duplicarlo:
   `.boton-icono` (componentes.css) para cualquier botón redondo de solo
   ícono, y `OVA.a11y.elementosFocalizables()`/`ciclarFocoEn()` para el
   foco atrapado del modal de T5 (mismo patrón que el drawer).
+- `OVA.media.crear()` solo sabe renderizar `media.tipo === "video"` —
+  `.media-audio` sigue siendo la maqueta sin cablear de T1.5, porque
+  PLAN.md no pide un reproductor de audio en T4 ("Controles propios sobre
+  `<video>`"). Si en algún momento se necesita audio real, es tarea
+  aparte, no una extensión silenciosa de media.js.
+- El registro de instancias de `media.js` (para "un solo reproductor
+  activo a la vez") no se limpia cuando el router desmonta una pantalla:
+  guarda referencias a `<video>` ya desconectados del DOM indefinidamente.
+  No es un bug funcional hoy (un `<video>` desconectado no reproduce y
+  pausarlo es inofensivo) ni previsiblemente grave para una unidad de
+  pocas pantallas, pero si una unidad crece mucho vale la pena que T9
+  revise si conviene que `router.js` avise a `media.js` al desmontar.

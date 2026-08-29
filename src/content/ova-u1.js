@@ -14,6 +14,21 @@
    layouts ya construidos en T1/T1.5 (L02, L05, L06, L11), sin media
    ni interacción — esas piezas llegan en T4/T5/T6. Relleno tomado
    del guion de «Introducción a la inversión en acciones».
+
+   T4 suma s05/s06 (L03, L04): las dos únicas pantallas con `media`,
+   para ejercitar el reproductor real de extremo a extremo (no solo
+   en la kitchen sink) — navegar hasta ahí en src/index.html reproduce
+   video con subtítulos VTT y transcripción descargable de verdad. El
+   video es el mismo relleno de stock que ya usaba L01 (public/videos/),
+   no el material real de Jose.
+
+   `media.vtt` lleva el TEXTO WebVTT completo, no una ruta de archivo:
+   media.js arma un <track> con un Blob a partir de ese texto. Un
+   <track src="archivo.vtt"> apuntando a un archivo real falla bajo
+   file:// en Chromium ("file:" URLs son cada una su propio origen
+   único, incluso entre archivos hermanos) — verificado con Playwright
+   al construir T4. Mismo motivo por el que este archivo entero es
+   .js y no .json + fetch.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -59,6 +74,38 @@ window.OVA_CONTENIDO = {
       "cuerpo": [
         "Título valor participativo que representa un porcentaje mínimo de propiedad de una empresa. Su titular participa de la rentabilidad del negocio como dueño de una fracción de la compañía."
       ],
+      "progreso": true
+    },
+    {
+      "id": "s05",
+      "layout": "L03",
+      "titulo": "¿Qué es una acción?",
+      "kicker": "Unidad 1 · Video",
+      "cuerpo": [
+        "Una acción es un título valor participativo que representa un porcentaje mínimo de propiedad de una empresa. Si adquieres una acción, es como si fueras dueño de una mínima parte de esa compañía."
+      ],
+      "media": {
+        "tipo": "video",
+        "src": "../public/videos/woman_Businesswoman_1920x1010.mp4",
+        "vtt": "WEBVTT\n\n00:00:00.000 --> 00:00:01.800\nBienvenida a la Academia Virtual nuam.\n\n00:00:01.800 --> 00:00:03.600\nEste es un video de relleno para probar\n\n00:00:03.600 --> 00:00:05.100\nsubtítulos y transcripción reales.",
+        "transcripcion": "Bienvenida a la Academia Virtual nuam.\nEste es un video de relleno para probar subtítulos y transcripción reales."
+      },
+      "progreso": true
+    },
+    {
+      "id": "s06",
+      "layout": "L04",
+      "titulo": "Valorización de una acción",
+      "kicker": "Unidad 1 · Cápsula 2",
+      "cuerpo": [
+        "La empresa Petrocaribe vende cada acción a $1.000 en el mercado primario. Un inversionista compra 500 acciones y, ocho meses después, el precio sube a $1.500 en el mercado secundario."
+      ],
+      "media": {
+        "tipo": "video",
+        "src": "../public/videos/woman_Businesswoman_1920x1010.mp4",
+        "vtt": "WEBVTT\n\n00:00:00.000 --> 00:00:01.800\nBienvenida a la Academia Virtual nuam.\n\n00:00:01.800 --> 00:00:03.600\nEste es un video de relleno para probar\n\n00:00:03.600 --> 00:00:05.100\nsubtítulos y transcripción reales.",
+        "transcripcion": "Bienvenida a la Academia Virtual nuam.\nEste es un video de relleno para probar subtítulos y transcripción reales."
+      },
       "progreso": true
     }
   ]
