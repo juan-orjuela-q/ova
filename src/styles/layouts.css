@@ -399,7 +399,11 @@
 .layout--l12 .layout__figura {
   width: 4rem;
   aspect-ratio: 1;
-  background: var(--surface-subtle-2);
+  /* --surface-subtle, no --surface-subtle-2: cualquier texto/ícono en
+     --text-tertiary encima (la nota de tokens.css es "solo sobre default
+     y subtle") mide 4.41:1 sobre subtle-2, no llega a 4.5:1 — hallazgo de
+     la auditoría axe-core de T9 sobre el marcador de la kitchen sink. */
+  background: var(--surface-subtle);
   border-radius: var(--r-md);
 }
 @media (min-width: 40em) {

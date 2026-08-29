@@ -95,13 +95,14 @@
 
 /* Botón naranja: deliberadamente no existe `.boton--naranja` a secas.
    CLAUDE.md prohíbe el botón naranja pequeño —la etiqueta blanca sobre
-   naranja-500 no cumple contraste bajo 19px/600— así que el relleno
-   naranja solo se define combinado con `.boton--grande`. Aplicar
-   `.boton--naranja` solo deja el botón en su relleno negro por defecto:
-   un error de este tipo falla de forma segura, nunca en silencio con
-   texto blanco ilegible. */
+   naranja-500 no cumple contraste bajo 19px/normal, ni bajo 19px/600
+   (3.48:1, hallazgo de la auditoría axe-core de T9)— así que el
+   relleno naranja solo se define combinado con `.boton--grande`.
+   Aplicar `.boton--naranja` solo deja el botón en su relleno negro por
+   defecto: un error de este tipo falla de forma segura, nunca en
+   silencio con texto blanco ilegible. */
 .boton--grande {
-  font: var(--text-button); /* 600 19px/1 — la talla mínima del naranja */
+  font: var(--text-button); /* 700 19px/1 — la talla mínima del naranja */
 }
 .boton--naranja.boton--grande {
   background: var(--surface-brand);

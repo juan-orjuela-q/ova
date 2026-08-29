@@ -148,6 +148,14 @@
     .ks-superficie--inverse .ks-superficie__regla {
       color: var(--text-on-inverse-2);
     }
+    /* --text-tertiary (el color por defecto de .ks-superficie__regla) trae
+       la nota "solo sobre default y subtle" en tokens.css: sobre muted
+       mide 3.85:1, no llega a 4.5:1 (hallazgo de la auditoría axe-core de
+       T9) — mismo motivo por el que brand/inverse ya traían su propio
+       override arriba. */
+    .ks-superficie--muted .ks-superficie__regla {
+      color: var(--text-primary);
+    }
 
     .ks-layout-bloque {
       margin-block-end: var(--sp-10);
@@ -169,7 +177,11 @@
       align-items: center;
       justify-content: center;
       min-height: 8rem;
-      background: var(--surface-subtle-2);
+      /* --surface-subtle, no --surface-subtle-2: --text-tertiary trae la
+         nota "solo sobre default y subtle" en tokens.css — sobre subtle-2
+         mide 4.41:1, no llega a 4.5:1 (hallazgo de la auditoría axe-core
+         de T9). */
+      background: var(--surface-subtle);
       color: var(--text-tertiary);
       border-radius: var(--r-md);
       text-align: center;
@@ -346,7 +358,7 @@
           <h3>Default</h3>
           <p class="tipo-cuerpo">Cuerpo en texto primario. Los enlaces, como el <a href="#tipografia">glosario del curso</a>, usan naranja 700: es el único naranja legible como texto sobre superficie clara.</p>
           <p class="ks-superficie__regla">Terciario: <span style="color: var(--text-tertiary)">contexto adicional de baja jerarquía.</span></p>
-          <p class="ks-superficie__regla">Deshabilitado (nunca informativo): <span style="color: var(--text-disabled)">campo no disponible.</span></p>
+          <p class="ks-superficie__regla">Deshabilitado (nunca texto informativo — <code>--text-disabled</code> solo va sobre un control real deshabilitado, WCAG lo exime de contraste ahí): <button type="button" class="boton" disabled style="color: var(--text-disabled); background: transparent; border: 1px solid var(--border-default)">Campo no disponible</button></p>
         </div>
 
         <div class="ks-superficie ks-superficie--subtle">
@@ -362,8 +374,8 @@
 
         <div class="ks-superficie ks-superficie--muted">
           <h3>Muted</h3>
-          <p class="tipo-cuerpo">Gris 200: entra en el rango prohibido. Ningún naranja aquí como relleno, borde o icono — no llega a 3:1.</p>
-          <p class="ks-superficie__regla">Secundario: <span style="color: var(--text-secondary)">texto de apoyo sin acentos de marca.</span></p>
+          <p class="tipo-cuerpo">Gris 200: entra en el rango prohibido. Ningún naranja aquí como relleno, borde o icono — no llega a 3:1. Tampoco texto secundario: gris 600 sobre gris 200 mide 3.85:1, no llega a los 4.5:1 de texto normal (hallazgo de la auditoría axe-core de T9) — sobre muted solo va texto primario.</p>
+          <p class="ks-superficie__regla">Primario: <span style="color: var(--text-primary)">texto de apoyo sin acentos de marca.</span></p>
         </div>
 
         <div class="ks-superficie ks-superficie--brand">

@@ -1,0 +1,63 @@
+<?xml version="1.0" standalone="no"?>
+<!--
+  Manifest SCORM 1.2 de la OVA — Unidad 1: contexto sobre el mercado, la
+  bolsa y las acciones (Academia Virtual nuam).
+
+  Un único SCO: src/index.html es el punto de lanzamiento (el motor
+  recorre las catorce pantallas del contenido por su cuenta, con hash
+  routing — Moodle nunca ve una navegación de LMS entre "páginas", ve un
+  solo SCO abierto de principio a fin).
+
+  El <resource> lista cada archivo real de src/ más los assets de
+  public/ que el contenido de prueba referencia hoy (el video de
+  s05/s06). build/package-scorm.sh verifica en cada empaquetado que esta
+  lista coincida exactamente con lo que hay en disco — si alguien agrega
+  un archivo a src/ o a un asset referenciado y se olvida de sumarlo
+  aquí, el empaquetado falla ruidoso en vez de subir a Moodle un paquete
+  incompleto en silencio (mismo criterio que "falla ruidoso en consola"
+  del contrato de contenido en CLAUDE.md).
+-->
+<manifest identifier="com.appicua.nuam.ova-u1-contexto-mercado"
+          version="1"
+          xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                              http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
+                              http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+
+  <organizations default="ORG-OVA-U1">
+    <organization identifier="ORG-OVA-U1">
+      <title>Contexto sobre el mercado, la bolsa y las acciones</title>
+      <item identifier="ITEM-OVA-U1" identifierref="RES-OVA-U1" isvisible="true">
+        <title>Contexto sobre el mercado, la bolsa y las acciones</title>
+      </item>
+    </organization>
+  </organizations>
+
+  <resources>
+    <resource identifier="RES-OVA-U1" type="webcontent" adlcp:scormtype="sco" href="src/index.html">
+      <file href="src/index.html"/>
+      <file href="src/content/ova-u1.js"/>
+      <file href="src/js/a11y.js"/>
+      <file href="src/js/app.js"/>
+      <file href="src/js/charts.js"/>
+      <file href="src/js/media.js"/>
+      <file href="src/js/quiz.js"/>
+      <file href="src/js/router.js"/>
+      <file href="src/js/scorm.js"/>
+      <file href="src/js/state.js"/>
+      <file href="src/js/storage.js"/>
+      <file href="src/styles/base.css"/>
+      <file href="src/styles/components.css"/>
+      <file href="src/styles/layouts.css"/>
+      <file href="src/styles/tokens.css"/>
+      <file href="public/videos/woman_Businesswoman_1920x1010.mp4"/>
+    </resource>
+  </resources>
+</manifest>

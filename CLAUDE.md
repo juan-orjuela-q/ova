@@ -42,7 +42,7 @@ El naranja de marca tiene la luminancia de un gris 450. De ahí sale todo esto:
 - **Ningún naranja sobre superficies del gris 200 al 600.** Ni relleno, ni borde,
   ni icono. No llega ni a 3:1.
 - **No existe el botón naranja pequeño.** La etiqueta blanca sobre naranja solo
-  cumple como texto grande: mínimo 19 px en peso 600.
+  cumple como texto grande: mínimo 19 px en peso 700.
 - **La regla anterior no es solo del botón.** Cualquier componente con texto
   informativo sobre relleno naranja-500 —eyebrow, chip, badge— tiene el mismo
   problema de contraste si el texto es chico. Ahí el naranja va de borde o de

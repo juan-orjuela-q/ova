@@ -20,7 +20,9 @@ cambien algo para el futuro. Si una decisión cambia una **regla**, va a
 - [x] **T6 · Motor de evaluación** — completada 29 ago
 - [x] **T7 · Datos y gráficos** — completada 29 ago
 - [x] **T8 · Interacciones insignia** — completada 29 ago (I10/I11 el mismo día, I09/I12 después)
-- [ ] T9 · Empaquetado y auditoría
+- [ ] T9 · Empaquetado y auditoría — empaquetado y auditoría WCAG completos y
+      verificados 29 ago; falta la prueba real de carga en el Moodle de
+      Pablo (bloqueada en su entorno, no en este)
 
 ---
 
@@ -1222,7 +1224,18 @@ propio `<script>` cada uno, mismo criterio que las dos anteriores.
 ## Pendientes y avisos
 
 - El contenido de Jose no bloquea nada hasta T8.
-- T9 necesita el Moodle de Pablo en pie. Coordinarlo antes del viernes 4.
+- **T9 necesita el Moodle de Pablo en pie para la última prueba real —
+  todo lo demás de T9 ya está hecho y verificado (ver la entrada del 29
+  ago).** Coordinarlo antes del viernes 4: subir `build/out/ova-u1-scorm.zip`
+  y confirmar que Moodle lo reconoce como SCORM 1.2 de un solo SCO y que
+  el libro de calificaciones refleja avance y nota.
+- **Cerrado por decisión explícita del usuario (29 ago): 320px + zoom de
+  texto 200% *simultáneos* queda fuera del alcance del proyecto.** El
+  criterio de cierre sigue siendo el de T1-T8: cada condición verificada
+  por separado. Ver la entrada de T9 del 29 ago para el detalle de por
+  qué se preguntó explícitamente en vez de decidirlo por cuenta propia.
+  Esto reemplaza las dos anotaciones de "pendiente para la auditoría de
+  T9" que dejaron T7 y T8 más abajo en este archivo.
 - L02–L13 no tuvieron la crítica de diseño ni el catálogo de componentes que
   preveía el punto 1 de T1.5 (ver decisión del 28 ago) — quedó descartado,
   no diferido a otra sesión.
@@ -1292,8 +1305,10 @@ propio `<script>` cada uno, mismo criterio que las dos anteriores.
   `cmi.core.score.raw` cargue la nota real, pero si T9 necesita que un
   reporte de LMS externo parsee `correct_responses.pattern` en el formato
   estricto del estándar, hay que revisarlo entonces.
-- **Hallazgo real de T7, no arreglado (fuera de alcance de esta tarea) —
-  para la auditoría de T9.** La kitchen sink completa (T1–T7 a la vez)
+- ~~**Hallazgo real de T7, no arreglado — para la auditoría de T9.**~~
+  — cerrado el 29 ago por decisión explícita del usuario: 320px + zoom
+  200% simultáneos queda fuera de alcance, ver la entrada de T9. Detalle
+  original, sin tocar: La kitchen sink completa (T1–T7 a la vez)
   desborda horizontalmente a 320px **y** zoom de texto 200%
   **simultáneamente** (418px de `scrollWidth` en un viewport de 320px).
   Aislado con Playwright: la sección de T7 no es la causante (sola, no
@@ -1320,3 +1335,161 @@ propio `<script>` cada uno, mismo criterio que las dos anteriores.
   componentes de T5. Si contenido real de Jose necesita alguno antes de
   T9, agregar la pantalla es directo: `PLANTILLAS.L02` ya acepta `datos`
   opcional.
+
+**29 ago — T9 (empaquetado + auditoría): `imsmanifest.xml`,
+`build/package-scorm.sh`, y una auditoría WCAG automatizada con axe-core
+que encontró y corrigió cinco problemas reales de contraste — uno de
+ellos en un componente que sí se muestra al estudiante. Falta la prueba
+real en el Moodle de Pablo, que no está en manos de esta sesión.**
+
+**Empaquetado.** `imsmanifest.xml` (raíz del proyecto) es SCORM 1.2 con
+un solo SCO (`src/index.html`, el motor navega las catorce pantallas
+por hash routing — Moodle nunca ve más de un SCO). `build/package-scorm.sh`
+genera ambas salidas de PLAN.md desde una sola copia de staging:
+
+- `build/out/ova-u1-scorm.zip` — para subir a Moodle.
+- `build/out/standalone/` — carpeta lista para URL directa (entrada
+  `standalone/src/index.html`).
+
+**Verificación de manifiesto contra disco, no solo generación.** Antes
+de empaquetar, el script compara la lista de `<file>` del manifiesto
+con `find src -type f` más los assets de `public/` que el contenido
+referencia hoy (hoy solo el video de s05/s06) y aborta ruidoso si no
+coinciden en cualquier dirección — mismo criterio que "falla ruidoso en
+consola" del contrato de contenido, aplicado al empaquetado: si alguien
+agrega un archivo a `src/` o cambia qué asset de `public/` usa el
+contenido y se olvida de actualizar el manifiesto, no sube a Moodle un
+paquete incompleto en silencio. Probado a propósito: crear un archivo
+suelto en `src/js/` y correr el script aborta con el archivo señalado
+por nombre; borrarlo y volver a correr genera limpio.
+
+**Bug real de empaquetado, encontrado por esta sesión antes de dar el
+script por bueno — no hipotético.** La primera versión zipeaba
+`imsmanifest.xml`, `src` y la ruta suelta del `.mp4` de `public/videos/`
+directo desde la raíz del proyecto. `python -m zipfile -c` (el
+fallback que se usa en esta máquina — no tiene `zip` de InfoZip
+instalado, sí Python) preserva la ruta relativa de un directorio
+recorrido recursivamente, pero un **archivo suelto** pasado como
+argumento lo guarda por su nombre base, sin carpeta: el zip resultante
+traía `woman_Businesswoman_1920x1010.mp4` en la raíz del paquete en vez
+de `public/videos/woman_Businesswoman_1920x1010.mp4`, que es la ruta
+que `../public/videos/...` (relativa desde `src/index.html`) necesita
+para resolver. Confirmado inspeccionando el listado del zip generado
+(`python -m zipfile -l`), no asumido. Arreglado copiando siempre a un
+staging real (`build/out/_staging/`, con `src/`, `public/videos/` e
+`imsmanifest.xml` en su lugar final) y comprimiendo desde ahí con `cd`
+— así `python -m zipfile` recorre `src` y `public` como directorios de
+verdad y preserva la ruta completa de todo. La misma copia de staging,
+sin el manifiesto, se reutiliza para generar `standalone/` (`cp -r` en
+vez de `mv`: `mv` de un directorio recién escrito falló con "Permission
+denied" en esta máquina Windows, probablemente un handle todavía
+abierto sobre el staging — `cp -r` no tuvo ese problema).
+
+**Verificado con Playwright, dos veces — el zip real, no solo el
+staging.** Se extrajo `build/out/ova-u1-scorm.zip` a una carpeta nueva
+(`python -m zipfile -e`) y se abrió `src/index.html` ahí por `file://`,
+con la misma API SCORM 1.2 simulada de T6-T8: cero errores de consola,
+`<video>` con `readyState: 4` (carga completa) navegando hasta la
+pantalla con media. Repetido sobre `build/out/standalone/src/index.html`
+dos veces, con la API simulada y sin ella (modo URL directa): mismos
+resultados en ambos casos, cero errores de consola.
+
+**Auditoría WCAG con axe-core, no solo revisión manual — cinco
+violaciones reales encontradas y corregidas, ninguna en las catorce
+pantallas reales.** Sin dependencia nueva del proyecto (axe-core no se
+empaqueta, es una herramienta de auditoría de esta sesión, mismo
+espíritu que Playwright en T4-T8): se descargó `axe-core@4.10.2` con
+`npm pack` a la carpeta de scratchpad y se inyectó con
+`page.addScriptTag()` sobre Chromium real. Se corrió sobre
+`dev/kitchen-sink.html` completo y sobre las catorce pantallas de
+`src/index.html` (`s01`...`s14`, navegando con clics reales en
+"Siguiente", más el estado del drawer abierto), con una API SCORM 1.2
+simulada como en T6-T8. **Las catorce pantallas reales dieron cero
+violaciones desde la primera corrida** — el catálogo de componentes
+que sí llegó al motor está limpio. Las cinco violaciones estaban todas
+en `dev/kitchen-sink.html` (documentación/demo) o en CSS de un layout
+sin cablear:
+
+1. **Bug real que sí afecta contenido en producción, el más importante
+   de los cinco: el botón naranja grande no cumplía contraste.**
+   `.boton--naranja.boton--grande` (el único botón naranja que existe
+   —CLAUDE.md prohíbe el pequeño— usado potencialmente en cualquier
+   pantalla de cierre/CTA) pintaba blanco sobre naranja-500 a 19px/**600**:
+   3.48:1 de contraste real, medido por axe-core, contra los 4.5:1 que
+   exige texto normal. `--text-on-brand-display` ya traía en su propio
+   comentario en `tokens.css` la condición correcta ("solo >=19px/**700**
+   o >=24px/400") y la kitchen sink ya la documentaba bien en la tarjeta
+   "Brand" de la sección Superficies — el bug era que `--text-button`
+   (el token que de verdad usa `.boton--grande`) se quedó en peso 600 en
+   vez de 700 al definirse, y la prosa de `CLAUDE.md` copió ese 600 sin
+   contrastarlo contra la condición ya documentada. Arreglado en un solo
+   lugar (`--text-button` en `tokens.css`, 600→700) y corregida la
+   prosa de `CLAUDE.md` ("mínimo 19 px en peso 700") para que las dos
+   fuentes coincidan. Verificado visualmente con Playwright
+   (`shot-boton.png` de esta sesión): el botón se ve más grueso, sigue
+   siendo el mismo naranja-500, sin hex nuevo.
+2. **Tres hallazgos más, todos en `dev/kitchen-sink.html`/`layouts.css`,
+   ninguno alcanzaba el motor real:** el ejemplo "Deshabilitado" de la
+   sección Superficies pintaba `--text-disabled` sobre un `<span>` de
+   prosa suelta (2.52:1) en vez de sobre un control real deshabilitado
+   — `--text-disabled` solo está exento de contraste por WCAG cuando es
+   un control inactivo de verdad, no texto informativo pintado con ese
+   color; se reemplazó el `<span>` por un `<button disabled>` real. La
+   tarjeta "Muted" mostraba texto secundario (gris 600) sobre superficie
+   muted (gris 200): 3.85:1, no llega a 4.5:1 — no es una combinación
+   que use ningún componente real (confirmado por grep), pero la
+   kitchen sink la presentaba como válida; se corrigió el texto a
+   primario y se agregó el override de CSS que le faltaba a la tarjeta
+   Muted (brand e inverse ya tenían el suyo, muted no). Y
+   `.layout--l12 .layout__figura` (L12, un layout que router.js todavía
+   no tiene en `PLANTILLAS` — no renderiza en el OVA real) traía fondo
+   `--surface-subtle-2` con texto `--text-tertiary` encima: 4.41:1,
+   por debajo del 4.5:1 por un margen mínimo — `--text-tertiary` ya
+   traía la nota "solo sobre default y subtle" en `tokens.css`, subtle-2
+   no está en esa lista; se cambió el fondo a `--surface-subtle`.
+   Re-auditado tras cada arreglo hasta cero violaciones en ambas
+   páginas.
+
+**Decisión explícita con el usuario: 320px + zoom de texto 200% *a la
+vez* queda fuera del alcance de T9, tal como venían las ocho tareas
+anteriores.** La auditoría también reconfirmó el hallazgo que T7/T8
+dejaron pendiente: bajo esa combinación simultánea (no cada condición
+por separado), decenas de controles de toda la kitchen sink desbordan
+—reproductor de video, `.boton-icono` de reordenar de I09, calculadoras
+de I10-I12, incluso el aviso de logro de L13— porque `.boton`/`.boton-icono`
+usan `white-space: nowrap` y a 200% de tamaño de texto el label
+simplemente no cabe en 320px. Arreglarlo de verdad implica rediseñar el
+comportamiento de botones e íconos bajo zoom extremo en casi todos los
+componentes del proyecto — no es un ajuste de CSS puntual. Se preguntó
+explícitamente al usuario cómo cerrar esto en T9 en vez de decidirlo
+por cuenta propia, dado que las ocho tareas anteriores establecieron un
+precedente consistente (verificar cada condición por separado) y
+CLAUDE.md es ambiguo sobre si la regla es combinada. **Respuesta: mantener
+el criterio de las ocho tareas anteriores** — 320px sin scroll
+horizontal y zoom de texto 200% sin scroll horizontal, cada uno
+verificado por su cuenta; la combinación simultánea queda documentada
+como límite conocido del sistema de botones, no como bug pendiente de
+T9. Con esto, el hallazgo que T7/T8 dejaban abierto queda cerrado por
+decisión explícita, no solo pospuesto otra vez.
+
+**Nota sobre el propio axe-core, no un bug del OVA.** Bajo `file://`,
+axe-core intenta leer las hojas de estilo por `XMLHttpRequest` para
+alguna de sus reglas internas y eso falla por CORS (mismo bloqueo de
+`file://` entre orígenes que ya documentó T2 para `fetch`) — genera
+ruido en la consola durante la auditoría, pero no afecta el resultado
+de `color-contrast` (que sí operó correctamente, como prueban los cinco
+hallazgos reales) y de todos modos axe-core no se empaqueta con el OVA:
+esos errores no existen para un estudiante real.
+
+**Lo que falta y no está en manos de esta sesión.** El cierre de T9 en
+`PLAN.md` pide "el paquete sube a Moodle, reporta avance y notas" — el
+reporte a `cmi.core.score`/`cmi.interactions`/`cmi.core.lesson_status`
+ya está verificado de punta a punta con una API SCORM 1.2 simulada
+(T6-T8 y esta sesión, sobre el zip real extraído), pero la prueba en un
+Moodle real —subir `build/out/ova-u1-scorm.zip`, confirmar que Moodle
+lo interpreta como SCORM 1.2 de un solo SCO y que el libro de
+calificaciones refleja el progreso— necesita el entorno de Pablo, que
+`PLAN.md` ya anotaba como dependencia externa ("coordinarlo desde ya").
+Cuando esté listo: subir el zip tal cual sale del script (no
+re-empaquetar a mano), y confirmar que el reporte de avance/nota llega
+al libro de calificaciones de Moodle, no solo que el SCO abre.
