@@ -36,6 +36,32 @@
    kitchen sink. Usa I02 (opción única); el catálogo completo I01–I08
    vive documentado en el encabezado de quiz.js, con las ocho
    representadas en la kitchen sink.
+
+   T7 suma s08 (L02 + datos "variacion"), s09 (L09 + datos "proceso") y
+   s10 (L02 + datos "barras"), para ejercitar charts.js de extremo a
+   extremo en src/index.html. s08 y s09 retoman el mismo ejemplo de
+   Petrocaribe de s06 (compra a $1.000, sube a $1.500 ocho meses
+   después) para que la variación (+50 %) y el desglose en pasos sean
+   consistentes con lo que el estudiante ya vio en video — no un dato
+   nuevo sin conexión. El catálogo completo (cifra, tabla, variación,
+   línea, barras, distribución, proceso), con la forma exacta de
+   `pantalla.datos` por tipo, vive documentado en el encabezado de
+   charts.js; los siete están representados en la kitchen sink.
+
+   T8 suma s11 (L10 + interacción I10, calculadora paramétrica), para
+   ejercitar la primera interacción insignia de extremo a extremo en
+   src/index.html. Retoma la valorización de Petrocaribe de s08/s09
+   pero hacia adelante: en vez de recalcular lo ya ocurrido, el
+   estudiante ajusta el dividendo esperado y las tasas para estimar
+   cuánto debería valer la acción hoy (modelo de descuento de
+   dividendos). La forma exacta de `interaccion.datos` para I10 vive
+   documentada en el encabezado de quiz.js junto al resto del catálogo.
+
+   T8 suma también s12 (L10 + interacción I11, boleta de compra), la
+   segunda de las cuatro interacciones insignia. Retoma el mismo precio
+   de mercado primario de Petrocaribe ($1.000) para que el estudiante
+   decida entre una orden a mercado o una orden límite y explore cuándo
+   una orden límite se ejecuta y cuándo queda pendiente.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -136,6 +162,106 @@ window.OVA_CONTENIDO = {
             "correcto": "Renta variable es el mercado de las acciones, el foco de este curso.",
             "incorrecto": "BVC administra renta variable, renta fija y derivados — ninguno de esos es criptomonedas ni bienes raíces."
           }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s08",
+      "layout": "L02",
+      "titulo": "El resultado: una valorización del 50 %",
+      "kicker": "Unidad 1 · Resultado",
+      "cuerpo": [
+        "Retomando el ejemplo de Petrocaribe: el precio subió de $1.000 a $1.500 en ocho meses. Esa diferencia, expresada como variación, es la cifra que un inversionista revisa primero al evaluar una acción."
+      ],
+      "datos": {
+        "tipo": "variacion",
+        "valor": 50,
+        "unidad": " %",
+        "etiqueta": "valorización de la acción de Petrocaribe en ocho meses"
+      },
+      "progreso": true
+    },
+    {
+      "id": "s09",
+      "layout": "L09",
+      "titulo": "Cómo se calcula la valorización",
+      "kicker": "Unidad 1 · Cápsula 2",
+      "cuerpo": [
+        "El cálculo completo, paso a paso, sobre el mismo ejemplo."
+      ],
+      "datos": {
+        "tipo": "proceso",
+        "pasos": [
+          {
+            "titulo": "Compra en el mercado primario",
+            "detalle": "Petrocaribe vende cada acción a $1.000; un inversionista compra 500."
+          },
+          {
+            "titulo": "Ocho meses después",
+            "detalle": "El precio sube a $1.500 en el mercado secundario."
+          },
+          {
+            "titulo": "Cálculo de la valorización",
+            "detalle": "La diferencia es $500: 500/1.000 = 50 % de valorización."
+          }
+        ]
+      },
+      "progreso": true
+    },
+    {
+      "id": "s10",
+      "layout": "L02",
+      "titulo": "Renta variable frente a otros activos",
+      "kicker": "Unidad 1 · Comparación",
+      "cuerpo": [
+        "Ningún mercado rinde igual todos los años, y ninguno está libre de riesgo. Esta es la rentabilidad anual promedio por tipo de activo administrado por BVC en el ejemplo de este curso."
+      ],
+      "datos": {
+        "tipo": "barras",
+        "titulo": "Rentabilidad anual promedio por tipo de activo",
+        "unidad": " %",
+        "puntos": [
+          { "etiqueta": "Renta variable", "valor": 12.4 },
+          { "etiqueta": "Renta fija", "valor": 6.1 },
+          { "etiqueta": "Derivados", "valor": -2.3 }
+        ]
+      },
+      "progreso": true
+    },
+    {
+      "id": "s11",
+      "layout": "L10",
+      "titulo": "Calcula el valor de una acción por su dividendo",
+      "kicker": "Unidad 1 · Cápsula 3",
+      "interaccion": {
+        "tipo": "I10",
+        "datos": {
+          "id": "u1-p2-valorizacion-dividendo",
+          "enunciado": "Ajusta el dividendo esperado del próximo año y las tasas para estimar cuánto debería valer hoy una acción de Petrocaribe, según el modelo de descuento de dividendos.",
+          "formula": "valor_accion_dividendo",
+          "entradas": [
+            { "id": "dividendo", "etiqueta": "Dividendo esperado (próximo año)", "unidad": " COP", "min": 20, "max": 200, "paso": 5, "valorInicial": 60 },
+            { "id": "tasaCrecimiento", "etiqueta": "Crecimiento esperado del dividendo", "unidad": " %", "min": 0, "max": 10, "paso": 0.5, "valorInicial": 4, "decimales": 1 },
+            { "id": "tasaDescuento", "etiqueta": "Tasa de descuento (rendimiento requerido)", "unidad": " %", "min": 1, "max": 20, "paso": 0.5, "valorInicial": 10, "decimales": 1 }
+          ],
+          "salida": { "etiqueta": "Valor estimado de la acción", "unidad": " COP", "decimales": 0 }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s12",
+      "layout": "L10",
+      "titulo": "Decide tu boleta de compra",
+      "kicker": "Unidad 1 · Cápsula 2",
+      "interaccion": {
+        "tipo": "I11",
+        "datos": {
+          "id": "u1-p3-boleta-compra",
+          "enunciado": "Vas a comprar acciones de Petrocaribe. Elige el tipo de orden y ajusta los precios para ver cuándo se ejecutaría tu boleta.",
+          "mercado": { "etiqueta": "Precio de mercado (simulado)", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 1000 },
+          "limite": { "etiqueta": "Tu precio límite de compra", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 950 }
         }
       },
       "progreso": true

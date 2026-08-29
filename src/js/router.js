@@ -20,7 +20,10 @@
    usaba su JSON de prueba); T4 agrega L03 y L04, los dos únicos con
    columna de media; T6 agrega L10, el único con columna de
    interacción (delega en OVA.quiz.crear, catálogo I01–I08 — ver
-   quiz.js). Cualquier otro código, aunque exista en el catálogo
+   quiz.js; T8 agrega I10/I11 por el mismo punto de entrada); T7 agrega L09 (columna de datos obligatoria, diagrama de
+   proceso) y hace "datos" opcional en L02 (delega en OVA.charts.crear,
+   catálogo cifra/tabla/variación/línea/barras/distribución/proceso —
+   ver charts.js). Cualquier otro código, aunque exista en el catálogo
    L01–L13 de CLAUDE.md, todavía no tiene plantilla aquí y cae por la
    misma rama de fallo ruidoso que un código inventado: cada tarea
    futura que dependa de un layout nuevo agrega su entrada a
@@ -92,15 +95,33 @@
 
   // T6: única entrada de layout que renderiza pantalla.interaccion.
   // Delega en OVA.quiz.crear, que falla ruidoso si interaccion.tipo no
-  // existe en el catálogo I01–I08 — mismo criterio que crearMedia con
-  // media.tipo. Sin interaccion en absoluto, también falla: L10 no
-  // tiene sentido sin ella.
+  // existe en el catálogo I01–I08/I10/I11 — mismo criterio que crearMedia
+  // con media.tipo. Sin interaccion en absoluto, también falla: L10 no
+  // tiene sentido sin ella. (T8 agrega I10/I11, las dos primeras de las
+  // cuatro interacciones insignia, por el mismo punto de entrada.)
   function crearInteraccion(interaccion) {
     if (!interaccion) throw new Error('Esta pantalla no trae "interaccion" y su layout lo necesita.');
     var contenedor = document.createElement('div');
     contenedor.className = 'layout__interaccion';
     var nodo = OVA.quiz.crear(interaccion);
     if (!nodo) throw new Error('No se pudo construir la interacción (ver consola).');
+    contenedor.appendChild(nodo);
+    return contenedor;
+  }
+
+  // T7: única entrada de layout que renderiza pantalla.datos. Delega en
+  // OVA.charts.crear, que falla ruidoso si datos.tipo no existe en el
+  // catálogo de charts.js — mismo criterio que crearMedia con media.tipo
+  // y crearInteraccion con interaccion.tipo. A diferencia de esas dos,
+  // si "datos" es obligatorio o no lo decide quien llama, no esta
+  // función: PLANTILLAS.L09 la llama siempre (el layout no tiene sentido
+  // sin su diagrama), PLANTILLAS.L02 solo si pantalla.datos existe.
+  function crearDatos(datos) {
+    if (!datos) throw new Error('Esta pantalla no trae "datos" y su layout lo necesita.');
+    var contenedor = document.createElement('div');
+    contenedor.className = 'layout__datos';
+    var nodo = OVA.charts.crear(datos);
+    if (!nodo) throw new Error('No se pudo construir el gráfico (ver consola).');
     contenedor.appendChild(nodo);
     return contenedor;
   }
@@ -122,6 +143,9 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    // T7: "datos" es opcional en L02 (a diferencia de L09, más abajo) —
+    // s01 sigue siendo puro texto sin él, s08/s10 lo agregan.
+    if (pantalla.datos) raiz.appendChild(crearDatos(pantalla.datos));
     return { raiz: raiz, titulo: titulo };
   };
 
@@ -165,6 +189,23 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h3');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  // T7: L09 exige "datos" (igual que L03/L04 exigen "media" y L10 exige
+  // "interaccion") — es el layout que PLAN.md/layouts.css nombran
+  // explícitamente para el diagrama de proceso, no tiene sentido sin él.
+  // El cuerpo es opcional: una intro corta antes del diagrama, no el
+  // contenido principal de la pantalla.
+  PLANTILLAS.L09 = function (pantalla) {
+    var raiz = crearRaiz('l09');
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    raiz.appendChild(titulo);
+    if (pantalla.cuerpo && pantalla.cuerpo.length) {
+      raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    }
+    raiz.appendChild(crearDatos(pantalla.datos));
     return { raiz: raiz, titulo: titulo };
   };
 

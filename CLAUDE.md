@@ -149,9 +149,11 @@ hay que capturarlo y degradar, no dejarlo reventar.
 - CSS con propiedades personalizadas y `gap`. Nada de márgenes por elemento para
   separar hermanos.
 - Nombres de clase en español, en kebab-case, con prefijo por familia:
-  `.cap-`, `.quiz-`, `.media-`, `.nav-`. Los átomos transversales (usados por
-  varias familias) van sin prefijo: `.boton`, `.eyebrow`, `.tarjeta`,
-  `.numero-indice`, `.regla`, `.anillo`, `.icono`.
+  `.cap-`, `.quiz-`, `.media-`, `.nav-`, `.dato-` (datos y gráficos, T7),
+  `.calc-` (interacciones insignia, T8).
+  Los átomos transversales (usados por varias familias) van sin prefijo:
+  `.boton`, `.eyebrow`, `.tarjeta`, `.numero-indice`, `.regla`, `.anillo`,
+  `.icono`, `.linea-tiempo`.
 - JavaScript en scripts clásicos (`<script src="…">`), no módulos ES: Chromium
   bloquea por CORS la carga de `type="module"` bajo `file://` (verificado con
   Playwright al construir T2), y la regla dura 4 exige que el OVA abra sin

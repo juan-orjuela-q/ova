@@ -18,8 +18,8 @@ cambien algo para el futuro. Si una decisión cambia una **regla**, va a
 - [x] **T4 · Reproductor de media** — completada 29 ago
 - [x] **T5 · Componentes de contenido** — completada 29 ago
 - [x] **T6 · Motor de evaluación** — completada 29 ago
-- [ ] T7 · Datos y gráficos
-- [ ] T8 · Interacciones insignia
+- [x] **T7 · Datos y gráficos** — completada 29 ago
+- [ ] T8 · Interacciones insignia — I10 e I11 hechas (29 ago); faltan I09, I12 (sesiones separadas, ese orden)
 - [ ] T9 · Empaquetado y auditoría
 
 ---
@@ -709,6 +709,397 @@ quiz.js en T6") se reemplazó por el mismo ejemplo que `s07`, montado por
 `router.js` de verdad en `src/index.html` y replicado aquí solo para
 mostrarlo sin navegar.
 
+**29 ago — T7 cerrada: datos y gráficos, sin librería externa (decisión
+tomada antes de escribir código, ver más abajo), catálogo de siete tipos
+diseñado en esta sesión y verificado de punta a punta con Playwright.**
+
+**Decisión previa a la implementación: nada de Highcharts/D3/similares.**
+El usuario preguntó si convenía una librería especializada antes de
+empezar. La respuesta salió directo de las reglas duras 4 y 5 de
+CLAUDE.md: ninguna de esas librerías puede cargarse desde CDN (regla 5,
+sin dependencias externas salvo Google Fonts) y aunque se autoalojaran,
+meter una librería completa para siete tipos de gráfico simples choca
+con el espíritu de la regla 4 (nada de frameworks). La estructura del
+proyecto ya reservaba `js/charts.js` "en SVG o canvas", y T5 dejó
+`.anillo` explícitamente como "decorativo — el motor de gráficos real es
+T7", así que ya estaba decidido que sería vanilla SVG.
+
+**Decisión de contrato de contenido, la más importante de la sesión.**
+Igual que T6 con `interaccion`, PLAN.md no fijó la forma de estos siete
+tipos — es una decisión de esta sesión, documentada en el encabezado de
+`charts.js` (mismo criterio que el catálogo I01–I08 vive en `quiz.js` y
+no en CLAUDE.md):
+
+- **Campo nuevo `pantalla.datos`, plano** (`{tipo, ...campos propios}`),
+  hermano de `media`/`interaccion`. Se decidió plano como `media` y no
+  anidado como `interaccion.datos` para evitar el trabalenguas
+  `datos.datos`; `OVA.charts.crear(datos)` recibe el objeto completo tal
+  cual, cada constructor de tipo ignora `tipo`.
+- **Catálogo:** `cifra`, `tabla`, `variacion`, `linea`, `barras`,
+  `distribucion`, `proceso` — nombres tomados directo del orden de
+  PLAN.md. La forma exacta de cada uno está documentada en el
+  encabezado de `charts.js`.
+- **Elemento reutilizable nuevo `.layout__datos`** (layouts.css), mismo
+  patrón que `.layout__media` (T4) y `.layout__interaccion` (T6):
+  `router.js` expone `crearDatos()`, que delega en `OVA.charts.crear()`
+  y falla ruidoso si `datos.tipo` no existe en el catálogo — mismo
+  criterio que `crearMedia`/`crearInteraccion`. Se agregó al grupo de
+  animación de entrada (ítem 2 del inventario de movimiento) junto con
+  media/figura, mismo escalón.
+- **L09 pasa a tener plantilla real** (no la tenía desde T2/T4/T6): es
+  el layout que layouts.css nombra explícitamente para "proceso / línea
+  de tiempo", así que exige `datos` igual que L03/L04 exigen `media`. Se
+  eliminó el CSS especulativo que T1/T1.5 habían dejado ahí
+  (`.layout--l09 .layout__cuerpo ol` en fila a 48em) porque nada en el
+  motor generaba jamás un `<ol>` dentro de `.layout__cuerpo` — CSS
+  muerto reemplazado por la implementación real.
+- **`datos` es opcional en L02** (a diferencia de L09): s01 sigue siendo
+  texto puro sin él; s08/s10 lo agregan. Acotado al mismo ancho de
+  lectura que `.layout__cuerpo` (`.layout--l02 .layout__datos {
+  max-width: 42rem }`) porque en L02 el gráfico acompaña texto denso, no
+  es el protagonista de la pantalla como en L09.
+
+**Reuso, no duplicación — dos componentes de T1.5 que ya anticipaban
+este trabajo:**
+
+- **`cifra` con `porcentaje` es el motor real de `.anillo`** (T5,
+  decorativo/estático desde entonces). `construirCifra()` genera
+  exactamente la misma cáscara (`.anillo`, `.anillo__cifra`,
+  `.anillo__numero`, mismo SVG r=52/viewBox 120, mismo truco de color
+  por `style` en vez del atributo `stroke` porque los atributos de
+  presentación SVG no leen `var()` de forma consistente entre
+  navegadores — hallazgo que T5 ya había documentado). Sin
+  `porcentaje`, es solo el número grande: no todo dato destacado es una
+  proporción de 100.
+- **`proceso` resuelve la nota pendiente de `.linea-tiempo`.** Ese
+  componente (T1.5) traía un comentario explícito: "la variante
+  horizontal... se resuelve la próxima sesión, cuando se aplique dentro
+  del layout real y su propio @media". `.linea-tiempo--horizontal`
+  (components.css, nuevo) es exactamente ese trabajo: fila a partir de
+  48em con el conector rotado, columna debajo — verificado con
+  Playwright en `src/index.html` (s09 real): `flex-direction: row` a
+  1024px, `column` a 320px, sin depender de que L09 le pase ninguna
+  clase especial (el componente resuelve su propio breakpoint,
+  reusable fuera de L09 también).
+
+**Qué se construyó, todo nuevo en `src/js/charts.js`:**
+
+- **`cifra`** — número real siempre visible; con `porcentaje`, anillo de
+  progreso (ver arriba); sin él, bloque simple `tipo-display-2`.
+- **`tabla`** — `<table>` real con `<caption>`, `<th scope="col">` y la
+  primera columna de cada fila como `<th scope="row">`. Una celda puede
+  ser `{variacion, unidad}` para incrustar el componente de variación
+  (reuso interno, no duplicación). Envuelta en
+  `.dato-tabla__envoltura` con `overflow-x:auto` **y `tabindex="0"` +
+  `role="region"` + `aria-label`** — no por exceso de celo: Playwright
+  encontró que esta tabla desborda su caja de verdad bajo zoom de texto
+  al 200% (ver hallazgo más abajo), y sin esto un desborde real quedaba
+  inalcanzable con teclado.
+- **`variacion`** — ícono (arrow_upward/arrow_downward/remove) + signo
+  (+/−) + color a la vez, nunca el color solo (cierre explícito de
+  PLAN.md). `valor === 0` es un tercer estado neutro sin color
+  semántico, no una variante de "positivo" con signo vacío.
+- **`linea`/`barras`** — SVG `aria-hidden` (decorativo) + fila de
+  etiquetas de eje en HTML real (a diferencia de `<text>` en SVG,
+  sobrevive el zoom de texto) + `<details>`"Ver datos en tabla" con la
+  tabla exacta — la alternativa textual que exige el cierre de T7.
+  `barras` soporta valores negativos (barra a la izquierda del cero,
+  rojo-500 en vez de naranja-500 — probado con datos reales:
+  "Derivados" en −2,3%).
+- **`distribucion`** — barra apilada horizontal (SVG) + leyenda en HTML
+  real; la leyenda ya es la alternativa textual, sin `<details>` extra.
+  Sin rampa categórica en tokens.css, la paleta cicla naranja-500 +
+  escala de grises (900/500/300/700) — nunca un hex nuevo.
+- **`proceso`** — ver reuso de `.linea-tiempo` arriba.
+- Trazos y rellenos de SVG van por `style` referenciando `var(--token)`,
+  nunca por el atributo de presentación a mano (mismo hallazgo de
+  `.anillo`, aplicado a los cinco tipos que usan SVG).
+
+**`router.js`**: `crearDatos()` (nueva), `PLANTILLAS.L09` (nueva,
+exige `datos`) y `PLANTILLAS.L02` (ahora acepta `datos` opcional).
+
+**`content/ova-u1.js`**: tres pantallas nuevas — `s08` (L02 + variación),
+`s09` (L09 + proceso) y `s10` (L02 + barras) — para ejercitar
+`charts.js` de extremo a extremo en `src/index.html`, no solo en la
+kitchen sink (mismo criterio que T4/T6). `s08`/`s09` retoman el mismo
+ejemplo de Petrocaribe que ya usaba `s06` (compra a $1.000, sube a
+$1.500) para que la variación (+50%) y el desglose en pasos sean
+consistentes con lo que el estudiante ya vio en video, no un dato nuevo
+sin conexión. `cifra`, `tabla`, `linea` y `distribucion` no se
+enchufaron al router esta sesión (mismo criterio que la mayoría de los
+componentes de T5: kitchen-sink-only está bien para un componente que
+no depende del router) — si una pantalla real de contenido los necesita
+antes de T9, agregar su entrada a `PLANTILLAS` es directo.
+
+**Hallazgo real de Playwright, no hipotético — y su alcance.** Se probó
+la kitchen sink completa (las siete secciones de T1–T7 a la vez) a
+320px **y** zoom de texto 200% **simultáneamente** — una condición más
+estricta que la que describe el cierre de cada tarea anterior en este
+archivo ("320px sin scroll horizontal" y "zoom de texto 200%" se
+verificaron siempre por separado, nunca combinados). Bajo esa condición
+combinada, `document.documentElement.scrollWidth` sí desborda
+(418px en un viewport de 320px). Aislado con Playwright: **la sección
+de T7 por sí sola no desborda** (elemento más a la derecha en 296px,
+dentro del viewport); quitar el bloque de la tabla de T7 por completo
+deja el mismo desborde de 418px — el causante son botones/`.media-audio`/
+`.media-video` de T1–T4, que sí desbordan individualmente bajo esa
+combinación (encontrado con un barrido de `getBoundingClientRect()`
+sobre todo `body *`). No se tocó ese CSS: es anterior a esta sesión y
+la condición combinada no es la que describe CLAUDE.md ni la que
+verificó ninguna tarea previa. Queda anotado en pendientes para la
+auditoría de T9, que si va a probar 320px+zoom200% a la vez sobre la
+página completa, va a encontrar esto.
+
+**Verificado con Playwright (dos páginas, un script de diagnóstico):**
+
+- `dev/kitchen-sink.html`: los siete tipos presentes y montados de
+  verdad vía `OVA.charts.crear()` (cero errores de consola); anillo con
+  texto real "77 %" + SVG `aria-hidden`; tabla con 3 filas, 3 `<th
+  scope="row">`, 3 `<th scope="col">` y 3 celdas de variación
+  incrustadas; variación con los tres signos (positivo/negativo/neutro)
+  — íconos `arrow_upward`/`arrow_downward`/`remove` confirmados y color
+  computado real (`rgb(10,115,64)` = verde-700, `rgb(196,34,23)` =
+  rojo-700, `rgb(83,83,83)` = gris-600/texto secundario); línea con SVG
+  `aria-hidden`, 5 ejes en HTML y `<details>` con 5 filas de tabla
+  oculta, abierto con foco + Enter (teclado, no clic); barras con 3
+  `<rect>` (relleno naranja-500 en las dos positivas, rojo-500 en la
+  negativa) y su propio `<details>`; distribución con 3 `<rect>` y
+  leyenda de texto real ("Renta variable — 45 %..."); proceso con 3
+  pasos y la clase `linea-tiempo--horizontal` puesta. `prefers-reduced-motion`
+  colapsa la animación de entrada a `1e-05s` (el mismo colapso ya
+  existente de tokens.css, sin media query duplicado). 320px sin scroll
+  horizontal y zoom de texto 200% **por separado** sin desborde (ver
+  hallazgo de arriba sobre la condición combinada). Cero hex nuevo
+  (`charts.js`, `components.css`, `layouts.css` verificados por grep).
+- `src/index.html`, con una API SCORM simulada como en T6: recorrer
+  hasta `s08` monta la variación real (signo "positivo", foco en el
+  `<h2>` de la pantalla, igual que toda navegación desde T3); `s09`
+  monta `PLANTILLAS.L09` con 3 pasos reales y `.linea-tiempo` en `row`
+  a 1024px / `column` a 320px (el breakpoint de
+  `.linea-tiempo--horizontal` confirmado en ambos anchos, no solo
+  descrito); `s10` monta 3 `<rect>` de barras con su `<details>`. Cero
+  errores de consola en las diez pantallas (s01–s10) recorridas con
+  clic real en "Siguiente". 320px sin scroll horizontal en s10.
+- Foco de teclado en la región de tabla: `tabindex="0"` +
+  `role="region"` + `aria-label` con el título real de la tabla
+  confirmados por `document.activeElement`; `outline-style` en foco es
+  `solid` (nunca `none`) sin CSS adicional — hereda la regla global de
+  `:focus-visible` de `base.css`, no se duplicó nada nuevo.
+
+**Kitchen sink:** nuevo bloque "Datos y gráficos (T7) — catálogo
+completo, cableado real" dentro de "Componentes" (mismo nivel que el
+motor de evaluación de T6, no una sección aparte), con nav link nuevo
+`#c-datos`. Los siete tipos están vivos (no maqueta), montados por
+`OVA.charts.crear()` en el script al final de la página — mismo
+criterio que el reproductor de video (T4) y el motor de evaluación
+(T6): no dependen del router/hash, así que pueden mostrarse tal cual
+son.
+
+**29 ago — T8 (I10) hecha: primera de las cuatro interacciones insignia,
+calculadora paramétrica de valorización por dividendo — con una decisión
+de arquitectura tomada antes de escribir código y verificada de punta a
+punta con Playwright.**
+
+**Decisión de arquitectura, la más importante de la sesión: I10 vive en
+`quiz.js`, no en un archivo nuevo.** CLAUDE.md nombra I09–I12 pero no les
+da archivo propio en la Estructura del proyecto, y `router.js` ya solo
+tiene un punto de entrada para cualquier `interaccion` del contrato
+(`crearInteraccion()` → `OVA.quiz.crear()`). Inventar un
+`interacciones.js` habría duplicado ese punto de entrada sin necesidad.
+Dentro de `quiz.js`, sin embargo, una interacción insignia NO es una
+pregunta: no tiene intentos, ni Comprobar/Reintentar, ni un "correcto"
+que revelar — es un widget exploratorio. `crear()` ahora despacha primero
+contra una tabla aparte (`CONSTRUCTORES_INSIGNIA`) antes de asumir que
+todo lo demás es I01–I08; cada constructor de ese grupo arma su propio
+DOM completo (no un `<fieldset>` para que `crear()` lo envuelva) y decide
+él mismo cuándo reportar a SCORM. I09/I11/I12 (las tres sesiones que
+faltan, en ese orden) siguen el mismo patrón de despacho — es
+literalmente lo que PLAN.md pide de I10, "sirve de patrón".
+
+**Decisión de contrato de contenido — modelo de descuento de
+dividendos.** "Valorización y dividendo" (PLAN.md) se leyó como el
+modelo de Gordon: valor = D1 / (r − g). Documentado en el encabezado de
+`quiz.js` (mismo criterio que I01–I08 y el catálogo de `charts.js`):
+
+- `interaccion.datos = { enunciado?, formula, entradas, salida }`.
+  `formula` sale de un catálogo cerrado en `FORMULAS_CALCULADORA` (hoy
+  un solo miembro, `valor_accion_dividendo`) — el contenido elige un
+  tipo ya implementado, el motor nunca evalúa una expresión arbitraria
+  del JSON.
+- `entradas`: `[{ id, etiqueta, unidad?, min, max, paso, valorInicial,
+  decimales? }, …]`. `valor_accion_dividendo` exige exactamente los ids
+  `dividendo` (D1, dividendo esperado del próximo año), `tasaCrecimiento`
+  y `tasaDescuento` (puntos porcentuales). Si tasaDescuento ≤
+  tasaCrecimiento no hay valor real (crecimiento no sostenible bajo ese
+  descuento): el resultado pasa a un estado de error con ícono y texto
+  explicativo — nunca un NaN silencioso ni un color solo — y el botón de
+  registrar se deshabilita mientras dure.
+- `salida`: `{ etiqueta, unidad?, decimales? }`, `unidad` como sufijo
+  (mismo criterio que `charts.js`, ej. `" COP"`).
+
+**Qué se construyó:**
+
+- Cada entrada es un `<input type="range">` nativo — mismo criterio que
+  el scrubber de `media.js` (T4) y `.quiz-opcion` (T6): el teclado
+  (flechas, Inicio/Fin, RePág/AvPág) y el rol de slider vienen gratis
+  del navegador, así que "operable con teclado sin arrastrar" (cierre
+  de T8) queda resuelto por construcción, no por un manejador de tecla
+  escrito a mano. Emparejado con un `<output for="…">` — elemento nativo
+  con rol ARIA implícito `status`, así que el valor de cada slider se
+  anuncia solo, sin `aria-live` escrito a mano.
+- El resultado también es un `<output>` (mismo motivo: es literalmente
+  el resultado de un cálculo), recalculado en cada `input` de cualquier
+  slider — la retroalimentación en vivo es el punto pedagógico del
+  componente, no un extra.
+- Botón «Registrar valorización»: arma un objeto mínimo compatible con
+  la `reportarSCORM()` que ya existía para I01–I08 (`idScorm`,
+  `tipoScorm:'other'`, `textoRespuesta()` serializa `id=valor` de cada
+  entrada separadas por coma, `textoCorrecta()` devuelve `null` — no hay
+  "correcta" en un explorador de escenarios, mismo criterio que I08) y
+  anuncia el registro en un párrafo `role="status"` propio
+  (`.calc-resumen`). Sin intentos ni bloqueo definitivo: se puede
+  ajustar y volver a registrar cuantas veces se quiera, cada click
+  agrega una fila nueva a `cmi.interactions` — verificado con dos
+  registros consecutivos, dos filas independientes con los valores
+  vigentes en cada click. No toca `cmi.core.score`, igual que I08.
+- Familia de clases nueva `.calc-` en `components.css`, agregada a la
+  lista de CLAUDE.md — no reutiliza `.quiz-` a propósito, son familias
+  de componente distintas aunque compartan el mismo punto de entrada en
+  JS.
+- `content/ova-u1.js` suma `s11` (L10 + I10): retoma la valorización de
+  Petrocaribe de s08/s09 pero hacia adelante — con los valores por
+  defecto (dividendo 60, crecimiento 4 %, descuento 10 %) el resultado
+  inicial es exactamente 1.000 COP, el mismo precio primario que ya vio
+  el estudiante en s06/s09, no una cifra nueva sin conexión.
+
+**Verificado con Playwright — nota de infraestructura para la próxima
+sesión de T8.** Esta sesión no tenía Playwright instalado como
+dependencia del proyecto (no hay `package.json`); las sesiones previas
+lo tenían disponible de algún otro modo que esta no heredó. Se resolvió
+así: `npx --no-install playwright --version` sí encontró un Playwright
+1.62.1 ya cacheado por `npx` en
+`%LOCALAPPDATA%\npm-cache\_npx\<hash>\node_modules`; exportar ese path en
+`NODE_PATH` antes de `node script.js` lo hace `require()`-able sin
+instalar nada nuevo ni tocar el repo. Si la próxima sesión (I11) no
+encuentra Playwright, este es el atajo antes de asumir que hay que
+instalarlo.
+
+Con esa configuración, dos páginas verificadas de punta a punta,
+Chromium real (no simulado):
+
+- `dev/kitchen-sink.html`: cero errores de consola; la calculadora
+  monta 3 sliders + 4 `<output>` (tabindex/`for` de cada uno confirmado
+  contra el id de su slider); Tab enfoca el primer slider y ArrowRight
+  cambia su valor Y recalcula el resultado en vivo (sin clic, sin
+  arrastre); bajar la tasa de descuento por debajo de la de crecimiento
+  dispara el estado de error (ícono `error`, texto explicativo, botón
+  deshabilitado) y subirla de nuevo lo revierte; Enter sobre el botón
+  enfocado (no clic) registra y el párrafo `role="status"` anuncia el
+  texto correcto. 320 px sin scroll horizontal (aislado: la sección
+  completa de T8 mide como máximo 296 px de ancho real en un viewport
+  de 320); zoom de texto 200 % aislado también sin desborde (1256 px en
+  un viewport de 1280); `prefers-reduced-motion` sin errores de consola.
+- `src/index.html`, con una API SCORM 1.2 simulada como en T6/T7:
+  recorrer hasta `s11` monta la calculadora real con foco en el `<h2>`
+  de la pantalla (mismo comportamiento de a11y.js que toda navegación
+  desde T3); valor inicial 1.000 COP confirmado; registrar agrega
+  `cmi.interactions.0.*` (`id` `u1-p2-valorizacion-dividendo`, `type`
+  `other`, `student_response`
+  `dividendo=60,tasaCrecimiento=4,tasaDescuento=10`, `result` `neutral`,
+  sin `correct_responses.0.pattern`) sin tocar `cmi.core.score.raw`;
+  320 px sin scroll horizontal en `s11`. Cero errores de consola en toda
+  la corrida.
+
+**Hallazgo verificado, no una regresión nueva — mismo problema que ya
+documentó T7.** Bajo la condición combinada 320 px **y** zoom de texto
+200 % **a la vez** sobre la kitchen sink completa (T1–T8), el
+`scrollWidth` de la página desborda (444 px). Aislado con Playwright:
+ocultar `#c-insignia` por completo deja el mismo desborde de 444 px sin
+cambio — la sección de T8 no es la causante. El elemento que Playwright
+marca como "más a la derecha" dentro de `#c-insignia` bajo esa condición
+(`.boton--outline` de la nav inferior de la kitchen sink) solo alcanza
+esa posición porque el desborde ya generado por componentes de T1–T4
+empuja el ancho disponible de todo lo que viene después en el documento
+— es el mismo mecanismo que T7 ya aisló y documentó, no un problema
+nuevo del `.calc-` de esta sesión. Sigue siendo trabajo de la auditoría
+de T9, no de T8.
+
+**Kitchen sink:** nueva sección "Interacciones insignia (T8)" (mismo
+nivel que el motor de evaluación de T6 y los datos de T7), con nav link
+`#c-insignia`, montada de verdad vía `OVA.quiz.crear()` en su propio
+`<script>` al final de la página — mismo criterio que T4/T6/T7: no
+depende del router/hash, así que puede vivir viva ahí.
+
+**29 ago — T8 (I11) hecha: boleta de compra, segunda de las cuatro
+interacciones insignia — reusando literalmente la cáscara que I10 dejó
+como patrón, verificada de punta a punta con Playwright.**
+
+**La reutilización funcionó como se esperaba.** I11 comparte con I10 el
+mismo contenedor `.calc-calculadora`, el mismo patrón de campo
+(`.calc-campo` con slider + `<output>`), el mismo bloque de resultado
+(`.calc-calculadora__resultado`), las mismas acciones/resumen
+(`.calc-acciones`/`.calc-resumen`, `role="status"`) y el mismo mecanismo
+de reporte (`reportarSCORM()`, tipo `other`, sin nota, reenviable). Lo
+único nuevo fue el selector de tipo de orden — un `<fieldset>/<legend>`
+con dos `<input type="radio">` nativos, mismo criterio que I01–I08: el
+grupo y su navegación con flechas vienen gratis del navegador, sin una
+sola línea de JS para el teclado.
+
+**Regla de negocio y una distinción de estado nueva frente a I10.**
+Orden de COMPRA: a mercado siempre se ejecuta al precio de mercado
+vigente; a límite se ejecuta solo si el precio de mercado no supera el
+límite que definió el comprador, si no, queda pendiente. A diferencia
+del dominio inválido de I10 (que sí es un error: no hay valor real),
+"pendiente" en I11 **no es un error** — es un resultado legítimo de una
+orden límite, el punto pedagógico del ejercicio. Por eso no bloquea
+«Enviar boleta» y usa el estilo neutro por defecto de
+`.calc-calculadora__resultado` (ícono `schedule`) en vez del rojo de
+error; solo "ejecutada" tiene su propio verde (`check_circle`), mismo
+patrón que `.quiz-retro[data-estado="correcto"]`. Límite queda marcado
+por defecto en el contenido de demo (mercado 1.000 COP, límite 950 COP)
+para que la pantalla cargue en estado "pendiente" — es el caso que de
+verdad muestra la diferencia con una orden a mercado.
+
+**`content/ova-u1.js` suma `s12`** (L10 + I11), continuando la misma
+historia de Petrocaribe (mercado en 1.000 COP, el mismo precio primario
+que ya vio el estudiante en s06/s09/s11).
+
+**Verificado con Playwright (mismo atajo de `NODE_PATH` documentado en
+la entrada de I10 — sigue sin haber `package.json` en el proyecto),
+Chromium real:**
+
+- `dev/kitchen-sink.html`: cero errores de consola; estado inicial
+  "pendiente" con ícono `schedule`; foco + tecla espacio en el radio
+  "A mercado" cambia la selección y el slider de límite pasa a
+  `disabled` en el mismo tick (nunca oculto); el estado pasa a
+  "ejecutada" de inmediato (una orden a mercado siempre se ejecuta);
+  `ArrowRight` sobre el grupo de radios (sin clic) vuelve a "Límite" y
+  reactiva el slider; con el precio de mercado en su mínimo (tecla
+  `Home` sobre el slider enfocado) el resultado es "ejecutada" con el
+  texto exacto "Se ejecuta a 800 COP (tu límite era 950 COP)."; con
+  `End` vuelve a "pendiente"; el botón «Enviar boleta» permanece
+  habilitado en estado pendiente (confirmado, no se deshabilita); Enter
+  sobre el botón enfocado registra y el `role="status"` anuncia
+  "Boleta enviada: quedó pendiente (no se ejecutó)." 320 px y zoom de
+  texto 200 % aislados sin desborde atribuible a esta sección (296 px y
+  1256 px respectivamente, dentro de sus viewports).
+- `src/index.html`, con la misma API SCORM 1.2 simulada de T6/T7:
+  recorrer hasta `s12` monta la boleta real con foco en el `<h2>`;
+  estado inicial "pendiente" (1.000 > 950); enviar en pendiente agrega
+  `cmi.interactions.0.*` (`student_response`
+  `tipo=limite,precioMercado=1000,precioLimite=950`, `result` `neutral`,
+  sin tocar `cmi.core.score.raw`); cambiar a "A mercado" por clic
+  recalcula a "ejecutada" en vivo y un segundo envío agrega una fila
+  independiente (`cmi.interactions.1.*`,
+  `tipo=mercado,precioMercado=1000,precioLimite=950`) — confirma que,
+  igual que I10, se puede reenviar tantas veces como se quiera. 320 px
+  sin scroll horizontal en `s12`. Cero errores de consola en toda la
+  corrida.
+
+**Kitchen sink:** nuevo bloque `#c-insignia-i11` dentro de la sección
+"Interacciones insignia (T8)", montado con `OVA.quiz.crear()` en su
+propio `<script>` — mismo criterio que I10.
+
 ## Pendientes y avisos
 
 - El contenido de Jose no bloquea nada hasta T8.
@@ -716,9 +1107,9 @@ mostrarlo sin navegar.
 - L02–L13 no tuvieron la crítica de diseño ni el catálogo de componentes que
   preveía el punto 1 de T1.5 (ver decisión del 28 ago) — quedó descartado,
   no diferido a otra sesión.
-- El motor (T2/T4/T6) solo tiene plantillas de render para L02, L03, L04,
-  L05, L06, L10 y L11. Cualquier tarea que monte una pantalla con otro
-  layout (L01, L07, L08, L09, L12, L13) necesita agregar su entrada a
+- El motor (T2/T4/T6/T7) solo tiene plantillas de render para L02, L03,
+  L04, L05, L06, L09, L10 y L11. Cualquier tarea que monte una pantalla
+  con otro layout (L01, L07, L08, L12, L13) necesita agregar su entrada a
   `PLANTILLAS` en `router.js` antes de que esa pantalla renderice — hoy cae
   en el estado de error visible, a propósito.
 - El botón de reanudar de T3 es una interpretación propia del alcance —
@@ -782,3 +1173,31 @@ mostrarlo sin navegar.
   `cmi.core.score.raw` cargue la nota real, pero si T9 necesita que un
   reporte de LMS externo parsee `correct_responses.pattern` en el formato
   estricto del estándar, hay que revisarlo entonces.
+- **Hallazgo real de T7, no arreglado (fuera de alcance de esta tarea) —
+  para la auditoría de T9.** La kitchen sink completa (T1–T7 a la vez)
+  desborda horizontalmente a 320px **y** zoom de texto 200%
+  **simultáneamente** (418px de `scrollWidth` en un viewport de 320px).
+  Aislado con Playwright: la sección de T7 no es la causante (sola, no
+  desborda; quitarla del todo deja el mismo desborde) — son
+  botones/`.media-audio`/`.media-video` de T1–T4 los que desbordan bajo
+  esa combinación específica. Cada tarea anterior verificó 320px y zoom
+  200% por separado (nunca a la vez), que es como está descrita la
+  condición en `CLAUDE.md`, así que esto no es una regresión de ninguna
+  tarea puntual — pero si T9 prueba la combinación sobre la página
+  completa, la va a encontrar.
+- **T8 va a la mitad: I10 e I11 hechas.** Faltan, en el orden que fija
+  PLAN.md, I09 (línea de tiempo Repo/TTV, base de C1 — "necesita
+  alternativa de teclado al arrastre", la única de las dos que falta que
+  sí involucra arrastre de verdad, a diferencia de I10/I11 que no lo
+  necesitaron) e I12 (distribución de capital, base de C3, "la primera
+  que se cae si el plan se atrasa"). Las dos siguen el mismo patrón de
+  despacho que dejaron I10/I11 en `quiz.js` (`CONSTRUCTORES_INSIGNIA`),
+  documentado en el encabezado del archivo.
+- **`cifra`, `tabla`, `linea` y `distribucion` (T7) no se enchufaron al
+  router esta sesión** — viven cableados de verdad en la kitchen sink
+  (vía `OVA.charts.crear()`, no maqueta) pero ninguna pantalla de
+  `content/ova-u1.js` los usa todavía (solo `variacion`, `proceso` y
+  `barras` sí, en s08/s09/s10). Mismo criterio que la mayoría de los
+  componentes de T5. Si contenido real de Jose necesita alguno antes de
+  T9, agregar la pantalla es directo: `PLANTILLAS.L02` ya acepta `datos`
+  opcional.

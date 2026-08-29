@@ -234,6 +234,8 @@
     <a href="#tipografia">Tipografía</a>
     <a href="#superficies">Superficies</a>
     <a href="#componentes">Componentes</a>
+    <a href="#c-datos">Datos y gráficos</a>
+    <a href="#c-insignia">Interacciones insignia</a>
     <a href="#movimiento">Movimiento</a>
     <a href="#motor">Motor</a>
     <a href="#chrome">Chrome</a>
@@ -856,6 +858,102 @@
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
       </div>
+
+      <div class="ks-layout-bloque" id="c-datos">
+        <span class="ks-layout-bloque__etiqueta">Datos y gráficos (T7) — catálogo completo, cableado real</span>
+        <p class="ks-intro">
+          Los siete de abajo se montan con <code>OVA.charts.crear()</code> en
+          el script al final de esta página — mismo criterio que el motor de
+          evaluación de arriba. Línea, barras y distribución llevan el SVG
+          marcado <code>aria-hidden</code> (es decorativo) más una fila de
+          ejes en HTML real y un <code>&lt;details&gt;</code>"Ver datos en
+          tabla" con la tabla exacta: la alternativa textual que exige el
+          cierre de T7. La variación siempre lleva ícono, signo y color a la
+          vez, nunca el color solo. El catálogo completo, con la forma
+          exacta de <code>datos</code> por tipo, está documentado en el
+          encabezado de <code>charts.js</code>.
+        </p>
+
+        <div class="ks-layout-bloque" id="c-datos-cifra">
+          <span class="ks-layout-bloque__etiqueta">Cifra destacada — con anillo (motor real de <code>.anillo</code>, T5) y sin él</span>
+          <div class="ks-layout-marco ks-muestras">
+            <div id="c-datos-cifra-anillo"></div>
+            <div id="c-datos-cifra-simple"></div>
+          </div>
+        </div>
+
+        <div class="ks-layout-bloque" id="c-datos-tabla">
+          <span class="ks-layout-bloque__etiqueta">Tabla — con una celda de variación incrustada</span>
+          <div class="ks-layout-marco ks-ancho-marco" id="c-datos-tabla-marco"></div>
+        </div>
+
+        <div class="ks-layout-bloque" id="c-datos-variacion">
+          <span class="ks-layout-bloque__etiqueta">Variación sube / baja — positiva, negativa y neutra</span>
+          <div class="ks-layout-marco ks-muestras" id="c-datos-variacion-marco"></div>
+        </div>
+
+        <div class="ks-layout-bloque" id="c-datos-linea">
+          <span class="ks-layout-bloque__etiqueta">Gráfico de línea</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;" id="c-datos-linea-marco"></div>
+        </div>
+
+        <div class="ks-layout-bloque" id="c-datos-barras">
+          <span class="ks-layout-bloque__etiqueta">Gráfico de barras — con un valor negativo</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;" id="c-datos-barras-marco"></div>
+        </div>
+
+        <div class="ks-layout-bloque" id="c-datos-distribucion">
+          <span class="ks-layout-bloque__etiqueta">Gráfico de distribución</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 28rem;" id="c-datos-distribucion-marco"></div>
+        </div>
+
+        <div class="ks-layout-bloque" id="c-datos-proceso">
+          <span class="ks-layout-bloque__etiqueta">Diagrama de proceso — reusa <code>.linea-tiempo</code> (T1.5); <code>--horizontal</code> nuevo desde 48em</span>
+          <div class="ks-layout-marco ks-ancho-marco" id="c-datos-proceso-marco"></div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-insignia">
+        <span class="ks-layout-bloque__etiqueta">Interacciones insignia (T8) — I10, cableada real</span>
+        <p class="ks-intro">
+          Primera de las cuatro interacciones insignia de <code>PLAN.md</code>
+          (I10 → I11 → I09 → I12, en ese orden — esta sesión solo construye
+          I10, "la más simple, sirve de patrón"). Se monta con el mismo
+          <code>OVA.quiz.crear()</code> del motor de evaluación de arriba:
+          router.js no distingue el punto de entrada, solo el tipo. Cada
+          entrada es un <code>&lt;input type="range"&gt;</code> nativo — el
+          teclado (flechas, Inicio/Fin) viene gratis del navegador, así que
+          "operable sin arrastrar" (cierre de T8) queda resuelto por
+          construcción — emparejado con un <code>&lt;output&gt;</code> que
+          lee su valor en vivo. El resultado también es un
+          <code>&lt;output&gt;</code>: se recalcula en cada movimiento de
+          cualquier slider. Baja la tasa de descuento por debajo de la de
+          crecimiento para ver el estado de error (ícono y texto cambian
+          juntos, nunca solo el color). «Registrar valorización» reporta
+          a <code>cmi.interactions</code> como tipo <code>other</code> — no
+          hay "correcta" en un explorador de escenarios, mismo criterio que
+          I08. El catálogo (hoy un solo miembro,
+          <code>valor_accion_dividendo</code>) está documentado en el
+          encabezado de <code>quiz.js</code>.
+        </p>
+        <div class="ks-layout-bloque" id="c-insignia-i10">
+          <span class="ks-layout-bloque__etiqueta">I10 · Calculadora paramétrica — valorización por dividendo</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-insignia-i11">
+          <span class="ks-layout-bloque__etiqueta">I11 · Boleta de compra — precio de mercado contra precio límite</span>
+          <p class="ks-intro">
+            Reusa la misma cáscara <code>.calc-calculadora</code> de I10 —
+            lo único nuevo es el selector de tipo de orden
+            (<code>&lt;fieldset&gt;</code>/<code>&lt;legend&gt;</code> con
+            dos radios nativos). Por defecto la orden es "Límite" con el
+            mercado por encima: queda pendiente al cargar — baja el precio
+            de mercado o sube tu límite para verla ejecutarse. "Pendiente"
+            no es un error: usa el estilo neutro, no el rojo.
+          </p>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ============================================================ -->
@@ -1204,6 +1302,7 @@
   <script src="../src/js/scorm.js"></script>
   <script src="../src/js/media.js"></script>
   <script src="../src/js/quiz.js"></script>
+  <script src="../src/js/charts.js"></script>
   <script>
     (function () {
       function montar(id, datos) {
@@ -1385,6 +1484,134 @@
           }
         }
       });
+    })();
+  </script>
+
+  <!-- Datos y gráficos (T7): catálogo completo, montado con
+       OVA.charts.crear() — mismo criterio que el reproductor de video y
+       el motor de evaluación de arriba, no depende del router/hash. s08
+       (variación), s09 (proceso) y s10 (barras) usan estos mismos datos
+       en content/ova-u1.js, recorribles de extremo a extremo en
+       src/index.html. -->
+  <script>
+    (function () {
+      document.getElementById('c-datos-cifra-anillo').appendChild(OVA.charts.crear({
+        tipo: 'cifra',
+        valor: '77 %',
+        etiqueta: 'de los colombianos ahorra guardando el efectivo en su casa',
+        porcentaje: 77
+      }));
+
+      document.getElementById('c-datos-cifra-simple').appendChild(OVA.charts.crear({
+        tipo: 'cifra',
+        valor: '500',
+        etiqueta: 'acciones de Petrocaribe compradas en el ejemplo de este curso'
+      }));
+
+      document.getElementById('c-datos-tabla-marco').appendChild(OVA.charts.crear({
+        tipo: 'tabla',
+        titulo: 'Comparación de rendimientos por tipo de activo',
+        columnas: ['Activo', 'Rendimiento anual', 'Riesgo'],
+        filas: [
+          ['Renta variable', { variacion: 12.4, unidad: ' %' }, 'Alto'],
+          ['Renta fija', { variacion: 6.1, unidad: ' %' }, 'Bajo'],
+          ['Derivados', { variacion: -2.3, unidad: ' %' }, 'Alto']
+        ]
+      }));
+
+      var marcoVariacion = document.getElementById('c-datos-variacion-marco');
+      marcoVariacion.appendChild(OVA.charts.crear({ tipo: 'variacion', valor: 50, unidad: ' %', etiqueta: 'valorización de Petrocaribe' }));
+      marcoVariacion.appendChild(OVA.charts.crear({ tipo: 'variacion', valor: -2.3, unidad: ' %', etiqueta: 'derivados, último trimestre' }));
+      marcoVariacion.appendChild(OVA.charts.crear({ tipo: 'variacion', valor: 0, unidad: ' %', etiqueta: 'renta fija, sin cambio' }));
+
+      document.getElementById('c-datos-linea-marco').appendChild(OVA.charts.crear({
+        tipo: 'linea',
+        titulo: 'Precio de la acción de Petrocaribe, últimos 8 meses',
+        unidad: '$',
+        puntos: [
+          { etiqueta: 'Mes 1', valor: 1000 },
+          { etiqueta: 'Mes 3', valor: 1050 },
+          { etiqueta: 'Mes 5', valor: 1180 },
+          { etiqueta: 'Mes 7', valor: 1400 },
+          { etiqueta: 'Mes 8', valor: 1500 }
+        ]
+      }));
+
+      document.getElementById('c-datos-barras-marco').appendChild(OVA.charts.crear({
+        tipo: 'barras',
+        titulo: 'Rentabilidad anual promedio por tipo de activo',
+        unidad: ' %',
+        puntos: [
+          { etiqueta: 'Renta variable', valor: 12.4 },
+          { etiqueta: 'Renta fija', valor: 6.1 },
+          { etiqueta: 'Derivados', valor: -2.3 }
+        ]
+      }));
+
+      document.getElementById('c-datos-distribucion-marco').appendChild(OVA.charts.crear({
+        tipo: 'distribucion',
+        titulo: 'Distribución de un portafolio balanceado',
+        segmentos: [
+          { etiqueta: 'Renta variable', valor: 45 },
+          { etiqueta: 'Renta fija', valor: 35 },
+          { etiqueta: 'Derivados', valor: 20 }
+        ]
+      }));
+
+      document.getElementById('c-datos-proceso-marco').appendChild(OVA.charts.crear({
+        tipo: 'proceso',
+        pasos: [
+          { titulo: 'Compra en el mercado primario', detalle: 'Petrocaribe vende cada acción a $1.000; un inversionista compra 500.' },
+          { titulo: 'Ocho meses después', detalle: 'El precio sube a $1.500 en el mercado secundario.' },
+          { titulo: 'Cálculo de la valorización', detalle: 'La diferencia es $500: 500/1.000 = 50 % de valorización.' }
+        ]
+      }));
+    })();
+  </script>
+
+  <!-- Interacciones insignia (T8): I10, montada con OVA.quiz.crear() —
+       mismo punto de entrada que el motor de evaluación de arriba, ver
+       la nota de arquitectura en el encabezado de quiz.js. Mismos datos
+       que s11 en content/ova-u1.js, recorrible de extremo a extremo en
+       src/index.html. -->
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-insignia-i10');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I10',
+        datos: {
+          id: 'u1-p2-valorizacion-dividendo',
+          enunciado: 'Ajusta el dividendo esperado del próximo año y las tasas para estimar cuánto debería valer hoy una acción de Petrocaribe, según el modelo de descuento de dividendos.',
+          formula: 'valor_accion_dividendo',
+          entradas: [
+            { id: 'dividendo', etiqueta: 'Dividendo esperado (próximo año)', unidad: ' COP', min: 20, max: 200, paso: 5, valorInicial: 60 },
+            { id: 'tasaCrecimiento', etiqueta: 'Crecimiento esperado del dividendo', unidad: ' %', min: 0, max: 10, paso: 0.5, valorInicial: 4, decimales: 1 },
+            { id: 'tasaDescuento', etiqueta: 'Tasa de descuento (rendimiento requerido)', unidad: ' %', min: 1, max: 20, paso: 0.5, valorInicial: 10, decimales: 1 }
+          ],
+          salida: { etiqueta: 'Valor estimado de la acción', unidad: ' COP', decimales: 0 }
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+
+  <!-- Interacciones insignia (T8): I11, montada con OVA.quiz.crear() —
+       mismo criterio que I10 de arriba. Mismos datos que s12 en
+       content/ova-u1.js, recorrible de extremo a extremo en
+       src/index.html. -->
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-insignia-i11');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I11',
+        datos: {
+          id: 'u1-p3-boleta-compra',
+          enunciado: 'Vas a comprar acciones de Petrocaribe. Elige el tipo de orden y ajusta los precios para ver cuándo se ejecutaría tu boleta.',
+          mercado: { etiqueta: 'Precio de mercado (simulado)', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 1000 },
+          limite: { etiqueta: 'Tu precio límite de compra', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 950 }
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
     })();
   </script>
 

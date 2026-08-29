@@ -3,7 +3,8 @@
 
    Bloque .layout, elementos reutilizables (.layout__kicker,
    .layout__titulo, .layout__cuerpo, .layout__media, .layout__figura,
-   .layout__interaccion), modificadores de arreglo .layout--l01..l13.
+   .layout__interaccion, .layout__datos), modificadores de arreglo
+   .layout--l01..l13.
 
    Mobile-first con flex, no grid, en la base: .layout es
    `display:flex; flex-direction:column`, así que a 320px los
@@ -46,6 +47,16 @@
   flex-direction: column;
   gap: var(--sp-4);
   max-width: 42rem;
+}
+
+/* T7: elemento reutilizable nuevo, mismo criterio que .layout__media
+   (T4) y .layout__interaccion (T6) — router.js lo llena con
+   OVA.charts.crear() vía crearDatos(). Sin max-width propio: a
+   diferencia de .layout__cuerpo (ancho de lectura), un gráfico se
+   beneficia de más espacio; quien lo monta decide si lo acota (ver
+   .layout--l02 .layout__datos más abajo). */
+.layout__datos {
+  width: 100%;
 }
 
 /* ---- L01 · Portada de unidad -------------------------------------------
@@ -247,9 +258,14 @@
 
 /* ---- L02 · Texto a una columna ------------------------------------------
    Cuerpo con ancho de lectura acotado, sin centrar. Para explicación
-   densa sin apoyo visual. -------------------------------------------- */
+   densa sin apoyo visual — salvo que la pantalla traiga `datos` (T7):
+   ahí sí hay apoyo visual, acotado al mismo ancho de lectura que el
+   cuerpo (no es un layout de gráfico a ancho completo como L09). ---- */
 .layout--l02 .layout__cuerpo {
   max-width: 38rem;
+}
+.layout--l02 .layout__datos {
+  max-width: 42rem;
 }
 
 /* ---- L03 · Texto + media lateral (50/50) --------------------------------
@@ -341,18 +357,12 @@
 }
 
 /* ---- L09 · Proceso / línea de tiempo ---------------------------------------
-   Pasos en <ol> dentro de cuerpo: columna en móvil, fila en desktop.
-   Ej.: cálculo de valorización paso a paso. ----------------------------- */
-@media (min-width: 48em) {
-  .layout--l09 .layout__cuerpo ol {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: var(--sp-6);
-  }
-  .layout--l09 .layout__cuerpo ol > li {
-    flex: 1 1 12rem;
-  }
-}
+   Pasos en columna en móvil, fila en desktop. Ej.: cálculo de
+   valorización paso a paso. Sin CSS propio aquí: router.js monta el
+   diagrama con OVA.charts.crear({tipo:'proceso', …}) en .layout__datos
+   (T7), que ya reusa `.linea-tiempo`/`.linea-tiempo--horizontal`
+   (components.css) — ese componente se responsabiliza de su propio
+   @media, así L09 no duplica el breakpoint. --------------------------- */
 
 /* ---- L10 · Interacción a pantalla completa ---------------------------------
    Chrome mínimo: kicker y título centrados y compactos, la interacción
@@ -448,7 +458,8 @@
 .layout__cuerpo,
 .layout__media,
 .layout__figura,
-.layout__interaccion {
+.layout__interaccion,
+.layout__datos {
   animation: layout-entrada var(--dur-base) var(--ease-out) both;
 }
 .layout__titulo {
@@ -458,7 +469,8 @@
   animation-delay: calc(var(--stagger) * 2);
 }
 .layout__media,
-.layout__figura {
+.layout__figura,
+.layout__datos {
   animation-delay: calc(var(--stagger) * 3);
 }
 .layout__interaccion {

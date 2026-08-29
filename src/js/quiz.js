@@ -55,6 +55,102 @@
    No se persiste el intento entre recargas: cada montaje empieza en
    cero, igual que media.js no restaura la posición de reproducción.
    Si una revisión futura lo pide, es tarea aparte.
+
+   ---------------------------------------------------------------------
+   T8 — interacciones insignia (I09–I12). CLAUDE.md/PLAN.md piden cuatro
+   sesiones separadas, en orden I10 → I11 → I09 → I12; van dos (I10, I11).
+   No hay archivo dedicado a I09–I12 en la Estructura de CLAUDE.md, y
+   router.js ya solo conoce un punto de entrada para cualquier
+   `interaccion` (crearInteraccion → OVA.quiz.crear) — así que estas
+   cuatro viven aquí también, no en un archivo nuevo.
+
+   A diferencia de I01–I08, una interacción insignia NO es una pregunta
+   con intentos/Comprobar/Reintentar: es un widget exploratorio con su
+   propio armado y su propio momento de reporte a SCORM. `crear()` las
+   despacha por una tabla aparte (CONSTRUCTORES_INSIGNIA) antes de asumir
+   que todo lo demás es una pregunta I01–I08; cada constructor de este
+   grupo arma su DOM completo (no un <fieldset> para que crear() lo
+   envuelva) y decide él mismo cuándo llamar a reportarSCORM() — I09/I11/
+   I12 (sesiones futuras) siguen el mismo patrón de despacho.
+
+     I10 calculadora_parametrica { enunciado?, formula, entradas, salida }
+       - `formula` sale de un catálogo cerrado en FORMULAS_CALCULADORA
+         (hoy un solo miembro, 'valor_accion_dividendo') — mismo criterio
+         que el catálogo de charts.js: el contenido elige un tipo ya
+         implementado, el motor no evalúa expresiones arbitrarias.
+       - `entradas`: [{ id, etiqueta, unidad?, min, max, paso,
+         valorInicial, decimales? }, …] — un <input type="range"> por
+         entrada (mismo criterio que el scrubber de media.js: teclado,
+         Home/Fin/RePág/AvPág y el rol de slider vienen gratis del
+         navegador, "sin arrastrar" queda resuelto por construcción) más
+         un <output> nativo emparejado (for=id) para leer el valor en
+         vivo — <output> ya tiene rol ARIA implícito "status", así que el
+         valor de cada slider se anuncia solo, sin aria-live escrito a
+         mano.
+       - 'valor_accion_dividendo' exige exactamente estos tres ids en
+         `entradas` (modelo de descuento de dividendos / Gordon):
+         `dividendo` (dividendo esperado del próximo año, D1),
+         `tasaCrecimiento` y `tasaDescuento` (puntos porcentuales, ej. 4
+         = 4 %). valor = dividendo / ((tasaDescuento − tasaCrecimiento) /
+         100); si tasaDescuento ≤ tasaCrecimiento no hay valor real
+         (crecimiento no sostenible bajo ese descuento) y el resultado
+         pasa a un estado de error — texto explícito, nunca solo un NaN
+         o un color, y el botón de registrar se deshabilita mientras
+         dure.
+       - `salida`: { etiqueta, unidad?, decimales? } — `unidad` es sufijo,
+         igual que en charts.js (ej. " COP"), no símbolo antepuesto.
+       - El resultado también es un <output> (mismo motivo: es
+         literalmente el resultado de un cálculo) que se recalcula en
+         cada `input` de cualquier slider — la retroalimentación en vivo
+         es el punto pedagógico del componente, no un extra. El botón
+         «Registrar valorización» es la acción discreta que exige el
+         cierre de T8 ("resultado reportado al motor de estado"): arma
+         un objeto mínimo compatible con reportarSCORM() (idScorm,
+         tipoScorm:'other', textoRespuesta() serializa entradas.id=valor
+         separadas por coma, textoCorrecta() null — no hay "correcta" en
+         un explorador de escenarios, mismo criterio que I08) y anuncia
+         el registro en un párrafo role="status" propio (`.calc-resumen`,
+         mismo patrón que `.quiz-resumen`). No hay intentos ni bloqueo
+         definitivo: se puede ajustar y volver a registrar cuantas veces
+         se quiera, cada click agrega una fila nueva a cmi.interactions,
+         igual que cada Comprobar/Reintentar de una pregunta gradable.
+       - Familia de clases nueva `.calc-` (agregada a la lista de
+         CLAUDE.md) — ninguna reutiliza `.quiz-` a propósito: son
+         familias de componentes distintas aunque compartan el mismo
+         punto de entrada en JS.
+
+     I11 boleta_compra { enunciado?, mercado, limite }
+       - Base de C2 (cápsula de "valorización de una acción"). Reusa
+         literalmente la cáscara `.calc-calculadora` que I10 dejó
+         (enunciado, `.calc-calculadora__entradas`, resultado, acciones,
+         resumen) — es "el patrón" que PLAN.md le pedía establecer a I10.
+       - `mercado`/`limite`: mismo objeto `{ etiqueta?, unidad?, min,
+         max, paso, valorInicial, decimales? }` que las `entradas` de
+         I10, un slider cada uno. `mercado` simula el precio de mercado
+         vigente en el momento de enviar la boleta (el estudiante lo
+         mueve para explorar escenarios, no es un dato fijo); `limite`
+         es el precio máximo que el comprador está dispuesto a pagar.
+       - Tipo de orden: "A mercado" / "Límite" — un <fieldset>/<legend>
+         con dos <input type="radio"> nativos (mismo criterio que
+         I01–I08: el grupo y su navegación con flechas vienen gratis del
+         navegador), límite marcado por defecto porque es el caso que
+         enseña la diferencia. El slider de límite se deshabilita
+         (nunca se oculta) cuando el tipo es "a mercado".
+       - Regla de ejecución (orden de COMPRA): a mercado siempre se
+         ejecuta al precio de mercado vigente; a límite se ejecuta solo
+         si el precio de mercado no supera el límite — si lo supera,
+         queda pendiente. "Pendiente" NO es un estado de error (a
+         diferencia del dominio inválido de I10): no bloquea «Enviar
+         boleta», usa un ícono neutro (`schedule`) y el estilo por
+         defecto de `.calc-calculadora__resultado`, no el rojo de error
+         — es un resultado legítimo de una orden límite, el punto
+         pedagógico del ejercicio. "Ejecutada" sí tiene su propio
+         verde (`check_circle`), mismo patrón que `.quiz-retro
+         [data-estado="correcto"]`.
+       - Mismo mecanismo de reporte que I10: «Enviar boleta» arma un
+         objeto compatible con reportarSCORM() (tipoScorm 'other',
+         sin correct_responses) y puede reenviarse cuantas veces se
+         quiera tras ajustar los sliders.
    ============================================================ */
 (function () {
   'use strict';
@@ -77,6 +173,15 @@
       .normalize('NFD')
       .replace(/[̀-ͯ]/g, '')
       .replace(/\s+/g, ' ');
+  }
+
+  function formatearNumero(valor, decimales) {
+    var n = Number(valor);
+    var d = decimales == null ? 0 : decimales;
+    return new Intl.NumberFormat('es-CO', {
+      minimumFractionDigits: d,
+      maximumFractionDigits: d
+    }).format(n);
   }
 
   function mismosConjuntos(a, b) {
@@ -599,6 +704,350 @@
     };
   }
 
+  /* ---- Interacciones insignia (T8) ----------------------------------
+     I10, la primera de las cuatro (I10 → I11 → I09 → I12, orden de
+     PLAN.md). Ver la nota de arquitectura en el encabezado del archivo:
+     no son preguntas, así que no pasan por el fieldset/Comprobar/
+     Reintentar compartido — cada una arma su propio DOM completo. */
+
+  // Catálogo cerrado de fórmulas para I10: el contenido elige un
+  // nombre ya implementado, nunca una expresión arbitraria (mismo
+  // criterio que el catálogo de tipos de charts.js). Cada fórmula recibe
+  // los valores actuales de las entradas (objeto id → number) y devuelve
+  // { valor } o { error } — nunca un NaN silencioso.
+  var FORMULAS_CALCULADORA = {
+    // Modelo de descuento de dividendos (Gordon): valor = D1 / (r − g).
+    // Exige los ids dividendo/tasaCrecimiento/tasaDescuento en `entradas`
+    // (documentado en el encabezado del archivo).
+    valor_accion_dividendo: function (valores) {
+      var dividendo = valores.dividendo;
+      var r = valores.tasaDescuento / 100;
+      var g = valores.tasaCrecimiento / 100;
+      if (!(r - g > 0)) {
+        return { error: 'La tasa de descuento debe ser mayor que la de crecimiento para que exista un valor.' };
+      }
+      return { valor: dividendo / (r - g) };
+    }
+  };
+
+  function construirCalculadoraParametrica(idBase, idScorm, datos) {
+    var formula = FORMULAS_CALCULADORA[datos.formula];
+    if (!formula) {
+      throw new Error('La fórmula "' + datos.formula + '" no existe en el catálogo de la calculadora paramétrica.');
+    }
+    var entradas = datos.entradas || [];
+    var salida = datos.salida || {};
+
+    var raiz = crear_('div', 'calc-calculadora');
+    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
+
+    var campos = crear_('div', 'calc-calculadora__entradas');
+    raiz.appendChild(campos);
+
+    var controles = {};
+    entradas.forEach(function (entrada) {
+      var controlId = idBase + '-calc-' + entrada.id;
+      var valorId = controlId + '-valor';
+
+      var campo = crear_('div', 'calc-campo');
+      var cabecera = crear_('div', 'calc-campo__cabecera');
+      var etiqueta = crear_('label', 'calc-campo__etiqueta', entrada.etiqueta);
+      etiqueta.setAttribute('for', controlId);
+      var valor = document.createElement('output');
+      valor.className = 'calc-campo__valor';
+      valor.id = valorId;
+      valor.setAttribute('for', controlId);
+      cabecera.appendChild(etiqueta);
+      cabecera.appendChild(valor);
+      campo.appendChild(cabecera);
+
+      // input[type="range"] nativo, no un div a medida: el teclado
+      // (flechas, Inicio/Fin, RePág/AvPág) y el rol de slider vienen
+      // gratis del navegador — "operable con teclado sin arrastrar"
+      // (cierre de T8) queda resuelto por construcción, mismo criterio
+      // que el scrubber de media.js.
+      var control = document.createElement('input');
+      control.type = 'range';
+      control.id = controlId;
+      control.min = String(entrada.min);
+      control.max = String(entrada.max);
+      control.step = String(entrada.paso);
+      control.value = String(entrada.valorInicial);
+      control.className = 'calc-campo__control';
+      control.setAttribute('aria-describedby', valorId);
+      campo.appendChild(control);
+      campos.appendChild(campo);
+
+      controles[entrada.id] = { input: control, output: valor, entrada: entrada };
+    });
+
+    function valoresActuales() {
+      var v = {};
+      Object.keys(controles).forEach(function (id) {
+        v[id] = parseFloat(controles[id].input.value);
+      });
+      return v;
+    }
+
+    function textoEntrada(entrada, num) {
+      return formatearNumero(num, entrada.decimales) + (entrada.unidad || '');
+    }
+
+    var resultado = crear_('div', 'calc-calculadora__resultado');
+    var resultadoIcono = crear_('span', 'icono calc-calculadora__resultado-icono');
+    resultadoIcono.setAttribute('aria-hidden', 'true');
+    var resultadoTexto = crear_('div', 'calc-calculadora__resultado-texto');
+    var resultadoEtiqueta = crear_('p', 'calc-calculadora__resultado-etiqueta', salida.etiqueta || '');
+    var resultadoValor = document.createElement('output');
+    resultadoValor.className = 'tipo-display-2 calc-calculadora__resultado-valor';
+    resultadoTexto.appendChild(resultadoEtiqueta);
+    resultadoTexto.appendChild(resultadoValor);
+    resultado.appendChild(resultadoIcono);
+    resultado.appendChild(resultadoTexto);
+    raiz.appendChild(resultado);
+
+    var acciones = crear_('div', 'calc-acciones');
+    var botonRegistrar = crear_('button', 'boton', 'Registrar valorización');
+    botonRegistrar.type = 'button';
+    acciones.appendChild(botonRegistrar);
+    raiz.appendChild(acciones);
+
+    var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
+    resumen.setAttribute('role', 'status');
+    raiz.appendChild(resumen);
+
+    var ultimoCalculo = null;
+
+    function recalcular() {
+      Object.keys(controles).forEach(function (id) {
+        var c = controles[id];
+        c.output.textContent = textoEntrada(c.entrada, parseFloat(c.input.value));
+      });
+      var resultadoFormula = formula(valoresActuales());
+      if (resultadoFormula.error) {
+        ultimoCalculo = null;
+        resultado.dataset.estado = 'error';
+        resultadoIcono.textContent = 'error';
+        resultadoValor.textContent = resultadoFormula.error;
+        botonRegistrar.disabled = true;
+      } else {
+        ultimoCalculo = resultadoFormula.valor;
+        resultado.dataset.estado = 'ok';
+        resultadoIcono.textContent = 'insights';
+        resultadoValor.textContent = formatearNumero(resultadoFormula.valor, salida.decimales) + (salida.unidad || '');
+        botonRegistrar.disabled = false;
+      }
+    }
+
+    Object.keys(controles).forEach(function (id) {
+      controles[id].input.addEventListener('input', recalcular);
+    });
+    recalcular();
+
+    function registrar() {
+      if (ultimoCalculo === null) return;
+      var textoValor = formatearNumero(ultimoCalculo, salida.decimales) + (salida.unidad || '');
+      var pregunta = {
+        idScorm: idScorm,
+        tipoScorm: 'other',
+        textoRespuesta: function () {
+          var v = valoresActuales();
+          return Object.keys(v).map(function (id) { return id + '=' + v[id]; }).join(',');
+        },
+        textoCorrecta: function () { return null; }
+      };
+      reportarSCORM(pregunta, 'neutral');
+      resumen.textContent = (salida.etiqueta || 'Resultado') + ' registrado: ' + textoValor + '.';
+    }
+
+    botonRegistrar.addEventListener('click', registrar);
+
+    return raiz;
+  }
+
+  /* I11, boleta de compra (precio de mercado contra precio límite, base
+     de C2). Reusa la misma cáscara `.calc-calculadora` que I10 dejó
+     (enunciado, `.calc-calculadora__entradas`, resultado, acciones,
+     resumen) — es literalmente "el patrón" que I10 debía establecer. Lo
+     único nuevo es el selector de tipo de orden (fieldset/legend con dos
+     <input type="radio"> nativos, mismo criterio que I01–I08: el grupo
+     de radios y su navegación con flechas vienen gratis del navegador).
+     Regla de ejecución de una orden de COMPRA: a mercado siempre se
+     ejecuta al precio de mercado vigente; a límite se ejecuta solo si el
+     precio de mercado no supera el límite que definió el comprador — si
+     lo supera, queda pendiente. "Pendiente" no es un error (no bloquea
+     el envío ni usa el color de error): es un resultado legítimo de una
+     orden límite, el mismo punto pedagógico del ejercicio. */
+  function construirBoletaCompra(idBase, idScorm, datos) {
+    var mercadoCfg = datos.mercado || {};
+    var limiteCfg = datos.limite || {};
+    var nombreTipo = idBase + '-boleta-tipo';
+
+    var raiz = crear_('div', 'calc-calculadora');
+    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
+
+    var fieldsetTipo = document.createElement('fieldset');
+    fieldsetTipo.className = 'calc-boleta__tipo';
+    fieldsetTipo.appendChild(crear_('legend', 'calc-campo__etiqueta', 'Tipo de orden'));
+    var opcionesTipo = crear_('div', 'calc-boleta__opciones');
+
+    var radioMercado = document.createElement('input');
+    radioMercado.type = 'radio';
+    radioMercado.name = nombreTipo;
+    radioMercado.value = 'mercado';
+    radioMercado.id = idBase + '-tipo-mercado';
+    var labelMercado = crear_('label', 'calc-opcion');
+    labelMercado.setAttribute('for', radioMercado.id);
+    labelMercado.appendChild(radioMercado);
+    labelMercado.appendChild(document.createTextNode('A mercado'));
+
+    var radioLimite = document.createElement('input');
+    radioLimite.type = 'radio';
+    radioLimite.name = nombreTipo;
+    radioLimite.value = 'limite';
+    radioLimite.id = idBase + '-tipo-limite';
+    // Límite por defecto: es el caso que de verdad enseña la diferencia
+    // (a mercado siempre se ejecuta, no hay nada que explorar ahí).
+    radioLimite.checked = true;
+    var labelLimite = crear_('label', 'calc-opcion');
+    labelLimite.setAttribute('for', radioLimite.id);
+    labelLimite.appendChild(radioLimite);
+    labelLimite.appendChild(document.createTextNode('Límite'));
+
+    opcionesTipo.appendChild(labelMercado);
+    opcionesTipo.appendChild(labelLimite);
+    fieldsetTipo.appendChild(opcionesTipo);
+    raiz.appendChild(fieldsetTipo);
+
+    var campos = crear_('div', 'calc-calculadora__entradas');
+    raiz.appendChild(campos);
+
+    function construirCampo(id, cfg) {
+      var controlId = idBase + '-boleta-' + id;
+      var valorId = controlId + '-valor';
+      var campo = crear_('div', 'calc-campo');
+      var cabecera = crear_('div', 'calc-campo__cabecera');
+      var etiqueta = crear_('label', 'calc-campo__etiqueta', cfg.etiqueta);
+      etiqueta.setAttribute('for', controlId);
+      var salida = document.createElement('output');
+      salida.className = 'calc-campo__valor';
+      salida.id = valorId;
+      salida.setAttribute('for', controlId);
+      cabecera.appendChild(etiqueta);
+      cabecera.appendChild(salida);
+      campo.appendChild(cabecera);
+      var control = document.createElement('input');
+      control.type = 'range';
+      control.id = controlId;
+      control.min = String(cfg.min);
+      control.max = String(cfg.max);
+      control.step = String(cfg.paso);
+      control.value = String(cfg.valorInicial);
+      control.className = 'calc-campo__control';
+      control.setAttribute('aria-describedby', valorId);
+      campo.appendChild(control);
+      campos.appendChild(campo);
+      return { input: control, output: salida, cfg: cfg };
+    }
+
+    var mercado = construirCampo('mercado', mercadoCfg);
+    var limite = construirCampo('limite', limiteCfg);
+
+    function textoValor(cfg, num) {
+      return formatearNumero(num, cfg.decimales) + (cfg.unidad || '');
+    }
+
+    var resultado = crear_('div', 'calc-calculadora__resultado');
+    var resultadoIcono = crear_('span', 'icono calc-calculadora__resultado-icono');
+    resultadoIcono.setAttribute('aria-hidden', 'true');
+    var resultadoTexto = crear_('div', 'calc-calculadora__resultado-texto');
+    var resultadoEtiqueta = crear_('p', 'calc-calculadora__resultado-etiqueta', 'Estado de tu orden');
+    var resultadoValor = document.createElement('output');
+    // tipo-h5, no tipo-display-2 como en I10: aquí el resultado es una
+    // oración explicativa ("Queda pendiente: …"), no un número corto.
+    resultadoValor.className = 'tipo-h5 calc-calculadora__resultado-valor';
+    resultadoTexto.appendChild(resultadoEtiqueta);
+    resultadoTexto.appendChild(resultadoValor);
+    resultado.appendChild(resultadoIcono);
+    resultado.appendChild(resultadoTexto);
+    raiz.appendChild(resultado);
+
+    var acciones = crear_('div', 'calc-acciones');
+    var botonEnviar = crear_('button', 'boton', 'Enviar boleta');
+    botonEnviar.type = 'button';
+    acciones.appendChild(botonEnviar);
+    raiz.appendChild(acciones);
+
+    var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
+    resumen.setAttribute('role', 'status');
+    raiz.appendChild(resumen);
+
+    var ultimoResultado = null;
+
+    function tipoElegido() {
+      return radioLimite.checked ? 'limite' : 'mercado';
+    }
+
+    function recalcular() {
+      mercado.output.textContent = textoValor(mercado.cfg, parseFloat(mercado.input.value));
+      limite.output.textContent = textoValor(limite.cfg, parseFloat(limite.input.value));
+
+      var tipo = tipoElegido();
+      // El precio límite solo importa para una orden límite: deshabilitado
+      // (no oculto, sigue en el árbol de accesibilidad) cuando no aplica —
+      // mismo criterio que .boton:disabled ya establecido en T2.
+      limite.input.disabled = tipo !== 'limite';
+
+      var precioMercado = parseFloat(mercado.input.value);
+      var precioLimite = parseFloat(limite.input.value);
+      var ejecutada = tipo === 'mercado' || precioMercado <= precioLimite;
+      ultimoResultado = { tipo: tipo, ejecutada: ejecutada, precioMercado: precioMercado, precioLimite: precioLimite };
+
+      if (ejecutada) {
+        resultado.dataset.estado = 'ejecutada';
+        resultadoIcono.textContent = 'check_circle';
+        resultadoValor.textContent = 'Se ejecuta a ' + textoValor(mercado.cfg, precioMercado) +
+          (tipo === 'limite' ? ' (tu límite era ' + textoValor(limite.cfg, precioLimite) + ').' : ' (precio de mercado).');
+      } else {
+        resultado.dataset.estado = 'pendiente';
+        resultadoIcono.textContent = 'schedule';
+        resultadoValor.textContent = 'Queda pendiente: el precio de mercado (' + textoValor(mercado.cfg, precioMercado) +
+          ') supera tu límite (' + textoValor(limite.cfg, precioLimite) + ').';
+      }
+    }
+
+    mercado.input.addEventListener('input', recalcular);
+    limite.input.addEventListener('input', recalcular);
+    radioMercado.addEventListener('change', recalcular);
+    radioLimite.addEventListener('change', recalcular);
+    recalcular();
+
+    function enviar() {
+      var r = ultimoResultado;
+      var pregunta = {
+        idScorm: idScorm,
+        tipoScorm: 'other',
+        textoRespuesta: function () {
+          return 'tipo=' + r.tipo + ',precioMercado=' + r.precioMercado + ',precioLimite=' + r.precioLimite;
+        },
+        textoCorrecta: function () { return null; }
+      };
+      reportarSCORM(pregunta, 'neutral');
+      resumen.textContent = r.ejecutada
+        ? 'Boleta enviada: se ejecutó a ' + textoValor(mercado.cfg, r.precioMercado) + '.'
+        : 'Boleta enviada: quedó pendiente (no se ejecutó).';
+    }
+
+    botonEnviar.addEventListener('click', enviar);
+
+    return raiz;
+  }
+
+  var CONSTRUCTORES_INSIGNIA = {
+    I10: construirCalculadoraParametrica,
+    I11: construirBoletaCompra
+  };
+
   var CONSTRUCTORES = {
     I01: construirVerdaderoFalso,
     I02: construirOpcionUnica,
@@ -620,13 +1069,23 @@
     if (!interaccion || !interaccion.tipo) {
       throw new Error('La interacción no trae "tipo".');
     }
-    var constructor = CONSTRUCTORES[interaccion.tipo];
-    if (!constructor) {
-      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I08.');
-    }
     var datos = interaccion.datos || {};
     var idBase = 'quiz' + (++contadorInstancias);
     var idScorm = datos.id || idBase;
+
+    // Las interacciones insignia (T8) no son preguntas: no pasan por el
+    // fieldset/Comprobar/Reintentar/retro de abajo, arman su propio DOM
+    // completo y se devuelven directo — ver la nota de arquitectura en
+    // el encabezado del archivo.
+    var constructorInsignia = CONSTRUCTORES_INSIGNIA[interaccion.tipo];
+    if (constructorInsignia) {
+      return constructorInsignia(idBase, idScorm, datos);
+    }
+
+    var constructor = CONSTRUCTORES[interaccion.tipo];
+    if (!constructor) {
+      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I08, I10 ni I11.');
+    }
     var pregunta = constructor(idBase, idScorm, datos);
 
     var raiz = crear_('form', 'quiz-interaccion');

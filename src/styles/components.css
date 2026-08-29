@@ -1408,3 +1408,372 @@ a.cap-tarjeta:hover {
 .quiz-retro--entrada {
   animation: quiz-retro-entrada var(--dur-base) var(--ease-out) both;
 }
+
+/* ============================================================
+   T7 — Datos y gráficos. Familia `.dato-`.
+   ============================================================ */
+
+/* ---- Cifra destacada (T7) -----------------------------------------------
+   Motor real de `.anillo` (T5, decorativo/estático): cuando trae
+   `porcentaje`, reusa esa misma cáscara visual (SVG de progreso +
+   `.anillo__cifra` como texto real); sin `porcentaje`, es solo el número
+   grande — no todo dato destacado es una proporción de 100 y forzar un
+   anillo sin sentido semántico sería decoración vacía. */
+.dato-cifra {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+.dato-cifra--anillo {
+  align-items: flex-start;
+}
+.dato-cifra__etiqueta {
+  color: var(--text-secondary);
+  max-width: 24rem;
+}
+
+/* ---- Variación sube/baja (T7) --------------------------------------------
+   Las tres señales que exige el cierre de T7 a la vez: ícono
+   (arrow_upward/arrow_downward/remove), signo (+/−) y color — nunca el
+   color solo. Mismo candado que `.callout`: ícono en 500 (fill), valor en
+   700 (texto sobre claro). `data-signo="neutro"` (valor === 0) no lleva
+   color semántico, solo texto secundario. */
+.dato-variacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font: var(--text-body);
+}
+.dato-variacion__icono {
+  font-size: 1.1em;
+}
+.dato-variacion__valor {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.dato-variacion__etiqueta {
+  color: var(--text-secondary);
+}
+.dato-variacion[data-signo="positivo"] .dato-variacion__icono {
+  color: var(--nuam-green-500);
+}
+.dato-variacion[data-signo="positivo"] .dato-variacion__valor {
+  color: var(--nuam-green-700);
+}
+.dato-variacion[data-signo="negativo"] .dato-variacion__icono {
+  color: var(--nuam-red-500);
+}
+.dato-variacion[data-signo="negativo"] .dato-variacion__valor {
+  color: var(--nuam-red-700);
+}
+.dato-variacion[data-signo="neutro"] .dato-variacion__icono,
+.dato-variacion[data-signo="neutro"] .dato-variacion__valor {
+  color: var(--text-secondary);
+}
+
+/* ---- Tabla (T7) -----------------------------------------------------------
+   `<table>` real con `<caption>`/`<th scope>`, nunca una cuadrícula de
+   `<div>`. `__envoltura` con `overflow-x: auto` propio: una tabla con
+   muchas columnas se desplaza dentro de su propia caja, nunca empuja el
+   ancho de la página (regla dura 7 de CLAUDE.md es sobre el documento,
+   no sobre un widget de datos que declara su propio scroll). */
+.dato-tabla__envoltura {
+  width: 100%;
+  overflow-x: auto;
+}
+.dato-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--text-body-sm);
+}
+.dato-tabla caption {
+  text-align: left;
+  font: var(--text-h5);
+  color: var(--text-primary);
+  margin-block-end: var(--sp-3);
+}
+.dato-tabla th,
+.dato-tabla td {
+  text-align: left;
+  padding: var(--sp-3) var(--sp-4);
+  border-block-end: 1px solid var(--border-default);
+  white-space: nowrap;
+}
+.dato-tabla thead th {
+  color: var(--text-tertiary);
+  font: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-block-end: 1px solid var(--border-strong);
+}
+.dato-tabla tbody th {
+  font-weight: 600;
+}
+
+/* ---- Gráfico (línea / barras / distribución) (T7) -------------------------
+   Cáscara compartida por los tres tipos que necesitan SVG. El SVG es
+   siempre `aria-hidden` — decorativo — porque la alternativa accesible
+   vive fuera de él: la fila de ejes es texto HTML real (a diferencia de
+   `<text>` en SVG, sobrevive el zoom de texto al 200 %), y `__alternativa`
+   agrega la tabla exacta con los mismos datos. Trazos y rellenos van por
+   `style` referenciando `var(--token)`: los atributos de presentación SVG
+   (`stroke`, `fill`) no leen custom properties de forma consistente entre
+   navegadores (mismo hallazgo que ya documentó `.anillo` en T5). */
+.dato-grafico {
+  display: flex;
+  flex-direction: column;
+}
+.dato-grafico__titulo {
+  font: var(--text-h5);
+  margin-block-end: var(--sp-3);
+}
+.dato-grafico__lienzo {
+  background: var(--surface-subtle);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+}
+.dato-grafico__ejes {
+  display: flex;
+  gap: var(--sp-2);
+  margin-block-start: var(--sp-3);
+}
+.dato-grafico__eje {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  min-width: 0;
+  text-align: center;
+  font: var(--text-caption);
+  color: var(--text-tertiary);
+}
+.dato-grafico__eje-valor {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.dato-grafico__alternativa {
+  margin-block-start: var(--sp-3);
+}
+.dato-grafico__alternativa summary {
+  cursor: pointer;
+  color: var(--text-brand);
+  font: var(--text-body-sm);
+}
+.dato-grafico__alternativa[open] summary {
+  margin-block-end: var(--sp-3);
+}
+
+/* ---- Leyenda de distribución (T7) ------------------------------------------
+   La leyenda es la alternativa textual de este tipo (a diferencia de línea
+   y barras, no necesita un <details> aparte): cada segmento ya es texto
+   real con su valor, la muestra de color es decorativa (`aria-hidden`). Sin
+   rampa categórica en tokens.css, la paleta cicla naranja-500 + escala de
+   grises (ver PALETA_DISTRIBUCION en charts.js) — nunca un hex nuevo. */
+.dato-grafico__leyenda {
+  list-style: none;
+  padding-inline-start: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-block-start: var(--sp-3);
+}
+.dato-grafico__leyenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font: var(--text-body-sm);
+}
+.dato-grafico__muestra {
+  width: 0.85em;
+  height: 0.85em;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+}
+
+/* ---- Diagrama de proceso (T7) ----------------------------------------------
+   `.dato-proceso__titulo` opcional + `.linea-tiempo--horizontal` (ver
+   layouts.css/L09 y el modificador nuevo más abajo). */
+.dato-proceso__titulo {
+  margin-block-end: var(--sp-4);
+}
+
+/* ---- Línea de tiempo — variante horizontal (T7) ----------------------------
+   La nota pendiente de T1.5 en `.linea-tiempo` decía que esta variante "se
+   resuelve la próxima sesión, cuando se aplique dentro del layout real y su
+   propio @media" — este es ese trabajo. El nodo sigue midiendo 2.5rem
+   (1.25rem de radio), así que el conector horizontal se ancla al mismo
+   punto que ya usaba el vertical, sin recalcular nada. */
+@media (min-width: 48em) {
+  .linea-tiempo--horizontal {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .linea-tiempo--horizontal::before {
+    left: 1.25rem;
+    right: 1.25rem;
+    top: 1.25rem;
+    bottom: auto;
+    width: auto;
+    height: 1px;
+  }
+  .linea-tiempo--horizontal .linea-tiempo__paso {
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .linea-tiempo--horizontal .linea-tiempo__contenido {
+    align-items: center;
+    padding-block-start: var(--sp-2);
+  }
+}
+
+/* ============================================================
+   T8 — Interacciones insignia. Familia `.calc-`.
+
+   I10, calculadora paramétrica (la primera de las cuatro: I10 → I11 →
+   I09 → I12, orden de PLAN.md). No reutiliza `.quiz-` a propósito —
+   es una familia de componente distinta aunque comparta el mismo
+   punto de entrada en JS (OVA.quiz.crear), ver quiz.js.
+   ============================================================ */
+.calc-calculadora {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+}
+.calc-calculadora__enunciado {
+  color: var(--text-secondary);
+}
+.calc-calculadora__entradas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.calc-campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.calc-campo__cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.calc-campo__valor {
+  font: var(--text-h5);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* input[type="range"] nativo, no un div a medida: el teclado (flechas,
+   Inicio/Fin, RePág/AvPág) y el rol de slider vienen gratis del
+   navegador, mismo criterio que el scrubber de media.js (T4) y
+   .quiz-opcion (T6). accent-color pinta el track/thumb sin tocar la
+   apariencia nativa por navegador. */
+.calc-campo__control {
+  width: 100%;
+  accent-color: var(--nuam-orange-500);
+  cursor: pointer;
+}
+.calc-calculadora__resultado {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-subtle);
+  border-inline-start: 3px solid var(--border-strong);
+}
+.calc-calculadora__resultado-icono {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  color: var(--text-tertiary);
+}
+.calc-calculadora__resultado-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.calc-calculadora__resultado-etiqueta {
+  color: var(--text-secondary);
+}
+.calc-calculadora__resultado-valor {
+  font-variant-numeric: tabular-nums;
+}
+/* Estado de error (dominio inválido de la fórmula, ej. tasa de
+   descuento ≤ tasa de crecimiento): el color nunca es el único código
+   de un estado (regla dura de CLAUDE.md) — el ícono cambia (insights →
+   error) y el texto pasa de un número a la explicación, no solo el
+   borde/color. */
+.calc-calculadora__resultado[data-estado="error"] {
+  border-inline-start-color: var(--nuam-red-500);
+}
+.calc-calculadora__resultado[data-estado="error"] .calc-calculadora__resultado-icono {
+  color: var(--nuam-red-500);
+}
+.calc-calculadora__resultado[data-estado="error"] .calc-calculadora__resultado-valor {
+  font: var(--text-body);
+  color: var(--nuam-red-700);
+}
+.calc-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.calc-resumen {
+  color: var(--text-secondary);
+}
+
+/* ---- Boleta de compra (I11) — selector de tipo de orden ------------
+   Reusa la cáscara de arriba (.calc-calculadora/.calc-campo/.calc-
+   calculadora__resultado); lo único nuevo es este grupo de radios. */
+.calc-boleta__tipo {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.calc-boleta__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.calc-opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--surface-default);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.calc-opcion:hover {
+  background: var(--surface-subtle);
+}
+.calc-opcion input {
+  accent-color: var(--nuam-orange-500);
+  flex-shrink: 0;
+  width: 1.15em;
+  height: 1.15em;
+}
+/* Estado "ejecutada" de la boleta (I11): ícono y texto cambian a verde
+   juntos, nunca solo el borde — mismo patrón que
+   .quiz-retro[data-estado="correcto"]. "pendiente" no tiene regla
+   propia a propósito: no es un error, así que usa el estilo neutro por
+   defecto de .calc-calculadora__resultado (ver la nota en quiz.js). */
+.calc-calculadora__resultado[data-estado="ejecutada"] {
+  border-inline-start-color: var(--nuam-green-500);
+}
+.calc-calculadora__resultado[data-estado="ejecutada"] .calc-calculadora__resultado-icono {
+  color: var(--nuam-green-500);
+}
+.calc-calculadora__resultado[data-estado="ejecutada"] .calc-calculadora__resultado-valor {
+  color: var(--nuam-green-700);
+}
