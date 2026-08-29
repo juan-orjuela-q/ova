@@ -23,6 +23,15 @@
     return -1;
   }
 
+  function indiceMasAvanzado() {
+    var max = 0;
+    Object.keys(visitadas).forEach(function (id) {
+      var idx = indiceDe(id);
+      if (idx > max) max = idx;
+    });
+    return max;
+  }
+
   function instantanea() {
     return {
       indice: indiceActual,
@@ -30,7 +39,12 @@
       pantalla: pantallas[indiceActual] || null,
       visitadas: Object.keys(visitadas),
       esPrimera: indiceActual === 0,
-      esUltima: indiceActual === pantallas.length - 1
+      esUltima: indiceActual === pantallas.length - 1,
+      // La más lejos que ha llegado el estudiante, no dónde está ahora:
+      // difieren cuando usa el drawer (T3) para volver a revisar una
+      // pantalla ya visitada. El botón "Reanudar" del chrome usa esto
+      // para saber si hay adónde volver.
+      masAvanzada: indiceMasAvanzado()
     };
   }
 
@@ -75,6 +89,13 @@
       (guardado && guardado.actual) ||
       (pantallas[0] && pantallas[0].id);
     var idx = indiceDe(idInicial);
+    // Si el id inicial no existe entre las pantallas (p. ej. el hash quedó
+    // en algo que no es un id de pantalla, como el ancla del skip link de
+    // T3), no se descarta el progreso guardado por eso: se cae al id
+    // guardado antes de rendirse e ir a la primera pantalla.
+    if (idx === -1 && guardado && guardado.actual) {
+      idx = indiceDe(guardado.actual);
+    }
     indiceActual = idx >= 0 ? idx : 0;
     if (pantallas[indiceActual]) {
       visitadas[pantallas[indiceActual].id] = true;
@@ -95,6 +116,10 @@
     return pantallas[indiceActual] || null;
   }
 
+  function existe(id) {
+    return indiceDe(id) !== -1;
+  }
+
   function suscribir(fn) {
     suscriptores.push(fn);
     return function cancelar() {
@@ -108,6 +133,7 @@
     init: init,
     ir: ir,
     actual: actual,
+    existe: existe,
     instantanea: instantanea,
     suscribir: suscribir
   };

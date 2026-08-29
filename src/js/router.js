@@ -1,10 +1,15 @@
 /* ============================================================
-   router.js — navegación entre pantallas y motor de contenido.
+   router.js — navegación entre pantallas, motor de contenido y
+   chrome del OVA (T3: barra superior, drawer de índice, reanudar).
 
-   Dos trabajos: 1) traducir cada pantalla del JSON en el árbol DOM
-   de su layout (el catálogo PLANTILLAS de abajo) y 2) decidir cuál
+   Tres trabajos: 1) traducir cada pantalla del JSON en el árbol DOM
+   de su layout (el catálogo PLANTILLAS de abajo), 2) decidir cuál
    pantalla está activa a partir del hash de la URL, montarla en
-   #app y avisarle a state.js/a11y.js del cambio.
+   #app y avisarle a state.js/a11y.js del cambio, y 3) mantener el
+   chrome alrededor de #app (título, progreso, guardado, drawer,
+   reanudar) en sincronía con cada navegación — vive aquí y no en un
+   archivo aparte porque toda esa sincronía cuelga del mismo evento
+   (navegarA) que ya gestiona esta pieza.
 
    Por qué hash y no history.pushState: el hash sobrevive un F5 sin
    ayuda de JS (la URL ya lo trae) y no depende de que el servidor
@@ -33,6 +38,11 @@
   ];
 
   var contenidoActual = null;
+  // Elemento que tenía el foco antes de abrir el drawer (T3): cerrar por
+  // Escape, backdrop o el botón "Cerrar" se lo devuelve. Cerrar por haber
+  // elegido una pantalla de la lista no lo usa — ahí el foco lo toma
+  // enfocarEncabezado() de la pantalla nueva, sería un salto de foco doble.
+  var elementoAntesDelDrawer = null;
 
   /* ---- Construcción de DOM por layout --------------------------- */
 
@@ -168,6 +178,183 @@
     if (paso) paso.textContent = 'Pantalla ' + (inst.indice + 1) + ' de ' + inst.total;
   }
 
+  /* ---- Chrome: barra superior (T3) -------------------------------
+     Título, barra de progreso y estado de guardado. La barra de
+     progreso es un div propio con role="progressbar", no un
+     <progress> nativo: el ítem 4 del inventario de movimiento exige
+     animar su avance con --dur-slow, y solo transform/opacity pueden
+     animarse (nunca width) — un <progress> no expone su relleno
+     interno para transicionarlo así entre navegadores. El track usa
+     --surface-subtle-2 (gris 100), no --surface-muted (gris 200):
+     CLAUDE.md prohíbe naranja de relleno sobre superficies del gris
+     200 al 600, y este relleno es naranja. */
+  function actualizarBarraSuperior(pantalla) {
+    var titulo = document.getElementById('nav-barra-titulo');
+    if (titulo) titulo.textContent = pantalla.titulo;
+  }
+
+  function actualizarProgreso(inst) {
+    var barra = document.getElementById('nav-progreso');
+    var relleno = document.getElementById('nav-progreso-relleno');
+    var texto = document.getElementById('nav-progreso-texto');
+    var completadas = inst.visitadas.length;
+    var fraccion = inst.total ? completadas / inst.total : 0;
+    if (barra) {
+      barra.setAttribute('aria-valuemax', String(inst.total));
+      barra.setAttribute('aria-valuenow', String(completadas));
+      barra.setAttribute('aria-valuetext', completadas + ' de ' + inst.total + ' pantallas');
+    }
+    if (relleno) relleno.style.transform = 'scaleX(' + fraccion + ')';
+    if (texto) texto.textContent = completadas + ' / ' + inst.total + ' pantallas';
+  }
+
+  function actualizarGuardado() {
+    var icono = document.getElementById('nav-guardado-icono');
+    var texto = document.getElementById('nav-guardado-texto');
+    // El color nunca es el único código de un estado (regla dura de
+    // CLAUDE.md): el ícono y el texto cambian juntos según si
+    // localStorage de verdad está disponible, no solo si state.js
+    // *intentó* guardar.
+    var ok = OVA.storage.disponible();
+    if (icono) icono.textContent = ok ? 'cloud_done' : 'cloud_off';
+    if (texto) texto.textContent = ok ? 'Guardado' : 'No se pudo guardar en este dispositivo';
+  }
+
+  /* ---- Chrome: botón de reanudar (T3) -----------------------------
+     Aparece solo cuando el estudiante usó el drawer o "Anterior" para
+     revisar una pantalla ya vista y su posición actual quedó detrás de
+     la más avanzada — sin esto, volver al punto real exige contar
+     clics en "Siguiente". Oculto con `hidden`, no con clases de
+     visibilidad, para que además salga del orden de tabulación. */
+  function actualizarReanudar(inst) {
+    var boton = document.getElementById('nav-reanudar');
+    if (!boton) return;
+    boton.hidden = inst.masAvanzada <= inst.indice;
+  }
+
+  function reanudar() {
+    var inst = OVA.state.instantanea();
+    var pantalla = contenidoActual.pantallas[inst.masAvanzada];
+    if (pantalla) navegarA(pantalla.id);
+  }
+
+  /* ---- Chrome: drawer de índice (T3) -------------------------------
+     Lista generada una vez por contenido; cada navegación solo
+     actualiza estado/aria-current de los items ya construidos. Estados
+     con ícono y texto, nunca solo color (regla dura de CLAUDE.md): no
+     hay estado "bloqueado" aquí —eso es entre unidades, lo resuelve
+     Moodle (fuera de alcance)—, dentro de una unidad toda pantalla es
+     alcanzable. */
+  function construirDrawer(contenido) {
+    var titulo = document.getElementById('drawer-titulo');
+    var lista = document.getElementById('drawer-lista');
+    if (titulo) titulo.textContent = contenido.titulo;
+    if (!lista) return;
+    while (lista.firstChild) lista.removeChild(lista.firstChild);
+    contenido.pantallas.forEach(function (pantalla) {
+      var item = document.createElement('a');
+      item.className = 'nav-drawer__item';
+      item.href = '#' + pantalla.id;
+      var icono = document.createElement('span');
+      icono.className = 'icono';
+      icono.setAttribute('aria-hidden', 'true');
+      item.appendChild(icono);
+      item.appendChild(document.createTextNode(' ' + pantalla.titulo));
+      lista.appendChild(item);
+    });
+  }
+
+  function actualizarDrawer(inst) {
+    var lista = document.getElementById('drawer-lista');
+    if (!lista) return;
+    Array.prototype.forEach.call(lista.children, function (item, indice) {
+      var pantalla = contenidoActual.pantallas[indice];
+      var esActual = indice === inst.indice;
+      var visitada = inst.visitadas.indexOf(pantalla.id) !== -1;
+      var estado = esActual ? 'actual' : (visitada ? 'completado' : 'pendiente');
+      item.dataset.estado = estado;
+      if (esActual) {
+        item.setAttribute('aria-current', 'step');
+      } else {
+        item.removeAttribute('aria-current');
+      }
+      var icono = item.querySelector('.icono');
+      if (icono) {
+        icono.textContent = estado === 'completado' ? 'check_circle' :
+          (estado === 'actual' ? 'radio_button_checked' : 'radio_button_unchecked');
+      }
+    });
+  }
+
+  function drawerEstaAbierto() {
+    var drawer = document.getElementById('drawer');
+    return !!drawer && !drawer.hidden;
+  }
+
+  function alTecladoDrawer(evento) {
+    if (evento.key === 'Escape') {
+      cerrarDrawer();
+      return;
+    }
+    var drawer = document.getElementById('drawer');
+    if (drawer) OVA.a11y.ciclarFocoEn(drawer, evento);
+  }
+
+  function abrirDrawer() {
+    var drawer = document.getElementById('drawer');
+    var backdrop = document.getElementById('drawer-backdrop');
+    var boton = document.getElementById('drawer-abrir');
+    var cerrar = document.getElementById('drawer-cerrar');
+    if (!drawer || drawerEstaAbierto()) return;
+    elementoAntesDelDrawer = document.activeElement;
+    drawer.hidden = false;
+    if (backdrop) backdrop.hidden = false;
+    if (boton) boton.setAttribute('aria-expanded', 'true');
+    if (cerrar) cerrar.focus();
+    document.addEventListener('keydown', alTecladoDrawer);
+  }
+
+  function cerrarDrawer(opciones) {
+    opciones = opciones || {};
+    var drawer = document.getElementById('drawer');
+    var backdrop = document.getElementById('drawer-backdrop');
+    var boton = document.getElementById('drawer-abrir');
+    if (!drawer || !drawerEstaAbierto()) return;
+    drawer.hidden = true;
+    if (backdrop) backdrop.hidden = true;
+    if (boton) boton.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('keydown', alTecladoDrawer);
+    if (opciones.devolverFoco !== false && elementoAntesDelDrawer) {
+      elementoAntesDelDrawer.focus();
+    }
+    elementoAntesDelDrawer = null;
+  }
+
+  function configurarDrawer() {
+    var boton = document.getElementById('drawer-abrir');
+    var cerrar = document.getElementById('drawer-cerrar');
+    var backdrop = document.getElementById('drawer-backdrop');
+    var lista = document.getElementById('drawer-lista');
+    if (boton) boton.addEventListener('click', abrirDrawer);
+    if (cerrar) cerrar.addEventListener('click', function () { cerrarDrawer(); });
+    if (backdrop) backdrop.addEventListener('click', function () { cerrarDrawer(); });
+    if (lista) {
+      lista.addEventListener('click', function (evento) {
+        if (evento.target.closest('.nav-drawer__item')) {
+          // No se devuelve el foco al botón que abrió el drawer: la
+          // navegación que dispara este clic (vía hashchange, más abajo)
+          // ya mueve el foco al encabezado de la pantalla elegida.
+          cerrarDrawer({ devolverFoco: false });
+        }
+      });
+    }
+  }
+
+  function configurarBarraSuperior() {
+    var reanudarBoton = document.getElementById('nav-reanudar');
+    if (reanudarBoton) reanudarBoton.addEventListener('click', reanudar);
+  }
+
   function navegarA(id, opciones) {
     opciones = opciones || {};
     var ok = OVA.state.ir(id);
@@ -185,6 +372,11 @@
 
     var inst = OVA.state.instantanea();
     actualizarNavInferior(inst);
+    actualizarBarraSuperior(pantalla);
+    actualizarProgreso(inst);
+    actualizarGuardado();
+    actualizarReanudar(inst);
+    actualizarDrawer(inst);
     document.title = pantalla.titulo + ' · ' + contenidoActual.titulo;
 
     // En la carga inicial no se roba el foco: el usuario todavía no
@@ -212,8 +404,13 @@
 
   function alCambiarHash() {
     var id = idDesdeHash();
+    // Un hash que no es id de ninguna pantalla (el ancla del skip link,
+    // "#app", es el caso real) no es un error de navegación: se ignora
+    // en silencio en vez de loguear un fallo por algo que no lo es. Ver
+    // el mismo razonamiento en el fallback de idInicial en state.js.
+    if (!id || !OVA.state.existe(id)) return;
     var actual = OVA.state.actual();
-    if (id && (!actual || id !== actual.id)) {
+    if (!actual || id !== actual.id) {
       navegarA(id, { actualizarHistorial: false });
     }
   }
@@ -232,6 +429,9 @@
       idInicial: idDesdeHash()
     });
     configurarNavInferior();
+    construirDrawer(contenido);
+    configurarDrawer();
+    configurarBarraSuperior();
     window.addEventListener('hashchange', alCambiarHash);
     navegarA(OVA.state.actual().id, { esInicial: true });
   }

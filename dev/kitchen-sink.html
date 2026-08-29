@@ -213,12 +213,21 @@
   </style>
 </head>
 <body>
+  <!-- Demo viva del skip link de T3 (no una captura estática): esta
+       página no tiene router con hash propio, así que "#ks-cuerpo" no
+       choca con nada — pulsa Tab al cargar la página para verlo
+       aparecer, Enter para saltar al <main>. En index.html apunta a
+       "#app" en vez de a un id de sección por la misma razón que
+       explica el comentario junto al skip link real. -->
+  <a href="#ks-cuerpo" class="u-skip-link">Saltar al contenido (demo viva)</a>
+
   <nav class="ks-nav" aria-label="Secciones de la kitchen sink">
     <a href="#tipografia">Tipografía</a>
     <a href="#superficies">Superficies</a>
     <a href="#componentes">Componentes</a>
     <a href="#movimiento">Movimiento</a>
     <a href="#motor">Motor</a>
+    <a href="#chrome">Chrome</a>
     <a href="#layouts">Layouts</a>
     <a href="#l01">L01</a>
     <a href="#l02">L02</a>
@@ -246,7 +255,7 @@
     </p>
   </header>
 
-  <main>
+  <main id="ks-cuerpo" tabindex="-1">
     <!-- ============================================================ -->
     <section id="tipografia" class="ks-seccion" aria-labelledby="tipografia-h">
       <h2 id="tipografia-h">Escala tipográfica</h2>
@@ -458,23 +467,42 @@
         </div>
       </div>
 
+      <div class="ks-layout-bloque" id="c-boton-icono">
+        <span class="ks-layout-bloque__etiqueta">Botón de solo ícono</span>
+        <div class="ks-layout-marco" style="display: flex; gap: var(--sp-4);">
+          <button class="boton-icono" type="button" aria-label="Ejemplo: abrir índice"><span class="icono" aria-hidden="true">menu</span></button>
+          <button class="boton-icono" type="button" aria-label="Ejemplo: cerrar"><span class="icono" aria-hidden="true">close</span></button>
+        </div>
+      </div>
+
       <div class="ks-layout-bloque" id="c-nav-barra">
-        <span class="ks-layout-bloque__etiqueta">Barra superior (maqueta)</span>
+        <span class="ks-layout-bloque__etiqueta">Barra superior — cableada en T3</span>
         <div class="ks-layout-marco">
           <header class="nav-barra">
+            <button class="boton-icono" type="button" aria-expanded="false"><span class="icono" aria-hidden="true">menu</span><span class="u-oculto-visualmente">Abrir índice de la unidad</span></button>
             <p class="nav-barra__titulo">Unidad 1 · Contexto sobre el mercado</p>
             <div class="nav-barra__progreso">
-              <label class="u-oculto-visualmente" for="ks-progreso">Progreso de la unidad</label>
-              <progress id="ks-progreso" max="13" value="5"></progress>
               <span>5 / 13 pantallas</span>
+              <div class="barra-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="13" aria-valuenow="5" aria-label="Progreso de la unidad (ejemplo)">
+                <span class="barra-progreso__relleno" style="transform: scaleX(0.38);"></span>
+              </div>
             </div>
             <p class="nav-barra__guardado"><span class="icono" aria-hidden="true">cloud_done</span> Guardado</p>
           </header>
         </div>
+        <p class="ks-intro">
+          El relleno naranja de la barra de progreso usa <code>--surface-subtle-2</code> (gris 100) como track, no <code>--surface-muted</code> (gris 200): CLAUDE.md prohíbe naranja de relleno del gris 200 al 600. El avance anima con <code>transform: scaleX()</code> en <code>--dur-slow</code> (ítem 4 del inventario de movimiento) — nunca <code>width</code>.
+        </p>
+        <p class="ks-intro">
+          El botón de reanudar (<code>#nav-reanudar</code> en <code>index.html</code>) no tiene demo estática aquí: solo existe cuando hay una pantalla más avanzada que la actual, y eso depende de <code>state.js</code>. Aparece y se prueba en <a href="../src/index.html">src/index.html</a> volviendo con el drawer a una pantalla ya vista.
+        </p>
+        <p class="ks-intro">
+          El indicador de guardado también cambia de ícono y texto —nunca solo de color— si <code>localStorage</code> no está disponible: <code>cloud_off</code> / «No se pudo guardar en este dispositivo».
+        </p>
       </div>
 
       <div class="ks-layout-bloque" id="c-nav-inferior">
-        <span class="ks-layout-bloque__etiqueta">Barra inferior (maqueta)</span>
+        <span class="ks-layout-bloque__etiqueta">Barra inferior (T2, cableada)</span>
         <div class="ks-layout-marco">
           <footer class="nav-inferior">
             <button class="boton boton--outline" type="button"><span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior</button>
@@ -485,15 +513,23 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-nav-drawer">
-        <span class="ks-layout-bloque__etiqueta">Drawer de índice (maqueta)</span>
+        <span class="ks-layout-bloque__etiqueta">Drawer de índice — cableado en T3</span>
         <div class="ks-layout-marco">
-          <nav class="nav-drawer" aria-label="Índice de la unidad (ejemplo)">
-            <p class="nav-drawer__titulo">Unidad 1</p>
-            <a class="nav-drawer__item" href="#" data-estado="completado"><span class="icono" aria-hidden="true">check_circle</span> Contexto del mercado</a>
-            <a class="nav-drawer__item" href="#" aria-current="step" data-estado="actual"><span class="icono" aria-hidden="true">radio_button_checked</span> ¿Qué es una acción?</a>
-            <a class="nav-drawer__item" href="#" data-estado="bloqueado" aria-disabled="true"><span class="icono" aria-hidden="true">lock</span> Valorización de una acción</a>
-          </nav>
+          <div class="nav-drawer" style="position: static; max-width: none;">
+            <div class="nav-drawer__cabecera">
+              <p class="nav-drawer__titulo">Unidad 1</p>
+              <button class="boton-icono" type="button"><span class="icono" aria-hidden="true">close</span><span class="u-oculto-visualmente">Cerrar índice</span></button>
+            </div>
+            <nav aria-label="Pantallas de la unidad (ejemplo)">
+              <a class="nav-drawer__item" href="#" data-estado="completado"><span class="icono" aria-hidden="true">check_circle</span> Contexto del mercado</a>
+              <a class="nav-drawer__item" href="#" aria-current="step" data-estado="actual"><span class="icono" aria-hidden="true">radio_button_checked</span> ¿Qué es una acción?</a>
+              <a class="nav-drawer__item" href="#" data-estado="pendiente"><span class="icono" aria-hidden="true">radio_button_unchecked</span> Valorización de una acción</a>
+            </nav>
+          </div>
         </div>
+        <p class="ks-intro">
+          Aquí es la cáscara visual en reposo, con <code>position: static</code> para no tapar la página de documentación. La versión real (<code>#drawer</code> en <code>index.html</code>) suma el modificador <code>.nav-drawer--flotante</code> más el backdrop, y solo router.js sabe abrirla/cerrarla con foco ciclado — sin router.js aquí, esa parte interactiva (Escape, backdrop, ciclo de Tab) se prueba en <a href="../src/index.html">src/index.html</a>, no se falsea con JS aparte en esta página.
+        </p>
       </div>
 
       <div class="ks-layout-bloque" id="c-media-audio">
@@ -658,6 +694,49 @@
         <code>window.OVA_CONTENIDO</code> en vez de pedirse por red). El
         detalle completo y el porqué quedan en <code>CLAUDE.md</code> y en
         <code>ESTADO.md</code>.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="chrome" class="ks-seccion" aria-labelledby="chrome-h">
+      <h2 id="chrome-h">Chrome del OVA (T3)</h2>
+      <p class="ks-intro">
+        El aspecto de la barra superior, la barra inferior y el drawer de
+        índice está arriba, en <a href="#componentes">Componentes</a>, junto
+        con el botón de solo ícono y la barra de progreso nuevos que les dan
+        soporte. Lo que no puede mostrarse en estático sin falsearlo —el
+        skip link real de <code>index.html</code> apuntando a <code>#app</code>,
+        el drawer abriéndose y cerrándose, el ciclo de foco mientras está
+        abierto— se verifica en <a href="../src/index.html">src/index.html</a>,
+        siguiendo el mismo criterio que la sección de <a href="#motor">Motor</a>.
+        (El skip link de <em>esta</em> página, arriba del todo, sí es una demo
+        viva: no hay router con hash propio aquí que choque con él.)
+      </p>
+      <p class="ks-intro">
+        Qué verificar en <code>src/index.html</code>: recorrer con Tab desde
+        el skip link hasta el último control de la barra inferior sin que
+        nada quede inalcanzable; abrir el drawer con el botón de la barra
+        superior y confirmar que el foco entra en «Cerrar», que Tab/Shift+Tab
+        ciclan solo dentro del drawer (nunca escapan al fondo mientras está
+        abierto), y que Escape, el backdrop y «Cerrar» devuelven el foco al
+        botón que lo abrió; elegir una pantalla de la lista y confirmar que
+        el foco termina en el encabezado de esa pantalla, no en el botón del
+        drawer; volver con «Anterior» o el drawer a una pantalla ya vista y
+        confirmar que aparece «Reanudar», y que lleva de vuelta a la pantalla
+        más avanzada; recargar a mitad de la unidad después de haber usado el
+        skip link (deja <code>#app</code> en la URL) y confirmar que igual
+        retoma el progreso guardado, no la primera pantalla.
+      </p>
+      <p class="ks-intro">
+        Decisión de arquitectura: la barra de progreso no es un
+        <code>&lt;progress&gt;</code> nativo como en la maqueta de T1.5. El
+        ítem 4 del inventario de movimiento de CLAUDE.md exige animar su
+        avance con <code>--dur-slow</code>, y solo <code>transform</code>/
+        <code>opacity</code> pueden animarse — un <code>&lt;progress&gt;</code>
+        no expone su relleno para transicionarlo así entre navegadores. Es un
+        <code>div</code> con <code>role="progressbar"</code> en su lugar,
+        con el mismo nivel de accesibilidad y el avance real animado por
+        <code>transform: scaleX()</code>.
       </p>
     </section>
 

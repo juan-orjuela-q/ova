@@ -18,19 +18,68 @@
   <link rel="stylesheet" href="styles/components.css" />
 </head>
 <body>
+  <!-- Skip link (T3): primer elemento tabulable de la página. Salta a
+       #app, que tiene tabindex="-1" más abajo para poder recibir foco
+       aunque no sea nativamente focalizable. Apunta a "#app" y no al
+       id de una pantalla porque el router es quien decide cuál
+       pantalla está activa; alCambiarHash() en router.js ignora este
+       hash a propósito (no es id de ninguna pantalla) en vez de
+       tratarlo como una ruta inválida. -->
+  <a href="#app" class="u-skip-link">Saltar al contenido</a>
+
   <!-- Región de anuncios de a11y.js. Vacía en reposo; router.js la
        llena en cada cambio de pantalla (nunca en la carga inicial). -->
   <div id="anuncios" class="u-oculto-visualmente" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- El router (T2) monta aquí la pantalla activa. -->
-  <main id="app"></main>
+  <!-- Barra superior (T3, landmark banner): título de la pantalla
+       activa, botón del drawer, progreso, reanudar y guardado. Todo
+       el contenido de texto lo llena router.js en cada navegación. -->
+  <header class="nav-barra">
+    <button
+      id="drawer-abrir"
+      class="boton-icono"
+      type="button"
+      aria-expanded="false"
+      aria-controls="drawer"
+    >
+      <span class="icono" aria-hidden="true">menu</span>
+      <span class="u-oculto-visualmente">Abrir índice de la unidad</span>
+    </button>
 
-  <!-- Barra inferior mínima para navegar entre pantallas. Es el
-       mismo componente .nav-inferior de la kitchen sink (T1.5),
-       cableado por primera vez aquí. El chrome completo —barra
-       superior, drawer, skip link, indicador de guardado— es de T3;
-       esto solo cubre lo que T2 necesita para poder recorrer las
-       pantallas del contenido. -->
+    <p id="nav-barra-titulo" class="nav-barra__titulo"></p>
+
+    <div class="nav-barra__progreso">
+      <span id="nav-progreso-texto"></span>
+      <div
+        id="nav-progreso"
+        class="barra-progreso"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="1"
+        aria-valuenow="0"
+        aria-labelledby="nav-progreso-etiqueta"
+      >
+        <span id="nav-progreso-etiqueta" class="u-oculto-visualmente">Progreso de la unidad</span>
+        <span id="nav-progreso-relleno" class="barra-progreso__relleno"></span>
+      </div>
+    </div>
+
+    <button id="nav-reanudar" class="boton boton--outline" type="button" hidden>
+      <span class="boton__icono" aria-hidden="true">play_circle</span> Reanudar
+    </button>
+
+    <p id="nav-guardado" class="nav-barra__guardado">
+      <span id="nav-guardado-icono" class="icono" aria-hidden="true">cloud_done</span>
+      <span id="nav-guardado-texto">Guardado</span>
+    </p>
+  </header>
+
+  <!-- El router (T2) monta aquí la pantalla activa. tabindex="-1":
+       destino del skip link, no forma parte del orden de tabulación
+       normal (a eso ya llega quien navega con Tab por su cuenta). -->
+  <main id="app" tabindex="-1"></main>
+
+  <!-- Barra inferior (T2, cableada; T3 no la toca). -->
   <footer class="nav-inferior">
     <button id="nav-anterior" class="boton boton--outline" type="button">
       <span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior
@@ -40,6 +89,32 @@
       Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span>
     </button>
   </footer>
+
+  <!-- Drawer de índice (T3). Oculto por defecto con `hidden` —fuera
+       del orden de tabulación y del árbol de accesibilidad mientras
+       está cerrado, no solo invisible—. role="dialog" + aria-modal
+       porque mientras está abierto es una trampa de foco intencional
+       (router.js la cicla con OVA.a11y.ciclarFocoEn); Escape, el
+       backdrop y el botón "Cerrar" son las tres salidas, para que esa
+       trampa nunca sea una trampa de verdad. -->
+  <div id="drawer-backdrop" class="drawer-backdrop" hidden></div>
+  <div
+    id="drawer"
+    class="nav-drawer nav-drawer--flotante"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="drawer-titulo"
+    hidden
+  >
+    <div class="nav-drawer__cabecera">
+      <p id="drawer-titulo" class="nav-drawer__titulo"></p>
+      <button id="drawer-cerrar" class="boton-icono" type="button">
+        <span class="icono" aria-hidden="true">close</span>
+        <span class="u-oculto-visualmente">Cerrar índice</span>
+      </button>
+    </div>
+    <nav id="drawer-lista" aria-label="Pantallas de la unidad"></nav>
+  </div>
 
   <!-- Scripts clásicos, no type="module": Chromium bloquea por CORS
        la carga de módulos ES (y fetch/XHR) bajo file://, verificado

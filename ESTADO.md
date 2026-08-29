@@ -14,7 +14,7 @@ cambien algo para el futuro. Si una decisión cambia una **regla**, va a
 - [x] **T1 · Andamiaje y sistema visual** — completada 27 ago
 - [x] **T1.5 · Refinamiento visual, movimiento y navegación en maqueta** — completada 28 ago
 - [x] **T2 · Motor** — completada 28 ago
-- [ ] T3 · Chrome del OVA
+- [x] **T3 · Chrome del OVA** — completada 28 ago
 - [ ] T4 · Reproductor de media
 - [ ] T5 · Componentes de contenido
 - [ ] T6 · Motor de evaluación
@@ -245,6 +245,129 @@ explica esto, linkea a `src/index.html` como superficie de revisión real, y
 documenta la nota de arquitectura de scripts clásicos / `.js` en vez de
 `.json`.
 
+**28 ago — T3 cerrada: chrome del OVA, con dos lecturas del alcance que
+requirieron una decisión propia (no hubo usuario a mano para preguntar) y
+una corrección de arquitectura en `state.js`/`router.js` que salió de
+construir el skip link.**
+
+**Qué se construyó:**
+
+- **Skip link** (`base.css` `.u-skip-link`, primer elemento del `<body>` en
+  `index.html`) — fuera de pantalla hasta foco, salta a `<main id="app"
+  tabindex="-1">`. Cambio de posición discreto en `:focus` (sin
+  `transition`), no una animación — no compite con el inventario de
+  movimiento.
+- **Barra superior** (`<header class="nav-barra">`, landmark banner
+  implícito): botón del drawer, título de la pantalla activa, barra de
+  progreso, botón de reanudar (condicional) e indicador de guardado. Todo
+  el texto lo llena `router.js` en cada navegación, en las funciones nuevas
+  `actualizarBarraSuperior`/`actualizarProgreso`/`actualizarGuardado`/
+  `actualizarReanudar`.
+- **Barra de progreso — decisión de arquitectura no trivial.** La maqueta
+  de T1.5 usaba un `<progress>` nativo con `accent-color`. El ítem 4 del
+  inventario de movimiento de `CLAUDE.md` exige animar su avance con
+  `--dur-slow`, y la regla de movimiento prohíbe animar `width` (solo
+  `transform`/`opacity`) — un `<progress>` nativo no expone su relleno para
+  transicionarlo así entre navegadores. Se reemplazó por un `div` con
+  `role="progressbar"` (`.barra-progreso` + `.barra-progreso__relleno` en
+  `components.css`), mismo nivel de accesibilidad
+  (`aria-valuemin/max/now/text`), avance real animado con
+  `transform: scaleX()`. El track usa `--surface-subtle-2` (gris 100), no
+  `--surface-muted` (gris 200): CLAUDE.md prohíbe naranja de relleno sobre
+  superficies del gris 200 al 600, y el relleno de esta barra es naranja.
+- **Indicador de guardado, honesto.** `storage.js` ahora expone
+  `disponible()` (ya existía internamente como `verificarDisponibilidad`).
+  El indicador muestra "Guardado"/`cloud_done` solo si `localStorage`
+  funciona de verdad; si cae a memoria, dice "No se pudo guardar en este
+  dispositivo"/`cloud_off` — ícono y texto cambian juntos, nunca solo
+  color.
+- **Botón de reanudar — interpretación propia del alcance.** `PLAN.md`
+  solo dice "botón de reanudar" sin detallar el comportamiento. Se
+  interpretó como red de seguridad para cuando el estudiante usa el
+  drawer o "Anterior" para revisar una pantalla ya vista: aparece
+  (`hidden` se quita) solo si la posición actual quedó detrás de la más
+  avanzada, y lleva de vuelta a esa frontera. `state.js` expone
+  `masAvanzada` en `instantanea()` (el índice máximo entre las pantallas
+  visitadas) para que `router.js` decida. Si la intención real era otra
+  (p. ej. un aviso de bienvenida al recargar tipo "retomaste en X"),
+  hay que decirlo explícitamente — esta lectura quedó documentada
+  precisamente para poder corregirla sin arqueología de código.
+- **Drawer de índice**, con foco atrapado a propósito. Nuevo en
+  `a11y.js`: `elementosFocalizables()` y `ciclarFocoEn()`, generales (no
+  atadas al drawer) para que T5 las reuse en el modal sin duplicar la
+  lógica. `router.js` los cablea: abrir mueve el foco a "Cerrar" y
+  registra un listener de `keydown` que cicla Tab dentro del drawer y
+  cierra con Escape; cerrar (Escape, backdrop o "Cerrar") devuelve el
+  foco al botón que abrió el drawer; elegir una pantalla de la lista
+  cierra el drawer pero **no** devuelve el foco ahí — lo toma
+  `enfocarEncabezado()` de la pantalla nueva, sería un salto doble.
+  Estados de pantalla en la lista (completada/actual/pendiente) con
+  ícono y texto, nunca solo color; no hay estado "bloqueado" — eso es
+  entre unidades y lo resuelve Moodle (fuera de alcance de CLAUDE.md),
+  dentro de una unidad toda pantalla es libremente alcanzable.
+  `.nav-drawer` es la cáscara visual compartida con la demo estática de
+  la kitchen sink; `.nav-drawer--flotante` (solo en `index.html`) la
+  superpone en `position: fixed` sin arrastrar eso a la demo.
+- **Corrección de arquitectura, motivada por el skip link.** El router es
+  por hash: un `<a href="#app">` (el skip link) cambia
+  `window.location.hash` a "app", que no es id de ninguna pantalla. Sin
+  arreglo, esto producía dos problemas reales, no hipotéticos: (1)
+  `alCambiarHash()` llamaba a `navegarA('app', …)`, que hacía
+  `console.error` por una pantalla inexistente — un error de consola por
+  usar un control de accesibilidad legítimo; (2) recargar la página
+  después de usar el skip link dejaba `#app` en la URL, y
+  `state.js.init()` lo tomaba como `idInicial` válido-pero-inexistente,
+  perdiendo el progreso guardado y reiniciando en la primera pantalla —
+  esto sí rompe el cierre de T2 ("el progreso persiste al recargar").
+  Arreglado en dos puntos: `state.js` expone `existe(id)`, y
+  `alCambiarHash()` ahora ignora en silencio cualquier hash que no sea id
+  de pantalla en vez de tratarlo como ruta inválida; `state.js.init()`
+  cae al `guardado.actual` cuando el `idInicial` recibido no existe,
+  en vez de rendirse directo a la pantalla 0.
+
+**Verificado con Playwright, abriendo `src/index.html` por `file://`:**
+recorrido completo con Tab desde el skip link hasta "Siguiente" en la
+barra inferior sin nada inalcanzable; drawer abre con foco en "Cerrar",
+Tab/Shift+Tab ciclan solo dentro de él sin escapar al fondo, Escape lo
+cierra y devuelve el foco al botón que lo abrió; elegir una pantalla de
+la lista cierra el drawer y deja el foco en el `<h2>` de la pantalla
+nueva; la barra de progreso (`aria-valuenow`/`aria-valuetext` y el
+`transform: scaleX()` computado) avanza en cada navegación; "Reanudar"
+aparece solo al volver a una pantalla anterior a la más avanzada y lleva
+de vuelta a esa frontera; recargar a mitad de la unidad después de haber
+usado el skip link retoma el progreso guardado, no la primera pantalla;
+320px sin scroll horizontal; cero errores de consola en toda la corrida.
+Cero hex nuevo en los archivos tocados.
+
+**Bug real encontrado en la primera pasada de Playwright, no hipotético:**
+`hidden` no ocultaba nada. `.nav-drawer` y `.boton` fijan `display` sin
+condición (`display: flex`/`inline-flex`), y un selector de atributo
+(`[hidden]`, el que trae el navegador por defecto) tiene la misma
+especificidad que un selector de clase — sin una regla propia, gana el
+orden de aparición en el archivo, no la intención. El drawer y
+"Reanudar" quedaban visibles y clicables (tapando literalmente
+"Siguiente" en pantalla) aunque `hidden` estuviera puesto y
+`aria-expanded`/`aria-current` cambiaran bien — el bug era solo de CSS,
+la lógica de `router.js` estaba correcta desde el principio. Arreglado
+con una regla nueva en `base.css`, justo después del reset de
+`box-sizing`: `[hidden] { display: none !important; }` — el único
+`!important` del proyecto, deliberado, porque es exactamente el caso
+para el que existe. Segunda pasada de Playwright con clics reales (no
+`.click()` programático) tras el arreglo: los diez puntos de la lista
+de verificación de más abajo pasan, incluidos los cuatro que fallaban
+antes (drawer/"Reanudar" ya no quedan visibles ni clicables por encima
+del contenido con `hidden` puesto). Sin regresiones en lo que ya pasaba
+antes del arreglo.
+
+**Kitchen sink:** secciones "Componentes" actualizadas (barra superior,
+barra inferior y drawer ya no son "maqueta, sin cablear"; nuevo botón de
+solo ícono y barra de progreso) y nueva sección "Chrome del OVA (T3)" que
+documenta qué se ve aquí en estático y qué solo puede probarse en
+`src/index.html` (mismo criterio que la sección "Motor" de T2: no
+falsear con JS aparte lo que depende del router real). El skip link de
+la propia kitchen sink sí es una demo viva y funcional —esa página no
+tiene router con hash propio, así que no choca con nada.
+
 ## Pendientes y avisos
 
 - El contenido de Jose no bloquea nada hasta T8.
@@ -257,6 +380,11 @@ documenta la nota de arquitectura de scripts clásicos / `.js` en vez de
   L08, L09, L10, L12, L13) necesita agregar su entrada a `PLANTILLAS` en
   `router.js` antes de que esa pantalla renderice — hoy cae en el estado de
   error visible, a propósito.
-- T3 (chrome) recibe el `.nav-inferior` ya cableado por T2, tal cual está en
-  `index.html`; ahí se agrega la barra superior, el drawer y el skip link
-  alrededor de lo que ya existe, no se reescribe la navegación básica.
+- El botón de reanudar de T3 es una interpretación propia del alcance —
+  ver la decisión del 28 ago—, no una especificación literal de
+  `PLAN.md`. Confirmar con el usuario si el comportamiento esperado era
+  otro.
+- T4/T5 deberían reutilizar lo que T3 dejó genérico en vez de duplicarlo:
+  `.boton-icono` (componentes.css) para cualquier botón redondo de solo
+  ícono, y `OVA.a11y.elementosFocalizables()`/`ciclarFocoEn()` para el
+  foco atrapado del modal de T5 (mismo patrón que el drawer).

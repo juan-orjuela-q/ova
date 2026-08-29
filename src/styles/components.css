@@ -332,24 +332,78 @@
   font-weight: 600;
 }
 
-/* ---- Barra superior (T1.5, componentes — maqueta, sin cablear) --------
-   Aspecto y estados únicamente: la lógica de progreso real es de T2/T3.
-   `accent-color` en vez de estilizar el `<progress>` a mano: toma el
-   naranja de marca sin declarar ningún hex nuevo. */
+/* ---- Botón de solo ícono (T3, componentes) -----------------------------
+   Atómo transversal (sin prefijo de familia): abrir/cerrar el drawer lo
+   usa primero, el chrome de video (T4) y el cierre de modal (T5) lo van
+   a reutilizar tal cual en vez de inventar su propio botón redondo. */
+.boton-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: var(--r-pill);
+  color: var(--text-primary);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.boton-icono:hover {
+  background: var(--surface-subtle-2);
+}
+.boton-icono:active {
+  background: var(--surface-muted);
+}
+.boton-icono .icono {
+  font-size: 1.25rem;
+}
+
+/* ---- Barra de progreso (T3, componentes) -------------------------------
+   div propio con role="progressbar", no <progress> nativo: el ítem 4 del
+   inventario de movimiento de CLAUDE.md exige animar el avance con
+   --dur-slow, y solo transform/opacity pueden animarse — ancho fijo al
+   100%, el relleno real lo da `transform: scaleX()` en JS (router.js),
+   nunca `width`. El track es --surface-subtle-2 (gris 100) a propósito:
+   CLAUDE.md prohíbe naranja de relleno sobre superficies del gris 200 al
+   600, y --surface-muted (gris 200) cae justo en ese rango. */
+.barra-progreso {
+  position: relative;
+  width: 8rem;
+  max-width: 30vw;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-subtle-2);
+  overflow: hidden;
+}
+.barra-progreso__relleno {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: var(--nuam-orange-500);
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+/* ---- Barra superior (T3, componentes) ----------------------------------
+   Landmark <header> (banner) cableado por router.js: título, botón del
+   drawer, progreso, reanudar y guardado. --nav-reanudar se oculta con
+   `hidden`, no con una clase de visibilidad, para salir también del
+   orden de tabulación cuando no aplica. */
 .nav-barra {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
-  gap: var(--sp-4);
+  gap: var(--sp-2) var(--sp-4);
   padding-block: var(--sp-3);
-  padding-inline: var(--sp-6);
+  padding-inline: var(--sp-4);
   background: var(--surface-default);
   border-block-end: 1px solid var(--border-default);
 }
 .nav-barra__titulo {
   font: var(--text-h5);
   min-width: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -361,11 +415,6 @@
   color: var(--text-secondary);
   font: var(--text-caption);
 }
-.nav-barra__progreso progress {
-  accent-color: var(--nuam-orange-500);
-  width: 8rem;
-  max-width: 30vw;
-}
 .nav-barra__guardado {
   display: flex;
   align-items: center;
@@ -374,7 +423,7 @@
   font: var(--text-caption);
 }
 
-/* ---- Barra inferior (T1.5, componentes — maqueta, sin cablear) -------- */
+/* ---- Barra inferior (T2, cableada; T3 no la reescribe) ----------------- */
 .nav-inferior {
   display: flex;
   align-items: center;
@@ -391,26 +440,59 @@
   font: var(--text-caption);
 }
 
-/* ---- Drawer de índice (T1.5, componentes — maqueta, sin cablear) ------
-   Los tres estados de cápsula (completado, en curso, bloqueado) llevan
-   icono y texto, nunca solo color —regla dura de CLAUDE.md—; el color
-   de `--disabled` en bloqueado es apoyo, no el único código. */
+/* ---- Drawer de índice (T3, componentes) --------------------------------
+   Los tres estados de pantalla (completada, actual, pendiente) llevan
+   ícono y texto, nunca solo color —regla dura de CLAUDE.md—. No hay
+   estado "bloqueado" aquí: eso es entre unidades y lo resuelve Moodle
+   (fuera de alcance de CLAUDE.md); dentro de una unidad toda pantalla es
+   alcanzable libremente.
+
+   `.nav-drawer` es solo la cáscara visual, reutilizada tal cual en la
+   kitchen sink como caja estática dentro de su marco de demo.
+   `.nav-drawer--flotante` es el modificador que index.html declara en
+   el único drawer real para superponerlo en position:fixed —
+   router.js solo abre y cierra con `hidden`, nunca toca esta clase —
+   sin arrastrar ese comportamiento a la demo de la kitchen sink. */
 .nav-drawer {
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
   padding: var(--sp-6);
+  width: 100%;
   max-width: 22rem;
   background: var(--surface-default);
   border: 1px solid var(--border-default);
   border-radius: var(--r-lg);
+}
+.nav-drawer--flotante {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  z-index: 201;
+  max-width: min(22rem, 100vw);
+  border-radius: 0;
+  border-inline-end: none;
+  overflow-y: auto;
+}
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--surface-inverse);
+  opacity: 0.5;
+}
+.nav-drawer__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-block-end: var(--sp-2);
 }
 .nav-drawer__titulo {
   font: var(--text-label);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-tertiary);
-  margin-block-end: var(--sp-2);
 }
 .nav-drawer__item {
   display: flex;
@@ -430,13 +512,6 @@
 .nav-drawer__item[aria-current="step"] {
   background: var(--surface-subtle-2);
   font-weight: 600;
-}
-.nav-drawer__item[data-estado="bloqueado"] {
-  color: var(--text-disabled);
-  cursor: not-allowed;
-}
-.nav-drawer__item[data-estado="bloqueado"]:hover {
-  background: transparent;
 }
 .nav-drawer__item .icono {
   color: var(--text-tertiary);

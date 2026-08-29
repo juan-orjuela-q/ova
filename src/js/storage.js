@@ -59,6 +59,10 @@
   window.OVA = window.OVA || {};
   window.OVA.storage = {
     obtener: obtener,
-    establecer: establecer
+    establecer: establecer,
+    // Expuesto para el indicador de guardado del chrome (T3): si no hay
+    // localStorage de verdad, el indicador debe decirlo en vez de mostrar
+    // "Guardado" sobre algo que no sobrevive a un recargue.
+    disponible: verificarDisponibilidad
   };
 })();
