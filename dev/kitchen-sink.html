@@ -376,7 +376,7 @@
     <!-- ============================================================ -->
     <section id="componentes" class="ks-seccion" aria-labelledby="componentes-h">
       <h2 id="componentes-h">Componentes</h2>
-      <p class="ks-intro">Átomos y moléculas del sistema visual. Los marcados como "maqueta" son solo aspecto y estados, sin cablear — barra superior, inferior y drawer (T3) solo se verifican de verdad en <a href="../src/index.html">src/index.html</a>. El reproductor de video (T4) es la excepción: no depende del router, así que abajo está cableado y funcionando de verdad, no simulado.</p>
+      <p class="ks-intro">Átomos y moléculas del sistema visual. Los marcados como "maqueta" son solo aspecto y estados, sin cablear — barra superior, inferior y drawer (T3) solo se verifican de verdad en <a href="../src/index.html">src/index.html</a>. El reproductor de video (T4) y el modal de término de glosario (T5) son la excepción: no dependen del router, así que abajo están cableados y funcionando de verdad, no simulados.</p>
 
       <div class="ks-layout-bloque" id="c-botones-negro">
         <span class="ks-layout-bloque__etiqueta">Botón — negro (relleno / outline)</span>
@@ -638,6 +638,170 @@
             </li>
           </ol>
         </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-chip">
+        <span class="ks-layout-bloque__etiqueta">Chip (T5)</span>
+        <div class="ks-layout-marco ks-muestras">
+          <span class="chip">5 min de lectura</span>
+          <span class="chip chip--brand">Nivel básico</span>
+          <button class="chip" type="button" aria-pressed="false">Renta variable</button>
+          <button class="chip" type="button" aria-pressed="true"><span class="icono" aria-hidden="true">check</span> Renta fija</button>
+        </div>
+        <p class="ks-intro">Sin variante de relleno naranja chico: <code>.chip--brand</code> es borde + texto naranja-700 sobre fondo neutro, mismo candado de contraste que ya resolvió el botón naranja pequeño y el eyebrow — CLAUDE.md nombra explícitamente al chip en esa regla.</p>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-callout">
+        <span class="ks-layout-bloque__etiqueta">Callout (T5) — sus tres tipos</span>
+        <div class="ks-layout-marco ks-ancho-marco" style="display: flex; flex-direction: column; gap: var(--sp-4); max-width: 32rem;">
+          <div class="callout">
+            <span class="icono callout__icono" aria-hidden="true">info</span>
+            <div class="callout__cuerpo">
+              <p class="callout__titulo">Nota</p>
+              <p class="tipo-cuerpo-sm">El Mercado Global Colombiano permite negociar valores extranjeros desde una comisionista local.</p>
+            </div>
+          </div>
+          <div class="callout callout--brand">
+            <span class="icono callout__icono" aria-hidden="true">lightbulb</span>
+            <div class="callout__cuerpo">
+              <p class="callout__titulo">Importante</p>
+              <p class="tipo-cuerpo-sm">La rentabilidad de una acción nunca se conoce de forma anticipada.</p>
+            </div>
+          </div>
+          <div class="callout callout--alerta">
+            <span class="icono callout__icono" aria-hidden="true">warning</span>
+            <div class="callout__cuerpo">
+              <p class="callout__titulo">Alerta</p>
+              <p class="tipo-cuerpo-sm">Invertir sin diversificar el portafolio expone todo el capital a un solo riesgo.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-acordeon">
+        <span class="ks-layout-bloque__etiqueta">Acordeón (T5)</span>
+        <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;">
+          <div class="acordeon">
+            <details class="acordeon__item">
+              <summary class="acordeon__cabecera">
+                <span>¿Qué es el mercado primario?</span>
+                <span class="icono acordeon__chevron" aria-hidden="true">expand_more</span>
+              </summary>
+              <div class="acordeon__cuerpo"><p class="tipo-cuerpo-sm">Es donde una empresa emite y vende acciones por primera vez, directamente a los inversionistas.</p></div>
+            </details>
+            <details class="acordeon__item" open>
+              <summary class="acordeon__cabecera">
+                <span>¿Qué es el mercado secundario?</span>
+                <span class="icono acordeon__chevron" aria-hidden="true">expand_more</span>
+              </summary>
+              <div class="acordeon__cuerpo"><p class="tipo-cuerpo-sm">Es donde esas mismas acciones se negocian entre inversionistas después de la emisión inicial, ya sin la empresa emisora de por medio.</p></div>
+            </details>
+          </div>
+        </div>
+        <p class="ks-intro"><code>&lt;details&gt;</code>/<code>&lt;summary&gt;</code> nativo, mismo criterio que la transcripción de audio/video: Enter y Espacio ya funcionan sin manejador de teclado propio. El chevron rota con <code>transform</code> en <code>--dur-fast</code>.</p>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-modal">
+        <span class="ks-layout-bloque__etiqueta">Término de glosario + modal (T5, cableado real)</span>
+        <p class="ks-intro">
+          A diferencia del resto de esta sección, esto sí está cableado: pulsa
+          el término para abrir el modal, cíclalo con Tab (no escapa a la
+          página de atrás), ciérralo con Escape, el fondo o «Cerrar» — las
+          tres veces el foco vuelve al botón que lo abrió. Mismo patrón de
+          trampa de foco que el drawer de T3 (<code>OVA.a11y.ciclarFocoEn</code>),
+          cableado en el script al final de esta página.
+        </p>
+        <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;">
+          <p class="tipo-cuerpo">Al comprar una <button class="termino-glosario" type="button" data-abre-modal="ks-modal">acción <span class="icono" aria-hidden="true">help</span></button> te conviertes en dueño de una fracción de la empresa emisora.</p>
+        </div>
+
+        <div class="modal" id="ks-modal" hidden>
+          <div class="backdrop" data-cerrar-modal></div>
+          <div class="modal__caja" role="dialog" aria-modal="true" aria-labelledby="ks-modal-titulo">
+            <button class="boton-icono modal__cerrar" type="button" data-cerrar-modal>
+              <span class="icono" aria-hidden="true">close</span>
+              <span class="u-oculto-visualmente">Cerrar</span>
+            </button>
+            <h3 id="ks-modal-titulo" class="tipo-h4 modal__titulo">Acción</h3>
+            <p class="tipo-cuerpo-sm">Título valor participativo que representa un porcentaje mínimo de propiedad de una empresa. Su titular participa de la rentabilidad del negocio como dueño de una fracción de la compañía.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-tarjeta-recurso">
+        <span class="ks-layout-bloque__etiqueta">Tarjeta de recurso descargable (T5, maqueta)</span>
+        <div class="ks-layout-marco ks-ancho-marco" style="max-width: 26rem;">
+          <a class="tarjeta-recurso" href="#c-tarjeta-recurso">
+            <span class="tarjeta-recurso__icono" aria-hidden="true"><span class="icono">description</span></span>
+            <span class="tarjeta-recurso__info">
+              <span class="tarjeta-recurso__titulo">Glosario descargable</span>
+              <span class="tarjeta-recurso__meta">PDF · 240 KB</span>
+            </span>
+            <span class="icono tarjeta-recurso__accion" aria-hidden="true">download</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-insignia">
+        <span class="ks-layout-bloque__etiqueta">Insignia (T5) — bloqueada / desbloqueada</span>
+        <div class="ks-layout-marco ks-muestras">
+          <div class="insignia" data-estado="bloqueada">
+            <span class="insignia__icono" aria-hidden="true"><span class="icono">lock</span></span>
+            <span class="insignia__texto">Bloqueada</span>
+          </div>
+          <div class="insignia" data-estado="desbloqueada" id="c-insignia-demo">
+            <span class="insignia__icono" aria-hidden="true"><span class="icono">military_tech</span></span>
+            <span class="insignia__texto">Desbloqueada</span>
+          </div>
+        </div>
+        <div class="ks-layout-marco" style="margin-block-start: var(--sp-4);">
+          <button class="boton boton--outline" type="button" id="c-insignia-boton">Simular desbloqueo</button>
+        </div>
+        <p class="ks-intro">El botón agrega <code>.insignia--revelando</code> a la insignia de la derecha para reproducir la animación bajo <code>--dur-reveal</code> — el único momento celebratorio del inventario de movimiento de CLAUDE.md. Con <code>prefers-reduced-motion</code> activado, la duración cae al mínimo del navegador igual que el resto del sistema, sin necesitar un caso especial aquí.</p>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-aviso-logro">
+        <span class="ks-layout-bloque__etiqueta">Aviso de logro (T5)</span>
+        <div class="ks-layout-marco ks-ancho-marco" style="max-width: 26rem;">
+          <div class="aviso-logro" role="status">
+            <div class="insignia" data-estado="desbloqueada">
+              <span class="insignia__icono" aria-hidden="true"><span class="icono">military_tech</span></span>
+              <span class="insignia__texto">Desbloqueada</span>
+            </div>
+            <div class="aviso-logro__texto">
+              <p class="tipo-h4">¡Completaste la Unidad 1!</p>
+              <p class="tipo-cuerpo-sm">Contexto sobre el mercado, la bolsa y las acciones.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-cap-tarjeta">
+        <span class="ks-layout-bloque__etiqueta">Tarjeta de cápsula (T5) — sus tres estados</span>
+        <div class="ks-layout-marco ks-ancho-marco" style="display: flex; flex-direction: column; gap: var(--sp-3); max-width: 30rem;">
+          <a class="cap-tarjeta" href="#c-cap-tarjeta" data-estado="completada">
+            <span class="cap-tarjeta__numero">01</span>
+            <span class="cap-tarjeta__cuerpo">
+              <span class="cap-tarjeta__titulo">Contexto del mercado</span>
+              <span class="cap-tarjeta__estado"><span class="icono" aria-hidden="true">check_circle</span> Completada</span>
+            </span>
+          </a>
+          <a class="cap-tarjeta" href="#c-cap-tarjeta" data-estado="disponible">
+            <span class="cap-tarjeta__numero">02</span>
+            <span class="cap-tarjeta__cuerpo">
+              <span class="cap-tarjeta__titulo">¿Qué es una acción?</span>
+              <span class="cap-tarjeta__estado"><span class="icono" aria-hidden="true">play_circle</span> Disponible</span>
+            </span>
+          </a>
+          <div class="cap-tarjeta" data-estado="bloqueada" aria-disabled="true">
+            <span class="cap-tarjeta__numero">03</span>
+            <span class="cap-tarjeta__cuerpo">
+              <span class="cap-tarjeta__titulo">Valorización de una acción</span>
+              <span class="cap-tarjeta__estado"><span class="icono" aria-hidden="true">lock</span> Bloqueada</span>
+            </span>
+          </div>
+        </div>
+        <p class="ks-intro">Bloqueada es un <code>&lt;div&gt;</code>, no un <code>&lt;a&gt;</code>: sin <code>href</code> queda fuera del orden de tabulación sola, sin <code>tabindex="-1"</code> ni JavaScript — ningún control que no lleva a ningún lado debe ser alcanzable con Tab. Es el único estado "bloqueado" que conoce el OVA: entre cápsulas de una misma unidad, no entre unidades (eso lo resuelve Moodle).</p>
       </div>
     </section>
 
@@ -930,7 +1094,16 @@
             <div class="layout__cuerpo">
               <p class="tipo-cuerpo">Un formato práctico para identificar si tu perfil de inversión es conservador, moderado o agresivo antes de tomar una decisión.</p>
             </div>
-            <div class="layout__interaccion ks-marcador">Descargar plantilla (.pdf)<br />(marcador — tarjeta de recurso en T5)</div>
+            <div class="layout__interaccion">
+              <a class="tarjeta-recurso" href="#l12">
+                <span class="tarjeta-recurso__icono" aria-hidden="true"><span class="icono">description</span></span>
+                <span class="tarjeta-recurso__info">
+                  <span class="tarjeta-recurso__titulo">Plantilla: mi perfil de riesgo</span>
+                  <span class="tarjeta-recurso__meta">PDF · 180 KB</span>
+                </span>
+                <span class="icono tarjeta-recurso__accion" aria-hidden="true">download</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -944,18 +1117,33 @@
             <div class="layout__cuerpo">
               <p class="tipo-cuerpo-lg">Identificaste los tres mercados de Bolsa de Valores de Colombia, qué es una acción y la diferencia entre acciones ordinarias y preferenciales.</p>
             </div>
-            <div class="layout__interaccion ks-marcador">Insignia de logro<br />(marcador — T5)</div>
+            <div class="layout__interaccion">
+              <div class="aviso-logro" role="status">
+                <div class="insignia" data-estado="desbloqueada">
+                  <span class="insignia__icono" aria-hidden="true"><span class="icono">military_tech</span></span>
+                  <span class="insignia__texto">Desbloqueada</span>
+                </div>
+                <div class="aviso-logro__texto">
+                  <p class="tipo-h4">¡Completaste la Unidad 1!</p>
+                  <p class="tipo-cuerpo-sm">Contexto sobre el mercado, la bolsa y las acciones.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Único script real de la kitchen sink: media.js no depende del
-       router/hash como el resto del motor (T2/T3), así que aquí sí se
-       puede montar una demo viva en vez de una maqueta que finja su
-       comportamiento — mismo criterio que llevó a documentar "Motor" y
-       "Chrome" como texto en vez de HTML falso, aplicado al revés. -->
+  <!-- Scripts reales de la kitchen sink: media.js (T4) y el modal de
+       término de glosario (T5) no dependen del router/hash como el resto
+       del motor (T2/T3), así que aquí sí se puede montar una demo viva en
+       vez de una maqueta que finja su comportamiento — mismo criterio que
+       llevó a documentar "Motor" y "Chrome" como texto en vez de HTML
+       falso, aplicado al revés. a11y.js es autónomo (no depende de
+       router.js ni de #anuncios para funcionar) así que se puede cargar
+       aquí tal cual, sin adaptarlo. -->
+  <script src="../src/js/a11y.js"></script>
   <script src="../src/js/media.js"></script>
   <script>
     (function () {
@@ -1003,6 +1191,68 @@
         src: VIDEO_DEMO,
         vtt: VTT_DEMO,
         transcripcion: TRANSCRIPCION_DEMO
+      });
+    })();
+  </script>
+
+  <!-- Modal de término de glosario (T5): mismo patrón de trampa de foco
+       que abrirDrawer/cerrarDrawer en router.js (T3), reutilizando las
+       primitivas de a11y.js en vez de reimplementar el ciclo de Tab. El
+       modal no es parte fija del chrome —a diferencia del drawer, no vive
+       en router.js—, así que quien lo usa en una pantalla real (T6/T8)
+       debe cablear su propio abrir/cerrar copiando este mismo patrón. -->
+  <script>
+    (function () {
+      var modal = document.getElementById('ks-modal');
+      if (!modal) return;
+      var elementoAntesDelModal = null;
+
+      function alTecladoModal(evento) {
+        if (evento.key === 'Escape') {
+          cerrarModal();
+          return;
+        }
+        OVA.a11y.ciclarFocoEn(modal, evento);
+      }
+
+      function abrirModal(activador) {
+        elementoAntesDelModal = activador;
+        modal.hidden = false;
+        var focalizables = OVA.a11y.elementosFocalizables(modal);
+        if (focalizables[0]) focalizables[0].focus();
+        document.addEventListener('keydown', alTecladoModal);
+      }
+
+      function cerrarModal() {
+        modal.hidden = true;
+        document.removeEventListener('keydown', alTecladoModal);
+        if (elementoAntesDelModal) elementoAntesDelModal.focus();
+        elementoAntesDelModal = null;
+      }
+
+      document.querySelectorAll('[data-abre-modal="ks-modal"]').forEach(function (boton) {
+        boton.addEventListener('click', function () { abrirModal(boton); });
+      });
+      modal.querySelectorAll('[data-cerrar-modal]').forEach(function (el) {
+        el.addEventListener('click', cerrarModal);
+      });
+    })();
+  </script>
+
+  <!-- Demo de desbloqueo de insignia (T5): dispara la animación real de
+       --dur-reveal (ítem 5 del inventario de movimiento) para poder
+       verificarla con Playwright y con prefers-reduced-motion activado,
+       en vez de solo describirla en prosa como la sección "Movimiento". -->
+  <script>
+    (function () {
+      var boton = document.getElementById('c-insignia-boton');
+      var insignia = document.getElementById('c-insignia-demo');
+      if (!boton || !insignia) return;
+      boton.addEventListener('click', function () {
+        insignia.classList.remove('insignia--revelando');
+        // Forzar reflow para poder reiniciar la animación si ya se jugó.
+        void insignia.offsetWidth;
+        insignia.classList.add('insignia--revelando');
       });
     })();
   </script>

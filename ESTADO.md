@@ -16,7 +16,7 @@ cambien algo para el futuro. Si una decisión cambia una **regla**, va a
 - [x] **T2 · Motor** — completada 28 ago
 - [x] **T3 · Chrome del OVA** — completada 28 ago
 - [x] **T4 · Reproductor de media** — completada 29 ago
-- [ ] T5 · Componentes de contenido
+- [x] **T5 · Componentes de contenido** — completada 29 ago
 - [ ] T6 · Motor de evaluación
 - [ ] T7 · Datos y gráficos
 - [ ] T8 · Interacciones insignia
@@ -468,6 +468,113 @@ botón CC se omite—, más las dos instancias dentro de L03/L04 en la
 sección de layouts). Es el primer `<script>` real que corre en
 `dev/kitchen-sink.html`.
 
+**29 ago — T5 cerrada: nueve componentes de contenido, con un atómo
+transversal generalizado y dos bugs reales encontrados por Playwright antes
+de dar la tarea por cerrada.**
+
+**Qué se construyó, todo en `components.css`:**
+
+- **Chip** — etiqueta de metadato/filtro. Mismo candado de contraste que ya
+  resolvió el botón naranja pequeño y el eyebrow (CLAUDE.md nombra al chip
+  explícitamente en esa regla): `.chip--brand` es borde + naranja-700 sobre
+  fondo neutro, nunca relleno naranja-500. Estado seleccionado
+  (`aria-pressed`, cuando el chip es un `<button>`) usa relleno inverso, con
+  un ícono de check además del color.
+- **Callout** — caja de énfasis con tres tipos (nota, importante, alerta).
+  El tipo nunca se distingue solo por el borde de color: el ícono cambia y
+  el título lo dice en palabras. Íconos en naranja-500/rojo-500 (fills e
+  iconos, permitido por tokens.css), títulos en naranja-700/rojo-700 (texto
+  sobre claro).
+- **Acordeón** — `<details>`/`<summary>` nativo, mismo criterio que la
+  transcripción de audio/video de T4: Enter/Espacio gratis del navegador.
+  Chevron propio que rota con `transform` en `--dur-fast`, marcador nativo
+  removido.
+- **Modal + término de glosario** — la única pieza de T5 cableada de verdad
+  (no maqueta), porque el cierre de PLAN.md lo exige explícitamente: "el
+  modal devuelve el foco al elemento que lo abrió". Mismo patrón que
+  `abrirDrawer`/`cerrarDrawer` de T3 (`role="dialog"` + `aria-modal`,
+  ciclado con `OVA.a11y.ciclarFocoEn`, Escape/backdrop/«Cerrar» como las
+  tres salidas), cableado en un script propio al final de la kitchen sink
+  — el modal no vive en router.js porque no es parte fija del chrome,
+  cualquier pantalla que lo necesite (T6/T8) debe copiar este mismo patrón,
+  no inventar uno nuevo. El disparador es `.termino-glosario`, un
+  `<button>` (no `<a>`: no navega, abre una superposición) incrustado en
+  texto de cuerpo real.
+- **Tarjeta de recurso descargable** — maqueta sin cablear, mismo criterio
+  que `.media-audio` de T1.5: el archivo real lo trae el contenido de Jose
+  en T8, no esta tarea.
+- **Insignia** — dos estados (bloqueada/desbloqueada) y el modificador
+  `.insignia--revelando`, que dispara la animación de `--dur-reveal` (ítem
+  5 del inventario de movimiento, el único momento celebratorio). Se le
+  agregó un botón de demo real en la kitchen sink ("Simular desbloqueo")
+  para poder verificar la animación y su degradación bajo
+  `prefers-reduced-motion` con Playwright, en vez de solo describirla en
+  prosa.
+- **Aviso de logro** — tarjeta de cierre que envuelve una insignia
+  desbloqueada, `role="status"` porque en uso real (L13, cierre de unidad)
+  aparece dinámicamente y debe anunciarse sola.
+- **Tarjeta de cápsula, sus tres estados** — completada / disponible /
+  bloqueada, con prefijo `cap-` (familia documentada en CLAUDE.md). Es la
+  única entidad del OVA con un estado bloqueado de verdad: CLAUDE.md deja
+  fuera de alcance el bloqueo *entre* unidades (lo resuelve Moodle) pero no
+  el bloqueo *entre* cápsulas de una misma unidad, que sí es del motor.
+  Bloqueada es un `<div>`, no un `<a>`: sin `href` queda fuera del orden de
+  tabulación de forma nativa, mismo criterio que `.boton:disabled`.
+
+**Generalización, no duplicación.** `.drawer-backdrop` (T3) se renombró a
+`.backdrop`, un atómo transversal sin prefijo: el modal necesitaba
+exactamente el mismo fondo atenuado y clonar tres líneas de CSS no tenía
+sentido pudiendo reusarlas. Solo cambió la clase; el `id="drawer-backdrop"`
+que usa `router.js` con `getElementById` no se tocó, así que T3 no se
+rompió — confirmado con la misma corrida de Playwright que verificó el
+drawer real en `src/index.html`.
+
+**Dos bugs reales encontrados con Playwright, no hipotéticos:**
+
+1. **El backdrop tapaba la caja del modal.** `.backdrop` trae `z-index: 200`
+   fijo (calibrado en T3 contra el resto del chrome a nivel de `body`).
+   Dentro de `.modal` — que abre su propio contexto de apilamiento por
+   `position: fixed` + `z-index: 300` — ese 200 se comparaba contra
+   `.modal__caja`, que solo tenía `z-index: 1`: el backdrop pintaba
+   *encima* de la caja entera y el botón «Cerrar» quedaba visible pero
+   sin poder pulsarse. Arreglado subiendo `.modal__caja` a `z-index: 201`
+   — el mismo número que ya usa `.nav-drawer--flotante` contra el mismo
+   backdrop, no un valor inventado.
+2. **Regresión propia en 320px.** El botón de demo de la insignia
+   ("Simular desbloqueo (--dur-reveal)") desbordaba 9px a 320px de ancho
+   — `.boton` fija `white-space: nowrap` a propósito y el texto era
+   demasiado largo para el espacio disponible. Se acortó a "Simular
+   desbloqueo" (el resto de la explicación ya está en el párrafo de abajo).
+
+**Verificado con Playwright, abriendo `dev/kitchen-sink.html` por
+`file://`:** los nueve componentes presentes con sus estados (conteos
+verificados por selector, incluida cada variante de chip/callout y cada
+estado de cap-tarjeta/insignia); recorrido de teclado real hasta el
+término de glosario (Tab, no clic) y apertura con Enter; foco entra al
+modal (único focalizable: «Cerrar», así que el ciclo de Tab no escapa a la
+página de atrás); las tres salidas —Escape, backdrop (clic en una esquina
+real, no en el centro que coincide con la caja) y «Cerrar»— cierran el
+modal y devuelven el foco al término en los tres casos; acordeón alterna
+con Enter sobre el `<summary>` enfocado; botón de insignia agrega
+`.insignia--revelando` y la animación mide `0.48s` (el token `--dur-reveal`
+sin escribir el valor a mano) en una pasada normal y `0.00001s` con
+`prefers-reduced-motion: reduce` emulado, sin duplicar el media query;
+chip presionado cambia `aria-pressed` y fondo juntos
+(`rgb(11,11,11)` = `--surface-inverse`); 320px sin scroll horizontal
+(`scrollWidth === clientWidth`, confirmado tras el arreglo de la
+regresión); zoom de texto 200% sin scroll horizontal; cero errores de
+consola en toda la corrida. Cero hex nuevo en los tres archivos tocados
+(`components.css`, `kitchen-sink.html`, `index.html` por el rename de
+`.backdrop`).
+
+**Integración en layouts existentes.** Los dos marcadores de kitchen-sink
+que decían explícitamente "(marcador — T5)" se reemplazaron por los
+componentes reales: L12 ahora usa `.tarjeta-recurso` de verdad y L13 usa
+`.aviso-logro` con una insignia desbloqueada adentro. El resto de
+L01–L11 no se tocó — no tenían marcador de T5, y CLAUDE.md ya dejó
+registrado que L02–L13 no pasaron por una crítica de diseño aparte
+(decisión del 28 ago).
+
 ## Pendientes y avisos
 
 - El contenido de Jose no bloquea nada hasta T8.
@@ -484,10 +591,23 @@ sección de layouts). Es el primer `<script>` real que corre en
   ver la decisión del 28 ago—, no una especificación literal de
   `PLAN.md`. Confirmar con el usuario si el comportamiento esperado era
   otro.
-- T5 debería reutilizar lo que T3 dejó genérico en vez de duplicarlo:
-  `.boton-icono` (componentes.css) para cualquier botón redondo de solo
-  ícono, y `OVA.a11y.elementosFocalizables()`/`ciclarFocoEn()` para el
-  foco atrapado del modal de T5 (mismo patrón que el drawer).
+- ~~T5 debería reutilizar lo que T3 dejó genérico...~~ — hecho, ver la
+  decisión del 29 ago: el modal reusa `.boton-icono`, `.backdrop`
+  (renombrado desde `.drawer-backdrop`) y `OVA.a11y.elementosFocalizables()`/
+  `ciclarFocoEn()`.
+- **Hallazgo incidental de T4, no arreglado (fuera de alcance de T5).**
+  Verificando 320px para T5, `.media-video__pantalla-completa` desborda
+  ~15px su contenedor (`.media-video`) a ese ancho — no genera scroll
+  horizontal de página porque `.media-video` tiene `overflow: hidden`
+  (lo clipea), pero visualmente el ícono de pantalla completa puede
+  quedar recortado en el reproductor a 320px exactos. No estaba en el
+  alcance de esta tarea arreglar CSS de T4; queda para la auditoría de
+  T9 o para cuando se retome T4.
+- Al integrar el modal de T5 en una pantalla real (T6/T8), copiar el
+  patrón de `abrirModal`/`cerrarModal` del script de la kitchen sink
+  (`dev/kitchen-sink.html`, cerca del cierre del archivo) en vez de
+  escribir uno nuevo — es el mismo patrón que `abrirDrawer`/`cerrarDrawer`
+  de `router.js`, con las mismas tres salidas (Escape, backdrop, botón).
 - `OVA.media.crear()` solo sabe renderizar `media.tipo === "video"` —
   `.media-audio` sigue siendo la maqueta sin cablear de T1.5, porque
   PLAN.md no pide un reproductor de audio en T4 ("Controles propios sobre

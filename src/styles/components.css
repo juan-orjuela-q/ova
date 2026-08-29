@@ -474,7 +474,14 @@
   border-inline-end: none;
   overflow-y: auto;
 }
-.drawer-backdrop {
+
+/* ---- Fondo de superposición (T3, atómo transversal) --------------------
+   Sin prefijo de familia: nació con el drawer (`.drawer-backdrop`) pero el
+   modal de T5 necesita exactamente el mismo fondo, así que se generalizó en
+   vez de duplicar tres líneas — mismo criterio que `.boton-icono`. El `id`
+   del elemento del drawer real (`drawer-backdrop` en index.html) no cambió,
+   solo la clase que lo pinta. */
+.backdrop {
   position: fixed;
   inset: 0;
   z-index: 200;
@@ -818,4 +825,410 @@
   flex-direction: column;
   gap: var(--sp-1);
   padding-block-start: var(--sp-1);
+}
+
+/* ============================================================
+   T5 — Componentes de contenido.
+   ============================================================ */
+
+/* ---- Chip (T5, componentes) --------------------------------------------
+   Etiqueta chica de metadato ("5 min", "Nivel básico") o filtro
+   seleccionable. Igual que el botón naranja pequeño y el eyebrow, un chip
+   de relleno naranja-500 con texto chico no cumple contraste — por eso
+   `--brand` es borde + texto naranja-700 sobre fondo neutro, nunca relleno
+   naranja (misma regla de CLAUDE.md, aplicada aquí porque un chip es
+   exactamente el caso que la regla nombra). El estado seleccionado
+   (`aria-pressed`, cuando el chip es un `<button>`) usa relleno inverso en
+   vez de naranja por la misma razón, y cambia de ícono además de color. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding-block: 0.4em;
+  padding-inline: 0.9em;
+  border-radius: var(--r-pill);
+  background: var(--surface-subtle-2);
+  color: var(--text-primary);
+  font: var(--text-caption);
+  border: 1px solid transparent;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.chip .icono {
+  font-size: 1em;
+}
+.chip--brand {
+  background: transparent;
+  color: var(--text-brand);
+  border-color: var(--border-brand);
+}
+button.chip {
+  cursor: pointer;
+}
+button.chip:hover {
+  background: var(--surface-muted);
+}
+.chip--brand:hover {
+  background: var(--surface-subtle);
+}
+button.chip[aria-pressed="true"] {
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+  border-color: var(--surface-inverse);
+}
+
+/* ---- Callout (T5, componentes) -----------------------------------------
+   Caja de énfasis dentro del cuerpo de una pantalla. El tipo nunca se
+   distingue solo por el color del borde: el ícono cambia (info / lightbulb
+   / warning) y el título dice el tipo en palabras ("Importante", "Alerta").
+   Fondo neutro constante entre variantes — solo el ícono y el texto del
+   título llevan color, igual que ya resolvió `.eyebrow` y `.chip--brand`
+   para el naranja chico; `--alerta` reutiliza rojo-500 en el ícono
+   (fills/iconos, permitido por tokens.css) y rojo-700 en el título (texto
+   sobre claro). */
+.callout {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-subtle);
+  border-inline-start: 3px solid var(--border-strong);
+}
+.callout__icono {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: var(--text-tertiary);
+}
+.callout__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.callout__titulo {
+  font: var(--text-h5);
+}
+.callout--brand {
+  border-inline-start-color: var(--nuam-orange-500);
+}
+.callout--brand .callout__icono {
+  color: var(--nuam-orange-500);
+}
+.callout--brand .callout__titulo {
+  color: var(--text-brand);
+}
+.callout--alerta {
+  border-inline-start-color: var(--nuam-red-500);
+}
+.callout--alerta .callout__icono {
+  color: var(--nuam-red-500);
+}
+.callout--alerta .callout__titulo {
+  color: var(--nuam-red-700);
+}
+
+/* ---- Acordeón (T5, componentes) -----------------------------------------
+   `<details>`/`<summary>` nativo, mismo criterio que la transcripción de
+   audio/video: el estado abierto/cerrado y la operación por teclado (Enter,
+   Espacio) los da el navegador gratis, sin un manejador de tecla escrito a
+   mano. El marcador nativo se reemplaza por un chevron propio que rota con
+   `transform` en `--dur-fast` — nunca width/height— y el estado también
+   quedaría anunciado sin el giro porque `<details>` ya expone `[open]` a
+   la accesibilidad nativa del elemento. */
+.acordeon__item {
+  border-block-end: 1px solid var(--border-default);
+}
+.acordeon__item:first-child {
+  border-block-start: 1px solid var(--border-default);
+}
+.acordeon__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-block: var(--sp-4);
+  font: var(--text-h5);
+  cursor: pointer;
+  list-style: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.acordeon__cabecera::-webkit-details-marker {
+  display: none;
+}
+.acordeon__cabecera:hover {
+  color: var(--text-brand);
+}
+.acordeon__chevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.acordeon__item[open] .acordeon__chevron {
+  transform: rotate(180deg);
+}
+.acordeon__cuerpo {
+  padding-block-end: var(--sp-4);
+  color: var(--text-secondary);
+}
+
+/* ---- Modal (T5, componentes) --------------------------------------------
+   Mismo patrón de trampa de foco intencional que el drawer de T3
+   (`role="dialog"` + `aria-modal`, ciclado con `OVA.a11y.ciclarFocoEn`,
+   Escape/backdrop/«Cerrar» como las tres salidas) — reutiliza `.backdrop`
+   y `.boton-icono` en vez de inventar los suyos. A diferencia del drawer no
+   es parte fija del chrome: cada pantalla que lo necesite monta su propio
+   `.modal` (p. ej. desde un `.termino-glosario`), así que router.js no lo
+   conoce; quien lo abre es responsable de cablear su propio abrir/cerrar
+   con las mismas dos funciones de a11y.js — ver el script de la kitchen
+   sink para la referencia. Sin animación de apertura a propósito: no está
+   en el inventario de movimiento de CLAUDE.md (siete cosas y ninguna más),
+   mismo criterio que ya se aplicó al drawer. */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+}
+.modal__caja {
+  /* z-index 201, no 1: `.backdrop` trae z-index 200 fijo desde el drawer de
+     T3 (calibrado contra el resto del chrome a nivel de body). Dentro de
+     `.modal` (que ya abre su propio contexto de apilamiento por
+     position+z-index) ese 200 sigue comparándose contra los hijos de
+     `.modal`, así que la caja necesita superarlo explícitamente — mismo
+     201 que ya usa `.nav-drawer--flotante` contra el mismo backdrop.
+     Con z-index:1 el backdrop tapaba la caja entera y el botón «Cerrar»
+     quedaba sin poder pulsarse aunque se viera encima: bug real,
+     encontrado con Playwright al verificar T5, no hipotético. */
+  position: relative;
+  z-index: 201;
+  width: 100%;
+  max-width: 28rem;
+  max-height: calc(100vh - var(--sp-12));
+  overflow-y: auto;
+  padding: var(--sp-6);
+  border-radius: var(--r-lg);
+  background: var(--surface-default);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.modal__cerrar {
+  position: absolute;
+  top: var(--sp-3);
+  inset-inline-end: var(--sp-3);
+}
+.modal__titulo {
+  padding-inline-end: var(--sp-10);
+}
+
+/* ---- Término de glosario (T5, componentes) ------------------------------
+   Disparador de modal incrustado en texto de cuerpo: un `<button>`, no un
+   `<a>` —no navega, abre una superposición—, así que el subrayado
+   punteado lo distingue de un enlace real sin depender solo del color. */
+.termino-glosario {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2em;
+  color: var(--text-brand);
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+  font: inherit;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.termino-glosario:hover {
+  color: var(--nuam-orange-600);
+}
+.termino-glosario .icono {
+  font-size: 0.85em;
+}
+
+/* ---- Tarjeta de recurso descargable (T5, componentes) -------------------
+   Maqueta sin cablear, mismo criterio que `.media-audio`: el archivo real
+   lo trae el contenido de Jose (T8), no esta tarea. */
+.tarjeta-recurso {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.tarjeta-recurso:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-subtle);
+}
+.tarjeta-recurso__icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  background: var(--surface-subtle-2);
+  color: var(--text-secondary);
+}
+.tarjeta-recurso__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.tarjeta-recurso__titulo {
+  font: var(--text-h5);
+}
+.tarjeta-recurso__meta {
+  font: var(--text-caption);
+  color: var(--text-tertiary);
+}
+.tarjeta-recurso__accion {
+  margin-inline-start: auto;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+/* ---- Insignia (T5, componentes) -----------------------------------------
+   Dos estados: bloqueada (gris, candado) y desbloqueada (relleno naranja
+   permitido — es ícono/fill decorativo grande, no texto chico). El
+   desbloqueo es el único momento celebratorio del inventario de movimiento
+   (ítem 5, `--dur-reveal`): `.insignia--revelando` es el modificador que
+   quien la desbloquea agrega una vez —igual que la barra de progreso, solo
+   opacity/transform, nunca width/height. */
+.insignia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 7rem;
+  text-align: center;
+}
+.insignia__icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: var(--surface-subtle-2);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-default);
+}
+.insignia__icono .icono {
+  font-size: 2rem;
+}
+.insignia__texto {
+  font: var(--text-caption);
+  color: var(--text-secondary);
+}
+.insignia[data-estado="desbloqueada"] .insignia__icono {
+  background: var(--surface-brand);
+  color: var(--text-on-brand-display);
+  border-color: transparent;
+}
+.insignia[data-estado="desbloqueada"] .insignia__texto {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+@keyframes insignia-revelar {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.insignia--revelando .insignia__icono {
+  animation: insignia-revelar var(--dur-reveal) var(--ease-out);
+}
+
+/* ---- Aviso de logro (T5, componentes) -----------------------------------
+   Tarjeta de cierre que envuelve una `.insignia` desbloqueada. `role="status"`
+   porque en uso real (cierre de unidad, L13) aparece dinámicamente al
+   terminar la última pantalla — el navegador la anuncia sola sin depender
+   de que alguien vea la animación de la insignia (regla de CLAUDE.md: "el
+   movimiento no sustituye al anuncio"). */
+.aviso-logro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-8);
+  border-radius: var(--r-lg);
+  background: var(--surface-subtle);
+  text-align: center;
+}
+.aviso-logro__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+/* ---- Tarjeta de cápsula (T5, componentes) --------------------------------
+   Prefijo `cap-` (familia documentada en CLAUDE.md): tarjeta de navegación
+   a una cápsula dentro de la unidad, con sus tres estados —completada,
+   disponible, bloqueada—. Es la única entidad del OVA que sí conoce un
+   estado bloqueado (CLAUDE.md, fuera de alcance: el bloqueo es *entre*
+   unidades, no *entre* cápsulas de una misma unidad). Bloqueada es un
+   `<div>`, no un `<a>`: sin `href` queda fuera del orden de tabulación de
+   forma nativa, igual que `.boton:disabled` —ningún control que no lleva a
+   ningún lado debe ser alcanzable con Tab. El ícono de completada reutiliza
+   el mismo verde-700 que ya usa `.nav-drawer__item[data-estado="completado"]`,
+   no un tono nuevo. */
+.cap-tarjeta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+a.cap-tarjeta:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-subtle);
+}
+.cap-tarjeta__numero {
+  font: var(--text-h3);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.cap-tarjeta__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.cap-tarjeta__titulo {
+  font: var(--text-h5);
+}
+.cap-tarjeta__estado {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font: var(--text-caption);
+  color: var(--text-secondary);
+}
+.cap-tarjeta[data-estado="completada"] .cap-tarjeta__estado .icono {
+  color: var(--nuam-green-700);
+}
+.cap-tarjeta[data-estado="disponible"] .cap-tarjeta__estado .icono {
+  color: var(--text-brand);
+}
+.cap-tarjeta[data-estado="bloqueada"] {
+  opacity: 0.6;
+}
+.cap-tarjeta[data-estado="bloqueada"] .cap-tarjeta__estado .icono {
+  color: var(--text-tertiary);
 }
