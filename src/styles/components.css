@@ -1232,3 +1232,179 @@ a.cap-tarjeta:hover {
 .cap-tarjeta[data-estado="bloqueada"] .cap-tarjeta__estado .icono {
   color: var(--text-tertiary);
 }
+
+/* ---- Motor de evaluación (T6, componentes) ------------------------------
+   quiz.js arma el DOM de las ocho preguntas (I01–I08) sobre estas clases;
+   el catálogo completo de qué es cada tipo vive en el encabezado de
+   quiz.js, no aquí. `.quiz-pregunta` es un <fieldset> real (reset de los
+   estilos nativos de fieldset/legend, cierre de PLAN.md) y `.quiz-opcion`
+   envuelve el input — el radio/checkbox usa accent-color en vez de un
+   estilo de "seleccionado" aparte, mismo criterio que el scrubber de
+   media.js en T4. Ningún tipo usa arrastre: I04/I05 resuelven con
+   <select>. */
+.quiz-interaccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+}
+.quiz-pregunta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.quiz-pregunta__enunciado {
+  padding: 0;
+  font: var(--text-h5);
+}
+.quiz-pregunta__opciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.quiz-opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--surface-default);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.quiz-opcion:hover {
+  background: var(--surface-subtle);
+}
+.quiz-opcion input {
+  accent-color: var(--nuam-orange-500);
+  flex-shrink: 0;
+  width: 1.15em;
+  height: 1.15em;
+}
+.quiz-pregunta__escala {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.quiz-pregunta__filas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.quiz-pregunta__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+}
+.quiz-pregunta__campo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.quiz-pregunta__etiqueta {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.quiz-pregunta__fila select,
+.quiz-pregunta__campo select,
+.quiz-pregunta__campo input {
+  font: inherit;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--surface-default);
+  color: var(--text-primary);
+  min-width: 8rem;
+}
+.quiz-pregunta__unidad {
+  color: var(--text-secondary);
+}
+.quiz-pregunta__correcta {
+  color: var(--text-secondary);
+}
+.quiz-interaccion :disabled {
+  cursor: not-allowed;
+}
+.quiz-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.quiz-resumen {
+  color: var(--text-secondary);
+}
+
+/* ---- Bloque de retroalimentación — I14 (T6, componentes) ----------------
+   Compartido por las ocho preguntas. El estado nunca es solo color (regla
+   dura de CLAUDE.md): el ícono cambia (check_circle / cancel / task_alt) y
+   el título lo dice en palabras, mismo patrón que ya resolvió .callout.
+   Anima con --dur-base al aparecer (ítem 3 del inventario de movimiento —
+   "la que más comunica"); prefers-reduced-motion ya colapsa esa duración
+   en tokens.css, no se duplica aquí. */
+.quiz-retro {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--surface-subtle);
+  border-inline-start: 3px solid var(--border-strong);
+}
+.quiz-retro__icono {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: var(--text-tertiary);
+}
+.quiz-retro__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.quiz-retro__titulo {
+  font: var(--text-h5);
+}
+.quiz-retro__detalle {
+  color: var(--text-secondary);
+}
+.quiz-retro[data-estado="correcto"] {
+  border-inline-start-color: var(--nuam-green-500);
+}
+.quiz-retro[data-estado="correcto"] .quiz-retro__icono {
+  color: var(--nuam-green-500);
+}
+.quiz-retro[data-estado="correcto"] .quiz-retro__titulo {
+  color: var(--nuam-green-700);
+}
+.quiz-retro[data-estado="incorrecto"] {
+  border-inline-start-color: var(--nuam-red-500);
+}
+.quiz-retro[data-estado="incorrecto"] .quiz-retro__icono {
+  color: var(--nuam-red-500);
+}
+.quiz-retro[data-estado="incorrecto"] .quiz-retro__titulo {
+  color: var(--nuam-red-700);
+}
+@keyframes quiz-retro-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(var(--shift-sm));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.quiz-retro--entrada {
+  animation: quiz-retro-entrada var(--dur-base) var(--ease-out) both;
+}

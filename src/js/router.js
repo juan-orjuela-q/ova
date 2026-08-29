@@ -18,13 +18,13 @@
 
    Catálogo de layouts: T2 implementó L02, L05, L06 y L11 (los que
    usaba su JSON de prueba); T4 agrega L03 y L04, los dos únicos con
-   columna de media. Cualquier otro código, aunque exista en el
-   catálogo L01–L13 de CLAUDE.md, todavía no tiene plantilla aquí y
-   cae por la misma rama de fallo ruidoso que un código inventado:
-   cada tarea futura que dependa de un layout nuevo agrega su entrada
-   a PLANTILLAS, nunca reinterpreta esta función. El mismo patrón
-   aplica cuando quiz.js agregue interacción — no existe todavía
-   porque el JSON de prueba no la usa.
+   columna de media; T6 agrega L10, el único con columna de
+   interacción (delega en OVA.quiz.crear, catálogo I01–I08 — ver
+   quiz.js). Cualquier otro código, aunque exista en el catálogo
+   L01–L13 de CLAUDE.md, todavía no tiene plantilla aquí y cae por la
+   misma rama de fallo ruidoso que un código inventado: cada tarea
+   futura que dependa de un layout nuevo agrega su entrada a
+   PLANTILLAS, nunca reinterpreta esta función.
 
    Nada de innerHTML con texto del contenido: todo nodo de texto se
    arma con createElement/textContent.
@@ -90,6 +90,21 @@
     return contenedor;
   }
 
+  // T6: única entrada de layout que renderiza pantalla.interaccion.
+  // Delega en OVA.quiz.crear, que falla ruidoso si interaccion.tipo no
+  // existe en el catálogo I01–I08 — mismo criterio que crearMedia con
+  // media.tipo. Sin interaccion en absoluto, también falla: L10 no
+  // tiene sentido sin ella.
+  function crearInteraccion(interaccion) {
+    if (!interaccion) throw new Error('Esta pantalla no trae "interaccion" y su layout lo necesita.');
+    var contenedor = document.createElement('div');
+    contenedor.className = 'layout__interaccion';
+    var nodo = OVA.quiz.crear(interaccion);
+    if (!nodo) throw new Error('No se pudo construir la interacción (ver consola).');
+    contenedor.appendChild(nodo);
+    return contenedor;
+  }
+
   function crearRaiz(modificador) {
     var raiz = document.createElement('div');
     // .layout--transicion es la animación de cambio de pantalla
@@ -150,6 +165,19 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h3');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  PLANTILLAS.L10 = function (pantalla) {
+    // Sin .layout__cuerpo a propósito: L10 es "interacción a pantalla
+    // completa" (layouts.css), kicker + título compactos y centrados,
+    // la interacción ocupa el espacio principal — igual que su
+    // marcador en la kitchen sink desde T1.5.
+    var raiz = crearRaiz('l10');
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    raiz.appendChild(titulo);
+    raiz.appendChild(crearInteraccion(pantalla.interaccion));
     return { raiz: raiz, titulo: titulo };
   };
 

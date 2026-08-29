@@ -17,7 +17,7 @@ cambien algo para el futuro. Si una decisión cambia una **regla**, va a
 - [x] **T3 · Chrome del OVA** — completada 28 ago
 - [x] **T4 · Reproductor de media** — completada 29 ago
 - [x] **T5 · Componentes de contenido** — completada 29 ago
-- [ ] T6 · Motor de evaluación
+- [x] **T6 · Motor de evaluación** — completada 29 ago
 - [ ] T7 · Datos y gráficos
 - [ ] T8 · Interacciones insignia
 - [ ] T9 · Empaquetado y auditoría
@@ -575,6 +575,140 @@ L01–L11 no se tocó — no tenían marcador de T5, y CLAUDE.md ya dejó
 registrado que L02–L13 no pasaron por una crítica de diseño aparte
 (decisión del 28 ago).
 
+**29 ago — T6 cerrada: motor de evaluación, con el catálogo I01–I08 diseñado
+en esta sesión (no venía especificado) y verificado de punta a punta con
+Playwright, incluido el reporte real a `cmi.interactions` contra una API
+SCORM simulada.**
+
+**Decisión de lectura, la más importante de la sesión.** `PLAN.md` pide
+"quiz.js con los tipos I01 a I08 y el bloque de retroalimentación I14. Banco
+de preguntas, intentos configurables" sin decir qué es cada tipo —
+`CLAUDE.md` solo nombra I09–I12 (las interacciones insignia de T8) e I14, no
+I01–I08. Antes de escribir código se decidió qué catálogo construir, y esa
+decisión quedó documentada en el encabezado de `quiz.js` (no en `CLAUDE.md`,
+mismo criterio que el catálogo de layouts vive en `layouts.css` y no ahí):
+
+- **I01 verdadero/falso, I02 opción única, I03 opción múltiple, I04
+  relacionar, I05 ordenar, I06 completar espacio en blanco, I07 respuesta
+  numérica, I08 autoevaluación (escala, sin nota).** Los siete primeros
+  mapean 1 a 1 contra los tipos de `cmi.interactions.n.type` de SCORM 1.2
+  (`true-false`, `choice` ×2, `matching`, `sequencing`, `fill-in`,
+  `numeric`), y el octavo contra `likert` — el reporte a SCORM sale
+  directo de esa correspondencia en vez de inventar un mapeo aparte.
+- **"Banco de preguntas" no es una estructura de varias preguntas dentro de
+  una sola pantalla.** El contrato de contenido ya fija `interaccion` como
+  un objeto `{tipo, datos}` singular (T2). Envolver varias preguntas ahí
+  habría cambiado esa forma sin necesidad real: se interpretó "banco" como
+  el catálogo de tipos que implementa `quiz.js`, con una pregunta por
+  pantalla (layout L10, "interacción a pantalla completa") — el mismo
+  patrón que I09–I12 en T8, cada una ocupando su propia pantalla. Si la
+  intención real era varias preguntas por pantalla, hay que decirlo
+  explícitamente, igual que quedó registrada la lectura propia del botón
+  de reanudar en T3.
+- **Ningún tipo usa arrastre.** I04 (relacionar) e I05 (ordenar) —los dos
+  "de orden"— resuelven con `<select>` en vez de drag-and-drop. `PLAN.md`
+  exige esto de forma explícita para I09 en T8 ("alternativa de teclado al
+  arrastre"); se aplicó aquí desde el origen en los dos tipos de T6 que
+  tenían el mismo problema, en vez de construir con arrastre y corregirlo
+  después.
+
+**Qué se construyó:**
+
+- **`src/js/quiz.js`** (nuevo) — `window.OVA.quiz.crear(interaccion)`
+  construye un `<form novalidate>` con el `<fieldset>`/`<legend>` real de
+  la pregunta (cierre de `PLAN.md`), el bloque de retroalimentación I14
+  (`.quiz-retro`, compartido por las ocho, `role="status"` para
+  anunciarse solo — mismo criterio que `.aviso-logro` en T5), y los
+  botones «Comprobar»/«Reintentar». Cada constructor de tipo
+  (`construirVerdaderoFalso`… `construirAutoevaluacion`) devuelve la misma
+  interfaz (`evaluar()`, `textoRespuesta()`/`textoCorrecta()` para SCORM,
+  `bloquear()`/`desbloquear()`, `revelarCorrecta()`) para que el montaje
+  no necesite saber de qué tipo es la pregunta que está calificando.
+  `revelarCorrecta()` agrega su nota de "Respuesta correcta: …" con
+  `retro.agregarNota()`, dentro del propio `.quiz-retro` (`role="status"`)
+  en vez de como hermano en el fieldset — si quedara afuera, un lector de
+  pantalla que reacciona a la región en vivo nunca la anunciaría, solo la
+  vería quien mira la pantalla (mismo espíritu de la regla dura del color
+  nunca siendo el único código, extendido a que el estado se anuncie
+  completo).
+  `evaluar()` devuelve `null` solo en I08 (autoevaluación): esa señal es
+  la que usa `comprobar()` para no calificarla, no reportar
+  `correct_responses` y no tocarle la nota.
+- **Intentos configurables** (`datos.intentos`, 0/ausente = ilimitados).
+  Al agotarse o acertar, `comprobar()` bloquea los controles y —si la
+  respuesta quedó incorrecta— revela la respuesta correcta con
+  `revelarCorrecta()`; con intentos de sobra y respuesta incorrecta,
+  aparece «Reintentar», que reactiva los controles sin borrar la
+  selección anterior (el intento no se descuenta al reintentar, solo al
+  comprobar).
+- **Reporte a SCORM vía `cmi.interactions`.** Cada «Comprobar» agrega una
+  fila nueva (id, type, student_response, correct_responses.0.pattern,
+  result, time) leyendo `cmi.interactions._count` para saber el próximo
+  índice, y en preguntas gradables actualiza
+  `cmi.core.score.raw/min/max` con 100/0 según acierto — la nota que T9
+  necesita para "reporta avance y notas". El formato de
+  student_response/correct_responses es una serialización simple (ids
+  separados por comas, `clave.valor` para relacionar/ordenar), no la
+  gramática completa de patrones de SCORM 1.2 por tipo de interacción:
+  decisión deliberada, documentada en `quiz.js` — Moodle basa la
+  calificación real en `cmi.core.score.raw`, no en parsear ese patrón.
+- **`router.js`**: `PLANTILLAS.L10` (único layout con columna de
+  interacción) y `crearInteraccion()`, que delega en `OVA.quiz.crear()` y
+  falla ruidoso si la pantalla no trae `interaccion` — mismo patrón que
+  `crearMedia()` con `media.tipo` en T4.
+- **`content/ova-u1.js`**: pantalla nueva `s07` (L10, I02 con dos
+  intentos) para que T6 se verifique de punta a punta en
+  `src/index.html`, no solo en la kitchen sink — mismo criterio que
+  `s05`/`s06` en T4.
+- **CSS (`components.css`)**: familia `.quiz-` nueva (`.quiz-interaccion`,
+  `.quiz-pregunta`, `.quiz-opcion`, `.quiz-retro`…). `.quiz-opcion` usa
+  `accent-color` en el radio/checkbox en vez de un estilo de
+  "seleccionado" aparte — mismo criterio que el scrubber de `media.js` en
+  T4. El bloque de retroalimentación anima con `--dur-base` al aparecer
+  (ítem 3 del inventario de movimiento, "la que más comunica"); el
+  `@keyframes quiz-retro-entrada` es el mismo patrón opacity+translateY
+  que `layout-entrada`, sin duplicar el media query de movimiento
+  reducido.
+
+**Verificado con Playwright (dos páginas, tres corridas):**
+
+- `dev/kitchen-sink.html`: nueve instancias reales de `.quiz-interaccion`
+  (las ocho I01–I08 más la de L10) sin errores de consola. Recorrido
+  completo con teclado sobre I02 sin un solo clic — foco en el primer
+  radio, flechas arriba/abajo mueven la selección nativa del grupo, Tab
+  cae directo en «Comprobar» (nada inalcanzable entre medias), Enter
+  comprueba. `:focus-visible` con contorno real (nunca `outline: none`).
+  Nueve `<fieldset>` con nueve `<legend>` hijos directos (uno por
+  pregunta). I01 con `intentos:1` bloquea y revela la respuesta correcta
+  en el primer fallo; I03 con `intentos:2` deja «Reintentar» visible tras
+  el primer fallo y llega a `correcto` en el segundo intento sin perder
+  las casillas ya marcadas; I06 compara "Acción" contra "acción" ignorando
+  tilde/mayúsculas (normalización NFD); I08 nunca queda en
+  `correcto`/`incorrecto`, siempre `neutral`. 320 px sin scroll horizontal
+  y zoom de texto 200 % sin romper el layout de ninguna de las nueve.
+  Bajo `prefers-reduced-motion: reduce`, la animación del bloque de
+  retroalimentación mide `0.00001s` (el colapso ya existente de
+  `--dur-base` en `tokens.css`, sin media query duplicado).
+- `src/index.html`, con una API SCORM 1.2 simulada inyectada en
+  `window.API` antes de cargar la página (mismo mecanismo que usará
+  Moodle): navegar hasta `s07` monta la interacción real; fallar la
+  primera vez agrega `cmi.interactions.0.*` completo (id
+  `u1-p1-mercado`, type `choice`, student_response `b`, pattern `a`,
+  result `wrong`, time con formato `HH:MM:SS`) y dobla
+  `cmi.core.score.raw` a `0`; reintentar y acertar agrega
+  `cmi.interactions.1.*` con `result: correct` y sube el score a `100`,
+  bloquea los radios y oculta ambos botones. Cero errores de consola en
+  toda la corrida.
+
+**Kitchen sink:** sección "Motor de evaluación (T6)" nueva dentro de
+"Componentes", con las ocho preguntas montadas de verdad vía
+`OVA.quiz.crear()` (mismo criterio que el reproductor de video de T4 y el
+modal de T5: no depende del router/hash, así que puede vivir aquí sin
+falsear su comportamiento). El marcador de L10 ("Interacción I0X — marcador
+quiz.js en T6") se reemplazó por el mismo ejemplo que `s07`, montado por
+`router.js` de verdad en `src/index.html` y replicado aquí solo para
+mostrarlo sin navegar.
+
 ## Pendientes y avisos
 
 - El contenido de Jose no bloquea nada hasta T8.
@@ -582,11 +716,11 @@ registrado que L02–L13 no pasaron por una crítica de diseño aparte
 - L02–L13 no tuvieron la crítica de diseño ni el catálogo de componentes que
   preveía el punto 1 de T1.5 (ver decisión del 28 ago) — quedó descartado,
   no diferido a otra sesión.
-- El motor (T2/T4) solo tiene plantillas de render para L02, L03, L04, L05,
-  L06 y L11. Cualquier tarea que monte una pantalla con otro layout (L01,
-  L07, L08, L09, L10, L12, L13) necesita agregar su entrada a `PLANTILLAS`
-  en `router.js` antes de que esa pantalla renderice — hoy cae en el
-  estado de error visible, a propósito.
+- El motor (T2/T4/T6) solo tiene plantillas de render para L02, L03, L04,
+  L05, L06, L10 y L11. Cualquier tarea que monte una pantalla con otro
+  layout (L01, L07, L08, L09, L12, L13) necesita agregar su entrada a
+  `PLANTILLAS` en `router.js` antes de que esa pantalla renderice — hoy cae
+  en el estado de error visible, a propósito.
 - El botón de reanudar de T3 es una interpretación propia del alcance —
   ver la decisión del 28 ago—, no una especificación literal de
   `PLAN.md`. Confirmar con el usuario si el comportamiento esperado era
@@ -620,3 +754,31 @@ registrado que L02–L13 no pasaron por una crítica de diseño aparte
   pausarlo es inofensivo) ni previsiblemente grave para una unidad de
   pocas pantallas, pero si una unidad crece mucho vale la pena que T9
   revise si conviene que `router.js` avise a `media.js` al desmontar.
+- **El catálogo I01–I08 de T6 es una lectura propia, no una especificación
+  literal de `PLAN.md`** — ver la decisión del 29 ago en `quiz.js` y aquí
+  arriba. Confirmar con el usuario si los ocho tipos elegidos (y la
+  lectura de "banco de preguntas" como una pregunta por pantalla, no
+  varias por pantalla) son los que Jose necesita antes de que empiece a
+  escribir guion de evaluación para ellos — corregirlo después de que haya
+  contenido real escrito contra el catálogo equivocado sale caro.
+- **I13 sigue sin definir.** `CLAUDE.md` nombra I09–I12 (insignia, T8) e
+  I14 (retroalimentación, T6); I01–I08 los definió esta sesión. I13 no
+  aparece en ningún lado — no es un error de esta sesión, ya faltaba antes,
+  pero queda pendiente por si el catálogo necesita completarse a I01–I14
+  sin huecos.
+- **`quiz.js` no persiste el intento entre recargas ni entre visitas al
+  drawer** — decisión de alcance explícita, documentada en el encabezado
+  del archivo (mismo criterio que la posición de reproducción en
+  `media.js`). Si el estudiante recarga a mitad de un intento o vuelve
+  después de navegar a otra pantalla, la pregunta se remonta en cero:
+  intentos usados y la respuesta marcada se pierden. Es aceptable para una
+  pregunta suelta por pantalla; si T8 necesita retener eso entre
+  interacciones más largas, es una extensión aparte, no algo que
+  `quiz.js` ya resuelve.
+- **`textoRespuesta()`/`textoCorrecta()` (formato reportado a
+  `cmi.interactions`) usan una serialización simple, no la gramática de
+  patrones completa de SCORM 1.2 por tipo** (documentado en `quiz.js`).
+  Suficiente para que Moodle registre la fila y para que
+  `cmi.core.score.raw` cargue la nota real, pero si T9 necesita que un
+  reporte de LMS externo parsee `correct_responses.pattern` en el formato
+  estricto del estándar, hay que revisarlo entonces.

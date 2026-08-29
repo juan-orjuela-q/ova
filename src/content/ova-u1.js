@@ -29,6 +29,13 @@
    único, incluso entre archivos hermanos) — verificado con Playwright
    al construir T4. Mismo motivo por el que este archivo entero es
    .js y no .json + fetch.
+
+   T6 suma s07 (L10): única pantalla con `interaccion`, para ejercitar
+   quiz.js de extremo a extremo en src/index.html (intentos, bloque de
+   retroalimentación, reporte a cmi.interactions) y no solo en la
+   kitchen sink. Usa I02 (opción única); el catálogo completo I01–I08
+   vive documentado en el encabezado de quiz.js, con las ocho
+   representadas en la kitchen sink.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -105,6 +112,31 @@ window.OVA_CONTENIDO = {
         "src": "../public/videos/woman_Businesswoman_1920x1010.mp4",
         "vtt": "WEBVTT\n\n00:00:00.000 --> 00:00:01.800\nBienvenida a la Academia Virtual nuam.\n\n00:00:01.800 --> 00:00:03.600\nEste es un video de relleno para probar\n\n00:00:03.600 --> 00:00:05.100\nsubtítulos y transcripción reales.",
         "transcripcion": "Bienvenida a la Academia Virtual nuam.\nEste es un video de relleno para probar subtítulos y transcripción reales."
+      },
+      "progreso": true
+    },
+    {
+      "id": "s07",
+      "layout": "L10",
+      "titulo": "Antes de seguir, ¿cuánto sabes?",
+      "kicker": "Evaluación rápida",
+      "interaccion": {
+        "tipo": "I02",
+        "datos": {
+          "id": "u1-p1-mercado",
+          "enunciado": "¿Cuál de los siguientes mercados administra Bolsa de Valores de Colombia?",
+          "intentos": 2,
+          "opciones": [
+            { "id": "a", "texto": "Renta variable" },
+            { "id": "b", "texto": "Criptomonedas" },
+            { "id": "c", "texto": "Bienes raíces" }
+          ],
+          "correcta": "a",
+          "retroalimentacion": {
+            "correcto": "Renta variable es el mercado de las acciones, el foco de este curso.",
+            "incorrecto": "BVC administra renta variable, renta fija y derivados — ninguno de esos es criptomonedas ni bienes raíces."
+          }
+        }
       },
       "progreso": true
     }

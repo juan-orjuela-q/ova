@@ -803,6 +803,59 @@
         </div>
         <p class="ks-intro">Bloqueada es un <code>&lt;div&gt;</code>, no un <code>&lt;a&gt;</code>: sin <code>href</code> queda fuera del orden de tabulación sola, sin <code>tabindex="-1"</code> ni JavaScript — ningún control que no lleva a ningún lado debe ser alcanzable con Tab. Es el único estado "bloqueado" que conoce el OVA: entre cápsulas de una misma unidad, no entre unidades (eso lo resuelve Moodle).</p>
       </div>
+
+      <div class="ks-layout-bloque" id="c-quiz">
+        <span class="ks-layout-bloque__etiqueta">Motor de evaluación (T6) — catálogo I01–I08, cableado real</span>
+        <p class="ks-intro">
+          A diferencia del resto de esta sección, las ocho preguntas de abajo
+          están vivas: se montan con <code>OVA.quiz.crear()</code> en el
+          script al final de esta página, igual que el reproductor de video
+          de T4 y el modal de T5 — no dependen del router con hash, así que
+          pueden mostrarse tal cual son en <code>src/index.html</code>. Pulsa
+          «Comprobar» para ver el bloque de retroalimentación (I14): ícono y
+          texto cambian juntos, nunca solo el color, y se anuncian solos por
+          <code>role="status"</code>. Cada una usa <code>&lt;fieldset&gt;</code>/
+          <code>&lt;legend&gt;</code> reales y ningún tipo depende de
+          arrastre — I04 y I05 (los dos "de orden") resuelven con
+          <code>&lt;select&gt;</code>, mismo criterio que T8 exige de forma
+          explícita para I09. El catálogo completo, con la forma exacta de
+          <code>interaccion.datos</code> por tipo, está documentado en el
+          encabezado de <code>quiz.js</code>.
+        </p>
+
+        <div class="ks-layout-bloque" id="c-quiz-i01">
+          <span class="ks-layout-bloque__etiqueta">I01 · Verdadero o falso</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-quiz-i02">
+          <span class="ks-layout-bloque__etiqueta">I02 · Opción única</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-quiz-i03">
+          <span class="ks-layout-bloque__etiqueta">I03 · Opción múltiple</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-quiz-i04">
+          <span class="ks-layout-bloque__etiqueta">I04 · Relacionar conceptos</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-quiz-i05">
+          <span class="ks-layout-bloque__etiqueta">I05 · Ordenar pasos</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-quiz-i06">
+          <span class="ks-layout-bloque__etiqueta">I06 · Completar el espacio en blanco</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-quiz-i07">
+          <span class="ks-layout-bloque__etiqueta">I07 · Respuesta numérica</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-quiz-i08">
+          <span class="ks-layout-bloque__etiqueta">I08 · Autoevaluación (escala) — sin nota, no cuenta como correcta/incorrecta</span>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ============================================================ -->
@@ -1061,14 +1114,15 @@
       </div>
 
       <div class="ks-layout-bloque" id="l10">
-        <span class="ks-layout-bloque__etiqueta">L10 · Interacción a pantalla completa</span>
+        <span class="ks-layout-bloque__etiqueta">L10 · Interacción a pantalla completa (T6, cableado real)</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l10">
             <span class="layout__kicker tipo-etiqueta">Evaluación rápida</span>
             <h2 class="layout__titulo tipo-h2">Antes de empezar, ¿cuánto sabes?</h2>
-            <div class="layout__interaccion">Interacción I0X<br />(marcador — quiz.js en T6)</div>
+            <div class="layout__interaccion" id="l10-interaccion"></div>
           </div>
         </div>
+        <p class="ks-intro">Mismo ejemplo que <code>s07</code> en <code>content/ova-u1.js</code> (I02, dos intentos) — la interacción real que se recorre de extremo a extremo en <code>src/index.html</code>, montada aquí por <code>router.js</code>: <code>PLANTILLAS.L10</code> delega en <code>OVA.quiz.crear()</code> igual que L03/L04 delegan en <code>OVA.media.crear()</code>.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l11">
@@ -1135,16 +1189,21 @@
     </section>
   </main>
 
-  <!-- Scripts reales de la kitchen sink: media.js (T4) y el modal de
-       término de glosario (T5) no dependen del router/hash como el resto
-       del motor (T2/T3), así que aquí sí se puede montar una demo viva en
-       vez de una maqueta que finja su comportamiento — mismo criterio que
-       llevó a documentar "Motor" y "Chrome" como texto en vez de HTML
-       falso, aplicado al revés. a11y.js es autónomo (no depende de
-       router.js ni de #anuncios para funcionar) así que se puede cargar
-       aquí tal cual, sin adaptarlo. -->
+  <!-- Scripts reales de la kitchen sink: media.js (T4), quiz.js (T6) y el
+       modal de término de glosario (T5) no dependen del router/hash como
+       el resto del motor (T2/T3), así que aquí sí se puede montar una demo
+       viva en vez de una maqueta que finja su comportamiento — mismo
+       criterio que llevó a documentar "Motor" y "Chrome" como texto en vez
+       de HTML falso, aplicado al revés. a11y.js y scorm.js son autónomos
+       (no dependen de router.js ni de #anuncios/window.API para funcionar)
+       así que se pueden cargar aquí tal cual, sin adaptarlos — scorm.js no
+       encuentra window.API en esta página (no hay LMS), así que
+       OVA.scorm.disponible() da false y quiz.js simplemente no reporta
+       nada, sin errores. -->
   <script src="../src/js/a11y.js"></script>
+  <script src="../src/js/scorm.js"></script>
   <script src="../src/js/media.js"></script>
+  <script src="../src/js/quiz.js"></script>
   <script>
     (function () {
       function montar(id, datos) {
@@ -1191,6 +1250,140 @@
         src: VIDEO_DEMO,
         vtt: VTT_DEMO,
         transcripcion: TRANSCRIPCION_DEMO
+      });
+    })();
+  </script>
+
+  <!-- Motor de evaluación (T6): catálogo I01–I08, montado con
+       OVA.quiz.crear() igual que el reproductor de video de arriba —
+       mismo criterio, no depende del router/hash. l10-interaccion usa el
+       mismo ejemplo (I02, dos intentos) que s07 en content/ova-u1.js. -->
+  <script>
+    (function () {
+      function montarQuiz(id, interaccion) {
+        var contenedor = document.getElementById(id);
+        if (!contenedor) return;
+        var nodo = OVA.quiz.crear(interaccion);
+        if (nodo) contenedor.appendChild(nodo);
+      }
+
+      montarQuiz('c-quiz-i01', {
+        tipo: 'I01',
+        datos: {
+          enunciado: 'Una acción es un título de deuda.',
+          respuestaCorrecta: false,
+          intentos: 1,
+          retroalimentacion: {
+            incorrecto: 'Una acción es un título valor participativo (propiedad), no de deuda.'
+          }
+        }
+      });
+
+      montarQuiz('c-quiz-i02', {
+        tipo: 'I02',
+        datos: {
+          enunciado: '¿Cuál de estos es un mercado administrado por BVC?',
+          opciones: [
+            { id: 'a', texto: 'Renta variable' },
+            { id: 'b', texto: 'Criptomonedas' },
+            { id: 'c', texto: 'Bienes raíces' }
+          ],
+          correcta: 'a'
+        }
+      });
+
+      montarQuiz('c-quiz-i03', {
+        tipo: 'I03',
+        datos: {
+          enunciado: '¿Cuáles de los siguientes son mercados administrados por BVC? Selecciona todas las que apliquen.',
+          intentos: 2,
+          opciones: [
+            { id: 'a', texto: 'Renta variable' },
+            { id: 'b', texto: 'Renta fija' },
+            { id: 'c', texto: 'Derivados' },
+            { id: 'd', texto: 'Bienes raíces' }
+          ],
+          correctas: ['a', 'b', 'c']
+        }
+      });
+
+      montarQuiz('c-quiz-i04', {
+        tipo: 'I04',
+        datos: {
+          enunciado: 'Relaciona cada término con su definición.',
+          izquierda: [
+            { id: '1', texto: 'Acción' },
+            { id: '2', texto: 'Dividendo' }
+          ],
+          derecha: [
+            { id: 'a', texto: 'Porción de las utilidades que la empresa reparte a sus accionistas' },
+            { id: 'b', texto: 'Título valor que representa una fracción de propiedad de una empresa' }
+          ],
+          pares: { '1': 'b', '2': 'a' }
+        }
+      });
+
+      montarQuiz('c-quiz-i05', {
+        tipo: 'I05',
+        datos: {
+          enunciado: 'Ordena los pasos del cálculo de valorización de Petrocaribe.',
+          pasos: [
+            { id: 'p3', texto: 'La diferencia es $500, un 50 % de valorización' },
+            { id: 'p1', texto: 'Un inversionista compra 500 acciones a $1.000 cada una' },
+            { id: 'p2', texto: 'Ocho meses después, el precio sube a $1.500' }
+          ],
+          orden: ['p1', 'p2', 'p3']
+        }
+      });
+
+      montarQuiz('c-quiz-i06', {
+        tipo: 'I06',
+        datos: {
+          enunciado: 'Completa: el título valor participativo que representa una fracción de propiedad de una empresa se llama ______.',
+          respuestas: ['acción', 'accion', 'acciones']
+        }
+      });
+
+      montarQuiz('c-quiz-i07', {
+        tipo: 'I07',
+        datos: {
+          enunciado: 'Compraste 500 acciones a $1.000 cada una. ¿Cuántos pesos invertiste en total?',
+          respuesta: 500000,
+          unidad: '$'
+        }
+      });
+
+      montarQuiz('c-quiz-i08', {
+        tipo: 'I08',
+        datos: {
+          enunciado: '¿Qué tan seguro te sientes explicando qué es una acción?',
+          escala: [
+            { valor: 1, texto: 'Nada seguro' },
+            { valor: 2, texto: 'Poco seguro' },
+            { valor: 3, texto: 'Neutral' },
+            { valor: 4, texto: 'Seguro' },
+            { valor: 5, texto: 'Muy seguro' }
+          ]
+        }
+      });
+
+      montarQuiz('l10-interaccion', {
+        tipo: 'I02',
+        datos: {
+          id: 'u1-p1-mercado',
+          enunciado: '¿Cuál de los siguientes mercados administra Bolsa de Valores de Colombia?',
+          intentos: 2,
+          opciones: [
+            { id: 'a', texto: 'Renta variable' },
+            { id: 'b', texto: 'Criptomonedas' },
+            { id: 'c', texto: 'Bienes raíces' }
+          ],
+          correcta: 'a',
+          retroalimentacion: {
+            correcto: 'Renta variable es el mercado de las acciones, el foco de este curso.',
+            incorrecto: 'BVC administra renta variable, renta fija y derivados — ninguno de esos es criptomonedas ni bienes raíces.'
+          }
+        }
       });
     })();
   </script>

@@ -116,6 +116,12 @@ se genere sin escribir HTML pantalla por pantalla.
 Reglas del contrato: `layout` sale del catálogo L01..L13. `interaccion.tipo`
 sale del catálogo I01..I14. Si el JSON pide algo que no existe en el catálogo,
 el motor falla ruidosamente en consola — nunca renderiza a medias en silencio.
+Cada `interaccion` sigue siendo una pregunta por pantalla (layout L10):
+"banco de preguntas" es el catálogo de tipos, no varias preguntas en una sola
+pantalla. El catálogo I01–I08 (preguntas) e I14 (bloque de retroalimentación
+compartido) y la forma exacta de `interaccion.datos` por tipo están
+documentados en el encabezado de `quiz.js`, no aquí — mismo criterio que el
+catálogo de layouts vive en `layouts.css`.
 
 **El archivo físico es `.js`, no `.json`.** `fetch()` y `XMLHttpRequest` no
 pueden leer un archivo local bajo `file://` (Chromium lo bloquea por CORS,
