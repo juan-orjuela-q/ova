@@ -101,6 +101,31 @@
    nuevo que C1 le agregó al layout — la kitchen sink cubre el caso
    con media), s19 (L11, recursos descargables) y s20 (L10, cierre de
    unidad — al final de verdad, es el cierre).
+
+   C3 (4 sep) suma el tipo de media "avatar" (imagen fija + audio
+   opcional + subtítulos opcionales + transcripción obligatoria — ver
+   el catálogo completo en el encabezado de media.js). s21 (L02) y s22
+   (L03) lo ejercitan como cualquier otro layout con una sola zona de
+   media: uno con audio real (`public/audio/demo-avatar.mp3`, un tono
+   de prueba generado con ffmpeg, no locución de Jose) y otro sin — s22
+   es la pantalla que demuestra la degradación de la sección 3.2 de
+   PLAN-CONTENIDO.md, transcripción directa sin reproductor, viéndose
+   terminada.
+
+   s00 (L01, la portada) se quedó solo con su `media.tipo:"video"` de
+   siempre — pedido explícito del usuario, primero mantener el video en
+   loop en vez de la foto fija del avatar, y después que esta pantalla
+   en particular no lleva narración de avatar en absoluto. L01 sigue
+   aceptando un campo `avatar` independiente de `media` (mismo contrato
+   que `media.tipo:'avatar'` sin el "tipo"), que `PLANTILLAS.L01` monta
+   de verdad dentro de `.layout__panel` cuando la pantalla lo trae — ver
+   la nota completa junto a esa plantilla en router.js — pero ninguna
+   pantalla de este contenido de prueba lo ejercita hoy; queda cableado
+   para cuando una portada real sí lo necesite. Las imágenes de
+   `public/img/avatar/` (nomenclatura `avatar-{plano}-{fondo}-{n}.webp`,
+   acordada con Juan) todavía no existen — s21/s22 apuntan ahí de todos
+   modos, a propósito: el código tiene que degradar limpio a la
+   ausencia del archivo, no evitarla usando otra imagen que sí exista.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -438,6 +463,38 @@ window.OVA_CONTENIDO = {
       "recursos": [
         { "titulo": "Plantilla: mi perfil de riesgo", "meta": "PDF · 180 KB", "href": "#", "icono": "description" }
       ],
+      "progreso": true
+    },
+    {
+      "id": "s21",
+      "layout": "L02",
+      "titulo": "Antes de seguir, un mensaje del equipo docente",
+      "kicker": "Unidad 1 · Avatar",
+      "cuerpo": [
+        "El avatar es imagen fija más audio, nunca video (regla dura 10 de CLAUDE.md): esta pantalla ejercita el reproductor real, con controles, subtítulos y transcripción."
+      ],
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-medio-confondo-2.webp",
+        "audio": "../public/audio/demo-avatar.mp3",
+        "vtt": "WEBVTT\n\n00:00:00.000 --> 00:00:02.500\nBienvenida a la Academia Virtual nuam.\n\n00:00:02.500 --> 00:00:06.000\nEste es un tono de prueba para ejercitar el reproductor de avatar de C3.",
+        "transcripcion": "Bienvenida a la Academia Virtual nuam.\nEste es un tono de prueba para ejercitar el reproductor de avatar de C3, no la locución real de Jose."
+      },
+      "progreso": true
+    },
+    {
+      "id": "s22",
+      "layout": "L03",
+      "titulo": "Todavía sin locución grabada",
+      "kicker": "Unidad 1 · Avatar sin audio",
+      "cuerpo": [
+        "Esta pantalla no trae \"audio\" en su media — el caso real mientras Juan graba las locuciones (PLAN-CONTENIDO.md §3.2). Degrada a imagen más transcripción directa, sin reproductor: tiene que verse terminada, no rota."
+      ],
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-1.webp",
+        "transcripcion": "Esta es la locución completa de la pantalla, escrita por Jose, mostrada directamente porque el audio todavía no existe. Cuando Juan lo grabe, esta misma transcripción pasa a vivir dentro de un reproductor real, sin que el contenido cambie."
+      },
       "progreso": true
     },
     {

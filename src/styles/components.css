@@ -570,11 +570,24 @@
   color: var(--nuam-green-700);
 }
 
-/* ---- Tarjeta de audio (T1.5, componentes — maqueta, sin cablear) ------
-   El disclosure de transcripción usa `<details>` nativo: estado abierto
-   o cerrado accesible sin una línea de JavaScript. Play/pausa se
-   documentan como dos instancias estáticas (mismo patrón que el resto
-   de la kitchen sink), no como un botón que de verdad alterna. */
+/* ---- Reproductor de avatar/audio (C3, cableado real sobre media.js) ----
+   T1.5 la dejó como maqueta con play/pausa documentados como dos
+   instancias estáticas; C3 la cablea de verdad, mismo criterio que T4
+   ya aplicó al reproductor de video: nada de widget ARIA armado a
+   mano — `.media-audio__progreso` es directamente el
+   `input[type="range"]` (con `accent-color`, no una barra rellena a
+   mano — el fill por `width` violaría la prohibición de animar layout
+   del inventario de movimiento de CLAUDE.md), y el disclosure de
+   transcripción sigue siendo `<details>`/`<summary>` nativo.
+
+   Dos formas del componente, según si `pantalla.media.audio` existe
+   (ver media.js): con audio, controles reales + transcripción
+   colapsada; sin audio (`.media-audio--sin-audio`), sin controles y con
+   `.media-audio__transcripcion-directa` en vez del `<details>` — visible
+   de una, porque sin audio es el único portador real de la locución
+   (regla dura 10 de CLAUDE.md), no un extra oculto detrás de un clic.
+   `.media-audio__transcripcion-cuerpo` es compartida por las dos rutas
+   (misma tipografía/color de párrafo, cambia solo el envoltorio). */
 .media-audio {
   display: flex;
   flex-direction: column;
@@ -583,11 +596,6 @@
   border-radius: var(--r-lg);
   background: var(--surface-subtle);
   max-width: 26rem;
-}
-.media-audio__fila {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
 }
 .media-audio__avatar {
   width: 3rem;
@@ -602,14 +610,10 @@
   height: 100%;
   object-fit: cover;
 }
-.media-audio__info {
+.media-audio__controles {
   display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-  min-width: 0;
-}
-.media-audio__titulo {
-  font: var(--text-h5);
+  align-items: center;
+  gap: var(--sp-3);
 }
 .media-audio__play {
   width: 2.5rem;
@@ -626,30 +630,56 @@
 .media-audio__play:hover {
   background: var(--nuam-grey-800);
 }
-.media-audio__controles {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-}
+/* input[type=range] real, no una barra rellena a mano — mismo criterio
+   que .media-video__scrubber en T4: Inicio/Fin/flechas y el rol de
+   slider vienen gratis del navegador. */
 .media-audio__progreso {
   flex: 1;
-  height: 4px;
-  border-radius: var(--r-pill);
-  background: var(--surface-muted);
-  position: relative;
-}
-.media-audio__progreso__relleno {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  border-radius: inherit;
-  background: var(--nuam-orange-500);
+  min-width: 0;
+  accent-color: var(--nuam-orange-500);
+  cursor: pointer;
 }
 .media-audio__tiempo {
   font: var(--text-caption);
   color: var(--text-tertiary);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+/* Botón CC, variante de superficie clara del .media-video__cc de T4
+   (ese usa el par de contraste "sobre inverse"; aquí .media-audio vive
+   sobre --surface-subtle, así que el relleno activo es
+   --surface-inverse en vez de gris 700 — mismo idioma, distinto punto
+   de apoyo). El estado activo/inactivo cambia relleno+borde, no solo
+   color — además de aria-pressed, porque el texto "CC" no cambia entre
+   estados (regla dura 3 de CLAUDE.md). */
+.media-audio__cc {
+  font: 700 0.875rem/1 var(--font-ui);
+  letter-spacing: 0.04em;
+  padding: 0.4em 0.6em;
+  border-radius: var(--r-sm);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.media-audio__cc[aria-pressed="true"] {
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+  border-color: var(--surface-inverse);
+}
+.media-audio__cc:hover:not([aria-pressed="true"]) {
+  background: var(--surface-muted);
+}
+/* Línea de subtítulos en vivo (solo mientras el CC está activo y hay
+   una cue sonando — media.js la deja vacía el resto del tiempo).
+   min-height reserva el alto de una línea para que aparecer/desaparecer
+   texto no empuje el resto de la tarjeta hacia abajo y hacia arriba en
+   cada cue. */
+.media-audio__captions {
+  font: var(--text-body-sm);
+  font-style: italic;
+  color: var(--text-secondary);
+  min-height: 1.3em;
 }
 .media-audio__transcripcion summary {
   font: var(--text-body-sm);
@@ -665,8 +695,27 @@
 .media-audio__transcripcion[open] summary {
   margin-block-end: var(--sp-2);
 }
-.media-audio__transcripcion p {
+/* .media-audio__transcripcion-directa (sin audio) es solo el envoltorio
+   semántico que devuelve crearTranscripcionVisible() en media.js —
+   ambas rutas arman el mismo contenido con crearCuerpoTranscripcion(),
+   así que toda la apariencia real vive en una sola clase. */
+.media-audio__transcripcion-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.media-audio__transcripcion-cuerpo p {
   color: var(--text-secondary);
+}
+.media-audio__transcripcion-descarga {
+  color: var(--text-brand);
+  width: fit-content;
+}
+.media-audio__transcripcion-descarga:hover {
+  color: var(--nuam-orange-600);
+}
+.media-audio__transcripcion-descarga:active {
+  color: var(--nuam-orange-700);
 }
 
 /* ---- Reproductor de video (T4) -----------------------------------------

@@ -365,8 +365,23 @@
   // pantalla.datos. El botón "Comenzar" (o pantalla.cta, si el guion
   // pide otro texto) avanza como "Siguiente" del chrome; no es un
   // layout con su propia navegación aparte.
+  //
+  // C3: L01 puede además traer `pantalla.avatar` (mismo contrato de
+  // media.tipo:'avatar' — ver el encabezado de media.js — sin el campo
+  // "tipo", que aquí ya lo da el nombre del campo), un objeto
+  // independiente de `pantalla.media`. Van separados a propósito: L01
+  // es el único layout con dos zonas visuales (el fondo de
+  // .layout__media y el panel de texto), y el fondo se queda con el
+  // video en loop de siempre — el usuario lo pidió explícito, no se
+  // reemplaza por la foto fija del avatar solo porque la pantalla
+  // también tiene locución. `pantalla.avatar`, si existe, se monta con
+  // OVA.media.crear() de verdad dentro de .layout__panel, después del
+  // cuerpo: ahí vive la locución real de la portada (audio + controles
+  // si existe, transcripción siempre, con o sin audio — regla dura 10
+  // de CLAUDE.md), sin tocar el fondo.
   PLANTILLAS.L01 = function (pantalla) {
-    if (!pantalla.media || (pantalla.media.tipo !== 'video' && pantalla.media.tipo !== 'imagen')) {
+    var media = pantalla.media;
+    if (!media || (media.tipo !== 'video' && media.tipo !== 'imagen')) {
       throw new Error('L01 necesita "media" (tipo "video" o "imagen") de fondo.');
     }
     var raiz = crearRaiz('l01');
@@ -398,6 +413,23 @@
     });
     panel.appendChild(cuerpo);
 
+    // C3: contenido real del avatar (narración + transcripción), si la
+    // pantalla lo trae — después del cuerpo y antes del CTA, siguiendo
+    // el orden de lectura kicker → título → cuerpo → narración →
+    // "Comenzar". Objeto independiente del fondo (pantalla.media): ver
+    // la nota completa arriba, junto a PLANTILLAS.L01.
+    if (pantalla.avatar) {
+      var narracion = OVA.media.crear({
+        tipo: 'avatar',
+        imagen: pantalla.avatar.imagen,
+        audio: pantalla.avatar.audio,
+        vtt: pantalla.avatar.vtt,
+        transcripcion: pantalla.avatar.transcripcion
+      });
+      if (!narracion) throw new Error('No se pudo construir el avatar de la portada (ver consola).');
+      panel.appendChild(narracion);
+    }
+
     var boton = document.createElement('button');
     boton.type = 'button';
     boton.className = 'boton boton--portada';
@@ -419,9 +451,9 @@
 
     raiz.appendChild(panel);
 
-    var media = document.createElement('div');
-    media.className = 'layout__media';
-    if (pantalla.media.tipo === 'video') {
+    var mediaFondo = document.createElement('div');
+    mediaFondo.className = 'layout__media';
+    if (media.tipo === 'video') {
       var video = document.createElement('video');
       video.autoplay = true;
       video.muted = true;
@@ -429,24 +461,24 @@
       video.playsInline = true;
       video.setAttribute('aria-hidden', 'true');
       var source = document.createElement('source');
-      source.src = pantalla.media.src;
+      source.src = media.src;
       source.type = 'video/mp4';
       video.appendChild(source);
-      media.appendChild(video);
+      mediaFondo.appendChild(video);
     } else {
       var img = document.createElement('img');
-      img.src = pantalla.media.src;
+      img.src = media.src;
       img.alt = '';
       img.setAttribute('aria-hidden', 'true');
-      media.appendChild(img);
+      mediaFondo.appendChild(img);
     }
     var unionMobileTop = document.createElement('img');
     unionMobileTop.className = 'layout__union layout__union--mobile-top';
     unionMobileTop.src = '../public/graf/union_graf_nuam_mobile_top.svg';
     unionMobileTop.alt = '';
     unionMobileTop.setAttribute('aria-hidden', 'true');
-    media.appendChild(unionMobileTop);
-    raiz.appendChild(media);
+    mediaFondo.appendChild(unionMobileTop);
+    raiz.appendChild(mediaFondo);
 
     return { raiz: raiz, titulo: titulo };
   };
@@ -658,6 +690,14 @@
   function limpiarApp() {
     var app = document.getElementById('app');
     while (app.firstChild) app.removeChild(app.firstChild);
+    // C3: el router nunca monta más de una pantalla a la vez, así que
+    // vaciar el registro de instancias de media.js aquí es correcto —
+    // antes de C3 ese registro solo crecía con referencias a <video>/
+    // <audio> ya desconectados del DOM (hallazgo de T4, anotado en
+    // ESTADO.md y heredado explícitamente por C3 en PLAN-CONTENIDO.md).
+    if (window.OVA && OVA.media && OVA.media.limpiarInstancias) {
+      OVA.media.limpiarInstancias();
+    }
     return app;
   }
 

@@ -330,6 +330,59 @@ Tres cosas que C3 hereda y tiene que resolver, no descubrir:
 transcripción visible y descargable, y una pantalla sin archivo de audio se ve
 terminada, no rota.
 
+**Cerrada 4 sep, rama `c3-media-avatar-audio` — las tres cosas de arriba,
+resueltas, con una corrección a mitad de camino:** el primer intento hacía
+que `media.tipo:'avatar'` reemplazara el fondo de L01 (la foto fija en vez
+del video en loop); el usuario pidió mantener el video de siempre en la
+portada, así que quedó separado en dos campos — `pantalla.media`
+(`"video"`/`"imagen"`, el fondo decorativo de siempre, sin cambio) y
+`pantalla.avatar` (objeto nuevo e independiente, mismo contrato que
+`media.tipo:'avatar'` sin el campo "tipo"), que `PLANTILLAS.L01` monta
+de verdad dentro de `.layout__panel` sin tocar el fondo. Fuera de L01
+(cualquier layout con una sola zona de media), `media.tipo:'avatar'`
+sigue siendo el campo único, sin este desdoblamiento — ver la nota de
+abajo. `OVA.media.limpiarInstancias()` nueva, llamada por `router.js` en
+cada navegación; la transcripción sin audio se muestra directa (no en
+`<details>`) — es el placeholder, no un extra. Detalle completo en
+`ESTADO.md`.
+
+**Notas para C4/C7 sobre media (dejadas por C3):**
+
+- **El contrato de `media.tipo:'avatar'`** vive documentado en el
+  encabezado de `media.js`, no aquí — mismo criterio que I01–I08 vive en
+  `quiz.js`. Resumen para quien escriba el script de C7: `{ tipo:'avatar',
+  imagen, audio?, vtt?, transcripcion }`. `imagen` y `transcripcion` son
+  obligatorios (sin imagen no hay avatar; sin transcripción no hay nada
+  real que mostrar en ninguna de las dos rutas); `audio` y `vtt` son
+  opcionales, y `vtt` no tiene sentido sin `audio`. Si el storyboard de
+  Jose no trae datos de subtítulos por pantalla, omitir `vtt` entero —
+  el reproductor funciona completo sin él (play/scrubber/transcripción),
+  solo no aparece el botón CC.
+- **L01 es la excepción de dos campos — P01 la va a necesitar en C7.**
+  En cualquier layout con una sola zona de media, el avatar va completo
+  en `pantalla.media` (`{ tipo:'avatar', imagen, audio?, vtt?,
+  transcripcion }`). En L01 (la portada, dos zonas: fondo + panel) el
+  avatar va en `pantalla.avatar` **sin el campo "tipo"** (`{ imagen,
+  audio?, vtt?, transcripcion }`), y `pantalla.media` se queda con el
+  video/imagen de fondo de siempre, sin tocar. P01 usa L01, así que C7
+  arma sus dos campos por separado, no uno solo con `tipo:'avatar'`.
+- **`media.audio` es una ruta real, no Blob.** A diferencia de `media.vtt`
+  (que sigue siendo texto WebVTT completo, por el bloqueo de `file://` a
+  `<track src>` que T4 ya documentó), un `<audio><source src="…"></audio>`
+  con una ruta relativa real **sí funciona bajo `file://`** — mismo
+  comportamiento que `<video src>` desde T4. Verificado con Playwright en
+  C3 con un mp3 real en `public/audio/`. Si C7 (o quien produzca los
+  audios finales) genera rutas a archivos reales, van directo en
+  `media.audio` tal cual — no hay que envolverlas en nada.
+- **Ausencia de imagen degrada sola, no hace falta lógica en el
+  contenido.** Las pantallas de C3 apuntan a rutas de
+  `public/img/avatar/` que no existen todavía y no rompen nada — ni
+  consola, ni layout roto (`media.js`/`router.js` quitan la `<img>` al
+  fallar su carga). C7 puede convertir las 47 pantallas con las rutas
+  finales de Jose aunque Juan todavía no haya entregado todas las
+  imágenes: cada pantalla se ve completa igual, con el círculo de avatar
+  en `--surface-muted` en vez de un ícono de imagen rota.
+
 ### C4 · Estado compartido
 Variables de contenido en `state.js`: `aciertos_diagnostico`, `perfil_riesgo`,
 `resultado_boleta`. Persisten con el progreso y viajan a SCORM.

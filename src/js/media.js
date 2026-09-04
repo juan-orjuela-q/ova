@@ -1,21 +1,59 @@
 /* ============================================================
-   media.js — reproductor de video con controles propios (T4).
+   media.js — reproductor de video (T4) y de avatar/audio (C3) con
+   controles propios.
 
-   Un solo <video> sin el atributo `controls`: cada control de abajo
-   es un elemento nativo real (button, input[type="range"],
-   details/summary, a[download]) en vez de un widget ARIA armado a
-   mano — la operación por teclado la da el navegador mismo (Tab,
-   Enter/Espacio, flechas en el scrubber), no un manejador de tecla
-   que hay que mantener sincronizado con cada estado nuevo.
+   Un solo elemento de media (<video> o <audio>) sin el atributo
+   `controls`: cada control de abajo es un elemento nativo real
+   (button, input[type="range"], details/summary, a[download]) en vez
+   de un widget ARIA armado a mano — la operación por teclado la da el
+   navegador mismo (Tab, Enter/Espacio, flechas en el scrubber), no un
+   manejador de tecla que hay que mantener sincronizado con cada
+   estado nuevo.
 
-   "Un solo reproductor activo a la vez" (PLAN.md, T4): el registro
-   `instancias` pausa cualquier otro video del documento en cuanto
-   uno empieza a reproducirse — sin esto, dos cápsulas con audio
-   sonando a la vez es el bug más probable de esta pieza.
+   "Un solo reproductor activo a la vez" (PLAN.md, T4; PLAN-CONTENIDO.md
+   C3 lo hereda para audio): el registro `instancias` pausa cualquier
+   otro elemento de media del documento en cuanto uno empieza a
+   reproducirse — sin esto, un video y un avatar sonando a la vez es el
+   bug más probable de esta pieza. `pausarOtros`/`instancias` no
+   distinguen video de audio: los dos heredan de HTMLMediaElement y
+   comparten `.pause()`/`.paused`, así que un solo registro alcanza.
+   `limpiarInstancias()` (C3, expuesta como `OVA.media.limpiarInstancias`)
+   vacía el registro entero — pensada para que `router.js` la llame al
+   desmontar una pantalla: antes de C3 el registro solo crecía (T4 lo
+   dejó anotado como hallazgo en `ESTADO.md`; con 47 pantallas y 14
+   avatares, referencias a elementos ya desconectados del DOM dejan de
+   ser inofensivas). Como el router nunca monta más de una pantalla a
+   la vez, vaciar todo en cada desmontaje es correcto y más simple que
+   filtrar por `isConnected` — la kitchen sink, que monta varias
+   instancias a la vez y no desmonta nunca, simplemente no llama a esta
+   función.
 
-   T4 solo sabe renderizar media.tipo === "video": cualquier otro
-   valor falla ruidoso en consola (mismo patrón que un layout
-   desconocido en router.js) en vez de mostrar una caja vacía.
+   Catálogo de `media.tipo` (C3, mismo criterio que el catálogo I01–I08
+   vive en el encabezado de quiz.js, no en CLAUDE.md):
+
+   - **"video"** (T4): `{ tipo, src, poster?, vtt?, transcripcion? }`.
+     Sin cambios en esta sesión.
+   - **"avatar"** (C3): `{ tipo, imagen, audio?, vtt?, transcripcion }`.
+     Imagen fija (regla dura 10 de CLAUDE.md: "el avatar es imagen fija
+     + audio, no video") más pista de audio opcional, subtítulos
+     opcionales (solo tienen sentido si hay audio) y transcripción
+     **obligatoria** — es la que carga la locución completa de Jose
+     cuando el audio todavía no existe, así que sin ella no hay nada
+     real que mostrar. Con audio: reproductor real (play, scrubber,
+     tiempo, CC si hay `vtt`) más la transcripción en un `<details>`
+     colapsado — mismo patrón que el video. **Sin audio: no se
+     construye ningún control** (ni un botón de play que no reproduce
+     nada — mismo criterio que el CC omitido en video sin `vtt`) y la
+     transcripción se muestra directa, sin colapsar: es el único
+     portador de la locución, así que tiene que verse como contenido
+     terminado, no como un accesorio oculto detrás de un disclosure.
+     Ninguna de las dos rutas es un estado roto — la sección 3.2 de
+     `PLAN-CONTENIDO.md` lo pide explícito: "esa degradación es el
+     placeholder, no una pantalla rota".
+
+   Cualquier otro valor de `tipo` falla ruidoso en consola (mismo
+   patrón que un layout desconocido en router.js) en vez de mostrar una
+   caja vacía.
    ============================================================ */
 (function () {
   'use strict';
@@ -39,21 +77,63 @@
     return boton;
   }
 
-  function pausarOtros(video) {
+  function pausarOtros(elemento) {
     instancias.forEach(function (otro) {
-      if (otro !== video && !otro.paused) otro.pause();
+      if (otro !== elemento && !otro.paused) otro.pause();
     });
   }
 
-  function crear(datos) {
-    if (!datos || datos.tipo !== 'video') {
-      console.error(
-        '[OVA] OVA.media.crear: tipo de media "' + (datos && datos.tipo) +
-        '" no soportado (T4 solo implementa "video").'
-      );
-      return null;
-    }
+  // C3: patrón de transcripción compartido entre video y avatar-con-audio
+  // — <details>/<summary> nativo colapsado (Enter/Espacio gratis del
+  // navegador, mismo criterio que el resto del proyecto) más un
+  // <a download> cuyo href es un Blob del mismo texto (sin red, funciona
+  // bajo file://). `prefijo` es la familia de clases del componente que
+  // llama (media-video o media-audio), así el CSS de cada uno sigue
+  // siendo dueño de su propia apariencia.
+  function crearTranscripcionColapsada(texto, prefijo) {
+    var detalle = document.createElement('details');
+    detalle.className = prefijo + '__transcripcion';
+    var resumen = document.createElement('summary');
+    resumen.textContent = 'Ver transcripción';
+    detalle.appendChild(resumen);
+    detalle.appendChild(crearCuerpoTranscripcion(texto, prefijo));
+    return detalle;
+  }
 
+  // C3: mismo contenido que la colapsada, pero directo en el árbol —
+  // sin audio, la transcripción es el único portador real de la
+  // locución (regla dura 10 de CLAUDE.md), así que esconderla detrás de
+  // un disclosure la trataría como un extra opcional en vez del
+  // contenido principal de la pantalla.
+  function crearTranscripcionVisible(texto, prefijo) {
+    var contenedor = document.createElement('div');
+    contenedor.className = prefijo + '__transcripcion-directa';
+    contenedor.appendChild(crearCuerpoTranscripcion(texto, prefijo));
+    return contenedor;
+  }
+
+  function crearCuerpoTranscripcion(texto, prefijo) {
+    var cuerpo = document.createElement('div');
+    cuerpo.className = prefijo + '__transcripcion-cuerpo';
+    texto.split(/\n+/).forEach(function (parrafo) {
+      parrafo = parrafo.trim();
+      if (!parrafo) return;
+      var p = document.createElement('p');
+      p.textContent = parrafo;
+      cuerpo.appendChild(p);
+    });
+
+    var blob = new Blob([texto], { type: 'text/plain' });
+    var descarga = document.createElement('a');
+    descarga.className = prefijo + '__transcripcion-descarga';
+    descarga.href = URL.createObjectURL(blob);
+    descarga.download = 'transcripcion.txt';
+    descarga.textContent = 'Descargar transcripción (.txt)';
+    cuerpo.appendChild(descarga);
+    return cuerpo;
+  }
+
+  function crearVideo(datos) {
     var raiz = document.createElement('div');
     raiz.className = 'media-video';
 
@@ -145,32 +225,7 @@
 
     /* ---- Transcripción (visible y descargable) --------------------- */
     if (datos.transcripcion) {
-      var transcripcion = document.createElement('details');
-      transcripcion.className = 'media-video__transcripcion';
-      var resumen = document.createElement('summary');
-      resumen.textContent = 'Ver transcripción';
-      transcripcion.appendChild(resumen);
-
-      var cuerpoTranscripcion = document.createElement('div');
-      cuerpoTranscripcion.className = 'media-video__transcripcion-cuerpo';
-      datos.transcripcion.split(/\n+/).forEach(function (parrafo) {
-        parrafo = parrafo.trim();
-        if (!parrafo) return;
-        var p = document.createElement('p');
-        p.textContent = parrafo;
-        cuerpoTranscripcion.appendChild(p);
-      });
-
-      var blob = new Blob([datos.transcripcion], { type: 'text/plain' });
-      var descarga = document.createElement('a');
-      descarga.className = 'media-video__transcripcion-descarga';
-      descarga.href = URL.createObjectURL(blob);
-      descarga.download = 'transcripcion.txt';
-      descarga.textContent = 'Descargar transcripción (.txt)';
-      cuerpoTranscripcion.appendChild(descarga);
-
-      transcripcion.appendChild(cuerpoTranscripcion);
-      raiz.appendChild(transcripcion);
+      raiz.appendChild(crearTranscripcionColapsada(datos.transcripcion, 'media-video'));
     }
 
     /* ---- Comportamiento --------------------------------------------- */
@@ -260,6 +315,207 @@
     return raiz;
   }
 
+  // C3: imagen fija + audio opcional + subtítulos opcionales +
+  // transcripción obligatoria — ver el catálogo completo en el
+  // encabezado del archivo. `datos.imagen`/`transcripcion` son
+  // obligatorios (sin imagen no hay avatar; sin transcripción no hay
+  // nada real que mostrar en ninguna de las dos rutas); `audio`/`vtt`
+  // son opcionales y `vtt` solo tiene sentido si hay `audio`.
+  function crearAvatar(datos) {
+    if (!datos.imagen) {
+      console.error('[OVA] OVA.media.crear: media "avatar" necesita "imagen".');
+      return null;
+    }
+    if (!datos.transcripcion) {
+      console.error(
+        '[OVA] OVA.media.crear: media "avatar" necesita "transcripcion" ' +
+        '(regla dura 10 de CLAUDE.md: toda pantalla con locución la muestra, ' +
+        'con o sin audio).'
+      );
+      return null;
+    }
+
+    var raiz = document.createElement('div');
+    raiz.className = 'media-audio' + (datos.audio ? '' : ' media-audio--sin-audio');
+
+    var avatarEnvoltura = document.createElement('div');
+    avatarEnvoltura.className = 'media-audio__avatar';
+    avatarEnvoltura.setAttribute('aria-hidden', 'true');
+    var imagen = document.createElement('img');
+    imagen.src = datos.imagen;
+    imagen.alt = '';
+    // Las imágenes de public/img/avatar/ todavía no existen — Juan las
+    // produce en paralelo (PLAN-CONTENIDO.md §5). Sin archivo, quitar
+    // la <img> deja el círculo en su --surface-muted de fondo (ya
+    // definido más abajo en components.css), que se lee como el
+    // placeholder de un avatar, no como un ícono de imagen rota.
+    imagen.addEventListener('error', function () {
+      if (imagen.parentNode) imagen.parentNode.removeChild(imagen);
+    });
+    avatarEnvoltura.appendChild(imagen);
+    raiz.appendChild(avatarEnvoltura);
+
+    if (!datos.audio) {
+      // Sin audio: ningún control (mismo criterio que el CC omitido en
+      // video sin vtt — nunca un botón que no hace nada) y la
+      // transcripción directa, no colapsada: es el placeholder de
+      // producción, no un estado roto (PLAN-CONTENIDO.md §3.2).
+      raiz.appendChild(crearTranscripcionVisible(datos.transcripcion, 'media-audio'));
+      return raiz;
+    }
+
+    var audio = document.createElement('audio');
+    audio.preload = 'metadata';
+    // Fuera del orden de tabulación, mismo motivo que el <video> de
+    // crearVideo(): los controles propios de abajo cubren toda la
+    // interacción.
+    audio.tabIndex = -1;
+
+    var fuente = document.createElement('source');
+    fuente.src = datos.audio;
+    audio.appendChild(fuente);
+
+    var pista = null;
+    if (datos.vtt) {
+      pista = document.createElement('track');
+      pista.kind = 'captions';
+      pista.srclang = 'es';
+      pista.label = 'Español';
+      // Mismo motivo que en crearVideo(): datos.vtt es el TEXTO WebVTT,
+      // no una ruta — un <track src="archivo.vtt"> real falla bajo
+      // file:// (verificado con Playwright en T4).
+      pista.src = URL.createObjectURL(new Blob([datos.vtt], { type: 'text/vtt' }));
+      audio.appendChild(pista);
+    }
+    raiz.appendChild(audio);
+
+    /* ---- Controles ------------------------------------------------ */
+    var controles = document.createElement('div');
+    controles.className = 'media-audio__controles';
+
+    var play = crearBoton('media-audio__play icono', 'play_arrow', 'Reproducir');
+
+    var scrubber = document.createElement('input');
+    scrubber.type = 'range';
+    scrubber.className = 'media-audio__progreso';
+    scrubber.min = '0';
+    scrubber.max = '0';
+    scrubber.step = '0.1';
+    scrubber.value = '0';
+    scrubber.setAttribute('aria-label', 'Progreso del audio');
+
+    var tiempo = document.createElement('span');
+    tiempo.className = 'media-audio__tiempo';
+    tiempo.setAttribute('aria-hidden', 'true'); // el scrubber ya lleva aria-valuetext equivalente
+    tiempo.textContent = '00:00 / 00:00';
+
+    var cc = null;
+    if (pista) {
+      cc = crearBoton('media-audio__cc', 'CC', 'Subtítulos activados');
+      cc.setAttribute('aria-pressed', 'true');
+    }
+
+    controles.appendChild(play);
+    controles.appendChild(scrubber);
+    controles.appendChild(tiempo);
+    if (cc) controles.appendChild(cc);
+    raiz.appendChild(controles);
+
+    // Línea de subtítulos en vivo: a diferencia de <video>, <audio> no
+    // tiene superficie propia donde el navegador pinte el <track> —
+    // esta es esa superficie, actualizada a mano en cada cuechange.
+    // No es aria-live a propósito: un lector de pantalla ya tiene la
+    // transcripción completa (abajo) como su ruta real; anunciar cada
+    // cambio de cue encima del audio sonando sería ruido, no ayuda.
+    var captions = null;
+    if (pista) {
+      captions = document.createElement('p');
+      captions.className = 'media-audio__captions';
+      raiz.appendChild(captions);
+    }
+
+    raiz.appendChild(crearTranscripcionColapsada(datos.transcripcion, 'media-audio'));
+
+    /* ---- Comportamiento --------------------------------------------- */
+    play.addEventListener('click', function () {
+      if (audio.paused || audio.ended) audio.play();
+      else audio.pause();
+    });
+
+    audio.addEventListener('play', function () {
+      pausarOtros(audio);
+      play.textContent = 'pause';
+      play.setAttribute('aria-label', 'Pausar');
+    });
+    audio.addEventListener('pause', function () {
+      play.textContent = 'play_arrow';
+      play.setAttribute('aria-label', 'Reproducir');
+    });
+
+    function actualizarTiempo() {
+      var duracion = isFinite(audio.duration) ? audio.duration : 0;
+      tiempo.textContent = formatearTiempo(audio.currentTime) + ' / ' + formatearTiempo(duracion);
+      scrubber.setAttribute(
+        'aria-valuetext',
+        formatearTiempo(audio.currentTime) + ' de ' + formatearTiempo(duracion)
+      );
+      if (document.activeElement !== scrubber) {
+        scrubber.value = String(audio.currentTime);
+      }
+    }
+    audio.addEventListener('loadedmetadata', function () {
+      scrubber.max = String(audio.duration || 0);
+      if (pista) pista.track.mode = 'showing';
+      actualizarTiempo();
+    });
+    audio.addEventListener('timeupdate', actualizarTiempo);
+
+    scrubber.addEventListener('input', function () {
+      audio.currentTime = parseFloat(scrubber.value) || 0;
+    });
+
+    if (cc) {
+      cc.addEventListener('click', function () {
+        var activo = pista.track.mode === 'showing';
+        pista.track.mode = activo ? 'hidden' : 'showing';
+        cc.setAttribute('aria-pressed', String(!activo));
+        cc.setAttribute('aria-label', activo ? 'Subtítulos desactivados' : 'Subtítulos activados');
+        if (activo && captions) captions.textContent = '';
+      });
+    }
+
+    if (pista) {
+      pista.track.addEventListener('cuechange', function () {
+        if (!captions || pista.track.mode !== 'showing') return;
+        var activa = pista.track.activeCues && pista.track.activeCues[0];
+        captions.textContent = activa ? activa.text : '';
+      });
+    }
+
+    instancias.push(audio);
+    return raiz;
+  }
+
+  function crear(datos) {
+    if (!datos) {
+      console.error('[OVA] OVA.media.crear: falta "datos".');
+      return null;
+    }
+    if (datos.tipo === 'video') return crearVideo(datos);
+    if (datos.tipo === 'avatar') return crearAvatar(datos);
+    console.error(
+      '[OVA] OVA.media.crear: tipo de media "' + datos.tipo + '" no soportado ' +
+      '(el catálogo es "video"/"avatar" — ver el encabezado de este archivo).'
+    );
+    return null;
+  }
+
+  // C3: expuesta para que router.js la llame al desmontar una pantalla
+  // — ver la nota completa junto a "instancias" en el encabezado.
+  function limpiarInstancias() {
+    instancias = [];
+  }
+
   window.OVA = window.OVA || {};
-  window.OVA.media = { crear: crear };
+  window.OVA.media = { crear: crear, limpiarInstancias: limpiarInstancias };
 })();

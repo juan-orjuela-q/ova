@@ -563,53 +563,25 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-media-audio">
-        <span class="ks-layout-bloque__etiqueta">Tarjeta de audio (maqueta)</span>
+        <span class="ks-layout-bloque__etiqueta">Reproductor de avatar/audio (C3, cableado real)</span>
+        <p class="ks-intro">
+          T1.5 la dejó como maqueta con play/pausa como dos instancias
+          estáticas; C3 la cablea de verdad sobre <code>OVA.media.crear({tipo:
+          'avatar'})</code>, mismo criterio que el reproductor de video de T4 —
+          no depende del router/hash, así que se puede montar viva aquí. El de
+          la izquierda trae <code>audio</code> (controles reales, CC porque
+          también trae <code>vtt</code>, transcripción colapsada); el de la
+          derecha no trae <code>audio</code> en absoluto — el caso real
+          mientras Juan graba las locuciones (PLAN-CONTENIDO.md §3.2): sin
+          reproductor, con la transcripción directa en vez de detrás de un
+          disclosure. Las dos apuntan a una imagen de
+          <code>public/img/avatar/</code> que todavía no existe — el círculo
+          cae a su fondo <code>--surface-muted</code> en vez de un ícono de
+          imagen rota.
+        </p>
         <div class="ks-layout-marco ks-muestras">
-          <div class="media-audio">
-            <div class="media-audio__fila">
-              <div class="media-audio__avatar" aria-hidden="true"></div>
-              <div class="media-audio__info">
-                <p class="media-audio__titulo">Cápsula narrada — Unidad 1</p>
-                <p class="tipo-caption">Voz: equipo docente BVC</p>
-              </div>
-            </div>
-            <div class="media-audio__controles">
-              <button class="media-audio__play" type="button" aria-label="Pausar">
-                <span class="icono" aria-hidden="true">pause</span>
-              </button>
-              <div class="media-audio__progreso">
-                <span class="media-audio__progreso__relleno" style="width: 40%"></span>
-              </div>
-              <span class="media-audio__tiempo">01:12 / 03:05</span>
-            </div>
-            <details class="media-audio__transcripcion">
-              <summary>Ver transcripción</summary>
-              <p class="tipo-cuerpo-sm">Una acción es un título valor participativo que representa un porcentaje mínimo de propiedad de una empresa…</p>
-            </details>
-          </div>
-
-          <div class="media-audio">
-            <div class="media-audio__fila">
-              <div class="media-audio__avatar" aria-hidden="true"></div>
-              <div class="media-audio__info">
-                <p class="media-audio__titulo">Cápsula narrada — Unidad 1</p>
-                <p class="tipo-caption">Voz: equipo docente BVC</p>
-              </div>
-            </div>
-            <div class="media-audio__controles">
-              <button class="media-audio__play" type="button" aria-label="Reproducir">
-                <span class="icono" aria-hidden="true">play_arrow</span>
-              </button>
-              <div class="media-audio__progreso">
-                <span class="media-audio__progreso__relleno" style="width: 0%"></span>
-              </div>
-              <span class="media-audio__tiempo">00:00 / 03:05</span>
-            </div>
-            <details class="media-audio__transcripcion">
-              <summary>Ver transcripción</summary>
-              <p class="tipo-cuerpo-sm">Una acción es un título valor participativo que representa un porcentaje mínimo de propiedad de una empresa…</p>
-            </details>
-          </div>
+          <div id="c-media-avatar-a"></div>
+          <div id="c-media-avatar-b"></div>
         </div>
       </div>
 
@@ -1136,6 +1108,9 @@
             </div>
           </div>
         </div>
+        <p class="ks-intro">
+          <code>media</code> (fondo de <code>.layout__media</code>) sigue siendo solo "video" o "imagen", puramente decorativo — el video en loop de este bloque no cambia aunque la pantalla también tenga locución. Desde C3, <code>PLANTILLAS.L01</code> admite además un campo independiente, <code>pantalla.avatar</code> (mismo contrato de <code>media.tipo:'avatar'</code>, sin el "tipo"), que monta un reproductor real (<code>OVA.media.crear()</code>, la misma pieza de la sección "Reproductor de avatar/audio" de abajo) dentro de <code>.layout__panel</code>, sin tocar el fondo — L01 es el único layout con dos zonas visuales, así que necesita las dos por separado. Ninguna pantalla de <code>content/ova-u1.js</code> lo usa hoy (<code>s00</code>, la única con L01, no lleva narración de avatar) — la rama sigue cableada en <code>router.js</code>, probada durante C3, a la espera de una portada real que sí la necesite.
+        </p>
       </div>
 
       <div class="ks-layout-bloque" id="l02">
@@ -1440,6 +1415,34 @@
         src: VIDEO_DEMO,
         vtt: VTT_DEMO,
         transcripcion: TRANSCRIPCION_DEMO
+      });
+
+      // C3: avatar/audio, mismo criterio que el video de arriba — imagen
+      // de public/img/avatar/ que todavía no existe (a propósito, degrada
+      // sola) y un tono de prueba generado con ffmpeg, no locución real.
+      var AUDIO_DEMO = '../public/audio/demo-avatar.mp3';
+      var IMAGEN_AVATAR_DEMO = '../public/img/avatar/avatar-medio-confondo-3.webp';
+      var TRANSCRIPCION_AVATAR_DEMO =
+        'Bienvenida a la Academia Virtual nuam.\n' +
+        'Este es un tono de prueba para ejercitar el reproductor de avatar de C3, no la locución real de Jose.';
+      var VTT_AVATAR_DEMO =
+        'WEBVTT\n\n' +
+        '00:00:00.000 --> 00:00:02.500\nBienvenida a la Academia Virtual nuam.\n\n' +
+        '00:00:02.500 --> 00:00:06.000\nEste es un tono de prueba para ejercitar el reproductor de avatar de C3.';
+
+      montar('c-media-avatar-a', {
+        tipo: 'avatar',
+        imagen: IMAGEN_AVATAR_DEMO,
+        audio: AUDIO_DEMO,
+        vtt: VTT_AVATAR_DEMO,
+        transcripcion: TRANSCRIPCION_AVATAR_DEMO
+      });
+      // Sin audio a propósito: demuestra la degradación a imagen +
+      // transcripción directa de la sección 3.2 de PLAN-CONTENIDO.md.
+      montar('c-media-avatar-b', {
+        tipo: 'avatar',
+        imagen: IMAGEN_AVATAR_DEMO,
+        transcripcion: TRANSCRIPCION_AVATAR_DEMO
       });
     })();
   </script>
