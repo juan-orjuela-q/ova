@@ -467,6 +467,47 @@ matriz de retro por perfil.
 **Cierre:** los casos de prueba que Jose dejó en los payloads pasan, uno por
 uno, comprobados a mano en la kitchen sink.
 
+**Cerrada 4 sep, rama `c6-interacciones-ampliadas`.** Los cuatro contratos
+quedaron ampliados/reemplazados en `quiz.js` (detalle completo en su bloque
+"C6" y en `ESTADO.md`); sin Playwright disponible esta sesión, la
+verificación fue lectura de código más los `casos_prueba` de los cuatro
+payloads corridos a mano en Node contra la lógica real (los seis calzaron).
+Queda pendiente la pasada de Playwright de siempre (teclado, ARIA, 320px/
+zoom 200%, axe-core) la próxima vez que la herramienta esté disponible —
+anotado como abierto en `ESTADO.md`, no se dio por cerrado a ciegas.
+
+**Notas para C7, dejadas por C6:**
+
+- **I09 cambió de forma, no solo de contenido.** `interaccion.datos` ya no
+  es `{eventos, ordenCorrecto}` (reordenar) sino `{estadoInicial, momentos:
+  [{titulo,descripcion,cambia?,resultado?}], estadoFinal, retro?}`
+  (recorrer). El único storyboard real que usa I09 es P37 — su
+  `estado_inicial`/`momentos`/`estado_final`/`retro` mapean casi 1:1 a los
+  nombres nuevos (snake_case → camelCase), sin reinterpretar nada.
+- **I10 exige los ids de `entradas` tal cual el payload de Jose**
+  (`precio_compra`, `utilidad_neta`, etc., no camelCase) para las dos
+  fórmulas nuevas — copiar `variables[].id` de P22/P24 directo a
+  `entradas[].id`. `datos.salida` (objeto) pasa a `datos.salidas` (arreglo,
+  un elemento por cada string de `payload_interaccion.resultados`).
+  `datos.mensajes` es literal `payload_interaccion.mensajes`.
+- **I11 (P42) mapea así:** `escenario.emisor`→`datos.emisor`,
+  `escenario.precio_actual`→`valorInicial` de `datos.precioActual`,
+  `escenario.saldo`/`escenario.titulos_disponibles`→
+  `datos.escenario.{saldo,titulosDisponibles}`. La `tabla_verdad` y los
+  `casos_prueba` de P42 no se convierten a datos — ya están implementados
+  como la lógica de `evaluarOrden()` en `quiz.js`; C7 no necesita tocarlos,
+  solo verificar que los `casos_prueba` sigan pasando con los datos reales.
+  No hay campo de vigencia (decisión de C6, documentada en `quiz.js`).
+- **I12 (P46) exige traducir `matriz_retro` a `datos.reglas`** con el
+  vocabulario de condiciones que define el bloque "C6" de `quiz.js`
+  (`{emisor,operador,valor|min/max}` y `{tipo:'ningunoSupera'|
+  'algunoSupera',valor}`). Los ids de emisor en `datos.categorias` deben
+  coincidir con los que uses en `condiciones[].emisor` (C6 usó
+  `petrocaribe`/`andinaCementos`/`bancoDelSur` en la kitchen sink y en
+  `content/ova-u1.js`, pero no es un id fijado por el motor — el que elija
+  C7 al convertir P46 es el que manda). `datos.aviso` es literal el
+  `payload_interaccion.aviso` de P46.
+
 ### C7 · Conversión del storyboard a contenido
 Script determinista `storyboard_data_v2.json` → `content/ova-u1.js`, con reglas
 de parseo por layout. **Lo que no parsee limpio no se adivina: sale a una lista

@@ -105,6 +105,9 @@
    I12 (sesiones futuras) siguen el mismo patrón de despacho.
 
      I10 calculadora_parametrica { enunciado?, formula, entradas, salida }
+       (contrato de T8; C6 lo amplía — `salida` pasa a `salidas`, arreglo,
+       y suma `mensajes`/`accion` opcionales, y el catálogo suma dos
+       fórmulas — ver el bloque "C6" más abajo, es el contrato vigente)
        - `formula` sale de un catálogo cerrado en FORMULAS_CALCULADORA
          (hoy un solo miembro, 'valor_accion_dividendo') — mismo criterio
          que el catálogo de charts.js: el contenido elige un tipo ya
@@ -130,6 +133,7 @@
          dure.
        - `salida`: { etiqueta, unidad?, decimales? } — `unidad` es sufijo,
          igual que en charts.js (ej. " COP"), no símbolo antepuesto.
+         (C6: ahora `salidas`, arreglo de esta misma forma más `id`.)
        - El resultado también es un <output> (mismo motivo: es
          literalmente el resultado de un cálculo) que se recalcula en
          cada `input` de cualquier slider — la retroalimentación en vivo
@@ -151,6 +155,10 @@
          punto de entrada en JS.
 
      I11 boleta_compra { enunciado?, mercado, limite }
+       (contrato de T8; C6 lo reemplaza por completo —comprar/vender,
+       escenario con saldo/títulos, precioActual/precioLimite/cantidad,
+       tres resultados— ver el bloque "C6" más abajo, es el contrato
+       vigente)
        - Base de C2 (cápsula de "valorización de una acción"). Reusa
          literalmente la cáscara `.calc-calculadora` que I10 dejó
          (enunciado, `.calc-calculadora__entradas`, resultado, acciones,
@@ -191,42 +199,18 @@
          PLAN-CONTENIDO.md §3.1, P43 leyendo el resultado de P42.
 
      I09 linea_tiempo_ordenable { enunciado?, operacion?, eventos:[{id,texto}], ordenCorrecto:[id…] }
-       - Base de C1 (cápsula de "los tres mercados"). `eventos` llega en
-         un orden que NO es el correcto —el contenido decide el
-         desorden inicial, igual que `pasos`/`orden` en I05 (T6)—;
-         `ordenCorrecto` es la secuencia cronológica real.
-       - Reusa `.linea-tiempo` (T1.5/T7) para el armazón visual (nodo +
-         contenido), siempre en su variante vertical: la horizontal
-         (`--horizontal`, T7) se diseñó para un diagrama de solo
-         lectura con texto centrado, no para filas con controles de
-         reordenar — mezclar los dos habría exigido pelear contra ese
-         layout en vez de reusarlo limpio.
-       - La alternativa de teclado al arrastre, explícita en PLAN.md,
-         son dos .boton-icono reales por paso ("Mover antes"/"Mover
-         después", texto en .u-oculto-visualmente, mismo patrón que el
-         botón del drawer en index.html) que intercambian el paso con
-         su vecino inmediato — sin arrastre, sin manejador de tecla a
-         mano, el navegador ya resuelve foco y activación de un
-         <button>. El arrastre nativo (draggable, dragstart/dragover/
-         drop) es una mejora progresiva solo de mouse sobre el mismo
-         estado; ambos caminos llaman a la misma función de reordenar.
-         Cada movimiento se anuncia con OVA.a11y.anunciar() (la región
-         compartida de a11y.js, no una región propia) y el foco vuelve
-         al botón del paso movido en su nueva posición — nunca se
-         pierde tras reordenar.
-       - Única de las cuatro insignia con una respuesta objetivamente
-         correcta o incorrecta (a diferencia del explorador de
-         escenarios de I10/I11): «Comprobar orden» sí evalúa contra
-         ordenCorrecto y reporta el resultado real (correct/wrong, no
-         siempre neutral) vía tipoScorm: 'sequencing' — el mismo mapeo
-         que ya usa I05 para el tipo SCORM, aplicado aquí porque el
-         dato de fondo es el mismo (secuenciar). Sigue sin tocar
-         cmi.core.score: eso es exclusivo de las preguntas gradables del
-         catálogo de arriba, ninguna insignia lo toca. No hay bloqueo ni límite de
-         intentos — se puede reordenar y volver a comprobar cuantas
-         veces se quiera, mismo criterio que I10/I11.
+       (contrato de T8 — arrastre/reordenar con orden correcto. C6 lo
+       REEMPLAZA por completo, no lo amplía: el brief no pide reordenar,
+       pide recorrer momentos con estado inicial y final. Este
+       constructor ya no existe; ver `linea_tiempo_recorrible` en el
+       bloque "C6" más abajo, es el contrato vigente. Se deja esta
+       entrada como registro de por qué I09 se ve distinto de lo que
+       T8 documentó, no como contrato usable.)
 
      I12 distribucion_capital { enunciado?, categorias:[{id,etiqueta,valorInicial}] }
+       (contrato de T8; C6 le suma `reglas`/`aviso` opcionales —la
+       matriz de retro por perfil de riesgo— sin tocar lo de abajo, ver
+       el bloque "C6" más abajo)
        - Base de C3 (junto con I10) — portafolio: reparte un total fijo
          de 100 % entre categorías (retoma los tres mercados de s01:
          renta variable, renta fija, derivados). Un <input
@@ -343,6 +327,232 @@
        - Reporte a SCORM igual a I10–I12: tipoScorm 'other', sin
          correct_responses (no hay una única respuesta "correcta" en un
          test de autopercepción).
+
+   ---------------------------------------------------------------------
+   C6 (PLAN-CONTENIDO.md) — I09, I10, I11, I12 ampliadas contra los
+   payloads reales de Jose (disenoInstruccional/storyboard_data_v2.json:
+   P37 para I09, P22/P24 para I10, P42 para I11, P46 para I12). Los
+   cuatro siguen despachando por CONSTRUCTORES_INSIGNIA sin cambiar esa
+   tabla de forma; esta sección documenta el contrato nuevo de cada
+   uno. Nota de proceso: esta sesión no tuvo Playwright disponible (a
+   diferencia de T1–T8/C0–C5) — la verificación es lectura de código
+   más los casos_prueba de Jose calculados a mano contra cada fórmula
+   y regla, dejados como valores iniciales de los sliders/estado de la
+   kitchen sink para que el primer render ya muestre el resultado
+   esperado sin tocar nada. Detalle en ESTADO.md.
+
+   I09 — de "ordenable" a "recorrible". El brief (P37) no pide
+   reordenar pasos: pide recorrer tres momentos con un estado inicial y
+   un estado final, cada uno mostrando qué cambia y qué resultado deja.
+   Es una interacción distinta, no una opción nueva de la misma —
+   `construirLineaTiempoOrdenable` (arrastre + botones "mover antes/
+   después" + "orden correcto") queda reemplazada por
+   `construirLineaTiempoRecorrible`. Ninguna otra pantalla del
+   storyboard usa I09 (confirmado por búsqueda contra
+   storyboard_data_v2.json), así que no hay contenido real que dependa
+   del modo anterior; a diferencia de completar/numerica/autoevaluacion
+   (que sí se conservaron sin número porque no cuesta nada mantener
+   código que funciona y algo lo usa), aquí no queda nada que lo use —
+   mantenerlo en paralelo sería la abstracción sin necesidad real que
+   evita CLAUDE.md.
+
+     I09 linea_tiempo_recorrible { enunciado?, estadoInicial, momentos:[{titulo,descripcion,cambia?,resultado?}], estadoFinal, retro? }
+       - Un panel único (`.calc-recorrido__panel`) muestra un paso a la
+         vez —estado inicial, cada momento, estado final, en ese
+         orden— con «Anterior»/«Siguiente» (`.boton--outline`/`.boton`,
+         deshabilitados en los extremos, nunca ocultos: mismo criterio
+         que `.boton:disabled` desde T2). Sin arrastre ni teclado
+         especial que inventar: son botones reales.
+       - Cada cambio de paso se anuncia con `OVA.a11y.anunciar()` (la
+         región compartida, no una propia) con el título/estado nuevo —
+         mismo patrón que I07 y que el I09 anterior. El indicador
+         visual "Paso X de Y" es `aria-hidden` porque el anuncio ya
+         cubre esa información en prosa.
+       - Al llegar al estado final por primera vez: si `retro` viene en
+         los datos, se muestra en `.calc-resumen[role=status]`, y se
+         reporta una sola vez a `cmi.interactions` (tipoScorm 'other',
+         neutral, textoRespuesta "recorrido completo") — mismo criterio
+         de "reportar al completar la exploración" que I07/I08. Volver
+         atrás con «Anterior» no reporta de nuevo ni oculta el resumen
+         ya mostrado.
+       - Sin "correcta": es exploratorio, como I10/I11/I12 — no
+         evaluado como I05.
+
+   I10 — salidas múltiples y catálogo de fórmulas ampliado. Hasta C6
+   `datos.salida` era un objeto único; P22/P24 piden cinco y tres
+   resultados simultáneos del mismo cálculo. `datos.salida` (singular)
+   pasa a `datos.salidas` (arreglo); cada fórmula de
+   FORMULAS_CALCULADORA devuelve ahora `{ valores: {id: number, …} }`
+   —un valor por cada id de `datos.salidas`— en vez de `{ valor }`, o
+   `{ error }` igual que antes. El único consumidor de la forma vieja
+   (`valor_accion_dividendo`, s11) se actualizó al contrato nuevo sin
+   cambiar su matemática.
+
+     I10 calculadora_parametrica { enunciado?, formula, entradas, salidas, mensajes?, accion? }
+       - `accion` (opcional): texto del botón de registro —antes fijo
+         en "Registrar valorización", hoy con varias fórmulas no todas
+         valorizan; por defecto "Registrar resultado".
+       - `salidas`: [{ id, etiqueta, unidad?, decimales? }, …] — un
+         `.calc-calculadora__resultado` por salida (mismas clases de
+         siempre, ahora repetidas), todas dentro de un único
+         `<output class="calc-calculadora__resultados">` envolvente en
+         vez de un `<output>` por salida: cinco regiones en vivo
+         anunciando cada una en cada arrastre de slider sería ruido
+         para un lector de pantalla; un solo `<output>` que agrupa las
+         salidas anuncia un bloque de texto por recálculo, mismo
+         criterio de fondo ("el resultado se anuncia en vivo") con
+         menos interrupciones.
+       - `mensajes` (opcional): `{ positivo?, cero?, negativo? }` — la
+         fórmula decide su propio `signo` ('positivo'/'cero'/
+         'negativo') según cuál de sus salidas es la que importa
+         pedagógicamente (variación % en `valorizacion`, dividendo por
+         acción en `dividendo_por_accion`); el motor solo hace el
+         lookup `mensajes[signo]` y lo muestra en
+         `.calc-calculadora__mensaje` bajo los resultados, en vivo con
+         cada recálculo. Sin `mensajes` en los datos no se muestra
+         nada (opcional; `valor_accion_dividendo` no lo usa).
+       - Catálogo `FORMULAS_CALCULADORA`, tres miembros:
+         - `valor_accion_dividendo` (T8, sin cambios de matemática):
+           exige `dividendo`/`tasaCrecimiento`/`tasaDescuento`, una
+           sola salida `valor`. Domain error si tasaDescuento ≤
+           tasaCrecimiento, igual que siempre.
+         - `valorizacion` (P22): exige exactamente `precio_compra`,
+           `precio_venta`, `acciones` —los ids del payload de Jose tal
+           cual, sin traducir a camelCase, para que C7 no tenga que
+           reescribirlos—. Cinco salidas: `monto_invertido`,
+           `diferencia_por_accion`, `variacion_porcentual`,
+           `ganancia_perdida`, `monto_final_bruto`. Sin estado de
+           error: los sliders del payload ya excluyen precio_compra = 0
+           (mínimo 1), así que la variación porcentual nunca divide
+           por cero.
+         - `dividendo_por_accion` (P24): exige `utilidad_neta`,
+           `porcentaje_repartir`, `acciones_totales`,
+           `acciones_estudiante` (mismos ids que el payload). Tres
+           salidas: `monto_a_repartir`, `dividendo_por_accion`,
+           `dividendo_estudiante`. Tampoco tiene estado de error, mismo
+           motivo (acciones_totales mínimo 1 en el payload).
+       - Casos de prueba de Jose, verificados a mano: valorizacion
+         (1000,1500,500) → 50 %, $250.000 de ganancia; (1000,800,500)
+         → −20 %, −$100.000; (1000,1000,500) → 0 %, $0.
+         dividendo_por_accion(20000000,50,1500,100) → $6.666,67 por
+         acción, $666.666,67 del estudiante; (5000000,0,1500,100) → $0;
+         (40000000,30,3600,100) → $3.333,33 por acción, $333.333,33 del
+         estudiante. Los tres casos de cada fórmula quedan como los
+         valores iniciales de tres instancias en la kitchen sink, una
+         por caso, para que el primer render ya muestre el resultado
+         esperado.
+
+   I11 — tabla de verdad de ocho filas, no solo "compra". Hasta C6 solo
+   existía comprar/mercado/límite con dos resultados (ejecutada/
+   pendiente); P42 pide comprar y vender, con saldo/títulos disponibles
+   como restricción adicional, y tres resultados (ejecutada/expuesta/
+   rechazada). `construirBoletaCompra` queda reemplazada por
+   `construirBoletaOrden`, misma cáscara `.calc-calculadora`.
+
+     I11 boleta_compra { enunciado?, emisor?, escenario:{saldo,titulosDisponibles}, precioActual, precioLimite, cantidad, variable? }
+       - `precioActual`/`precioLimite`/`cantidad`: el mismo objeto
+         slider de siempre (`{etiqueta?, unidad?, min,max,paso,
+         valorInicial, decimales?}`); `escenario.saldo`/
+         `escenario.titulosDisponibles` son datos fijos del ejercicio
+         (no sliders —el "campo" real de Jose que sí varía es la
+         cantidad, no el saldo disponible—), mostrados en una línea de
+         contexto encima de los controles junto con `emisor` si viene.
+       - Selector de operación (Comprar/Vender), además del de tipo
+         (Mercado/Límite) que ya existía —mismo `<fieldset>` con radios
+         nativos, comprar marcado por defecto.
+       - `datos.vigencia` NO se construyó: ninguna fila de la tabla de
+         verdad de Jose ni ningún caso_prueba distingue por vigencia
+         —solo aparece en el texto de "expuesta" ("vigente hasta que el
+         precio llegue o venza", texto fijo, igual que lo describe P43.
+         Añadir un campo que no cambia ningún resultado sería
+         decoración, no la interacción que pide el cierre de C6. Si el
+         storyboard real termina necesitando que la vigencia sí afecte
+         el resultado, hay que decirlo explícitamente —lectura propia,
+         documentada para poder corregirla sin arqueología de código,
+         mismo criterio que el botón de reanudar en T3.
+       - Regla de ejecución, la tabla de verdad completa de P42:
+         comprar prioriza el saldo sobre el precio (saldo insuficiente
+         → rechazada siempre, sin mirar el tipo de orden); con saldo
+         suficiente, mercado siempre ejecuta, límite ejecuta solo si
+         límite ≥ precio actual (si no, expuesta). Vender es el espejo:
+         títulos insuficientes → rechazada siempre; con títulos
+         suficientes, mercado siempre ejecuta, límite ejecuta solo si
+         límite ≤ precio actual (si no, expuesta). El costo/producto de
+         la operación es `precioActual × cantidad` (se ejecuta "al
+         precio disponible estimado", el texto de Jose) —el precio
+         límite nunca es el precio de ejecución, solo la condición que
+         decide si se ejecuta.
+       - Estados nuevos de `.calc-calculadora__resultado`: `rechazada`
+         (rojo, ícono `block` —mismo tratamiento de color que
+         `incorrecto`, con su propia regla CSS porque significa algo
+         distinto) y `expuesta` (neutro, ícono `schedule` —el mismo
+         "pendiente" de antes, renombrado a la palabra que usa Jose).
+         `ejecutada` no cambió.
+       - `datos.variable`: mismo mecanismo que antes (fija el objeto
+         completo del resultado en `enviar()`), con un campo más:
+         `{ operacion, tipo, estado, cantidad, precioActual,
+         precioLimite }` —sigue siendo la base de resultado_boleta.
+       - Casos de prueba de Jose, verificados a mano: comprar/mercado/
+         5 acciones con saldo 10.000 y precio 1.200 (costo 6.000 ≤
+         saldo) → ejecutada; comprar/límite $1.100 con precio actual
+         1.200 (límite < precio) → expuesta; vender 20 acciones con
+         solo 8 títulos disponibles → rechazada (títulos insuficientes,
+         sin importar el tipo). Los tres quedan como los valores
+         iniciales de tres instancias en la kitchen sink.
+
+   I12 — matriz de retroalimentación por perfil de riesgo. Hasta C6
+   solo validaba que la suma diera 100 %; P46 pide que, además, la
+   herramienta reaccione según el `perfil_riesgo` que dejó I13 (C5) en
+   `OVA.state` —la cadena "perfil de riesgo → portafolio" que
+   PLAN-CONTENIDO.md marca como parte innegociable del demo.
+
+     I12 distribucion_capital { enunciado?, categorias:[{id,etiqueta,riesgo?,valorInicial}], reglas?:[{perfil,condiciones:[condicion,…],retro}], aviso? }
+       - Sin `reglas` o sin `perfil_riesgo` todavía en `OVA.state` (el
+         estudiante no ha llegado a I13), el componente se comporta
+         exactamente como antes de C6: valida la suma a 100 % y no
+         muestra ninguna retro de perfil —la variable puede no existir
+         todavía y eso no es un error, es el mismo estado "sin dato"
+         que ya establecieron L08/C4.
+       - Con `perfil_riesgo` conocido, `reglas` se evalúa filtrando por
+         `regla.perfil === perfil` y, dentro de esas, la primera cuyas
+         `condiciones` cumplan TODAS (AND implícito, mismo criterio que
+         "primera que aplica gana" de `resultado.reglas` en L08 e I13)
+         —nunca la más específica ni la de mayor puntaje, el orden del
+         arreglo es la prioridad, a cargo del contenido.
+       - Cada `condicion` es una de dos formas: `{ emisor:id,
+         operador:'>'|'>='|'<'|'<='|'entre', valor?, min?, max? }`
+         (compara el porcentaje de un emisor) o `{
+         tipo:'ningunoSupera'|'algunoSupera', valor }` (compara contra
+         todos los emisores a la vez) —el vocabulario mínimo que pide
+         la matriz real de P46 ("Petrocaribe > 40 %", "ninguno > 60 %",
+         "un emisor > 60 %", "Petrocaribe 30–60 %"). No es un parser de
+         lenguaje natural: C7 traduce el texto de Jose a esta forma una
+         sola vez al convertir P46, igual que ya tradujo las
+         condiciones de `resultado.reglas` en L08.
+       - Sin match dentro del perfil (posible: los seis renglones de
+         Jose no cubren cada combinación, p. ej. agresivo con
+         Petrocaribe < 30 %), se muestra un aviso genérico ("Revisa la
+         coherencia entre tu perfil y esta distribución.") en vez de
+         fabricar una categoría de retro que Jose no escribió —mismo
+         principio que el "sin match" de I13.
+       - La retro (o el genérico) se recalcula en vivo con cada slider,
+         en `.calc-calculadora__retro` bajo el total —visible solo
+         cuando la suma es 100 % (con la suma incompleta no hay
+         distribución real que evaluar). `datos.aviso` (el descargo "No
+         constituye recomendación de inversión") se muestra siempre que
+         hay una retro, mismo patrón que `datos.aviso` en I13. Al
+         pulsar «Registrar distribución» el resumen (`role=status`)
+         repite la retro vigente, así que se anuncia una vez de forma
+         explícita en vez de depender del recálculo en vivo (que no es
+         `role=status`, para no inundar de anuncios cada arrastre de
+         slider —mismo razonamiento que el `<output>` único de I10).
+       - Caso de prueba de Jose, verificado a mano: perfil conservador
+         con Petrocaribe en 45 % → matchea la primera regla de
+         conservador ("Petrocaribe > 40 %") antes que la segunda. La
+         kitchen sink fija `perfil_riesgo` con
+         `OVA.state.establecerVariable()` antes de montar tres
+         instancias de I12 —una por perfil— para poder ver las seis
+         reglas sin depender de responder I13 primero.
    ============================================================ */
 (function () {
   'use strict';
@@ -390,6 +600,38 @@
     var d = new Date();
     function pad(n) { return (n < 10 ? '0' : '') + n; }
     return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
+  // C6 (I12) — evalúa una condición de la matriz de retro contra los
+  // porcentajes vigentes ({id: numero}). Ver el bloque C6 en el
+  // encabezado del archivo para el vocabulario completo.
+  function evaluarCondicionRiesgo(condicion, porcentajes) {
+    if (condicion.tipo === 'ningunoSupera') {
+      return Object.keys(porcentajes).every(function (id) { return porcentajes[id] <= condicion.valor; });
+    }
+    if (condicion.tipo === 'algunoSupera') {
+      return Object.keys(porcentajes).some(function (id) { return porcentajes[id] > condicion.valor; });
+    }
+    var v = porcentajes[condicion.emisor];
+    if (v == null) return false;
+    switch (condicion.operador) {
+      case '>': return v > condicion.valor;
+      case '>=': return v >= condicion.valor;
+      case '<': return v < condicion.valor;
+      case '<=': return v <= condicion.valor;
+      case 'entre': return v >= condicion.min && v <= condicion.max;
+      default: return false;
+    }
+  }
+
+  function buscarRetroPerfil(reglas, perfil, porcentajes) {
+    for (var i = 0; i < reglas.length; i++) {
+      var regla = reglas[i];
+      if (regla.perfil !== perfil) continue;
+      var cumple = (regla.condiciones || []).every(function (c) { return evaluarCondicionRiesgo(c, porcentajes); });
+      if (cumple) return regla.retro;
+    }
+    return null;
   }
 
   function reportarSCORM(pregunta, resultado) {
@@ -925,7 +1167,7 @@
   var FORMULAS_CALCULADORA = {
     // Modelo de descuento de dividendos (Gordon): valor = D1 / (r − g).
     // Exige los ids dividendo/tasaCrecimiento/tasaDescuento en `entradas`
-    // (documentado en el encabezado del archivo).
+    // (documentado en el encabezado del archivo). Una sola salida: 'valor'.
     valor_accion_dividendo: function (valores) {
       var dividendo = valores.dividendo;
       var r = valores.tasaDescuento / 100;
@@ -933,7 +1175,51 @@
       if (!(r - g > 0)) {
         return { error: 'La tasa de descuento debe ser mayor que la de crecimiento para que exista un valor.' };
       }
-      return { valor: dividendo / (r - g) };
+      return { valores: { valor: dividendo / (r - g) } };
+    },
+
+    // C6 (P22) — valorización/desvalorización de una compra de acciones.
+    // Exige los ids precio_compra/precio_venta/acciones (tal cual el
+    // payload de Jose). Cinco salidas: monto_invertido,
+    // diferencia_por_accion, variacion_porcentual, ganancia_perdida,
+    // monto_final_bruto. Sin estado de error: precio_compra > 0 por el
+    // mínimo del slider (documentado en el encabezado del archivo).
+    valorizacion: function (valores) {
+      var compra = valores.precio_compra;
+      var venta = valores.precio_venta;
+      var acciones = valores.acciones;
+      var diferencia = venta - compra;
+      var variacion = (diferencia / compra) * 100;
+      return {
+        valores: {
+          monto_invertido: compra * acciones,
+          diferencia_por_accion: diferencia,
+          variacion_porcentual: variacion,
+          ganancia_perdida: diferencia * acciones,
+          monto_final_bruto: venta * acciones
+        },
+        signo: variacion > 0 ? 'positivo' : (variacion < 0 ? 'negativo' : 'cero')
+      };
+    },
+
+    // C6 (P24) — dividendo por acción y dividendo estimado del
+    // estudiante. Exige utilidad_neta/porcentaje_repartir/
+    // acciones_totales/acciones_estudiante (ids del payload de Jose).
+    // Tres salidas: monto_a_repartir, dividendo_por_accion,
+    // dividendo_estudiante. Sin estado de error (acciones_totales > 0
+    // por el mínimo del slider).
+    dividendo_por_accion: function (valores) {
+      var montoARepartir = valores.utilidad_neta * (valores.porcentaje_repartir / 100);
+      var dividendoPorAccion = montoARepartir / valores.acciones_totales;
+      var dividendoEstudiante = dividendoPorAccion * valores.acciones_estudiante;
+      return {
+        valores: {
+          monto_a_repartir: montoARepartir,
+          dividendo_por_accion: dividendoPorAccion,
+          dividendo_estudiante: dividendoEstudiante
+        },
+        signo: dividendoPorAccion > 0 ? 'positivo' : (dividendoPorAccion < 0 ? 'negativo' : 'cero')
+      };
     }
   };
 
@@ -943,7 +1229,8 @@
       throw new Error('La fórmula "' + datos.formula + '" no existe en el catálogo de la calculadora paramétrica.');
     }
     var entradas = datos.entradas || [];
-    var salida = datos.salida || {};
+    var salidas = datos.salidas || [];
+    var mensajes = datos.mensajes || null;
 
     var raiz = crear_('div', 'calc-calculadora');
     if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
@@ -1000,21 +1287,35 @@
       return formatearNumero(num, entrada.decimales) + (entrada.unidad || '');
     }
 
-    var resultado = crear_('div', 'calc-calculadora__resultado');
-    var resultadoIcono = crear_('span', 'icono calc-calculadora__resultado-icono');
-    resultadoIcono.setAttribute('aria-hidden', 'true');
-    var resultadoTexto = crear_('div', 'calc-calculadora__resultado-texto');
-    var resultadoEtiqueta = crear_('p', 'calc-calculadora__resultado-etiqueta', salida.etiqueta || '');
-    var resultadoValor = document.createElement('output');
-    resultadoValor.className = 'tipo-display-2 calc-calculadora__resultado-valor';
-    resultadoTexto.appendChild(resultadoEtiqueta);
-    resultadoTexto.appendChild(resultadoValor);
-    resultado.appendChild(resultadoIcono);
-    resultado.appendChild(resultadoTexto);
-    raiz.appendChild(resultado);
+    // C6 — un único <output> envolvente para todas las salidas (más el
+    // mensaje contextual, si lo hay) en vez de un <output> por salida:
+    // ver la nota "menos interrupciones" del bloque C6 en el
+    // encabezado del archivo.
+    var resultados = document.createElement('output');
+    resultados.className = 'calc-calculadora__resultados';
+    raiz.appendChild(resultados);
+
+    var filasResultado = salidas.map(function (salidaCfg) {
+      var fila = crear_('div', 'calc-calculadora__resultado');
+      var icono = crear_('span', 'icono calc-calculadora__resultado-icono');
+      icono.setAttribute('aria-hidden', 'true');
+      var texto = crear_('div', 'calc-calculadora__resultado-texto');
+      var etiqueta = crear_('p', 'calc-calculadora__resultado-etiqueta', salidaCfg.etiqueta || '');
+      var valor = crear_('p', 'tipo-h5 calc-calculadora__resultado-valor');
+      texto.appendChild(etiqueta);
+      texto.appendChild(valor);
+      fila.appendChild(icono);
+      fila.appendChild(texto);
+      resultados.appendChild(fila);
+      return { fila: fila, icono: icono, valor: valor, cfg: salidaCfg };
+    });
+
+    var mensajeParrafo = crear_('p', 'tipo-cuerpo-sm calc-calculadora__mensaje');
+    mensajeParrafo.hidden = true;
+    resultados.appendChild(mensajeParrafo);
 
     var acciones = crear_('div', 'calc-acciones');
-    var botonRegistrar = crear_('button', 'boton', 'Registrar valorización');
+    var botonRegistrar = crear_('button', 'boton', datos.accion || 'Registrar resultado');
     botonRegistrar.type = 'button';
     acciones.appendChild(botonRegistrar);
     raiz.appendChild(acciones);
@@ -1033,15 +1334,37 @@
       var resultadoFormula = formula(valoresActuales());
       if (resultadoFormula.error) {
         ultimoCalculo = null;
-        resultado.dataset.estado = 'error';
-        resultadoIcono.textContent = 'error';
-        resultadoValor.textContent = resultadoFormula.error;
+        resultados.dataset.estado = 'error';
+        mensajeParrafo.hidden = true;
+        filasResultado.forEach(function (f, i) {
+          f.fila.hidden = i > 0;
+          if (i === 0) {
+            // El dataset.estado vive en la fila (.calc-calculadora__resultado),
+            // no en el <output> envolvente: son las reglas CSS ya
+            // existentes de error/incorrecto (compartidas con I11/I12/I13)
+            // las que leen ese atributo.
+            f.fila.dataset.estado = 'error';
+            f.icono.textContent = 'error';
+            f.valor.textContent = resultadoFormula.error;
+          }
+        });
         botonRegistrar.disabled = true;
       } else {
-        ultimoCalculo = resultadoFormula.valor;
-        resultado.dataset.estado = 'ok';
-        resultadoIcono.textContent = 'insights';
-        resultadoValor.textContent = formatearNumero(resultadoFormula.valor, salida.decimales) + (salida.unidad || '');
+        ultimoCalculo = resultadoFormula.valores;
+        resultados.dataset.estado = 'ok';
+        filasResultado.forEach(function (f) {
+          f.fila.hidden = false;
+          delete f.fila.dataset.estado;
+          f.icono.textContent = 'insights';
+          f.valor.textContent = formatearNumero(resultadoFormula.valores[f.cfg.id], f.cfg.decimales) + (f.cfg.unidad || '');
+        });
+        var texto = mensajes && resultadoFormula.signo ? mensajes[resultadoFormula.signo] : null;
+        if (texto) {
+          mensajeParrafo.textContent = texto;
+          mensajeParrafo.hidden = false;
+        } else {
+          mensajeParrafo.hidden = true;
+        }
         botonRegistrar.disabled = false;
       }
     }
@@ -1053,7 +1376,9 @@
 
     function registrar() {
       if (ultimoCalculo === null) return;
-      var textoValor = formatearNumero(ultimoCalculo, salida.decimales) + (salida.unidad || '');
+      var textoValores = salidas.map(function (s) {
+        return s.etiqueta + ': ' + formatearNumero(ultimoCalculo[s.id], s.decimales) + (s.unidad || '');
+      }).join('; ');
       var pregunta = {
         idScorm: idScorm,
         tipoScorm: 'other',
@@ -1064,7 +1389,7 @@
         textoCorrecta: function () { return null; }
       };
       reportarSCORM(pregunta, 'neutral');
-      resumen.textContent = (salida.etiqueta || 'Resultado') + ' registrado: ' + textoValor + '.';
+      resumen.textContent = 'Resultado registrado: ' + textoValores + '.';
     }
 
     botonRegistrar.addEventListener('click', registrar);
@@ -1072,59 +1397,62 @@
     return raiz;
   }
 
-  /* I11, boleta de compra (precio de mercado contra precio límite, base
-     de C2). Reusa la misma cáscara `.calc-calculadora` que I10 dejó
-     (enunciado, `.calc-calculadora__entradas`, resultado, acciones,
-     resumen) — es literalmente "el patrón" que I10 debía establecer. Lo
-     único nuevo es el selector de tipo de orden (fieldset/legend con dos
-     <input type="radio"> nativos, mismo criterio que el catálogo de
-     preguntas: el grupo de radios y su navegación con flechas vienen gratis del navegador).
-     Regla de ejecución de una orden de COMPRA: a mercado siempre se
-     ejecuta al precio de mercado vigente; a límite se ejecuta solo si el
-     precio de mercado no supera el límite que definió el comprador — si
-     lo supera, queda pendiente. "Pendiente" no es un error (no bloquea
-     el envío ni usa el color de error): es un resultado legítimo de una
-     orden límite, el mismo punto pedagógico del ejercicio. */
-  function construirBoletaCompra(idBase, idScorm, datos) {
-    var mercadoCfg = datos.mercado || {};
-    var limiteCfg = datos.limite || {};
+  /* I11, boleta de orden (comprar/vender contra la tabla de verdad de
+     ocho filas de P42, C6). Reusa la cáscara `.calc-calculadora` que
+     T8 dejó (enunciado, `.calc-calculadora__entradas`, resultado,
+     acciones, resumen); ver el bloque C6 en el encabezado del archivo
+     para el contrato completo de `datos` y la tabla de verdad. */
+  function construirBoletaOrden(idBase, idScorm, datos) {
+    var escenario = datos.escenario || {};
+    var nombreOperacion = idBase + '-boleta-operacion';
     var nombreTipo = idBase + '-boleta-tipo';
 
     var raiz = crear_('div', 'calc-calculadora');
     if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
 
-    var fieldsetTipo = document.createElement('fieldset');
-    fieldsetTipo.className = 'calc-boleta__tipo';
-    fieldsetTipo.appendChild(crear_('legend', 'calc-campo__etiqueta', 'Tipo de orden'));
-    var opcionesTipo = crear_('div', 'calc-boleta__opciones');
+    if (datos.emisor || escenario.saldo != null || escenario.titulosDisponibles != null) {
+      var partes = [];
+      if (datos.emisor) partes.push('Emisor: ' + datos.emisor + '.');
+      if (escenario.saldo != null) partes.push('Saldo disponible: ' + formatearNumero(escenario.saldo, 0) + ' COP.');
+      if (escenario.titulosDisponibles != null) partes.push('Títulos disponibles para vender: ' + formatearNumero(escenario.titulosDisponibles, 0) + '.');
+      raiz.appendChild(crear_('p', 'tipo-cuerpo-sm calc-boleta__escenario', partes.join(' ')));
+    }
 
-    var radioMercado = document.createElement('input');
-    radioMercado.type = 'radio';
-    radioMercado.name = nombreTipo;
-    radioMercado.value = 'mercado';
-    radioMercado.id = idBase + '-tipo-mercado';
-    var labelMercado = crear_('label', 'calc-opcion');
-    labelMercado.setAttribute('for', radioMercado.id);
-    labelMercado.appendChild(radioMercado);
-    labelMercado.appendChild(document.createTextNode('A mercado'));
+    function construirGrupoRadio(nombre, etiquetaLeyenda, opciones, valorInicial) {
+      var fieldset = document.createElement('fieldset');
+      fieldset.className = 'calc-boleta__tipo';
+      fieldset.appendChild(crear_('legend', 'calc-campo__etiqueta', etiquetaLeyenda));
+      var contenedor = crear_('div', 'calc-boleta__opciones');
+      var inputs = {};
+      opciones.forEach(function (opcion) {
+        var input = document.createElement('input');
+        input.type = 'radio';
+        input.name = nombre;
+        input.value = opcion.valor;
+        input.id = idBase + '-' + nombre + '-' + opcion.valor;
+        input.checked = opcion.valor === valorInicial;
+        var label = crear_('label', 'calc-opcion');
+        label.setAttribute('for', input.id);
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(opcion.texto));
+        contenedor.appendChild(label);
+        inputs[opcion.valor] = input;
+      });
+      fieldset.appendChild(contenedor);
+      raiz.appendChild(fieldset);
+      return inputs;
+    }
 
-    var radioLimite = document.createElement('input');
-    radioLimite.type = 'radio';
-    radioLimite.name = nombreTipo;
-    radioLimite.value = 'limite';
-    radioLimite.id = idBase + '-tipo-limite';
+    var operacionInputs = construirGrupoRadio(nombreOperacion, 'Operación', [
+      { valor: 'comprar', texto: 'Comprar' },
+      { valor: 'vender', texto: 'Vender' }
+    ], 'comprar');
     // Límite por defecto: es el caso que de verdad enseña la diferencia
     // (a mercado siempre se ejecuta, no hay nada que explorar ahí).
-    radioLimite.checked = true;
-    var labelLimite = crear_('label', 'calc-opcion');
-    labelLimite.setAttribute('for', radioLimite.id);
-    labelLimite.appendChild(radioLimite);
-    labelLimite.appendChild(document.createTextNode('Límite'));
-
-    opcionesTipo.appendChild(labelMercado);
-    opcionesTipo.appendChild(labelLimite);
-    fieldsetTipo.appendChild(opcionesTipo);
-    raiz.appendChild(fieldsetTipo);
+    var tipoInputs = construirGrupoRadio(nombreTipo, 'Tipo de orden', [
+      { valor: 'mercado', texto: 'A mercado' },
+      { valor: 'limite', texto: 'Límite' }
+    ], 'limite');
 
     var campos = crear_('div', 'calc-calculadora__entradas');
     raiz.appendChild(campos);
@@ -1157,8 +1485,9 @@
       return { input: control, output: salida, cfg: cfg };
     }
 
-    var mercado = construirCampo('mercado', mercadoCfg);
-    var limite = construirCampo('limite', limiteCfg);
+    var precioActual = construirCampo('precioActual', datos.precioActual || {});
+    var precioLimite = construirCampo('precioLimite', datos.precioLimite || {});
+    var cantidad = construirCampo('cantidad', datos.cantidad || {});
 
     function textoValor(cfg, num) {
       return formatearNumero(num, cfg.decimales) + (cfg.unidad || '');
@@ -1171,7 +1500,7 @@
     var resultadoEtiqueta = crear_('p', 'calc-calculadora__resultado-etiqueta', 'Estado de tu orden');
     var resultadoValor = document.createElement('output');
     // tipo-h5, no tipo-display-2 como en I10: aquí el resultado es una
-    // oración explicativa ("Queda pendiente: …"), no un número corto.
+    // oración explicativa ("Queda expuesta: …"), no un número corto.
     resultadoValor.className = 'tipo-h5 calc-calculadora__resultado-valor';
     resultadoTexto.appendChild(resultadoEtiqueta);
     resultadoTexto.appendChild(resultadoValor);
@@ -1191,42 +1520,76 @@
 
     var ultimoResultado = null;
 
+    function operacionElegida() {
+      return operacionInputs.vender.checked ? 'vender' : 'comprar';
+    }
     function tipoElegido() {
-      return radioLimite.checked ? 'limite' : 'mercado';
+      return tipoInputs.limite.checked ? 'limite' : 'mercado';
+    }
+
+    // La tabla de verdad de ocho filas de P42 (ver el bloque C6 en el
+    // encabezado del archivo): comprar prioriza el saldo sobre el
+    // precio, vender prioriza los títulos disponibles sobre el precio;
+    // con esa restricción cumplida, mercado siempre ejecuta y límite
+    // ejecuta solo si el precio de mercado no deja al límite "peor
+    // parado" que el precio vigente.
+    function evaluarOrden(operacion, tipo, precioActualNum, precioLimiteNum, cantidadNum) {
+      if (operacion === 'comprar') {
+        var costo = precioActualNum * cantidadNum;
+        if (escenario.saldo != null && costo > escenario.saldo) return 'rechazada';
+        if (tipo === 'mercado') return 'ejecutada';
+        return precioLimiteNum >= precioActualNum ? 'ejecutada' : 'expuesta';
+      }
+      if (escenario.titulosDisponibles != null && cantidadNum > escenario.titulosDisponibles) return 'rechazada';
+      if (tipo === 'mercado') return 'ejecutada';
+      return precioLimiteNum <= precioActualNum ? 'ejecutada' : 'expuesta';
     }
 
     function recalcular() {
-      mercado.output.textContent = textoValor(mercado.cfg, parseFloat(mercado.input.value));
-      limite.output.textContent = textoValor(limite.cfg, parseFloat(limite.input.value));
+      precioActual.output.textContent = textoValor(precioActual.cfg, parseFloat(precioActual.input.value));
+      precioLimite.output.textContent = textoValor(precioLimite.cfg, parseFloat(precioLimite.input.value));
+      cantidad.output.textContent = textoValor(cantidad.cfg, parseFloat(cantidad.input.value));
 
+      var operacion = operacionElegida();
       var tipo = tipoElegido();
       // El precio límite solo importa para una orden límite: deshabilitado
       // (no oculto, sigue en el árbol de accesibilidad) cuando no aplica —
       // mismo criterio que .boton:disabled ya establecido en T2.
-      limite.input.disabled = tipo !== 'limite';
+      precioLimite.input.disabled = tipo !== 'limite';
 
-      var precioMercado = parseFloat(mercado.input.value);
-      var precioLimite = parseFloat(limite.input.value);
-      var ejecutada = tipo === 'mercado' || precioMercado <= precioLimite;
-      ultimoResultado = { tipo: tipo, ejecutada: ejecutada, precioMercado: precioMercado, precioLimite: precioLimite };
+      var precioActualNum = parseFloat(precioActual.input.value);
+      var precioLimiteNum = parseFloat(precioLimite.input.value);
+      var cantidadNum = parseFloat(cantidad.input.value);
+      var estado = evaluarOrden(operacion, tipo, precioActualNum, precioLimiteNum, cantidadNum);
+      ultimoResultado = {
+        operacion: operacion, tipo: tipo, estado: estado,
+        cantidad: cantidadNum, precioActual: precioActualNum, precioLimite: precioLimiteNum
+      };
 
-      if (ejecutada) {
-        resultado.dataset.estado = 'ejecutada';
+      resultado.dataset.estado = estado;
+      if (estado === 'ejecutada') {
         resultadoIcono.textContent = 'check_circle';
-        resultadoValor.textContent = 'Se ejecuta a ' + textoValor(mercado.cfg, precioMercado) +
-          (tipo === 'limite' ? ' (tu límite era ' + textoValor(limite.cfg, precioLimite) + ').' : ' (precio de mercado).');
-      } else {
-        resultado.dataset.estado = 'pendiente';
+        resultadoValor.textContent = 'Ejecutada: tu instrucción encontró condiciones de mercado, a ' +
+          textoValor(precioActual.cfg, precioActualNum) + '.';
+      } else if (estado === 'expuesta') {
         resultadoIcono.textContent = 'schedule';
-        resultadoValor.textContent = 'Queda pendiente: el precio de mercado (' + textoValor(mercado.cfg, precioMercado) +
-          ') supera tu límite (' + textoValor(limite.cfg, precioLimite) + ').';
+        resultadoValor.textContent = 'Expuesta: queda vigente hasta que el precio llegue a tu límite (' +
+          textoValor(precioLimite.cfg, precioLimiteNum) + ') o venza.';
+      } else {
+        resultadoIcono.textContent = 'block';
+        resultadoValor.textContent = operacion === 'comprar'
+          ? 'Rechazada: no hay saldo suficiente para esta cantidad al precio actual.'
+          : 'Rechazada: no dispones de la cantidad de títulos indicada.';
       }
     }
 
-    mercado.input.addEventListener('input', recalcular);
-    limite.input.addEventListener('input', recalcular);
-    radioMercado.addEventListener('change', recalcular);
-    radioLimite.addEventListener('change', recalcular);
+    precioActual.input.addEventListener('input', recalcular);
+    precioLimite.input.addEventListener('input', recalcular);
+    cantidad.input.addEventListener('input', recalcular);
+    operacionInputs.comprar.addEventListener('change', recalcular);
+    operacionInputs.vender.addEventListener('change', recalcular);
+    tipoInputs.mercado.addEventListener('change', recalcular);
+    tipoInputs.limite.addEventListener('change', recalcular);
     recalcular();
 
     function enviar() {
@@ -1235,22 +1598,19 @@
         idScorm: idScorm,
         tipoScorm: 'other',
         textoRespuesta: function () {
-          return 'tipo=' + r.tipo + ',precioMercado=' + r.precioMercado + ',precioLimite=' + r.precioLimite;
+          return 'operacion=' + r.operacion + ',tipo=' + r.tipo + ',estado=' + r.estado +
+            ',cantidad=' + r.cantidad + ',precioActual=' + r.precioActual + ',precioLimite=' + r.precioLimite;
         },
         textoCorrecta: function () { return null; }
       };
       reportarSCORM(pregunta, 'neutral');
       if (datos.variable && datos.variable.nombre) {
         OVA.state.establecerVariable(datos.variable.nombre, {
-          tipo: r.tipo,
-          ejecutada: r.ejecutada,
-          precioMercado: r.precioMercado,
-          precioLimite: r.precioLimite
+          operacion: r.operacion, tipo: r.tipo, estado: r.estado,
+          cantidad: r.cantidad, precioActual: r.precioActual, precioLimite: r.precioLimite
         });
       }
-      resumen.textContent = r.ejecutada
-        ? 'Boleta enviada: se ejecutó a ' + textoValor(mercado.cfg, r.precioMercado) + '.'
-        : 'Boleta enviada: quedó pendiente (no se ejecutó).';
+      resumen.textContent = 'Boleta enviada: ' + r.estado + '.';
     }
 
     botonEnviar.addEventListener('click', enviar);
@@ -1258,155 +1618,120 @@
     return raiz;
   }
 
-  /* I09, línea de tiempo ordenable (secuenciar etapas de una operación
-     —repo, TTV—, base de C1). Reusa `.linea-tiempo` (T1.5/T7) para el
-     nodo/contenido de cada paso, siempre en su variante vertical (la
-     `--horizontal` de T7 es de solo lectura, centrada, no pensada para
-     llevar controles). La alternativa de teclado al arrastre que exige
-     PLAN.md son dos `.boton-icono` por paso que intercambian con el
-     vecino inmediato; el arrastre nativo (mouse) llama a la misma
-     función de reordenar. A diferencia de I10/I11 (exploradores de
-     escenario sin "correcta"), aquí sí hay un orden objetivamente
-     correcto: «Comprobar orden» evalúa contra `ordenCorrecto` y
-     reporta correct/wrong de verdad, sin tocar cmi.core.score (eso
-     sigue siendo exclusivo de las preguntas gradables) ni bloquear el widget. */
-  function construirLineaTiempoOrdenable(idBase, idScorm, datos) {
-    var eventos = datos.eventos || [];
-    var ordenCorrecto = datos.ordenCorrecto || [];
-    var textos = {};
-    eventos.forEach(function (evento) { textos[evento.id] = evento.texto; });
-    var orden = eventos.map(function (evento) { return evento.id; });
+  /* I09, línea de tiempo recorrible (recorrer los momentos de una
+     operación —repo, TTV— con estado inicial y final, C6). Reemplaza
+     la versión "ordenable" de T8: ver el bloque C6 en el encabezado
+     del archivo para la razón del cambio y el contrato completo de
+     `datos`. Un panel muestra un paso a la vez; «Anterior»/«Siguiente»
+     avanzan, sin arrastre ni teclado especial que inventar. */
+  function construirLineaTiempoRecorrible(idBase, idScorm, datos) {
+    var momentos = datos.momentos || [];
+    // Pasos: [inicial, ...momentos, final]. Los de los extremos son
+    // texto plano (estado_inicial/estado_final de Jose); los del medio
+    // llevan título/descripción/qué cambia/resultado.
+    var pasos = [{ tipo: 'inicial', texto: datos.estadoInicial }]
+      .concat(momentos.map(function (m) { return { tipo: 'momento', datos: m }; }))
+      .concat([{ tipo: 'final', texto: datos.estadoFinal }]);
 
     var raiz = crear_('div', 'calc-calculadora');
     if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
-    if (datos.operacion) raiz.appendChild(crear_('p', 'tipo-h5', datos.operacion));
 
-    var lista = crear_('ol', 'linea-tiempo calc-linea-tiempo');
-    raiz.appendChild(lista);
+    var recorrido = crear_('div', 'calc-recorrido');
+    raiz.appendChild(recorrido);
 
-    var arrastrado = null;
+    var indicador = crear_('p', 'tipo-cuerpo-sm calc-recorrido__indicador');
+    indicador.setAttribute('aria-hidden', 'true');
+    recorrido.appendChild(indicador);
 
-    function mover(indice, delta) {
-      var destino = indice + delta;
-      if (destino < 0 || destino >= orden.length) return;
-      var id = orden.splice(indice, 1)[0];
-      orden.splice(destino, 0, id);
-      renderizar();
-      OVA.a11y.anunciar('"' + textos[id] + '" ahora en la posición ' + (destino + 1) + ' de ' + orden.length + '.');
-      var pasoNuevo = lista.children[destino];
-      var botones = pasoNuevo.querySelectorAll('.boton-icono');
-      var preferido = delta < 0 ? botones[0] : botones[1];
-      if (preferido && !preferido.disabled) preferido.focus();
-      else if (botones[0] && !botones[0].disabled) botones[0].focus();
-      else if (botones[1]) botones[1].focus();
-    }
-
-    function renderizar() {
-      lista.textContent = '';
-      orden.forEach(function (id, i) {
-        var li = crear_('li', 'linea-tiempo__paso calc-linea-tiempo__paso');
-        li.draggable = true;
-
-        var nodo = crear_('span', 'linea-tiempo__nodo', String(i + 1));
-        nodo.setAttribute('aria-hidden', 'true');
-        li.appendChild(nodo);
-
-        var contenido = crear_('div', 'linea-tiempo__contenido');
-        contenido.appendChild(crear_('p', 'tipo-cuerpo-sm', textos[id]));
-        li.appendChild(contenido);
-
-        var controles = crear_('div', 'calc-linea-tiempo__controles');
-
-        var antes = crear_('button', 'boton-icono');
-        antes.type = 'button';
-        var iconoAntes = crear_('span', 'icono', 'arrow_upward');
-        iconoAntes.setAttribute('aria-hidden', 'true');
-        antes.appendChild(iconoAntes);
-        antes.appendChild(crear_('span', 'u-oculto-visualmente', 'Mover "' + textos[id] + '" antes'));
-        antes.disabled = i === 0;
-        (function (indice) { antes.addEventListener('click', function () { mover(indice, -1); }); })(i);
-
-        var despues = crear_('button', 'boton-icono');
-        despues.type = 'button';
-        var iconoDespues = crear_('span', 'icono', 'arrow_downward');
-        iconoDespues.setAttribute('aria-hidden', 'true');
-        despues.appendChild(iconoDespues);
-        despues.appendChild(crear_('span', 'u-oculto-visualmente', 'Mover "' + textos[id] + '" después'));
-        despues.disabled = i === orden.length - 1;
-        (function (indice) { despues.addEventListener('click', function () { mover(indice, 1); }); })(i);
-
-        controles.appendChild(antes);
-        controles.appendChild(despues);
-        li.appendChild(controles);
-
-        (function (indice) {
-          li.addEventListener('dragstart', function () { arrastrado = indice; });
-          li.addEventListener('dragover', function (evento) { evento.preventDefault(); });
-          li.addEventListener('drop', function (evento) {
-            evento.preventDefault();
-            if (arrastrado === null || arrastrado === indice) return;
-            mover(arrastrado, indice - arrastrado);
-            arrastrado = null;
-          });
-        })(i);
-
-        lista.appendChild(li);
-      });
-    }
-
-    renderizar();
+    var panel = crear_('div', 'calc-recorrido__panel');
+    recorrido.appendChild(panel);
 
     var acciones = crear_('div', 'calc-acciones');
-    var botonComprobar = crear_('button', 'boton', 'Comprobar orden');
-    botonComprobar.type = 'button';
-    acciones.appendChild(botonComprobar);
-    raiz.appendChild(acciones);
-
-    var resultado = crear_('div', 'calc-calculadora__resultado');
-    resultado.hidden = true;
-    var resultadoIcono = crear_('span', 'icono calc-calculadora__resultado-icono');
-    resultadoIcono.setAttribute('aria-hidden', 'true');
-    var resultadoTexto = crear_('div', 'calc-calculadora__resultado-texto');
-    var resultadoValor = document.createElement('output');
-    resultadoValor.className = 'tipo-h5 calc-calculadora__resultado-valor';
-    resultadoTexto.appendChild(resultadoValor);
-    resultado.appendChild(resultadoIcono);
-    resultado.appendChild(resultadoTexto);
-    raiz.appendChild(resultado);
+    var botonAnterior = crear_('button', 'boton boton--outline', 'Anterior');
+    botonAnterior.type = 'button';
+    var botonSiguiente = crear_('button', 'boton', 'Siguiente');
+    botonSiguiente.type = 'button';
+    acciones.appendChild(botonAnterior);
+    acciones.appendChild(botonSiguiente);
+    recorrido.appendChild(acciones);
 
     var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
     resumen.setAttribute('role', 'status');
+    resumen.hidden = true;
     raiz.appendChild(resumen);
 
-    function ordenIgual(a, b) {
-      if (a.length !== b.length) return false;
-      for (var i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) return false;
+    var actual = 0;
+    var completado = false;
+
+    function etiquetaPaso(paso) {
+      if (paso.tipo === 'inicial') return 'Estado inicial';
+      if (paso.tipo === 'final') return 'Estado final';
+      return paso.datos.titulo;
+    }
+
+    function renderizarPaso(anunciar) {
+      var paso = pasos[actual];
+      panel.textContent = '';
+      panel.dataset.tipo = paso.tipo;
+
+      var eyebrow = crear_('p', 'eyebrow eyebrow--subtle', paso.tipo === 'momento' ? 'Momento' : etiquetaPaso(paso));
+      panel.appendChild(eyebrow);
+
+      if (paso.tipo === 'momento') {
+        panel.appendChild(crear_('p', 'tipo-h5', paso.datos.titulo));
+        panel.appendChild(crear_('p', 'tipo-cuerpo', paso.datos.descripcion));
+        if (paso.datos.cambia) {
+          var cambia = crear_('p', 'tipo-cuerpo-sm calc-recorrido__detalle');
+          cambia.appendChild(crear_('strong', null, 'Qué cambia: '));
+          cambia.appendChild(document.createTextNode(paso.datos.cambia));
+          panel.appendChild(cambia);
+        }
+        if (paso.datos.resultado) {
+          var res = crear_('p', 'tipo-cuerpo-sm calc-recorrido__detalle');
+          res.appendChild(crear_('strong', null, 'Resultado: '));
+          res.appendChild(document.createTextNode(paso.datos.resultado));
+          panel.appendChild(res);
+        }
+      } else {
+        panel.appendChild(crear_('p', 'tipo-cuerpo', paso.texto));
       }
-      return true;
+
+      indicador.textContent = 'Paso ' + (actual + 1) + ' de ' + pasos.length;
+      botonAnterior.disabled = actual === 0;
+      botonSiguiente.disabled = actual === pasos.length - 1;
+
+      if (anunciar) {
+        OVA.a11y.anunciar('Paso ' + (actual + 1) + ' de ' + pasos.length + ': ' + etiquetaPaso(paso) +
+          (paso.tipo === 'momento' ? '. ' + paso.datos.descripcion : '. ' + paso.texto));
+      }
+
+      if (actual === pasos.length - 1 && !completado) {
+        completado = true;
+        if (datos.retro) {
+          resumen.hidden = false;
+          resumen.textContent = datos.retro;
+        }
+        reportarSCORM({
+          idScorm: idScorm,
+          tipoScorm: 'other',
+          textoRespuesta: function () { return 'recorrido completo'; },
+          textoCorrecta: function () { return null; }
+        }, 'neutral');
+      }
     }
 
-    function comprobar() {
-      var correcto = ordenIgual(orden, ordenCorrecto);
-      resultado.hidden = false;
-      resultado.dataset.estado = correcto ? 'correcto' : 'incorrecto';
-      resultadoIcono.textContent = correcto ? 'check_circle' : 'cancel';
-      resultadoValor.textContent = correcto
-        ? 'El orden es correcto.'
-        : 'Todavía no es el orden correcto — sigue ajustando con los botones o arrastrando.';
-      var pregunta = {
-        idScorm: idScorm,
-        tipoScorm: 'sequencing',
-        textoRespuesta: function () { return orden.join(','); },
-        textoCorrecta: function () { return ordenCorrecto.join(','); }
-      };
-      reportarSCORM(pregunta, correcto ? 'correcto' : 'incorrecto');
-      resumen.textContent = correcto
-        ? 'Resultado registrado: orden correcto.'
-        : 'Resultado registrado: orden incorrecto. Puedes seguir intentando.';
-    }
+    botonAnterior.addEventListener('click', function () {
+      if (actual === 0) return;
+      actual -= 1;
+      renderizarPaso(true);
+    });
+    botonSiguiente.addEventListener('click', function () {
+      if (actual === pasos.length - 1) return;
+      actual += 1;
+      renderizarPaso(true);
+    });
 
-    botonComprobar.addEventListener('click', comprobar);
+    renderizarPaso(false);
 
     return raiz;
   }
@@ -1417,9 +1742,13 @@
      recalcula los segmentos y reemplaza la figura completa. Validación
      de dominio con el mismo patrón que el error de I10: la suma debe
      ser exactamente 100, si no lo es el resultado pasa a
-     data-estado="error" y el registro se deshabilita mientras dure. */
+     data-estado="error" y el registro se deshabilita mientras dure.
+     C6 suma la matriz de retro por perfil de riesgo — ver el bloque C6
+     en el encabezado del archivo para el contrato completo de
+     `datos.reglas`. */
   function construirDistribucionCapital(idBase, idScorm, datos) {
     var categorias = datos.categorias || [];
+    var reglas = datos.reglas || [];
     var TOTAL_OBJETIVO = 100;
 
     var raiz = crear_('div', 'calc-calculadora');
@@ -1435,7 +1764,7 @@
 
       var campo = crear_('div', 'calc-campo');
       var cabecera = crear_('div', 'calc-campo__cabecera');
-      var etiqueta = crear_('label', 'calc-campo__etiqueta', cat.etiqueta);
+      var etiqueta = crear_('label', 'calc-campo__etiqueta', cat.etiqueta + (cat.riesgo ? ' — riesgo ' + cat.riesgo : ''));
       etiqueta.setAttribute('for', controlId);
       var valor = document.createElement('output');
       valor.className = 'calc-campo__valor';
@@ -1476,6 +1805,14 @@
     resultado.appendChild(resultadoTexto);
     raiz.appendChild(resultado);
 
+    var retroPerfil = crear_('p', 'tipo-cuerpo-sm calc-calculadora__retro');
+    retroPerfil.hidden = true;
+    raiz.appendChild(retroPerfil);
+    var avisoPerfil = crear_('p', 'tipo-cuerpo-sm calc-calculadora__resultado-aviso');
+    avisoPerfil.hidden = true;
+    if (datos.aviso) avisoPerfil.textContent = datos.aviso;
+    raiz.appendChild(avisoPerfil);
+
     var acciones = crear_('div', 'calc-acciones');
     var botonRegistrar = crear_('button', 'boton', 'Registrar distribución');
     botonRegistrar.type = 'button';
@@ -1487,15 +1824,18 @@
     raiz.appendChild(resumen);
 
     var totalValido = false;
+    var retroVigente = null;
 
     function recalcular() {
       var total = 0;
       var segmentos = [];
+      var porcentajes = {};
       Object.keys(controles).forEach(function (id) {
         var c = controles[id];
         var v = parseFloat(c.input.value);
         c.output.textContent = formatearNumero(v, 0) + ' %';
         total += v;
+        porcentajes[id] = v;
         segmentos.push({ etiqueta: c.etiqueta, valor: v });
       });
 
@@ -1514,6 +1854,26 @@
         resultadoEtiqueta.textContent = 'Debes asignar exactamente ' + TOTAL_OBJETIVO + ' % en total';
       }
       botonRegistrar.disabled = !totalValido;
+
+      // Matriz de retro por perfil: solo tiene sentido con la suma
+      // completa y con un perfil_riesgo ya conocido (I13, C5) — sin
+      // eso, sigue comportándose exactamente como antes de C6.
+      retroVigente = null;
+      if (totalValido && reglas.length) {
+        var perfil = OVA.state.obtenerVariable('perfil_riesgo');
+        if (perfil) {
+          retroVigente = buscarRetroPerfil(reglas, perfil, porcentajes) ||
+            'Revisa la coherencia entre tu perfil (' + perfil + ') y esta distribución.';
+        }
+      }
+      if (retroVigente) {
+        retroPerfil.textContent = retroVigente;
+        retroPerfil.hidden = false;
+        avisoPerfil.hidden = !datos.aviso;
+      } else {
+        retroPerfil.hidden = true;
+        avisoPerfil.hidden = true;
+      }
     }
 
     Object.keys(controles).forEach(function (id) {
@@ -1533,7 +1893,7 @@
       };
       reportarSCORM(pregunta, 'neutral');
       resumen.textContent = 'Distribución registrada: ' + TOTAL_OBJETIVO + ' % asignado entre ' +
-        Object.keys(controles).length + ' categorías.';
+        Object.keys(controles).length + ' categorías.' + (retroVigente ? ' ' + retroVigente : '');
     }
 
     botonRegistrar.addEventListener('click', registrar);
@@ -1839,9 +2199,9 @@
   var CONSTRUCTORES_INSIGNIA = {
     I07: construirTarjetasVolteables,
     I08: construirComparadorColumnas,
-    I09: construirLineaTiempoOrdenable,
+    I09: construirLineaTiempoRecorrible,
     I10: construirCalculadoraParametrica,
-    I11: construirBoletaCompra,
+    I11: construirBoletaOrden,
     I12: construirDistribucionCapital,
     I13: construirTestPerfil
   };

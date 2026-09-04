@@ -171,6 +171,32 @@
    pantallas a L06/L07 contra el criterio real de layouts.css. No es
    una discrepancia nueva de C5 — es el mismo tipo de desajuste
    catálogo-contra-contenido que C0 ya resolvió una vez para L01–L13.
+
+   C6 (4 sep) reescribe s11–s14 con los payloads reales de Jose
+   (P22/P37/P42/P46 — P24 no tiene pantalla de prueba propia aquí, solo
+   en la kitchen sink, porque cada pantalla de este archivo es una
+   interacción y s11 ya cubre I10) en vez de los datos de relleno de
+   T8, y suma s26 (I12) después de s25. El catálogo completo, con el
+   contrato exacto de cada tipo ampliado, vive documentado en el
+   bloque "C6" del encabezado de quiz.js — resumen aquí:
+
+   - s11 (I10, valor_accion_dividendo): sin cambio de matemática, solo
+     `salida` → `salidas` (arreglo de un elemento) por el contrato
+     nuevo de I10.
+   - s12 (I11) pasa de "boleta de compra de Petrocaribe" a la boleta de
+     P42 completa (Banco del Sur, comprar/vender, saldo y títulos
+     disponibles, tres resultados) — sigue fijando resultado_boleta.
+   - s13 (I09) pasa de "ordenar las etapas de un repo" (la interacción
+     que C6 reemplazó, ver quiz.js) a "recorrer" los momentos de P37
+     tal cual los escribió Jose.
+   - s14 (I12) suma `reglas`/`aviso` (la matriz de retro de P46) a la
+     misma distribución de los tres mercados de s01, pero se queda
+     ANTES de s25 (I13) en el recorrido — a propósito: demuestra que
+     sin perfil_riesgo todavía el componente degrada a su comportamiento
+     de antes de C6 (solo valida la suma), el mismo criterio "sin dato
+     todavía" que L08/C4 ya establecieron. s26, después de s25, es la
+     que sí muestra la matriz viva contra el perfil que el estudiante
+     acaba de obtener.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -369,7 +395,7 @@ window.OVA_CONTENIDO = {
             { "id": "tasaCrecimiento", "etiqueta": "Crecimiento esperado del dividendo", "unidad": " %", "min": 0, "max": 10, "paso": 0.5, "valorInicial": 4, "decimales": 1 },
             { "id": "tasaDescuento", "etiqueta": "Tasa de descuento (rendimiento requerido)", "unidad": " %", "min": 1, "max": 20, "paso": 0.5, "valorInicial": 10, "decimales": 1 }
           ],
-          "salida": { "etiqueta": "Valor estimado de la acción", "unidad": " COP", "decimales": 0 }
+          "salidas": [{ "id": "valor", "etiqueta": "Valor estimado de la acción", "unidad": " COP", "decimales": 0 }]
         }
       },
       "progreso": true
@@ -377,15 +403,18 @@ window.OVA_CONTENIDO = {
     {
       "id": "s12",
       "layout": "L06",
-      "titulo": "Decide tu boleta de compra",
-      "kicker": "Unidad 1 · Cápsula 2",
+      "titulo": "Simula tu primera orden",
+      "kicker": "Unidad 3 · Pieza insignia",
       "interaccion": {
         "tipo": "I11",
         "datos": {
-          "id": "u1-p3-boleta-compra",
-          "enunciado": "Vas a comprar acciones de Petrocaribe. Elige el tipo de orden y ajusta los precios para ver cuándo se ejecutaría tu boleta.",
-          "mercado": { "etiqueta": "Precio de mercado (simulado)", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 1000 },
-          "limite": { "etiqueta": "Tu precio límite de compra", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 950 },
+          "id": "u1-p42-boleta-orden",
+          "enunciado": "Completa la boleta y observa el resultado: ejecutada, expuesta o rechazada.",
+          "emisor": "Banco del Sur",
+          "escenario": { "saldo": 10000, "titulosDisponibles": 8 },
+          "precioActual": { "etiqueta": "Precio actual (mercado)", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 1200 },
+          "precioLimite": { "etiqueta": "Tu precio límite", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 1100 },
+          "cantidad": { "etiqueta": "Cantidad", "unidad": " acciones", "min": 1, "max": 50, "paso": 1, "valorInicial": 5 },
           "variable": { "nombre": "resultado_boleta" }
         }
       },
@@ -394,21 +423,36 @@ window.OVA_CONTENIDO = {
     {
       "id": "s13",
       "layout": "L06",
-      "titulo": "Ordena una operación repo",
-      "kicker": "Unidad 1 · Cápsula 1",
+      "titulo": "Repo paso a paso",
+      "kicker": "Unidad 2 · Pieza insignia",
       "interaccion": {
         "tipo": "I09",
         "datos": {
-          "id": "u1-p4-orden-repo",
-          "enunciado": "Ordena las etapas de una operación repo, desde el pacto inicial hasta el cierre.",
-          "operacion": "Operación repo",
-          "eventos": [
-            { "id": "vencimiento", "texto": "Al vencimiento, el originador recompra el título pagando el monto inicial más intereses (pata final)." },
-            { "id": "pacto", "texto": "Las partes pactan el título, el plazo y la tasa de la operación repo." },
-            { "id": "uso", "texto": "Durante el plazo, el receptor puede usar el título como si fuera propio." },
-            { "id": "transferencia", "texto": "El originador transfiere el título y recibe el dinero pactado (pata inicial)." }
+          "id": "u1-p37-repo-recorrido",
+          "enunciado": "Recorre la operación y mira qué entrega cada parte en cada momento.",
+          "estadoInicial": "Inversionista A necesita liquidez y posee acciones. Inversionista B tiene dinero disponible.",
+          "momentos": [
+            {
+              "titulo": "Operación inicial",
+              "descripcion": "A entrega acciones y B entrega dinero.",
+              "cambia": "acciones de A a B; dinero de B a A",
+              "resultado": "A obtiene liquidez; B recibe acciones bajo pacto."
+            },
+            {
+              "titulo": "Durante el plazo",
+              "descripcion": "Las acciones quedan inmovilizadas bajo condiciones pactadas.",
+              "cambia": "no hay nueva entrega; se mantiene la obligación de regreso",
+              "resultado": "Las partes esperan el vencimiento."
+            },
+            {
+              "titulo": "Operación de regreso",
+              "descripcion": "A recompra y B recibe dinero más el rendimiento pactado.",
+              "cambia": "acciones vuelven a A; dinero + rendimiento va a B",
+              "resultado": "La operación se cierra."
+            }
           ],
-          "ordenCorrecto": ["pacto", "transferencia", "uso", "vencimiento"]
+          "estadoFinal": "Las acciones retornan al vendedor inicial y el comprador recibe el pago acordado.",
+          "retro": "El rasgo esencial es el pacto de recompra, no la venta definitiva."
         }
       },
       "progreso": true
@@ -416,18 +460,33 @@ window.OVA_CONTENIDO = {
     {
       "id": "s14",
       "layout": "L06",
-      "titulo": "Arma tu portafolio",
-      "kicker": "Unidad 1 · Cápsula 3",
+      "titulo": "Distribuye $10.000",
+      "kicker": "Unidad 5 · Pieza insignia",
       "interaccion": {
         "tipo": "I12",
         "datos": {
-          "id": "u1-p5-distribucion-portafolio",
-          "enunciado": "Ajusta el porcentaje que destinarías a cada uno de los tres mercados de BVC hasta que la suma llegue a 100 %.",
+          "id": "u1-p46-portafolio-s14",
+          "enunciado": "Asigna porcentajes a Petrocaribe, Andina Cementos y Banco del Sur. La suma debe ser 100 %.",
           "categorias": [
-            { "id": "rentaVariable", "etiqueta": "Renta variable", "valorInicial": 40 },
-            { "id": "rentaFija", "etiqueta": "Renta fija", "valorInicial": 45 },
-            { "id": "derivados", "etiqueta": "Derivados", "valorInicial": 15 }
-          ]
+            { "id": "petrocaribe", "etiqueta": "Petrocaribe", "riesgo": "alto", "valorInicial": 40 },
+            { "id": "andinaCementos", "etiqueta": "Andina Cementos", "riesgo": "medio", "valorInicial": 45 },
+            { "id": "bancoDelSur", "etiqueta": "Banco del Sur", "riesgo": "medio-bajo", "valorInicial": 15 }
+          ],
+          "reglas": [
+            { "perfil": "conservador", "condiciones": [{ "emisor": "petrocaribe", "operador": ">", "valor": 40 }],
+              "retro": "La distribución luce agresiva para un perfil conservador; revisa concentración y pérdida tolerable." },
+            { "perfil": "conservador", "condiciones": [{ "emisor": "bancoDelSur", "operador": ">=", "valor": 50 }, { "tipo": "ningunoSupera", "valor": 60 }],
+              "retro": "La distribución es más coherente con preservación relativa, aunque sigue expuesta a renta variable." },
+            { "perfil": "moderado", "condiciones": [{ "tipo": "ningunoSupera", "valor": 60 }],
+              "retro": "La distribución muestra diversificación básica compatible con un perfil moderado." },
+            { "perfil": "moderado", "condiciones": [{ "tipo": "algunoSupera", "valor": 60 }],
+              "retro": "Revisa concentración; un perfil moderado suele buscar equilibrio." },
+            { "perfil": "agresivo", "condiciones": [{ "emisor": "petrocaribe", "operador": "entre", "min": 30, "max": 60 }],
+              "retro": "La exposición a riesgo alto puede ser coherente, siempre que haya análisis y límites." },
+            { "perfil": "agresivo", "condiciones": [{ "emisor": "petrocaribe", "operador": ">", "valor": 60 }],
+              "retro": "Alta concentración: incluso un perfil agresivo debería justificar y monitorear ese riesgo." }
+          ],
+          "aviso": "No constituye recomendación de inversión."
         }
       },
       "progreso": true
@@ -667,6 +726,40 @@ window.OVA_CONTENIDO = {
           ],
           "variable": "perfil_riesgo",
           "aviso": "Resultado orientativo y educativo; no reemplaza el perfilamiento formal de un intermediario."
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s26",
+      "layout": "L06",
+      "titulo": "Retroalimentación de tu portafolio",
+      "kicker": "Unidad 5 · Pieza insignia",
+      "interaccion": {
+        "tipo": "I12",
+        "datos": {
+          "id": "u1-p46-portafolio-s26",
+          "enunciado": "Reparte $10.000 entre Petrocaribe, Andina Cementos y Banco del Sur. La retroalimentación usa el perfil que obtuviste en la pantalla anterior.",
+          "categorias": [
+            { "id": "petrocaribe", "etiqueta": "Petrocaribe", "riesgo": "alto", "valorInicial": 34 },
+            { "id": "andinaCementos", "etiqueta": "Andina Cementos", "riesgo": "medio", "valorInicial": 33 },
+            { "id": "bancoDelSur", "etiqueta": "Banco del Sur", "riesgo": "medio-bajo", "valorInicial": 33 }
+          ],
+          "reglas": [
+            { "perfil": "conservador", "condiciones": [{ "emisor": "petrocaribe", "operador": ">", "valor": 40 }],
+              "retro": "La distribución luce agresiva para un perfil conservador; revisa concentración y pérdida tolerable." },
+            { "perfil": "conservador", "condiciones": [{ "emisor": "bancoDelSur", "operador": ">=", "valor": 50 }, { "tipo": "ningunoSupera", "valor": 60 }],
+              "retro": "La distribución es más coherente con preservación relativa, aunque sigue expuesta a renta variable." },
+            { "perfil": "moderado", "condiciones": [{ "tipo": "ningunoSupera", "valor": 60 }],
+              "retro": "La distribución muestra diversificación básica compatible con un perfil moderado." },
+            { "perfil": "moderado", "condiciones": [{ "tipo": "algunoSupera", "valor": 60 }],
+              "retro": "Revisa concentración; un perfil moderado suele buscar equilibrio." },
+            { "perfil": "agresivo", "condiciones": [{ "emisor": "petrocaribe", "operador": "entre", "min": 30, "max": 60 }],
+              "retro": "La exposición a riesgo alto puede ser coherente, siempre que haya análisis y límites." },
+            { "perfil": "agresivo", "condiciones": [{ "emisor": "petrocaribe", "operador": ">", "valor": 60 }],
+              "retro": "Alta concentración: incluso un perfil agresivo debería justificar y monitorear ese riesgo." }
+          ],
+          "aviso": "No constituye recomendación de inversión."
         }
       },
       "progreso": true

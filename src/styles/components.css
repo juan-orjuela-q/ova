@@ -1867,9 +1867,10 @@ a.cap-tarjeta:hover {
 }
 /* Estado "ejecutada" de la boleta (I11): ícono y texto cambian a verde
    juntos, nunca solo el borde — mismo patrón que
-   .quiz-retro[data-estado="correcto"]. "pendiente" no tiene regla
-   propia a propósito: no es un error, así que usa el estilo neutro por
-   defecto de .calc-calculadora__resultado (ver la nota en quiz.js). */
+   .quiz-retro[data-estado="correcto"]. "expuesta" (C6, antes
+   "pendiente") no tiene regla propia a propósito: no es un error, así
+   que usa el estilo neutro por defecto de .calc-calculadora__resultado
+   (ver la nota en quiz.js). */
 .calc-calculadora__resultado[data-estado="ejecutada"],
 .calc-calculadora__resultado[data-estado="correcto"] {
   border-inline-start-color: var(--nuam-green-500);
@@ -1882,24 +1883,72 @@ a.cap-tarjeta:hover {
 .calc-calculadora__resultado[data-estado="correcto"] .calc-calculadora__resultado-valor {
   color: var(--nuam-green-700);
 }
+/* Estado "rechazada" (C6, I11): mismo tratamiento rojo que "error"/
+   "incorrecto" pero con su propia regla porque significa algo
+   distinto (saldo o títulos insuficientes, no un dato inválido). */
+.calc-calculadora__resultado[data-estado="rechazada"] {
+  border-inline-start-color: var(--nuam-red-500);
+}
+.calc-calculadora__resultado[data-estado="rechazada"] .calc-calculadora__resultado-icono {
+  color: var(--nuam-red-500);
+}
+.calc-calculadora__resultado[data-estado="rechazada"] .calc-calculadora__resultado-valor {
+  color: var(--nuam-red-700);
+}
+/* Línea de contexto fijo del escenario de la boleta (I11, C6): emisor,
+   saldo, títulos disponibles — no son sliders, solo el marco del
+   ejercicio. */
+.calc-boleta__escenario {
+  color: var(--text-secondary);
+}
 
-/* ---- Línea de tiempo ordenable (I09) ------------------------------
-   Reusa `.linea-tiempo` (T1.5/T7) tal cual, siempre en su variante
-   vertical — la `--horizontal` es de solo lectura y centra el texto,
-   pensada para el diagrama de proceso de T7, no para filas con
-   controles de reordenar. El número de nodo sigue aria-hidden: el
-   orden real del <ol> ya se anuncia solo a quien navega por lista. */
-.calc-linea-tiempo__paso {
-  align-items: center;
-}
-.calc-linea-tiempo__paso .linea-tiempo__contenido {
-  flex: 1 1 auto;
-  padding-block-start: 0;
-}
-.calc-linea-tiempo__controles {
+/* ---- Salidas múltiples de la calculadora (I10, C6) -----------------
+   Un único <output> envolvente para todas las salidas —ver la nota
+   "menos interrupciones" del bloque C6 en el encabezado de quiz.js—
+   con una fila .calc-calculadora__resultado por salida, mismas clases
+   de siempre. */
+.calc-calculadora__resultados {
   display: flex;
-  gap: var(--sp-1);
-  flex-shrink: 0;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.calc-calculadora__mensaje {
+  color: var(--text-secondary);
+}
+
+/* ---- Línea de tiempo recorrible (I09, C6) --------------------------
+   Reemplaza la versión ordenable de T8 (ver el bloque C6 en el
+   encabezado de quiz.js): un panel único que muestra un paso a la vez
+   en vez de una lista con controles de reordenar. */
+.calc-recorrido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.calc-recorrido__indicador {
+  color: var(--text-tertiary);
+}
+.calc-recorrido__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-subtle);
+  border-inline-start: 3px solid var(--border-strong);
+}
+.calc-recorrido__panel[data-tipo="final"] {
+  border-inline-start-color: var(--nuam-green-500);
+}
+.calc-recorrido__detalle {
+  color: var(--text-secondary);
+}
+
+/* ---- Matriz de retro por perfil (I12, C6) --------------------------
+   Recalculada en vivo con cada slider, visible solo cuando la suma
+   llega a 100 % — ver el bloque C6 en el encabezado de quiz.js. */
+.calc-calculadora__retro {
+  color: var(--text-secondary);
 }
 
 /* ---- Test de perfil (I13) — grupo de radios por pregunta -----------
