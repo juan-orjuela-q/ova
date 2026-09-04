@@ -909,72 +909,96 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-insignia-t8">
-        <span class="ks-layout-bloque__etiqueta">Interacciones insignia (T8) — las cuatro, cableadas reales</span>
+        <span class="ks-layout-bloque__etiqueta">Interacciones insignia — I09 a I12, ampliadas en C6</span>
         <p class="ks-intro">
-          Las cuatro interacciones insignia de <code>PLAN.md</code>, en el
-          orden que pedía (I10 → I11 → I09 → I12). Todas se montan con el
-          mismo <code>OVA.quiz.crear()</code> del motor de evaluación de arriba:
-          router.js no distingue el punto de entrada, solo el tipo. Cada
-          entrada es un <code>&lt;input type="range"&gt;</code> nativo — el
-          teclado (flechas, Inicio/Fin) viene gratis del navegador, así que
-          "operable sin arrastrar" (cierre de T8) queda resuelto por
-          construcción — emparejado con un <code>&lt;output&gt;</code> que
-          lee su valor en vivo. El resultado también es un
-          <code>&lt;output&gt;</code>: se recalcula en cada movimiento de
-          cualquier slider. Baja la tasa de descuento por debajo de la de
-          crecimiento para ver el estado de error (ícono y texto cambian
-          juntos, nunca solo el color). «Registrar valorización» reporta
-          a <code>cmi.interactions</code> como tipo <code>other</code> — no
-          hay "correcta" en un explorador de escenarios, mismo criterio que
-          I08. El catálogo (hoy un solo miembro,
-          <code>valor_accion_dividendo</code>) está documentado en el
-          encabezado de <code>quiz.js</code>.
+          Las cuatro interacciones insignia de <code>PLAN.md</code>, todas
+          montadas con el mismo <code>OVA.quiz.crear()</code> del motor de
+          evaluación de arriba. C6 (<code>PLAN-CONTENIDO.md</code>) las
+          amplió contra los payloads reales de Jose — el contrato completo
+          de cada una vive documentado en el bloque "C6" del encabezado de
+          <code>quiz.js</code>. Cada instancia de abajo arranca con los
+          valores de un caso de prueba real de Jose, para que el primer
+          render ya muestre el resultado esperado sin tocar nada; los
+          demás casos de cada payload quedan anotados en el título de la
+          tarjeta para comprobarlos a mano moviendo los sliders.
         </p>
         <div class="ks-layout-bloque" id="c-insignia-i10">
-          <span class="ks-layout-bloque__etiqueta">I10 · Calculadora paramétrica — valorización por dividendo</span>
-          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+          <span class="ks-layout-bloque__etiqueta">I10 · Calculadora paramétrica — tres fórmulas, salidas múltiples</span>
+          <p class="ks-intro">
+            <code>datos.salida</code> (un solo resultado) pasa a
+            <code>datos.salidas</code> (un arreglo): las salidas de una
+            misma fórmula se anuncian juntas en un único
+            <code>&lt;output&gt;</code> envolvente en vez de uno por
+            salida, para no inundar de anuncios cada arrastre de slider.
+            <code>datos.mensajes</code> (opcional) agrega un mensaje
+            contextual según el signo del resultado principal.
+          </p>
+          <div class="ks-layout-bloque">
+            <span class="ks-layout-bloque__etiqueta">valor_accion_dividendo (T8, sin cambios de matemática)</span>
+            <div class="ks-layout-marco ks-ancho-marco" id="c-insignia-i10-dividendo" style="max-width: 32rem;"></div>
+          </div>
+          <div class="ks-layout-bloque">
+            <span class="ks-layout-bloque__etiqueta">valorizacion (P22) — caso de prueba de Jose: 1.000 → 1.500, 500 acciones → 50 %, $250.000. Otros casos: (1.000, 800, 500) → −20 %, −$100.000; (1.000, 1.000, 500) → 0 %, $0.</span>
+            <div class="ks-layout-marco ks-ancho-marco" id="c-insignia-i10-valorizacion" style="max-width: 32rem;"></div>
+          </div>
+          <div class="ks-layout-bloque">
+            <span class="ks-layout-bloque__etiqueta">dividendo_por_accion (P24) — caso de prueba de Jose: $20.000.000, 50 %, 1.500 acciones, 100 propias → $6.666,67/acción. Otros casos: (5.000.000, 0 %, 1.500, 100) → $0; (40.000.000, 30 %, 3.600, 100) → $3.333,33/acción.</span>
+            <div class="ks-layout-marco ks-ancho-marco" id="c-insignia-i10-dividendoaccion" style="max-width: 32rem;"></div>
+          </div>
         </div>
         <div class="ks-layout-bloque" id="c-insignia-i11">
-          <span class="ks-layout-bloque__etiqueta">I11 · Boleta de compra — precio de mercado contra precio límite</span>
+          <span class="ks-layout-bloque__etiqueta">I11 · Boleta de orden — tabla de verdad de ocho filas (P42)</span>
           <p class="ks-intro">
-            Reusa la misma cáscara <code>.calc-calculadora</code> de I10 —
-            lo único nuevo es el selector de tipo de orden
-            (<code>&lt;fieldset&gt;</code>/<code>&lt;legend&gt;</code> con
-            dos radios nativos). Por defecto la orden es "Límite" con el
-            mercado por encima: queda pendiente al cargar — baja el precio
-            de mercado o sube tu límite para verla ejecutarse. "Pendiente"
-            no es un error: usa el estilo neutro, no el rojo.
+            Comprar o vender, a mercado o límite, contra el saldo y los
+            títulos disponibles del escenario — tres resultados
+            (ejecutada/expuesta/rechazada), no solo dos. Arranca en el
+            caso de prueba de Jose: comprar 5 acciones a mercado, con
+            saldo 10.000 y precio 1.200 → <strong>ejecutada</strong>.
+            Otros casos: cambia a "Límite" y baja el precio límite a
+            1.100 (precio actual 1.200) → <strong>expuesta</strong>; pon
+            "Vender" y sube la cantidad a 20 (solo hay 8 títulos
+            disponibles) → <strong>rechazada</strong>.
           </p>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
         <div class="ks-layout-bloque" id="c-insignia-i09">
-          <span class="ks-layout-bloque__etiqueta">I09 · Línea de tiempo ordenable — operación repo</span>
+          <span class="ks-layout-bloque__etiqueta">I09 · Línea de tiempo recorrible — operación repo (P37)</span>
           <p class="ks-intro">
-            Reusa <code>.linea-tiempo</code> (T1.5/T7) en su variante
-            vertical: cada paso trae dos botones "Mover antes"/"Mover
-            después" — la alternativa de teclado al arrastre que exige
-            <code>PLAN.md</code>, sin manejador de tecla escrito a mano.
-            El arrastre con mouse (nativo, <code>draggable</code>) llama a
-            la misma función de reordenar. Cada movimiento se anuncia por
-            la región compartida de <code>a11y.js</code>. A diferencia de
-            I10/I11, aquí sí hay un orden correcto: «Comprobar orden»
-            evalúa contra <code>ordenCorrecto</code> y reporta
-            correcto/incorrecto de verdad (tipo <code>sequencing</code>),
-            sin tocar <code>cmi.core.score</code> ni bloquear el widget.
+            Reemplaza la versión "ordenable" de T8 (ver el bloque C6 en
+            <code>quiz.js</code>): un panel muestra un paso a la vez
+            —estado inicial, cada momento, estado final— con
+            «Anterior»/«Siguiente», sin arrastre. Cada cambio de paso se
+            anuncia por la región compartida de <code>a11y.js</code>.
+            Llega al estado final para ver la retroalimentación de cierre
+            y el reporte a <code>cmi.interactions</code> (una sola vez).
           </p>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
         <div class="ks-layout-bloque" id="c-insignia-i12">
-          <span class="ks-layout-bloque__etiqueta">I12 · Distribución de capital — arma un portafolio</span>
+          <span class="ks-layout-bloque__etiqueta">I12 · Distribución de capital — matriz de retro por perfil (P46)</span>
           <p class="ks-intro">
             Reusa <code>OVA.charts.crear({tipo:'distribucion'})</code> de
-            T7 para la barra apilada en vivo — cada slider recalcula los
-            segmentos y reemplaza la figura completa, sin un SVG nuevo.
-            Si la suma no es exactamente 100 %, el resultado pasa a su
-            estado de error (ícono y texto, mismo patrón que I10) y
-            «Registrar distribución» se deshabilita mientras dure.
+            T7 para la barra apilada en vivo. Si la suma no es
+            exactamente 100 %, el resultado pasa a su estado de error;
+            con la suma completa y un <code>perfil_riesgo</code> ya
+            fijado en <code>OVA.state</code> (I13), la matriz de retro de
+            Jose se evalúa en vivo bajo el total. Las tres instancias de
+            abajo fijan un perfil distinto con
+            <code>OVA.state.establecerVariable()</code> antes de montarse,
+            para ver las seis reglas sin depender de responder I13 primero.
           </p>
-          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+          <div class="ks-layout-bloque">
+            <span class="ks-layout-bloque__etiqueta">perfil_riesgo = conservador — Petrocaribe en 45 % (regla 1: "Petrocaribe &gt; 40 %")</span>
+            <div class="ks-layout-marco ks-ancho-marco" id="c-insignia-i12-conservador" style="max-width: 32rem;"></div>
+          </div>
+          <div class="ks-layout-bloque">
+            <span class="ks-layout-bloque__etiqueta">perfil_riesgo = moderado — ninguno supera 60 % (regla "ninguno &gt; 60 %")</span>
+            <div class="ks-layout-marco ks-ancho-marco" id="c-insignia-i12-moderado" style="max-width: 32rem;"></div>
+          </div>
+          <div class="ks-layout-bloque">
+            <span class="ks-layout-bloque__etiqueta">perfil_riesgo = agresivo — Petrocaribe en 45 % (regla "Petrocaribe 30–60 %")</span>
+            <div class="ks-layout-marco ks-ancho-marco" id="c-insignia-i12-agresivo" style="max-width: 32rem;"></div>
+          </div>
         </div>
       </div>
 
@@ -1753,14 +1777,14 @@
     })();
   </script>
 
-  <!-- Interacciones insignia (T8): I10, montada con OVA.quiz.crear() —
-       mismo punto de entrada que el motor de evaluación de arriba, ver
-       la nota de arquitectura en el encabezado de quiz.js. Mismos datos
-       que s11 en content/ova-u1.js, recorrible de extremo a extremo en
-       src/index.html. -->
+  <!-- I10, tres instancias (C6): mismo formulario, formula distinta cada
+       vez. Los valores iniciales de cada una son el primer caso_prueba
+       del payload real de Jose (P22/P24) — el primer render ya muestra
+       el resultado esperado; los demás casos quedan anotados en el
+       título de la tarjeta (arriba) para moverlos a mano. -->
   <script>
     (function () {
-      var contenedor = document.getElementById('c-insignia-i10');
+      var contenedor = document.getElementById('c-insignia-i10-dividendo');
       var nodo = OVA.quiz.crear({
         tipo: 'I10',
         datos: {
@@ -1772,79 +1796,195 @@
             { id: 'tasaCrecimiento', etiqueta: 'Crecimiento esperado del dividendo', unidad: ' %', min: 0, max: 10, paso: 0.5, valorInicial: 4, decimales: 1 },
             { id: 'tasaDescuento', etiqueta: 'Tasa de descuento (rendimiento requerido)', unidad: ' %', min: 1, max: 20, paso: 0.5, valorInicial: 10, decimales: 1 }
           ],
-          salida: { etiqueta: 'Valor estimado de la acción', unidad: ' COP', decimales: 0 }
+          salidas: [{ id: 'valor', etiqueta: 'Valor estimado de la acción', unidad: ' COP', decimales: 0 }]
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-insignia-i10-valorizacion');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I10',
+        datos: {
+          id: 'u1-p22-valorizacion',
+          enunciado: 'Mueve el precio de compra y el precio de venta para ver cómo cambia la valorización.',
+          formula: 'valorizacion',
+          accion: 'Registrar valorización',
+          entradas: [
+            { id: 'precio_compra', etiqueta: 'Precio de compra', unidad: ' COP', min: 1, max: 10000, paso: 10, valorInicial: 1000 },
+            { id: 'precio_venta', etiqueta: 'Precio de venta', unidad: ' COP', min: 1, max: 10000, paso: 10, valorInicial: 1500 },
+            { id: 'acciones', etiqueta: 'Número de acciones', unidad: ' acciones', min: 1, max: 10000, paso: 1, valorInicial: 500 }
+          ],
+          salidas: [
+            { id: 'monto_invertido', etiqueta: 'Monto invertido', unidad: ' COP', decimales: 0 },
+            { id: 'diferencia_por_accion', etiqueta: 'Diferencia por acción', unidad: ' COP', decimales: 0 },
+            { id: 'variacion_porcentual', etiqueta: 'Variación porcentual', unidad: ' %', decimales: 0 },
+            { id: 'ganancia_perdida', etiqueta: 'Ganancia/pérdida por precio', unidad: ' COP', decimales: 0 },
+            { id: 'monto_final_bruto', etiqueta: 'Monto final bruto', unidad: ' COP', decimales: 0 }
+          ],
+          mensajes: {
+            positivo: 'La acción se valorizó en el periodo del ejercicio.',
+            cero: 'El precio no cambió; no hay ganancia ni pérdida por precio.',
+            negativo: 'La acción se desvalorizó; el resultado por precio es negativo.'
+          }
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-insignia-i10-dividendoaccion');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I10',
+        datos: {
+          id: 'u1-p24-dividendo-por-accion',
+          enunciado: 'Ajusta utilidad neta, porcentaje a repartir y número de acciones. Observa el dividendo estimado por acción.',
+          formula: 'dividendo_por_accion',
+          accion: 'Registrar dividendo',
+          entradas: [
+            { id: 'utilidad_neta', etiqueta: 'Utilidad neta', unidad: ' COP', min: 0, max: 1000000000, paso: 100000, valorInicial: 20000000 },
+            { id: 'porcentaje_repartir', etiqueta: 'Porcentaje a repartir', unidad: ' %', min: 0, max: 100, paso: 1, valorInicial: 50 },
+            { id: 'acciones_totales', etiqueta: 'Acciones totales', unidad: ' acciones', min: 1, max: 10000000, paso: 1, valorInicial: 1500 },
+            { id: 'acciones_estudiante', etiqueta: 'Acciones que posees', unidad: ' acciones', min: 0, max: 1000000, paso: 1, valorInicial: 100 }
+          ],
+          salidas: [
+            { id: 'monto_a_repartir', etiqueta: 'Monto a repartir', unidad: ' COP', decimales: 0 },
+            { id: 'dividendo_por_accion', etiqueta: 'Dividendo por acción', unidad: ' COP', decimales: 2 },
+            { id: 'dividendo_estudiante', etiqueta: 'Dividendo estimado del estudiante', unidad: ' COP', decimales: 2 }
+          ],
+          mensajes: {
+            positivo: 'El ejercicio genera dividendo estimado.',
+            cero: 'No hay dividendo si la utilidad o el porcentaje a repartir es cero.'
+          }
         }
       });
       if (contenedor && nodo) contenedor.appendChild(nodo);
     })();
   </script>
 
-  <!-- Interacciones insignia (T8): I11, montada con OVA.quiz.crear() —
-       mismo criterio que I10 de arriba. Mismos datos que s12 en
-       content/ova-u1.js, recorrible de extremo a extremo en
-       src/index.html. -->
+  <!-- I11, boleta de orden (C6, tabla de verdad de P42). Valores
+       iniciales = caso de prueba 2 de Jose (comprar, límite $1.100,
+       precio actual $1.200 → expuesta): el tipo "Límite" ya viene
+       marcado por defecto (el caso que enseña la diferencia), así que
+       el primer render ya cae en ese caso sin tocar nada. Los otros
+       dos casos (mercado → ejecutada; vender 20 con solo 8
+       disponibles → rechazada) quedan anotados arriba, a un clic/
+       arrastre de distancia. -->
   <script>
     (function () {
       var contenedor = document.getElementById('c-insignia-i11');
       var nodo = OVA.quiz.crear({
         tipo: 'I11',
         datos: {
-          id: 'u1-p3-boleta-compra',
-          enunciado: 'Vas a comprar acciones de Petrocaribe. Elige el tipo de orden y ajusta los precios para ver cuándo se ejecutaría tu boleta.',
-          mercado: { etiqueta: 'Precio de mercado (simulado)', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 1000 },
-          limite: { etiqueta: 'Tu precio límite de compra', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 950 }
+          id: 'u1-p42-boleta-orden',
+          enunciado: 'Completa la boleta y observa el resultado: ejecutada, expuesta o rechazada.',
+          emisor: 'Banco del Sur',
+          escenario: { saldo: 10000, titulosDisponibles: 8 },
+          precioActual: { etiqueta: 'Precio actual (mercado)', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 1200 },
+          precioLimite: { etiqueta: 'Tu precio límite', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 1100 },
+          cantidad: { etiqueta: 'Cantidad', unidad: ' acciones', min: 1, max: 50, paso: 1, valorInicial: 5 }
         }
       });
       if (contenedor && nodo) contenedor.appendChild(nodo);
     })();
   </script>
 
-  <!-- Interacciones insignia (T8): I09, montada con OVA.quiz.crear() —
-       mismo criterio que I10/I11 de arriba. Mismos datos que s13 en
-       content/ova-u1.js, recorrible de extremo a extremo en
-       src/index.html. -->
+  <!-- I09, línea de tiempo recorrible (C6, operación repo de P37). -->
   <script>
     (function () {
       var contenedor = document.getElementById('c-insignia-i09');
       var nodo = OVA.quiz.crear({
         tipo: 'I09',
         datos: {
-          id: 'u1-p4-orden-repo',
-          enunciado: 'Ordena las etapas de una operación repo, desde el pacto inicial hasta el cierre.',
-          operacion: 'Operación repo',
-          eventos: [
-            { id: 'vencimiento', texto: 'Al vencimiento, el originador recompra el título pagando el monto inicial más intereses (pata final).' },
-            { id: 'pacto', texto: 'Las partes pactan el título, el plazo y la tasa de la operación repo.' },
-            { id: 'uso', texto: 'Durante el plazo, el receptor puede usar el título como si fuera propio.' },
-            { id: 'transferencia', texto: 'El originador transfiere el título y recibe el dinero pactado (pata inicial).' }
+          id: 'u1-p37-repo-recorrido',
+          enunciado: 'Recorre la operación y mira qué entrega cada parte en cada momento.',
+          estadoInicial: 'Inversionista A necesita liquidez y posee acciones. Inversionista B tiene dinero disponible.',
+          momentos: [
+            {
+              titulo: 'Operación inicial',
+              descripcion: 'A entrega acciones y B entrega dinero.',
+              cambia: 'acciones de A a B; dinero de B a A',
+              resultado: 'A obtiene liquidez; B recibe acciones bajo pacto.'
+            },
+            {
+              titulo: 'Durante el plazo',
+              descripcion: 'Las acciones quedan inmovilizadas bajo condiciones pactadas.',
+              cambia: 'no hay nueva entrega; se mantiene la obligación de regreso',
+              resultado: 'Las partes esperan el vencimiento.'
+            },
+            {
+              titulo: 'Operación de regreso',
+              descripcion: 'A recompra y B recibe dinero más el rendimiento pactado.',
+              cambia: 'acciones vuelven a A; dinero + rendimiento va a B',
+              resultado: 'La operación se cierra.'
+            }
           ],
-          ordenCorrecto: ['pacto', 'transferencia', 'uso', 'vencimiento']
+          estadoFinal: 'Las acciones retornan al vendedor inicial y el comprador recibe el pago acordado.',
+          retro: 'El rasgo esencial es el pacto de recompra, no la venta definitiva.'
         }
       });
       if (contenedor && nodo) contenedor.appendChild(nodo);
     })();
   </script>
 
-  <!-- Interacciones insignia (T8): I12, montada con OVA.quiz.crear() —
-       mismo criterio que las tres anteriores. Mismos datos que s14 en
-       content/ova-u1.js, recorrible de extremo a extremo en
-       src/index.html. -->
+  <!-- I12, distribución de capital (C6, matriz de retro de P46) — tres
+       instancias, una por perfil_riesgo. Cada una fija la variable
+       antes de montarse, así que su primer render ya cae en la regla
+       correcta. Nota: las tres comparten el mismo OVA.state (un solo
+       almacén global, como en la app real, donde solo hay un
+       perfil_riesgo a la vez) — si mueves los sliders DESPUÉS de que
+       las tres estén montadas, las tres leerán el último perfil fijado
+       (agresivo) porque no hay tres estudiantes a la vez, solo tres
+       demos en paralelo. No es un bug del componente, es la demo. -->
   <script>
     (function () {
-      var contenedor = document.getElementById('c-insignia-i12');
-      var nodo = OVA.quiz.crear({
-        tipo: 'I12',
-        datos: {
-          id: 'u1-p5-distribucion-portafolio',
-          enunciado: 'Ajusta el porcentaje que destinarías a cada uno de los tres mercados de BVC hasta que la suma llegue a 100 %.',
-          categorias: [
-            { id: 'rentaVariable', etiqueta: 'Renta variable', valorInicial: 40 },
-            { id: 'rentaFija', etiqueta: 'Renta fija', valorInicial: 45 },
-            { id: 'derivados', etiqueta: 'Derivados', valorInicial: 15 }
-          ]
-        }
-      });
-      if (contenedor && nodo) contenedor.appendChild(nodo);
+      var categorias = function () {
+        return [
+          { id: 'petrocaribe', etiqueta: 'Petrocaribe', riesgo: 'alto', valorInicial: 45 },
+          { id: 'andinaCementos', etiqueta: 'Andina Cementos', riesgo: 'medio', valorInicial: 30 },
+          { id: 'bancoDelSur', etiqueta: 'Banco del Sur', riesgo: 'medio-bajo', valorInicial: 25 }
+        ];
+      };
+      var reglas = [
+        { perfil: 'conservador', condiciones: [{ emisor: 'petrocaribe', operador: '>', valor: 40 }],
+          retro: 'La distribución luce agresiva para un perfil conservador; revisa concentración y pérdida tolerable.' },
+        { perfil: 'conservador', condiciones: [{ emisor: 'bancoDelSur', operador: '>=', valor: 50 }, { tipo: 'ningunoSupera', valor: 60 }],
+          retro: 'La distribución es más coherente con preservación relativa, aunque sigue expuesta a renta variable.' },
+        { perfil: 'moderado', condiciones: [{ tipo: 'ningunoSupera', valor: 60 }],
+          retro: 'La distribución muestra diversificación básica compatible con un perfil moderado.' },
+        { perfil: 'moderado', condiciones: [{ tipo: 'algunoSupera', valor: 60 }],
+          retro: 'Revisa concentración; un perfil moderado suele buscar equilibrio.' },
+        { perfil: 'agresivo', condiciones: [{ emisor: 'petrocaribe', operador: 'entre', min: 30, max: 60 }],
+          retro: 'La exposición a riesgo alto puede ser coherente, siempre que haya análisis y límites.' },
+        { perfil: 'agresivo', condiciones: [{ emisor: 'petrocaribe', operador: '>', valor: 60 }],
+          retro: 'Alta concentración: incluso un perfil agresivo debería justificar y monitorear ese riesgo.' }
+      ];
+      var AVISO = 'No constituye recomendación de inversión.';
+
+      function montarInstancia(idContenedor, idScorm, perfil, valoresIniciales) {
+        OVA.state.establecerVariable('perfil_riesgo', perfil);
+        var cats = categorias();
+        cats.forEach(function (cat, i) { cat.valorInicial = valoresIniciales[i]; });
+        var contenedor = document.getElementById(idContenedor);
+        var nodo = OVA.quiz.crear({
+          tipo: 'I12',
+          datos: {
+            id: idScorm,
+            enunciado: 'Asigna porcentajes a Petrocaribe, Andina Cementos y Banco del Sur. La suma debe ser 100 %.',
+            categorias: cats,
+            reglas: reglas,
+            aviso: AVISO
+          }
+        });
+        if (contenedor && nodo) contenedor.appendChild(nodo);
+      }
+
+      montarInstancia('c-insignia-i12-conservador', 'u1-p46-portafolio-conservador', 'conservador', [45, 30, 25]);
+      montarInstancia('c-insignia-i12-moderado', 'u1-p46-portafolio-moderado', 'moderado', [20, 40, 40]);
+      montarInstancia('c-insignia-i12-agresivo', 'u1-p46-portafolio-agresivo', 'agresivo', [45, 30, 25]);
     })();
   </script>
 

@@ -41,7 +41,7 @@ Ver `PLAN-CONTENIDO.md` — es el plan vigente sobre el que corren estas tareas.
 - [x] **C3 · Media: avatar y audio** — completada 4 sep
 - [x] **C4 · Estado compartido** — completada 4 sep, rama `c4-estado-compartido`
 - [x] **C5 · Interacciones nuevas** — completada 4 sep, rama `c5-interacciones-nuevas`
-- [ ] C6 · Interacciones ampliadas
+- [x] **C6 · Interacciones ampliadas** — completada 4 sep, rama `c6-interacciones-ampliadas`
 - [ ] C7 · Conversión del storyboard a contenido
 - [ ] C8 · Descargables y recursos
 - [ ] C9 · Empaquetado, auditoría y Moodle
@@ -2543,3 +2543,163 @@ esta sesión — `PLANTILLAS.L05` hoy no tiene ranura para `interaccion`.
 C7 decide si extiende L05 o convierte esas dos pantallas a L06/L07;
 ninguna de las dos requiere tocar `quiz.js`, el contrato de
 `interaccion.datos` para I07/I08 ya está completo y probado.
+
+---
+
+**4 sep — C6 cerrada: I09/I10/I11/I12 ampliadas contra los payloads
+reales de Jose, en rama `c6-interacciones-ampliadas` — sin Playwright
+disponible en esta sesión (a diferencia de T1–T8/C0–C5), verificado en
+su lugar con lectura de código y los `casos_prueba` de Jose corridos a
+mano contra la lógica extraída (Node, fuera del navegador). Detalle
+completo, incluido el contrato exacto de cada tipo, en el bloque "C6"
+del encabezado de `quiz.js` — resumen aquí de qué cambió y por qué.**
+
+**I09 se reemplaza, no se amplía.** El brief (P37) no pide reordenar
+pasos, pide recorrer tres momentos con estado inicial y final —una
+interacción distinta a la "línea de tiempo ordenable" que T8 construyó.
+Como ninguna otra pantalla del storyboard usa I09 (confirmado por
+búsqueda contra `storyboard_data_v2.json`), no había contenido real que
+dependiera del modo anterior: `construirLineaTiempoOrdenable` (arrastre
++ botones mover antes/después + orden correcto) se borró y
+`construirLineaTiempoRecorrible` ocupa su lugar en
+`CONSTRUCTORES_INSIGNIA.I09`. A diferencia de completar/numerica/
+autoevaluacion (T6, conservados sin número porque algo los sigue
+usando), aquí no había nada que conservar en paralelo. El widget nuevo
+muestra un panel a la vez (estado inicial → cada momento → estado
+final) con «Anterior»/«Siguiente», anuncia cada paso por
+`OVA.a11y.anunciar()` (posición + título + descripción, no solo el
+título — se agregó la posición explícita después de una relectura
+propia: el indicador visual "Paso X de Y" es `aria-hidden` y sin el
+número en el anuncio esa información se habría perdido para quien
+navega sin pantalla) y reporta a `cmi.interactions` una sola vez al
+llegar al final, con la retro de cierre si el contenido la trae.
+
+**I10 pasa de un resultado a varios, con catálogo de fórmulas
+ampliado.** `datos.salida` (objeto) pasa a `datos.salidas` (arreglo);
+cada fórmula de `FORMULAS_CALCULADORA` devuelve `{ valores: {id:
+number} }` en vez de `{ valor }`. Se sumaron `valorizacion` (P22, cinco
+salidas: monto invertido, diferencia por acción, variación %,
+ganancia/pérdida, monto final bruto) y `dividendo_por_accion` (P24,
+tres salidas: monto a repartir, dividendo por acción, dividendo del
+estudiante) — los ids de `entradas` son los del payload de Jose tal
+cual (`precio_compra`, `utilidad_neta`, etc.), sin traducir a
+camelCase, para que la conversión de C7 no tenga que reescribirlos.
+Nuevo campo opcional `datos.mensajes` (positivo/cero/negativo): la
+fórmula decide su propio `signo` y el motor hace el lookup, mostrado en
+vivo bajo los resultados. Las salidas ya no anuncian cada una por su
+cuenta: un único `<output class="calc-calculadora__resultados">`
+envuelve todas las filas (más el mensaje) para que un lector de
+pantalla reciba un solo anuncio por recálculo en vez de N simultáneos.
+`datos.accion` (opcional) reemplaza el texto fijo "Registrar
+valorización" del botón, que ya no describía bien la fórmula de
+dividendo. **Bug real encontrado en revisión propia, no por
+Playwright, y corregido antes de cerrar:** el estado de error (tasa de
+descuento ≤ crecimiento) dejó de pintarse en rojo en el primer borrador
+porque `dataset.estado` se puso en el `<output>` envolvente nuevo en
+vez de en la fila `.calc-calculadora__resultado` que las reglas CSS de
+`[data-estado="error"]` realmente seleccionan — las reglas CSS
+heredadas de T8 nunca se tocaron, así que el bug era puramente de dónde
+se escribía el atributo. Corregido escribiendo `dataset.estado` en la
+fila, como siempre.
+
+**I11 pasa de "boleta de compra" a la tabla de verdad completa de ocho
+filas de P42.** `construirBoletaCompra` se reemplazó por
+`construirBoletaOrden`: comprar o vender (selector nuevo, además del de
+tipo mercado/límite que ya existía), un escenario fijo
+(`escenario.saldo`/`escenario.titulosDisponibles`, mostrado como texto
+de contexto, no sliders) y una `cantidad` que sí es slider. La regla de
+ejecución evaluada a mano contra los tres `casos_prueba` de Jose:
+comprar a mercado con saldo suficiente → ejecutada; comprar a límite
+por debajo del precio actual → expuesta; vender más títulos de los
+disponibles → rechazada (sin importar el tipo de orden, el saldo/
+títulos manda antes que el precio). Estados nuevos en CSS:
+`[data-estado="rechazada"]` (rojo, ícono `block`) y `expuesta` (sin
+regla propia, el mismo neutro que ya tenía "pendiente"). Se decidió
+deliberadamente NO construir un campo de vigencia — ninguna fila de la
+tabla de verdad ni ningún caso de prueba distingue por vigencia, solo
+aparece como texto fijo en la descripción de "expuesta"; añadirlo
+habría sido decoración sin señal de prueba que lo respalde. Lectura
+propia, documentada para poder corregirla sin arqueología de código si
+el storyboard real termina necesitando que la vigencia sí afecte el
+resultado.
+
+**I12 suma la matriz de retro por perfil de riesgo de P46.** Nuevo
+campo opcional `datos.reglas`: un vocabulario mínimo de condiciones
+(`{emisor, operador, valor|min/max}` para comparar un emisor,
+`{tipo:'ningunoSupera'|'algunoSupera', valor}` para comparar contra
+todos a la vez) que cubre las seis reglas reales de Jose sin ser un
+parser de lenguaje natural — C7 traduce el texto de la matriz una sola
+vez, igual que ya traduce `resultado.reglas` para L08. Sin
+`perfil_riesgo` todavía en `OVA.state` (I13 no respondida) o sin
+`reglas` en los datos, el componente se comporta exactamente como
+antes de C6: valida la suma a 100 % y no muestra nada de perfil — el
+mismo "sin dato todavía" que L08/C4 ya establecieron, no un caso
+especial nuevo. Con perfil conocido, la retro se recalcula en vivo bajo
+el total (visible solo con la suma completa) y se repite una vez, de
+forma explícita, en el resumen `role="status"` al registrar. Sin match
+dentro del perfil, un mensaje genérico en vez de inventar una categoría
+que Jose no escribió — mismo criterio que el "sin match" de I13.
+Validado a mano contra las seis reglas de la matriz real (ver la
+corrida de Node en la nota de abajo): las seis resuelven al índice de
+regla esperado, incluido el caso sin match (conservador con Petrocaribe
+en 34 %, que cae al genérico).
+
+**Verificación de esta sesión, sin Playwright disponible:**
+
+- **Sintaxis:** `node --check src/js/quiz.js` y `node --check
+  src/content/ova-u1.js` sin errores; los 14 bloques `<script>` de
+  `dev/kitchen-sink.html` se extrajeron y se pasaron por `new
+  Function()` uno a uno, sin errores; balance de llaves de
+  `components.css` verificado a cero; balance de etiquetas HTML de
+  `kitchen-sink.html` comparado contra la versión de HEAD antes de
+  esta sesión — el único desbalance que aparece (`<main>` sin
+  `</main>` antes de `</body>`) ya existía antes de C6, no es
+  regresión de esta sesión.
+- **Lógica de negocio, corrida en Node fuera del navegador** (la
+  fórmula/regla se copió literal desde `quiz.js`, no reimplementada
+  aparte): los tres `casos_prueba` de `valorizacion` (P22) y de
+  `dividendo_por_accion` (P24) dan exactamente los resultados que
+  Jose documentó; los tres `casos_prueba` de la boleta (P42) dan
+  ejecutada/expuesta/rechazada como corresponde; las seis reglas de la
+  matriz de retro (P46) resuelven al índice esperado, incluido un caso
+  sin match.
+- **Cero hex nuevo** en los cuatro archivos tocados (`git diff` filtrado
+  contra `#[0-9a-f]{3,8}`, cero coincidencias en líneas agregadas).
+  Cero `outline: none` ni `innerHTML` nuevo.
+- **Lo que falta verificar con Playwright cuando esté disponible** (no
+  se dio por cerrado a ciegas, queda anotado explícitamente): recorrido
+  de teclado real por los nueve controles nuevos de I11 (dos fieldsets
+  más que antes) y por «Anterior»/«Siguiente» de I09; que
+  `OVA.a11y.anunciar()` efectivamente llegue al lector de pantalla en
+  cada paso del recorrido; 320px y zoom de texto 200% sobre el
+  `<output>` envolvente de I10 (cinco filas + mensaje, más contenido
+  vertical que antes) y sobre las dos fieldsets nuevas de I11;
+  axe-core en las tres instancias de I12 de la kitchen sink (con la
+  retro visible); que las tres instancias de I12 en paralelo de la
+  kitchen sink no se pisen entre sí de forma confusa para quien las
+  prueba (documentado en un comentario dentro del propio
+  `kitchen-sink.html`, es una limitación de tener tres demos
+  compartiendo el mismo `OVA.state`, no del componente).
+
+**Contenido de prueba (`content/ova-u1.js`):** s11 (I10) se actualizó
+al contrato nuevo sin cambiar su matemática; s12 (I11) pasa de "compra
+de Petrocaribe" a la boleta completa de P42 (Banco del Sur); s13 (I09)
+pasa de "ordenar etapas de un repo" a "recorrer" los momentos reales de
+P37; s14 (I12) suma `reglas`/`aviso` pero se queda ANTES de s25 (I13)
+a propósito, para ejercitar el camino "sin perfil todavía"; s26 (I12),
+nueva, después de s25, ejercita la matriz viva contra el perfil que el
+estudiante acaba de obtener. Detalle de la decisión de mantener s14
+antes de s25 en el encabezado del archivo de contenido.
+
+**Kitchen sink:** la sección "Interacciones insignia" se reescribió
+completa — I10 con tres instancias (una por fórmula, cada una
+arrancando en el primer `caso_prueba` real de Jose, con los otros dos
+casos anotados en el título de la tarjeta para moverlos a mano); I11
+con una instancia arrancando en el caso 2 (expuesta) con los otros dos
+a un clic/arrastre; I09 con la operación repo de P37 tal cual; I12 con
+tres instancias, una por `perfil_riesgo`, cada una fijando la variable
+con `OVA.state.establecerVariable()` antes de montarse — con una nota
+en el propio HTML explicando que comparten un solo `OVA.state` (como
+en la app real, donde solo hay un estudiante a la vez) así que mover
+sliders después de que las tres estén montadas hace que las tres lean
+el último perfil fijado.
