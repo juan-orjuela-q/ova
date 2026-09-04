@@ -258,7 +258,8 @@
 }
 
 /* ---- Anillo de cifra (T1.5, componentes) -------------------------------
-   Variante decorativa y estática de L05 (cifra destacada), no el motor
+   Variante decorativa y estática de L12 (cifra destacada; era L05 antes
+   de la renumeración C0), no el motor
    de gráficos real —ese es T7/charts.js, con datos vivos y alternativa
    de tabla. Aquí el valor va fijo en el markup y es, además, texto real
    (`.anillo__cifra`): el anillo nunca es el único portador del dato, así
@@ -639,7 +640,7 @@
 
    Sin max-width propio a propósito: PLAN.md pide "caja aspect-ratio
    16/9 de ancho fluido" — el ancho lo decide el contenedor
-   (.layout__media en L03/L04, o un marco de demo en la kitchen sink),
+   (.layout__media en L02/L03, o un marco de demo en la kitchen sink),
    nunca el componente. */
 .media-video {
   border-radius: var(--r-lg);
@@ -780,9 +781,10 @@
 }
 
 /* ---- Línea de tiempo conectada (T1.5, componentes) --------------------
-   Vertical por ahora: la variante horizontal (para caer dentro de L09
-   en desktop) se resuelve la próxima sesión, cuando se aplique dentro
-   del layout real y su propio @media. El nodo mide 2.5rem, así que el
+   Vertical por ahora: la variante horizontal (para el diagrama de
+   proceso dentro de L04 en desktop — antes de C0 ese diagrama tenía su
+   propio layout, L09) se resuelve la próxima sesión, cuando se aplique
+   dentro del layout real y su propio @media. El nodo mide 2.5rem, así que el
    conector se ancla a 1.25rem —su mitad— sin necesitar recalcular nada
    si cambia el gap entre pasos. */
 .linea-tiempo {
@@ -1152,7 +1154,7 @@ button.chip[aria-pressed="true"] {
 
 /* ---- Aviso de logro (T5, componentes) -----------------------------------
    Tarjeta de cierre que envuelve una `.insignia` desbloqueada. `role="status"`
-   porque en uso real (cierre de unidad, L13) aparece dinámicamente al
+   porque en uso real (cierre de unidad, L10; era L13 antes de C0) aparece dinámicamente al
    terminar la última pantalla — el navegador la anuncia sola sin depender
    de que alguien vea la animación de la insignia (regla de CLAUDE.md: "el
    movimiento no sustituye al anuncio"). */
@@ -1235,7 +1237,8 @@ a.cap-tarjeta:hover {
 }
 
 /* ---- Motor de evaluación (T6, componentes) ------------------------------
-   quiz.js arma el DOM de las ocho preguntas (I01–I08) sobre estas clases;
+   quiz.js arma el DOM del catálogo de preguntas (I01–I05, más completar/
+   numerica/autoevaluacion sin número) sobre estas clases;
    el catálogo completo de qué es cada tipo vive en el encabezado de
    quiz.js, no aquí. `.quiz-pregunta` es un <fieldset> real (reset de los
    estilos nativos de fieldset/legend, cierre de PLAN.md) y `.quiz-opcion`
@@ -1594,8 +1597,9 @@ a.cap-tarjeta:hover {
 }
 
 /* ---- Diagrama de proceso (T7) ----------------------------------------------
-   `.dato-proceso__titulo` opcional + `.linea-tiempo--horizontal` (ver
-   layouts.css/L09 y el modificador nuevo más abajo). */
+   `.dato-proceso__titulo` opcional + `.linea-tiempo--horizontal` (este
+   diagrama vive dentro de L04, como cualquier otro datos.tipo — ver
+   layouts.css — y el modificador nuevo más abajo). */
 .dato-proceso__titulo {
   margin-block-end: var(--sp-4);
 }

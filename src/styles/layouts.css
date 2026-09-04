@@ -1,6 +1,21 @@
 /* ============================================================
    Layouts — catálogo L01..L13.
 
+   Numeración del catálogo: la de BRIEF-DI.md (ver CLAUDE.md, regla dura
+   8), que es contra la que Jose escribió las 47 pantallas. El código
+   tuvo otra numeración hasta el 4 de septiembre; C0 la alineó a la del
+   brief. La tabla de equivalencias completa (qué clase vieja pasó a
+   ser cada layout nuevo) vive en PLAN-CONTENIDO.md §2.1 — no se repite
+   aquí. Dos layouts del código anterior perdieron su casilla sin
+   perder su CSS: el diagrama de proceso/línea de tiempo (antes L09)
+   ahora es un tipo de `datos` (`OVA.charts.crear({tipo:'proceso'})`)
+   que se usa dentro de L04; el término de glosario centrado (antes
+   L11) ya estaba resuelto como componente de T5 (`.termino-glosario`
+   + `.modal`), usable dentro de cualquier layout, así que la variante
+   de layout dedicada se retiró. L07 (Pregunta) y L08 (Resultado y
+   retroalimentación) son casillas nuevas del brief sin CSS todavía —
+   quedan para C1.
+
    Bloque .layout, elementos reutilizables (.layout__kicker,
    .layout__titulo, .layout__cuerpo, .layout__media, .layout__figura,
    .layout__interaccion, .layout__datos), modificadores de arreglo
@@ -54,7 +69,7 @@
    OVA.charts.crear() vía crearDatos(). Sin max-width propio: a
    diferencia de .layout__cuerpo (ancho de lectura), un gráfico se
    beneficia de más espacio; quien lo monta decide si lo acota (ver
-   .layout--l02 .layout__datos más abajo). */
+   .layout--l04 .layout__datos más abajo). */
 .layout__datos {
   width: 100%;
 }
@@ -256,20 +271,16 @@
   }
 }
 
-/* ---- L02 · Texto a una columna ------------------------------------------
-   Cuerpo con ancho de lectura acotado, sin centrar. Para explicación
-   densa sin apoyo visual — salvo que la pantalla traiga `datos` (T7):
-   ahí sí hay apoyo visual, acotado al mismo ancho de lectura que el
-   cuerpo (no es un layout de gráfico a ancho completo como L09). ---- */
-.layout--l02 .layout__cuerpo {
-  max-width: 38rem;
-}
-.layout--l02 .layout__datos {
-  max-width: 42rem;
+/* ---- L02 · Media protagonista + texto debajo ----------------------------
+   Video/imagen a ancho completo arriba, texto debajo. Sigue en flex
+   —solo se reordena—, funciona igual desde 320px. Antes de C0 era
+   .layout--l04. --------------------------------------------------------- */
+.layout--l02 .layout__media {
+  order: -1;
 }
 
-/* ---- L03 · Texto + media lateral (50/50) --------------------------------
-   Cápsula con video de apoyo junto al texto. ----------------------------- */
+/* ---- L03 · Media a un lado, texto al otro (50/50) -----------------------
+   Cápsula con video de apoyo junto al texto. Sin cambio de C0. -------- */
 @media (min-width: 48em) {
   .layout--l03 {
     display: grid;
@@ -286,50 +297,36 @@
   .layout--l03 .layout__media { grid-area: media; }
 }
 
-/* ---- L04 · Media protagonista --------------------------------------------
-   Video/imagen a ancho completo arriba, texto debajo. Sigue en flex
-   —solo se reordena—, funciona igual desde 320px. ----------------------- */
-.layout--l04 .layout__media {
-  order: -1;
+/* ---- L04 · Lectura larga con imagen de apoyo ----------------------------
+   Cuerpo con ancho de lectura acotado, sin centrar. Para explicación
+   densa — salvo que la pantalla traiga `datos` (T7): ahí sí hay apoyo
+   visual, acotado al mismo ancho de lectura que el cuerpo (no es un
+   layout de gráfico a ancho completo). El brief pide además imagen de
+   apoyo opcional (`media`); antes de C0 era .layout--l02 y no admitía
+   `media` — sigue sin admitirla, queda pendiente para C1 (ver
+   PLAN-CONTENIDO.md §2.1, fila L04). El diagrama de proceso/línea de
+   tiempo (antes su propio layout L09) vive aquí como `datos.tipo:
+   'proceso'` — ver components.css, .linea-tiempo--horizontal. ------- */
+.layout--l04 .layout__cuerpo {
+  max-width: 38rem;
+}
+.layout--l04 .layout__datos {
+  max-width: 42rem;
 }
 
-/* ---- L05 · Cifra destacada ------------------------------------------------
-   kicker de contexto + cifra grande junto a su explicación.
-   Ej.: "77 % de los colombianos ahorra guardando efectivo en casa". --- */
-@media (min-width: 40em) {
-  .layout--l05 {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    grid-template-areas:
-      "kicker kicker"
-      "titulo cuerpo";
-  }
-  .layout--l05 .layout__kicker { grid-area: kicker; }
-  .layout--l05 .layout__titulo { grid-area: titulo; white-space: nowrap; }
-  .layout--l05 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
-}
-
-/* ---- L06 · Cita o dato curioso --------------------------------------------
-   Bloque enmarcado sobre superficie subtle-2, sin cambio de grid.
-   Ej.: dato del Mercado Global Colombiano. ------------------------------ */
-.layout--l06 {
-  max-width: 40rem;
-  padding: var(--sp-8);
-  background: var(--surface-subtle-2);
-  border-radius: var(--r-lg);
-}
-
-/* ---- L07 · Comparación de dos columnas ------------------------------------
+/* ---- L05 · Tarjetas comparativas (2–4) -----------------------------------
    El cuerpo mismo se divide en tarjetas comparables: el contenedor
-   .layout sigue apilado, solo su cuerpo pasa a fila. --------------------
+   .layout sigue apilado, solo su cuerpo pasa a fila. Antes de C0 era
+   .layout--l07. Hoy solo soporta 2 tarjetas (asume dos hijos en
+   .layout__cuerpo); soportar 3 y 4 y la plantilla en router.js quedan
+   pendientes para C1 (ver PLAN-CONTENIDO.md §2.1, fila L05). ---------
    Ej.: renta fija vs. renta variable, ordinarias vs. preferenciales. --- */
 @media (min-width: 40em) {
-  .layout--l07 .layout__cuerpo {
+  .layout--l05 .layout__cuerpo {
     flex-direction: row;
     max-width: none;
   }
-  .layout--l07 .layout__cuerpo > * {
+  .layout--l05 .layout__cuerpo > * {
     flex: 1 1 0;
     padding: var(--sp-5);
     background: var(--surface-subtle);
@@ -337,44 +334,18 @@
   }
 }
 
-/* ---- L08 · Checklist con media de apoyo -----------------------------------
-   Lista principal en 2fr, media de apoyo más angosta que L03.
-   Ej.: los 3 mercados de Bolsa de Valores de Colombia. ------------------ */
-@media (min-width: 48em) {
-  .layout--l08 {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    align-items: start;
-    grid-template-areas:
-      "kicker kicker"
-      "titulo media"
-      "cuerpo media";
-  }
-  .layout--l08 .layout__kicker { grid-area: kicker; }
-  .layout--l08 .layout__titulo { grid-area: titulo; }
-  .layout--l08 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
-  .layout--l08 .layout__media { grid-area: media; }
-}
-
-/* ---- L09 · Proceso / línea de tiempo ---------------------------------------
-   Pasos en columna en móvil, fila en desktop. Ej.: cálculo de
-   valorización paso a paso. Sin CSS propio aquí: router.js monta el
-   diagrama con OVA.charts.crear({tipo:'proceso', …}) en .layout__datos
-   (T7), que ya reusa `.linea-tiempo`/`.linea-tiempo--horizontal`
-   (components.css) — ese componente se responsabiliza de su propio
-   @media, así L09 no duplica el breakpoint. --------------------------- */
-
-/* ---- L10 · Interacción a pantalla completa ---------------------------------
+/* ---- L06 · Interacción a pantalla completa -------------------------------
    Chrome mínimo: kicker y título centrados y compactos, la interacción
-   ocupa el espacio principal. Ej.: quiz, calculadora paramétrica. ------ */
-.layout--l10 {
+   ocupa el espacio principal. Ej.: quiz, calculadora paramétrica.
+   Antes de C0 era .layout--l10. ------------------------------------- */
+.layout--l06 {
   max-width: 56rem;
 }
-.layout--l10 .layout__kicker,
-.layout--l10 .layout__titulo {
+.layout--l06 .layout__kicker,
+.layout--l06 .layout__titulo {
   text-align: center;
 }
-.layout--l10 .layout__interaccion {
+.layout--l06 .layout__interaccion {
   min-height: min(28rem, 60vh);
   display: flex;
   align-items: center;
@@ -384,19 +355,58 @@
   padding: var(--sp-8);
 }
 
-/* ---- L11 · Término de glosario ---------------------------------------------
-   Tarjeta centrada y angosta con borde. Ej.: definición de "acción". --- */
-.layout--l11 {
-  max-width: 34rem;
-  text-align: center;
-  padding: var(--sp-10);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-lg);
+/* ---- L07 · Pregunta -------------------------------------------------------
+   Variante de chrome sobre L06 (mismo "interacción a pantalla
+   completa", chrome propio de pregunta). Casilla nueva del brief, sin
+   CSS todavía — queda para C1 (ver PLAN-CONTENIDO.md §2.1, fila L07).
+   ------------------------------------------------------------------- */
+
+/* ---- L08 · Resultado y retroalimentación ----------------------------------
+   Layout nuevo de verdad (no viene de ningún código anterior): reusa
+   `.callout` y `.anillo` de T5. Sin CSS todavía — queda para C1 (ver
+   PLAN-CONTENIDO.md §2.1, fila L08). --------------------------------- */
+
+/* ---- L09 · Ideas clave (3–5) ----------------------------------------------
+   Lista principal en 2fr, media de apoyo más angosta que L03. Antes
+   de C0 era .layout--l08 ("checklist con media"). El brief pide media
+   opcional; sigue siendo obligatoria como en el código anterior —
+   queda pendiente para C1 (ver PLAN-CONTENIDO.md §2.1, fila L09). ----
+   Ej.: los 3 mercados de Bolsa de Valores de Colombia. ------------------ */
+@media (min-width: 48em) {
+  .layout--l09 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
+    grid-template-areas:
+      "kicker kicker"
+      "titulo media"
+      "cuerpo media";
+  }
+  .layout--l09 .layout__kicker { grid-area: kicker; }
+  .layout--l09 .layout__titulo { grid-area: titulo; }
+  .layout--l09 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
+  .layout--l09 .layout__media { grid-area: media; }
 }
 
-/* ---- L12 · Recurso descargable ----------------------------------------------
-   Figura fija junto al texto, acción a ancho completo debajo. ---------- */
-.layout--l12 .layout__figura {
+/* ---- L10 · Cierre de unidad y siguiente paso ------------------------------
+   Igual arreglo que L01, más una interacción centrada (insignia).
+   Antes de C0 era .layout--l13. Sin plantilla en router.js todavía
+   (tampoco la tenía con el número anterior) — queda para C1. -------- */
+.layout--l10 {
+  max-width: 46rem;
+  text-align: center;
+  padding-block: var(--sp-16);
+}
+.layout--l10 .layout__cuerpo,
+.layout--l10 .layout__interaccion {
+  margin-inline: auto;
+}
+
+/* ---- L11 · Recursos descargables ------------------------------------------
+   Figura fija junto al texto, acción a ancho completo debajo. Antes
+   de C0 era .layout--l12. Sin plantilla en router.js todavía (tampoco
+   la tenía con el número anterior) — queda para C1. ------------------ */
+.layout--l11 .layout__figura {
   width: 4rem;
   aspect-ratio: 1;
   /* --surface-subtle, no --surface-subtle-2: cualquier texto/ícono en
@@ -407,7 +417,7 @@
   border-radius: var(--r-md);
 }
 @media (min-width: 40em) {
-  .layout--l12 {
+  .layout--l11 {
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: start;
@@ -417,30 +427,53 @@
       "figura cuerpo"
       "interaccion interaccion";
   }
-  .layout--l12 .layout__figura { grid-area: figura; }
-  .layout--l12 .layout__kicker { grid-area: kicker; }
-  .layout--l12 .layout__titulo { grid-area: titulo; }
-  .layout--l12 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
-  .layout--l12 .layout__interaccion { grid-area: interaccion; }
+  .layout--l11 .layout__figura { grid-area: figura; }
+  .layout--l11 .layout__kicker { grid-area: kicker; }
+  .layout--l11 .layout__titulo { grid-area: titulo; }
+  .layout--l11 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
+  .layout--l11 .layout__interaccion { grid-area: interaccion; }
 }
 
-/* ---- L13 · Cierre de unidad --------------------------------------------------
-   Igual arreglo que L01, más una interacción centrada (insignia). ------ */
-.layout--l13 {
-  max-width: 46rem;
-  text-align: center;
-  padding-block: var(--sp-16);
+/* ---- L12 · Corte naranja, un dato que golpea ------------------------------
+   kicker de contexto + cifra grande junto a su explicación. Antes de
+   C0 era .layout--l05 ("cifra destacada"). El brief pide esta pantalla
+   sobre --surface-brand; sigue sin fondo propio, como el código
+   anterior — el tratamiento de superficie queda pendiente para C1 (ver
+   PLAN-CONTENIDO.md §2.1, fila L12). ---------------------------------
+   Ej.: "77 % de los colombianos ahorra guardando efectivo en casa". --- */
+@media (min-width: 40em) {
+  .layout--l12 {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    grid-template-areas:
+      "kicker kicker"
+      "titulo cuerpo";
+  }
+  .layout--l12 .layout__kicker { grid-area: kicker; }
+  .layout--l12 .layout__titulo { grid-area: titulo; white-space: nowrap; }
+  .layout--l12 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
 }
-.layout--l13 .layout__cuerpo,
-.layout--l13 .layout__interaccion {
-  margin-inline: auto;
+
+/* ---- L13 · Corte oscuro, cierre o transición ------------------------------
+   Bloque enmarcado sobre superficie subtle-2, sin cambio de grid.
+   Antes de C0 era .layout--l06 ("cita o dato curioso"). El brief pide
+   esta pantalla sobre --surface-inverse; sigue sobre subtle-2, como el
+   código anterior — el tratamiento de superficie queda pendiente para
+   C1 (ver PLAN-CONTENIDO.md §2.1, fila L13). -----------------------
+   Ej.: dato del Mercado Global Colombiano. ------------------------------ */
+.layout--l13 {
+  max-width: 40rem;
+  padding: var(--sp-8);
+  background: var(--surface-subtle-2);
+  border-radius: var(--r-lg);
 }
 
 /* ---- Movimiento — entrada de contenido (T1.5, punto 2) -----------------
    Inventario ítem 2 de CLAUDE.md: entrada escalonada con --dur-base,
    --stagger y --shift-sm. El escalón sigue el orden de lectura
    (kicker → título → cuerpo → media/figura → interacción), no el orden
-   del DOM —en L12 .layout__figura va primero en el markup pero entra en
+   del DOM —en L11 .layout__figura va primero en el markup pero entra en
    el mismo tercio que .layout__media—: es la jerarquía visual la que
    importa, no la posición en el HTML. Solo opacity + transform: nunca
    width/height/top/left. Bajo prefers-reduced-motion, tokens.css ya

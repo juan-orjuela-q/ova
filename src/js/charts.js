@@ -3,7 +3,7 @@
 
    Implementa el catálogo de PLAN.md: cifra destacada, tabla,
    variación sube/baja, línea, barras, distribución y diagrama de
-   proceso. Como con I01–I08 en quiz.js, CLAUDE.md no fijó de
+   proceso. Como con el catálogo de preguntas en quiz.js, CLAUDE.md no fijó de
    antemano la forma exacta de estos siete tipos — es una decisión
    tomada en esta sesión, documentada aquí para poder corregirla sin
    arqueología de código.

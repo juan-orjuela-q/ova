@@ -16,17 +16,27 @@
    sepa resolver rutas — imprescindible para abrir desde file:// y
    para un paquete SCORM que no tiene servidor propio.
 
-   Catálogo de layouts: T2 implementó L02, L05, L06 y L11 (los que
-   usaba su JSON de prueba); T4 agrega L03 y L04, los dos únicos con
-   columna de media; T6 agrega L10, el único con columna de
-   interacción (delega en OVA.quiz.crear, catálogo I01–I08 — ver
-   quiz.js; T8 agrega I09–I12 por el mismo punto de entrada); T7 agrega L09 (columna de datos obligatoria, diagrama de
-   proceso) y hace "datos" opcional en L02 (delega en OVA.charts.crear,
-   catálogo cifra/tabla/variación/línea/barras/distribución/proceso —
-   ver charts.js). Cualquier otro código, aunque exista en el catálogo
-   L01–L13 de CLAUDE.md, todavía no tiene plantilla aquí y cae por la
-   misma rama de fallo ruidoso que un código inventado: cada tarea
-   futura que dependa de un layout nuevo agrega su entrada a
+   Catálogo de layouts: la numeración es la de BRIEF-DI.md (CLAUDE.md,
+   regla dura 8) — C0 (4 sep) renumeró el código que T1–T9 habían
+   construido contra la numeración anterior. La tabla de equivalencias
+   completa vive en PLAN-CONTENIDO.md §2.1; aquí solo el resultado:
+   PLANTILLAS.L02 (media a ancho completo + texto debajo, era L04),
+   PLANTILLAS.L03 (media lateral 50/50, sin cambio de número),
+   PLANTILLAS.L04 (lectura larga, "datos" opcional, era L02),
+   PLANTILLAS.L06 (interacción a pantalla completa, delega en
+   OVA.quiz.crear, catálogo I01–I05/I09–I12 — ver quiz.js; era L10),
+   PLANTILLAS.L12 (cifra destacada, era L05), PLANTILLAS.L13 (cita o
+   dato, era L06). Dos plantillas viejas no migraron: la de "proceso/
+   línea de tiempo" (era L09) porque ese diagrama ya no es un layout
+   propio — ahora es `datos.tipo:'proceso'` dentro de L04, igual que
+   cualquier otro tipo de OVA.charts.crear (cifra/tabla/variación/
+   línea/barras/distribución/proceso — ver charts.js); la de "término
+   de glosario" (era L11) porque ya está resuelta como componente de T5
+   (`.termino-glosario` + `.modal`), usable dentro de cualquier layout,
+   no como pantalla dedicada. Cualquier otro código, aunque exista en
+   el catálogo L01–L13 de CLAUDE.md, todavía no tiene plantilla aquí y
+   cae por la misma rama de fallo ruidoso que un código inventado: cada
+   tarea futura que dependa de un layout nuevo agrega su entrada a
    PLANTILLAS, nunca reinterpreta esta función.
 
    Nada de innerHTML con texto del contenido: todo nodo de texto se
@@ -82,7 +92,7 @@
   // sabe construir video (OVA.media.crear falla ruidoso para
   // cualquier otro tipo.tipo); si la pantalla no trae media en
   // absoluto, cae por fallarPantalla igual que un layout inventado —
-  // L03/L04 no tienen sentido sin su columna de media.
+  // L02/L03 no tienen sentido sin su columna de media.
   function crearMedia(media) {
     if (!media) throw new Error('Esta pantalla no trae "media" y su layout lo necesita.');
     var contenedor = document.createElement('div');
@@ -95,8 +105,9 @@
 
   // T6: única entrada de layout que renderiza pantalla.interaccion.
   // Delega en OVA.quiz.crear, que falla ruidoso si interaccion.tipo no
-  // existe en el catálogo I01–I08/I09–I12 — mismo criterio que crearMedia
-  // con media.tipo. Sin interaccion en absoluto, también falla: L10 no
+  // existe en el catálogo I01–I05 (más completar/numerica/autoevaluacion,
+  // sin número — ver quiz.js) ni I09–I12 — mismo criterio que crearMedia
+  // con media.tipo. Sin interaccion en absoluto, también falla: L06 no
   // tiene sentido sin ella. (T8 agrega las cuatro interacciones insignia
   // I09–I12 por el mismo punto de entrada.)
   function crearInteraccion(interaccion) {
@@ -112,10 +123,10 @@
   // T7: única entrada de layout que renderiza pantalla.datos. Delega en
   // OVA.charts.crear, que falla ruidoso si datos.tipo no existe en el
   // catálogo de charts.js — mismo criterio que crearMedia con media.tipo
-  // y crearInteraccion con interaccion.tipo. A diferencia de esas dos,
-  // si "datos" es obligatorio o no lo decide quien llama, no esta
-  // función: PLANTILLAS.L09 la llama siempre (el layout no tiene sentido
-  // sin su diagrama), PLANTILLAS.L02 solo si pantalla.datos existe.
+  // y crearInteraccion con interaccion.tipo. Si "datos" es obligatorio o
+  // no lo decide quien llama: PLANTILLAS.L04 solo la llama si
+  // pantalla.datos existe (incluido datos.tipo:'proceso', que antes de
+  // C0 tenía su propio layout L09 obligatorio — ver la nota de arriba).
   function crearDatos(datos) {
     if (!datos) throw new Error('Esta pantalla no trae "datos" y su layout lo necesita.');
     var contenedor = document.createElement('div');
@@ -137,18 +148,23 @@
 
   var PLANTILLAS = {};
 
+  // Antes de C0 esta era PLANTILLAS.L04 ("media protagonista").
   PLANTILLAS.L02 = function (pantalla) {
+    // .layout--l02 .layout__media usa order:-1 (layouts.css) para
+    // aparecer primero visualmente; el DOM sigue el orden de lectura
+    // kicker → título → cuerpo → media (mismo criterio que .layout__figura
+    // en L11 — es la jerarquía visual la que decide el orden en pantalla,
+    // no el orden del documento).
     var raiz = crearRaiz('l02');
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
-    // T7: "datos" es opcional en L02 (a diferencia de L09, más abajo) —
-    // s01 sigue siendo puro texto sin él, s08/s10 lo agregan.
-    if (pantalla.datos) raiz.appendChild(crearDatos(pantalla.datos));
+    raiz.appendChild(crearMedia(pantalla.media));
     return { raiz: raiz, titulo: titulo };
   };
 
+  // Sin cambio de número en C0.
   PLANTILLAS.L03 = function (pantalla) {
     var raiz = crearRaiz('l03');
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
@@ -159,62 +175,26 @@
     return { raiz: raiz, titulo: titulo };
   };
 
+  // Antes de C0 esta era PLANTILLAS.L02 ("texto a una columna").
   PLANTILLAS.L04 = function (pantalla) {
-    // .layout--l04 .layout__media usa order:-1 (layouts.css) para
-    // aparecer primero visualmente; el DOM sigue el orden de lectura
-    // kicker → título → cuerpo → media (mismo criterio que .layout__figura
-    // en L12 — es la jerarquía visual la que decide el orden en pantalla,
-    // no el orden del documento).
     var raiz = crearRaiz('l04');
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
-    raiz.appendChild(crearMedia(pantalla.media));
+    // T7: "datos" es opcional en L04 (a diferencia del extinto layout de
+    // proceso, que exigía datos siempre) — s01 sigue siendo puro texto
+    // sin él, s08/s09/s10 lo agregan (s09 con datos.tipo:'proceso').
+    if (pantalla.datos) raiz.appendChild(crearDatos(pantalla.datos));
     return { raiz: raiz, titulo: titulo };
   };
 
-  PLANTILLAS.L05 = function (pantalla) {
-    var raiz = crearRaiz('l05');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
-    var titulo = crearTitulo(pantalla.titulo, 'tipo-display-2');
-    raiz.appendChild(titulo);
-    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo-lg'));
-    return { raiz: raiz, titulo: titulo };
-  };
-
+  // Antes de C0 esta era PLANTILLAS.L10 ("interacción a pantalla
+  // completa"). Sin .layout__cuerpo a propósito: kicker + título
+  // compactos y centrados, la interacción ocupa el espacio principal —
+  // igual que su marcador en la kitchen sink desde T1.5.
   PLANTILLAS.L06 = function (pantalla) {
     var raiz = crearRaiz('l06');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
-    var titulo = crearTitulo(pantalla.titulo, 'tipo-h3');
-    raiz.appendChild(titulo);
-    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
-    return { raiz: raiz, titulo: titulo };
-  };
-
-  // T7: L09 exige "datos" (igual que L03/L04 exigen "media" y L10 exige
-  // "interaccion") — es el layout que PLAN.md/layouts.css nombran
-  // explícitamente para el diagrama de proceso, no tiene sentido sin él.
-  // El cuerpo es opcional: una intro corta antes del diagrama, no el
-  // contenido principal de la pantalla.
-  PLANTILLAS.L09 = function (pantalla) {
-    var raiz = crearRaiz('l09');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
-    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    raiz.appendChild(titulo);
-    if (pantalla.cuerpo && pantalla.cuerpo.length) {
-      raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
-    }
-    raiz.appendChild(crearDatos(pantalla.datos));
-    return { raiz: raiz, titulo: titulo };
-  };
-
-  PLANTILLAS.L10 = function (pantalla) {
-    // Sin .layout__cuerpo a propósito: L10 es "interacción a pantalla
-    // completa" (layouts.css), kicker + título compactos y centrados,
-    // la interacción ocupa el espacio principal — igual que su
-    // marcador en la kitchen sink desde T1.5.
-    var raiz = crearRaiz('l10');
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
@@ -222,12 +202,23 @@
     return { raiz: raiz, titulo: titulo };
   };
 
-  PLANTILLAS.L11 = function (pantalla) {
-    var raiz = crearRaiz('l11');
+  // Antes de C0 esta era PLANTILLAS.L05 ("cifra destacada").
+  PLANTILLAS.L12 = function (pantalla) {
+    var raiz = crearRaiz('l12');
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
-    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-display-2');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo-lg'));
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  // Antes de C0 esta era PLANTILLAS.L06 ("cita o dato curioso").
+  PLANTILLAS.L13 = function (pantalla) {
+    var raiz = crearRaiz('l13');
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h3');
+    raiz.appendChild(titulo);
+    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
     return { raiz: raiz, titulo: titulo };
   };
 
