@@ -355,19 +355,35 @@
 
   // C1: portada de unidad. Único layout con <h1> (mismo criterio que la
   // kitchen sink: es la portada de toda la unidad, no una pantalla más
-  // dentro de ella) y con media puramente decorativa — el video/imagen
-  // de fondo va aria-hidden y en loop mudo, no pasa por
-  // OVA.media.crear() (T4): ese reproductor construye controles reales
-  // pensados para media con contenido instruccional, y aquí el
-  // contenido real es el texto del panel, no el fondo. Los dos SVG de
-  // unión (mobile-top/-bottom, desktop) son decoración fija del layout,
-  // no contenido — no salen del JSON, igual que el marco no sale de
-  // pantalla.datos. El botón "Comenzar" (o pantalla.cta, si el guion
+  // dentro de ella). El botón "Comenzar" (o pantalla.cta, si el guion
   // pide otro texto) avanza como "Siguiente" del chrome; no es un
   // layout con su propia navegación aparte.
+  //
+  // C3: la media de fondo dejó de ser un solo caso — PLAN-CONTENIDO.md
+  // (C3, la nota de L01) lo advierte explícito: "la media dejó de ser
+  // decorativa" en cuanto P01 trae un avatar con locución real, y hay
+  // que distinguir los dos casos, no elegir uno.
+  //   - "video"/"imagen" (sin cambio de C1): puramente decorativa, va
+  //     aria-hidden y en loop mudo, no pasa por OVA.media.crear() — ese
+  //     reproductor construye controles reales pensados para media con
+  //     contenido instruccional, y aquí el contenido real (si lo hay)
+  //     está en panel.cuerpo, no en el fondo. Es el caso del relleno de
+  //     stock que ya usan las pantallas de prueba.
+  //   - "avatar" (C3): el fondo de .layout__media sigue siendo
+  //     decorativo (la foto fija del avatar, aria-hidden, mismo criterio
+  //     que arriba — no aporta información que el texto no traiga ya),
+  //     pero además se monta un OVA.media.crear(pantalla.media) real
+  //     dentro de .layout__panel, después del cuerpo: ahí vive la
+  //     locución real de la pantalla (audio + controles si existe,
+  //     transcripción siempre, con o sin audio — regla dura 10 de
+  //     CLAUDE.md). Los dos SVG de unión (mobile-top/-bottom, desktop)
+  //     son decoración fija del layout en cualquier caso — no salen del
+  //     JSON, igual que el marco no sale de pantalla.datos.
   PLANTILLAS.L01 = function (pantalla) {
-    if (!pantalla.media || (pantalla.media.tipo !== 'video' && pantalla.media.tipo !== 'imagen')) {
-      throw new Error('L01 necesita "media" (tipo "video" o "imagen") de fondo.');
+    var media = pantalla.media;
+    var tiposValidos = ['video', 'imagen', 'avatar'];
+    if (!media || tiposValidos.indexOf(media.tipo) === -1) {
+      throw new Error('L01 necesita "media" (tipo "video", "imagen" o "avatar") de fondo.');
     }
     var raiz = crearRaiz('l01');
 
@@ -398,6 +414,15 @@
     });
     panel.appendChild(cuerpo);
 
+    // C3: contenido real del avatar (narración + transcripción),
+    // después del cuerpo y antes del CTA — sigue el orden de lectura
+    // kicker → título → cuerpo → narración → "Comenzar".
+    if (media.tipo === 'avatar') {
+      var narracion = OVA.media.crear(media);
+      if (!narracion) throw new Error('No se pudo construir el avatar de la portada (ver consola).');
+      panel.appendChild(narracion);
+    }
+
     var boton = document.createElement('button');
     boton.type = 'button';
     boton.className = 'boton boton--portada';
@@ -419,9 +444,9 @@
 
     raiz.appendChild(panel);
 
-    var media = document.createElement('div');
-    media.className = 'layout__media';
-    if (pantalla.media.tipo === 'video') {
+    var mediaFondo = document.createElement('div');
+    mediaFondo.className = 'layout__media';
+    if (media.tipo === 'video') {
       var video = document.createElement('video');
       video.autoplay = true;
       video.muted = true;
@@ -429,24 +454,34 @@
       video.playsInline = true;
       video.setAttribute('aria-hidden', 'true');
       var source = document.createElement('source');
-      source.src = pantalla.media.src;
+      source.src = media.src;
       source.type = 'video/mp4';
       video.appendChild(source);
-      media.appendChild(video);
+      mediaFondo.appendChild(video);
     } else {
+      // "imagen" y "avatar" comparten el mismo fondo decorativo — solo
+      // cambia de qué campo del contrato sale la ruta (media.src contra
+      // media.imagen, ver el catálogo en el encabezado de media.js).
       var img = document.createElement('img');
-      img.src = pantalla.media.src;
+      img.src = media.tipo === 'avatar' ? media.imagen : media.src;
       img.alt = '';
       img.setAttribute('aria-hidden', 'true');
-      media.appendChild(img);
+      // Mismo criterio que el avatar circular de media.js: sin archivo
+      // (las imágenes de public/img/avatar/ todavía no existen), la
+      // <img> se quita en vez de dejar un ícono de imagen rota — el
+      // marco negro de L01 queda visible detrás, no una caja rota.
+      img.addEventListener('error', function () {
+        if (img.parentNode) img.parentNode.removeChild(img);
+      });
+      mediaFondo.appendChild(img);
     }
     var unionMobileTop = document.createElement('img');
     unionMobileTop.className = 'layout__union layout__union--mobile-top';
     unionMobileTop.src = '../public/graf/union_graf_nuam_mobile_top.svg';
     unionMobileTop.alt = '';
     unionMobileTop.setAttribute('aria-hidden', 'true');
-    media.appendChild(unionMobileTop);
-    raiz.appendChild(media);
+    mediaFondo.appendChild(unionMobileTop);
+    raiz.appendChild(mediaFondo);
 
     return { raiz: raiz, titulo: titulo };
   };
@@ -658,6 +693,14 @@
   function limpiarApp() {
     var app = document.getElementById('app');
     while (app.firstChild) app.removeChild(app.firstChild);
+    // C3: el router nunca monta más de una pantalla a la vez, así que
+    // vaciar el registro de instancias de media.js aquí es correcto —
+    // antes de C3 ese registro solo crecía con referencias a <video>/
+    // <audio> ya desconectados del DOM (hallazgo de T4, anotado en
+    // ESTADO.md y heredado explícitamente por C3 en PLAN-CONTENIDO.md).
+    if (window.OVA && OVA.media && OVA.media.limpiarInstancias) {
+      OVA.media.limpiarInstancias();
+    }
     return app;
   }
 

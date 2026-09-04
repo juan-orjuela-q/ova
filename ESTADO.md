@@ -38,7 +38,7 @@ Ver `PLAN-CONTENIDO.md` — es el plan vigente sobre el que corren estas tareas.
 - [x] **C0 · Renumerar los catálogos al brief** — completada 4 sep
 - [x] **C1 · Layouts que faltan** — completada 4 sep
 - [x] **C2 · Caja 16:9 y navegación pegada** — completada 4 sep
-- [ ] C3 · Media: avatar y audio
+- [x] **C3 · Media: avatar y audio** — completada 4 sep
 - [ ] C4 · Estado compartido
 - [ ] C5 · Interacciones nuevas
 - [ ] C6 · Interacciones ampliadas
@@ -1287,18 +1287,13 @@ propio `<script>` cada uno, mismo criterio que las dos anteriores.
   (`dev/kitchen-sink.html`, cerca del cierre del archivo) en vez de
   escribir uno nuevo — es el mismo patrón que `abrirDrawer`/`cerrarDrawer`
   de `router.js`, con las mismas tres salidas (Escape, backdrop, botón).
-- `OVA.media.crear()` solo sabe renderizar `media.tipo === "video"` —
-  `.media-audio` sigue siendo la maqueta sin cablear de T1.5, porque
-  PLAN.md no pide un reproductor de audio en T4 ("Controles propios sobre
-  `<video>`"). Si en algún momento se necesita audio real, es tarea
-  aparte, no una extensión silenciosa de media.js.
-- El registro de instancias de `media.js` (para "un solo reproductor
-  activo a la vez") no se limpia cuando el router desmonta una pantalla:
-  guarda referencias a `<video>` ya desconectados del DOM indefinidamente.
-  No es un bug funcional hoy (un `<video>` desconectado no reproduce y
-  pausarlo es inofensivo) ni previsiblemente grave para una unidad de
-  pocas pantallas, pero si una unidad crece mucho vale la pena que T9
-  revise si conviene que `router.js` avise a `media.js` al desmontar.
+- ~~`OVA.media.crear()` solo sabe renderizar `media.tipo === "video"`...~~
+  — hecho en C3 (4 sep): `crear()` despacha también `"avatar"` sobre
+  `.media-audio`, cableada de verdad. Ver la entrada de C3 más abajo.
+- ~~El registro de instancias de `media.js`... no se limpia cuando el
+  router desmonta una pantalla...~~ — hecho en C3 (4 sep):
+  `OVA.media.limpiarInstancias()` nueva, llamada por `router.js` en
+  `limpiarApp()` en cada navegación. Ver la entrada de C3 más abajo.
 - **El catálogo I01–I08 de T6 es una lectura propia, no una especificación
   literal de `PLAN.md`** — ver la decisión del 29 ago en `quiz.js` y aquí
   arriba. Confirmar con el usuario si los ocho tipos elegidos (y la
@@ -2010,3 +2005,164 @@ arruina la composición de las 21 pantallas contra el presupuesto de
 autoría de `BRIEF-DI.md` §4). El recorrido de teclado manual con lector
 de pantalla real sigue siendo trabajo de C9, igual que quedó anotado al
 cerrar C1.
+
+---
+
+**4 sep — C3 cerrada: media de avatar y audio, en rama
+`c3-media-avatar-audio`. Tipo `avatar` (imagen fija + audio opcional +
+subtítulos opcionales + transcripción obligatoria) sobre `.media-audio`
+cableada de verdad, y las tres cosas que `PLAN-CONTENIDO.md` dejó
+anotadas como herencia de C3 — resueltas, no descubiertas a mitad de
+camino.**
+
+**Qué se construyó:**
+
+- **`media.js` generaliza su dispatcher.** `crear(datos)` ahora
+  despacha por `datos.tipo` (`crearVideo`/`crearAvatar`, catálogo
+  documentado en el encabezado del archivo) en vez de ser la única
+  función de T4 con un guard de "solo video". `crearTranscripcionColapsada`/
+  `crearTranscripcionVisible`/`crearCuerpoTranscripcion` quedaron
+  extraídas como helpers compartidos entre video y avatar — el
+  `<details>`/`<a download>` de video no cambió de comportamiento, solo
+  de dónde vive el código.
+- **`avatar`: dos rutas según `datos.audio`, no una con fallback.** Con
+  audio: `<audio>` real (sin `controls` nativo, igual criterio que
+  `<video>` en T4) con play, `input[type=range]` de progreso
+  (`accent-color`, no una barra rellena a mano — animar `width` viola
+  la prohibición del inventario de movimiento), tiempo, botón CC si hay
+  `vtt` y transcripción en `<details>` colapsado. Sin audio: **cero
+  controles** (mismo criterio que el CC omitido en video sin `vtt` —
+  nunca un botón que no hace nada) y la transcripción **directa, sin
+  colapsar** — es el único portador real de la locución mientras Juan
+  graba (regla dura 10 de CLAUDE.md), así que esconderla detrás de un
+  clic la habría tratado como un extra en vez del contenido principal.
+  Las dos rutas comparten el círculo de avatar (`--surface-muted` de
+  fondo) y, con audio, el mismo idioma visual que el reproductor de
+  video de T4.
+- **Subtítulos en vivo para audio — pieza que T4 no necesitaba.**
+  `<video>` pinta sus propias captions nativas sobre el frame; `<audio>`
+  no tiene esa superficie. Se agregó `.media-audio__captions`, un `<p>`
+  actualizado a mano en cada `cuechange` del `TextTrack` (mismo Blob de
+  texto WebVTT que video, mismo motivo: un `<track src="archivo.vtt">`
+  real falla bajo `file://`). Deliberadamente **sin `aria-live`**: un
+  lector de pantalla ya tiene la transcripción completa como su ruta
+  real, y anunciar cada cambio de cue encima del audio sonando sería
+  ruido, no ayuda — verificado que el criterio no rompe nada leyendo
+  las cues igual (Playwright: saltar el audio a distintos `currentTime`
+  actualiza el texto, apagar el CC lo vacía, reencenderlo lo retoma).
+- **Registro de instancias unificado y con limpieza real (hallazgo de
+  T4, cerrado).** `pausarOtros`/`instancias` no distinguen `<video>` de
+  `<audio>` — los dos heredan de `HTMLMediaElement` y comparten
+  `.pause()`/`.paused`, así que un solo registro alcanza para "un solo
+  reproductor activo a la vez" entre cualquier combinación de los dos.
+  `OVA.media.limpiarInstancias()` (nueva, expuesta) vacía el registro
+  entero; `router.js` la llama desde `limpiarApp()` en cada navegación,
+  antes de montar la pantalla siguiente — como el router nunca monta
+  más de una pantalla a la vez, vaciar todo es correcto y más simple
+  que filtrar por `isConnected`. Verificado con Playwright: reproducir
+  el audio de `s21`, navegar a `s22` y volver a `s21` no deja dos
+  `<audio>` compitiendo ni un registro con referencias muertas.
+- **L01 distingue media decorativa de contenido real — la nota más
+  importante que `PLAN-CONTENIDO.md` dejó para esta sesión.**
+  `PLANTILLAS.L01` acepta ahora `media.tipo` en
+  `['video','imagen','avatar']`. Video/imagen: sin cambio de C1, el
+  fondo sigue aria-hidden y `OVA.media.crear()` ni se llama. Avatar: el
+  fondo de `.layout__media` sigue siendo decorativo (la foto fija,
+  aria-hidden — no aporta información que el texto no traiga ya), pero
+  además se monta un `OVA.media.crear(media)` real dentro de
+  `.layout__panel`, después del cuerpo y antes del botón "Comenzar" —
+  ahí vive la locución real de la portada (audio + controles si existe,
+  transcripción siempre). La tarjeta clara del avatar sobre el panel
+  naranja no choca con las reglas de contraste de CLAUDE.md: es opaca,
+  con su propio fondo `--surface-subtle` y su propia escala de color —
+  el naranja de fondo nunca queda detrás de texto informativo.
+- **`content/ova-u1.js`:** `s00` (L01, la portada real) cambia de
+  `media.tipo:"video"` a `"avatar"` — es el caso real de P01
+  (`PLAN-CONTENIDO.md` §5, avatar plano "abierto, con fondo"). Dos
+  pantallas nuevas antes del cierre real (`s20` sigue siendo el último
+  elemento del arreglo, el cierre de verdad): `s21` (L02, avatar **con**
+  audio) y `s22` (L03, avatar **sin** audio — la pantalla que demuestra
+  la degradación de la sección 3.2). Las tres apuntan a rutas de
+  `public/img/avatar/avatar-{plano}-{fondo}-{n}.webp` que **todavía no
+  existen**, a propósito — el código tiene que degradar limpio a la
+  ausencia del archivo, no evitarla usando otra imagen que sí exista
+  (pedido explícito del usuario). `s00`/`s21` usan un audio real nuevo,
+  `public/audio/demo-avatar.mp3` (un tono de 6s generado con `ffmpeg`,
+  no locución de Jose) — confirma que `<audio><source src="…"></audio>`
+  funciona bajo `file://` sin el workaround de Blob que sí hace falta
+  para `<track>` (T4).
+- **`components.css`:** `.media-audio` reescrita sobre controles reales
+  — `.media-audio__progreso` pasó de "div + relleno por `width`" a ser
+  directamente el `input[type=range]`; nuevo `.media-audio__cc`
+  (variante de superficie clara del `.media-video__cc` de T4: relleno
+  `--surface-inverse` activo en vez del gris 700 que usa video sobre su
+  propio fondo oscuro) y `.media-audio__captions`. Se retiraron
+  `.media-audio__fila`/`__info`/`__titulo` (la fila de
+  título+voz de la maqueta, sin contraparte en el contrato de C3 —
+  ningún campo de Jose las llena) y `.media-audio__progreso__relleno`
+  (CSS muerto, reemplazado por el `input` real).
+- **Kitchen sink:** "Tarjeta de audio (maqueta)" pasó a "Reproductor de
+  avatar/audio (C3, cableado real)" con dos instancias reales de
+  `OVA.media.crear({tipo:'avatar'})` (con y sin audio), mismo criterio
+  que el reproductor de video de T4. El bloque estático de L01 en la
+  sección "Layouts" no se reescribió (esa integración depende de
+  `router.js`, no se falsea con markup aparte) — se le agregó una nota
+  señalando que el caso avatar se prueba en `s00` de `src/index.html`.
+
+**Verificado con Playwright (Chromium) + axe-core, con una API SCORM
+1.2 simulada, abriendo `src/index.html` y `dev/kitchen-sink.html` por
+`file://`:**
+
+- **Las 23 pantallas de `content/ova-u1.js`** (`s00`–`s22`) montan sin
+  caer en el estado de error del motor.
+- **`s00`:** el avatar real (con botón de play) vive dentro de
+  `.layout__panel`; el fondo decorativo sigue `aria-hidden`/`alt=""`;
+  el botón "Comenzar" sigue presente y funcional.
+- **Un solo reproductor activo a la vez, cruzando tipos:** reproducir
+  el avatar de la kitchen sink y luego el video los deja con el avatar
+  pausado y el video sonando — el registro unificado de `pausarOtros`
+  funciona entre `<audio>` y `<video>`, no solo dentro del mismo tipo.
+- **Teclado real, sin un solo clic:** foco en el scrubber del avatar,
+  flecha derecha cambia `currentTime`; Enter en el CC alterna
+  `aria-pressed` (y el estado real del `track`). Secuencia de Tab
+  completa en `s00`: skip link → `#app` → play → scrubber → CC → «Ver
+  transcripción» → «Comenzar» → (nada más: el botón de pantalla
+  completa de la portada, de C2, todavía no se reveló a los 400ms de
+  la prueba) → vuelta al skip link — nada inalcanzable, nada atrapado.
+- **Subtítulos en vivo:** saltar el audio a distintos `currentTime`
+  actualiza `.media-audio__captions` con el texto de la cue activa;
+  apagar el CC la vacía; reencenderlo la retoma en el siguiente cue.
+- **Degradación sin audio, verificada por estructura, no solo
+  visual:** la instancia sin `audio` no tiene `.media-audio__controles`
+  ni `<audio>` ni `<details>` — solo la imagen y
+  `.media-audio__transcripcion-directa` con sus párrafos y el enlace de
+  descarga real (`href` `blob:`, `download="transcripcion.txt"`).
+- **320px y zoom de texto 200%, cada condición por separado, en las 23
+  pantallas de `src/index.html`:** cero scroll horizontal en ambos
+  casos.
+- **axe-core (`wcag2a`+`wcag2aa`) en cero violaciones** en las 23
+  pantallas de `src/index.html` y en `dev/kitchen-sink.html` completa.
+- **Cero errores de consola propios de la app** en toda la corrida. Las
+  únicas solicitudes que fallan de verdad son las tres imágenes de
+  `public/img/avatar/` (esperado, no existen) y el ruido conocido de
+  axe-core leyendo hojas de estilo por XHR bajo `file://` (T9) —
+  aisladas explícitamente con `page.on('requestfailed')` para
+  confirmar que no hay ninguna otra URL rota escondida detrás del
+  mismo mensaje genérico de Chromium ("Failed to load resource").
+- **Regresión de C2, sin romperse:** se corrió de nuevo la batería
+  completa de C2 (marco fijo, trampas 1–4, pantalla completa) contra el
+  código de esta sesión — sigue en cero fallos, incluidos los checks
+  sobre `s00`, que ahora es la pantalla avatar en vez de la de video.
+
+**Cero hex nuevo** en los cinco archivos de código tocados (`media.js`,
+`router.js`, `components.css`, `content/ova-u1.js`,
+`dev/kitchen-sink.html`) — todos los colores del CC/captions de audio
+salen de tokens ya existentes (`--surface-inverse`, `--text-on-inverse`,
+`--border-default`, `--surface-muted`, `--text-secondary`).
+
+**Pendiente/anotado para C4 y para quien convierta el storyboard en
+C7** — ver la entrada nueva en `PLAN-CONTENIDO.md` (sección "Notas para
+C4/C7 sobre media") para el detalle completo: el contrato exacto de
+`media.tipo:'avatar'`, qué campos son opcionales, y la confirmación de
+que `media.audio` es una ruta real (no Blob) mientras que `media.vtt`
+sigue siendo texto WebVTT completo.
