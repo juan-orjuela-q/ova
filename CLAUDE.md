@@ -7,10 +7,15 @@ sirve como sitio estático en URL directa. Entrega: 8 de septiembre de 2026.
 ## Archivos del proyecto
 
 - `CLAUDE.md` — las reglas. Cambia solo cuando cambia una regla.
-- `PLAN.md` — el alcance y las nueve tareas. Cambia solo cuando cambia el alcance.
+- `PLAN.md` — cómo se construyó el motor (T1–T9). Cerrado el 29 de agosto.
+- `PLAN-CONTENIDO.md` — **el plan vigente**: montar el diseño instruccional de
+  Jose (47 pantallas) sobre el motor. Tareas C0–C9.
 - `ESTADO.md` — qué está hecho y qué se decidió. Se actualiza al cerrar cada sesión.
+- `disenoInstruccional/` — el paquete de Jose (v2, 3 sep). Es la fuente del
+  contenido: no se reescribe, no se recorta, no se sustituye una interacción
+  por otra más barata. Donde el motor no llega, se amplía el motor.
 
-Lee `ESTADO.md` al empezar cualquier sesión.
+Lee `ESTADO.md` y `PLAN-CONTENIDO.md` al empezar cualquier sesión.
 
 ## Reglas duras
 
@@ -32,6 +37,19 @@ Estas no se negocian ni se re-discuten en cada sesión.
 7. **Responsive real, no lienzo escalado.** Prohibido `transform: scale()` sobre
    el contenedor de contenido. Debe reflowear a 320 px y aguantar zoom de texto
    al 200 % sin scroll horizontal.
+8. **Los catálogos L01–L13 e I01–I14 son los de `BRIEF-DI.md`**, que es contra
+   lo que Jose escribió las 47 pantallas. El código tuvo otros hasta el 4 de
+   septiembre; C0 los renumeró. Ver la tabla de equivalencias en
+   `PLAN-CONTENIDO.md` §2 antes de tocar `layouts.css` o `quiz.js`.
+9. **Alto mínimo proporcional en horizontal.** En pantallas horizontales cada
+   pantalla mide al menos 9/16 del ancho (tope 780 px, que es el 16:9 del
+   contenedor SCORM de Moodle), con el contenido centrado y las barras de
+   navegación pegadas. Es un mínimo, no una caja fija: el contenido que no cabe
+   crece hacia abajo, nunca se recorta ni queda en scroll interno atrapado.
+   Ver `PLAN-CONTENIDO.md` §4.
+10. **El avatar es imagen fija + audio, no video.** Y toda pantalla con
+   locución muestra su transcripción aunque el audio todavía no exista: esa
+   degradación es el placeholder de producción, no un estado roto.
 
 ## Restricciones de color que la gente rompe
 

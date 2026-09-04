@@ -20,9 +20,14 @@ cambien algo para el futuro. Si una decisión cambia una **regla**, va a
 - [x] **T6 · Motor de evaluación** — completada 29 ago
 - [x] **T7 · Datos y gráficos** — completada 29 ago
 - [x] **T8 · Interacciones insignia** — completada 29 ago (I10/I11 el mismo día, I09/I12 después)
-- [ ] T9 · Empaquetado y auditoría — empaquetado y auditoría WCAG completos y
-      verificados 29 ago; falta la prueba real de carga en el Moodle de
-      Pablo (bloqueada en su entorno, no en este)
+- [x] **T9 · Empaquetado y auditoría** — completada 29 ago. Empaquetado y
+      auditoría WCAG verificados, y el paquete SCORM carga y funciona en el
+      Moodle de Pablo.
+
+**El track del OVA está cerrado, cinco días antes de lo planeado.** Lo que sigue
+ya no es código: es contenido real, producción audiovisual, las capas de Moodle
+que lleva Pablo, los descargables y los documentos de la propuesta. Ver la
+sección siguiente.
 
 ---
 
@@ -1493,3 +1498,34 @@ calificaciones refleja el progreso— necesita el entorno de Pablo, que
 Cuando esté listo: subir el zip tal cual sale del script (no
 re-empaquetar a mano), y confirmar que el reporte de avance/nota llega
 al libro de calificaciones de Moodle, no solo que el SCO abre.
+
+---
+
+## Qué queda para el 8 de septiembre
+
+Seis días hábiles: lun 31, mar 1, mié 2, jue 3, vie 4 y lun 7.
+
+**Bloqueante — contenido real.** Todo el OVA corre con relleno tomado del guion
+de BVC. Falta el diseño instruccional de Jose y, sobre todo, la neutralización
+de marca: quitar Bolsa de Valores de Colombia, Trii, Davivienda Homebroker,
+Bancolombia e-Trading, Credicorp y los pesos colombianos. Si eso no entra, el
+demo le muestra a nuam la marca de su competencia.
+
+**Producción audiovisual (F) — sin empezar. Es la nueva ruta crítica.**
+- F1 avatar HeyGen, 6 a 8 min de render. No arranca hasta que la locución esté cerrada.
+- F2 cuatro piezas de motion: valorización, dividendo, estructura de mercado, ciclo del Repo.
+- F3 infografías y mapa de entidades.
+- F4 grabación de Jose, 60–90 s. Agendar martes 1.
+- F5 subtítulos y transcripciones.
+
+**Moodle (A1–A5, E2, E3) — Pablo.** Tema white-label, ruta con restricciones de
+acceso, insignias y niveles, certificado, evaluación final en el módulo
+Cuestionario, y la cohorte sembrada de ~180 estudiantes para que los informes
+no salgan vacíos.
+
+**Descargables (D1–D4).** Calculadora XLSX, checklist, hoja de perfil, glosario
+tri-país.
+
+**Propuesta (G1–G4, X3).** Guion de presentación de 12 min más versión de 3,
+storyboard de muestra, ficha técnica con el licenciamiento de HeyGen **y de
+Degular**, cotización del curso demo, declaración de accesibilidad.
