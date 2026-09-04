@@ -10,12 +10,25 @@
    dentro de esta asignación — el motor (router.js) no sabe nada de
    este archivo más allá de leer `window.OVA_CONTENIDO`.
 
-   Pantallas de prueba para el cierre de T2: cuatro pantallas con
-   layouts ya construidos en T1/T1.5 (L02, L05, L06, L11), sin media
-   ni interacción — esas piezas llegan en T4/T5/T6. Relleno tomado
-   del guion de «Introducción a la inversión en acciones».
+   Pantallas de prueba, numeración post-C0 (4 sep) — la de BRIEF-DI.md,
+   ver CLAUDE.md regla dura 8 y PLAN-CONTENIDO.md §2.1/§2.2. Antes de C0
+   estas catorce pantallas usaban la numeración anterior del código;
+   C0 las renumeró junto con layouts.css/router.js/quiz.js, sin cambiar
+   contenido. Dos ajustes no fueron solo renombrar: s04 usaba el layout
+   de "término de glosario" (antes L11), que dejó de existir como layout
+   propio (ya está resuelto como componente de T5, `.termino-glosario` +
+   `.modal`, usable dentro de cualquier layout) — se movió a L04, el
+   mismo layout de texto plano que s01/s08/s10. s09 usaba el layout de
+   "proceso/línea de tiempo" (antes L09), que dejó de ser un layout
+   propio (ahora es `datos.tipo:'proceso'` dentro de L04) — se movió ahí
+   por el mismo motivo. La interacción de s07 pasó de I02 a I01 porque
+   el brief define I01 como opción única e I02 como verdadero/falso, al
+   revés de como T6 los había construido.
 
-   T4 suma s05/s06 (L03, L04): las dos únicas pantallas con `media`,
+   Relleno tomado del guion de «Introducción a la inversión en
+   acciones».
+
+   T4 suma s05/s06 (L03, L02): las dos únicas pantallas con `media`,
    para ejercitar el reproductor real de extremo a extremo (no solo
    en la kitchen sink) — navegar hasta ahí en src/index.html reproduce
    video con subtítulos VTT y transcripción descargable de verdad. El
@@ -30,15 +43,15 @@
    al construir T4. Mismo motivo por el que este archivo entero es
    .js y no .json + fetch.
 
-   T6 suma s07 (L10): única pantalla con `interaccion`, para ejercitar
+   T6 suma s07 (L06): única pantalla con `interaccion`, para ejercitar
    quiz.js de extremo a extremo en src/index.html (intentos, bloque de
    retroalimentación, reporte a cmi.interactions) y no solo en la
-   kitchen sink. Usa I02 (opción única); el catálogo completo I01–I08
-   vive documentado en el encabezado de quiz.js, con las ocho
-   representadas en la kitchen sink.
+   kitchen sink. Usa I01 (opción única); el catálogo completo vive
+   documentado en el encabezado de quiz.js, con todos los tipos
+   representados en la kitchen sink.
 
-   T7 suma s08 (L02 + datos "variacion"), s09 (L09 + datos "proceso") y
-   s10 (L02 + datos "barras"), para ejercitar charts.js de extremo a
+   T7 suma s08 (L04 + datos "variacion"), s09 (L04 + datos "proceso") y
+   s10 (L04 + datos "barras"), para ejercitar charts.js de extremo a
    extremo en src/index.html. s08 y s09 retoman el mismo ejemplo de
    Petrocaribe de s06 (compra a $1.000, sube a $1.500 ocho meses
    después) para que la variación (+50 %) y el desglose en pasos sean
@@ -48,7 +61,7 @@
    `pantalla.datos` por tipo, vive documentado en el encabezado de
    charts.js; los siete están representados en la kitchen sink.
 
-   T8 suma s11 (L10 + interacción I10, calculadora paramétrica), para
+   T8 suma s11 (L06 + interacción I10, calculadora paramétrica), para
    ejercitar la primera interacción insignia de extremo a extremo en
    src/index.html. Retoma la valorización de Petrocaribe de s08/s09
    pero hacia adelante: en vez de recalcular lo ya ocurrido, el
@@ -57,14 +70,14 @@
    dividendos). La forma exacta de `interaccion.datos` para I10 vive
    documentada en el encabezado de quiz.js junto al resto del catálogo.
 
-   T8 suma también s12 (L10 + interacción I11, boleta de compra), la
+   T8 suma también s12 (L06 + interacción I11, boleta de compra), la
    segunda de las cuatro interacciones insignia. Retoma el mismo precio
    de mercado primario de Petrocaribe ($1.000) para que el estudiante
    decida entre una orden a mercado o una orden límite y explore cuándo
    una orden límite se ejecuta y cuándo queda pendiente.
 
-   T8 cierra con s13 (L10 + interacción I09, línea de tiempo ordenable)
-   y s14 (L10 + interacción I12, distribución de capital) — la tercera
+   T8 cierra con s13 (L06 + interacción I09, línea de tiempo ordenable)
+   y s14 (L06 + interacción I12, distribución de capital) — la tercera
    y cuarta de las cuatro interacciones insignia, con lo que T8 queda
    completa. s13 retoma la cápsula 1 (los tres mercados de s01) con las
    etapas de una operación repo, en un orden deliberadamente revuelto
@@ -83,7 +96,7 @@ window.OVA_CONTENIDO = {
   "pantallas": [
     {
       "id": "s01",
-      "layout": "L02",
+      "layout": "L04",
       "titulo": "Los tres mercados de Bolsa de Valores de Colombia",
       "kicker": "Unidad 1 · Cápsula 1",
       "cuerpo": [
@@ -94,7 +107,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s02",
-      "layout": "L05",
+      "layout": "L12",
       "titulo": "77 %",
       "kicker": "Contexto",
       "cuerpo": [
@@ -104,7 +117,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s03",
-      "layout": "L06",
+      "layout": "L13",
       "titulo": "Invertir sin fronteras",
       "kicker": "Dato",
       "cuerpo": [
@@ -114,7 +127,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s04",
-      "layout": "L11",
+      "layout": "L04",
       "titulo": "Acción",
       "kicker": "Glosario",
       "cuerpo": [
@@ -140,7 +153,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s06",
-      "layout": "L04",
+      "layout": "L02",
       "titulo": "Valorización de una acción",
       "kicker": "Unidad 1 · Cápsula 2",
       "cuerpo": [
@@ -156,11 +169,11 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s07",
-      "layout": "L10",
+      "layout": "L06",
       "titulo": "Antes de seguir, ¿cuánto sabes?",
       "kicker": "Evaluación rápida",
       "interaccion": {
-        "tipo": "I02",
+        "tipo": "I01",
         "datos": {
           "id": "u1-p1-mercado",
           "enunciado": "¿Cuál de los siguientes mercados administra Bolsa de Valores de Colombia?",
@@ -181,7 +194,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s08",
-      "layout": "L02",
+      "layout": "L04",
       "titulo": "El resultado: una valorización del 50 %",
       "kicker": "Unidad 1 · Resultado",
       "cuerpo": [
@@ -197,7 +210,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s09",
-      "layout": "L09",
+      "layout": "L04",
       "titulo": "Cómo se calcula la valorización",
       "kicker": "Unidad 1 · Cápsula 2",
       "cuerpo": [
@@ -224,7 +237,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s10",
-      "layout": "L02",
+      "layout": "L04",
       "titulo": "Renta variable frente a otros activos",
       "kicker": "Unidad 1 · Comparación",
       "cuerpo": [
@@ -244,7 +257,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s11",
-      "layout": "L10",
+      "layout": "L06",
       "titulo": "Calcula el valor de una acción por su dividendo",
       "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {
@@ -265,7 +278,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s12",
-      "layout": "L10",
+      "layout": "L06",
       "titulo": "Decide tu boleta de compra",
       "kicker": "Unidad 1 · Cápsula 2",
       "interaccion": {
@@ -281,7 +294,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s13",
-      "layout": "L10",
+      "layout": "L06",
       "titulo": "Ordena una operación repo",
       "kicker": "Unidad 1 · Cápsula 1",
       "interaccion": {
@@ -303,7 +316,7 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "s14",
-      "layout": "L10",
+      "layout": "L06",
       "titulo": "Arma tu portafolio",
       "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {

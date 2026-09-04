@@ -470,7 +470,7 @@
 
       <div class="ks-layout-bloque" id="c-anillo">
         <span class="ks-layout-bloque__etiqueta">Anillo de cifra</span>
-        <p class="ks-intro">Variante decorativa de L05. El valor real siempre va como texto (<code>.anillo__cifra</code>), nunca solo en el trazo — el motor de gráficos con datos vivos es T7.</p>
+        <p class="ks-intro">Variante decorativa de L12 (era L05 antes de C0). El valor real siempre va como texto (<code>.anillo__cifra</code>), nunca solo en el trazo — el motor de gráficos con datos vivos es T7.</p>
         <div class="ks-layout-marco ks-muestras">
           <div class="anillo">
             <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
@@ -826,9 +826,9 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-quiz">
-        <span class="ks-layout-bloque__etiqueta">Motor de evaluación (T6) — catálogo I01–I08, cableado real</span>
+        <span class="ks-layout-bloque__etiqueta">Motor de evaluación (T6) — catálogo I01–I05 (más tres tipos sin número), cableado real</span>
         <p class="ks-intro">
-          A diferencia del resto de esta sección, las ocho preguntas de abajo
+          A diferencia del resto de esta sección, las preguntas de abajo
           están vivas: se montan con <code>OVA.quiz.crear()</code> en el
           script al final de esta página, igual que el reproductor de video
           de T4 y el modal de T5 — no dependen del router con hash, así que
@@ -839,17 +839,20 @@
           <code>&lt;legend&gt;</code> reales y ningún tipo depende de
           arrastre — I04 y I05 (los dos "de orden") resuelven con
           <code>&lt;select&gt;</code>, mismo criterio que T8 exige de forma
-          explícita para I09. El catálogo completo, con la forma exacta de
-          <code>interaccion.datos</code> por tipo, está documentado en el
-          encabezado de <code>quiz.js</code>.
+          explícita para I09. Completar/numérica/autoevaluación funcionan
+          igual que antes de C0 pero sin número: el brief reserva I06–I08
+          para tres tipos que este proyecto no construye (ver el encabezado
+          de <code>quiz.js</code>). El catálogo completo, con la forma exacta
+          de <code>interaccion.datos</code> por tipo, está documentado ahí
+          mismo.
         </p>
 
         <div class="ks-layout-bloque" id="c-quiz-i01">
-          <span class="ks-layout-bloque__etiqueta">I01 · Verdadero o falso</span>
+          <span class="ks-layout-bloque__etiqueta">I01 · Opción única</span>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
         <div class="ks-layout-bloque" id="c-quiz-i02">
-          <span class="ks-layout-bloque__etiqueta">I02 · Opción única</span>
+          <span class="ks-layout-bloque__etiqueta">I02 · Verdadero o falso</span>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
         <div class="ks-layout-bloque" id="c-quiz-i03">
@@ -864,16 +867,16 @@
           <span class="ks-layout-bloque__etiqueta">I05 · Ordenar pasos</span>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
-        <div class="ks-layout-bloque" id="c-quiz-i06">
-          <span class="ks-layout-bloque__etiqueta">I06 · Completar el espacio en blanco</span>
+        <div class="ks-layout-bloque" id="c-quiz-completar">
+          <span class="ks-layout-bloque__etiqueta">Completar el espacio en blanco — sin número (el brief usa I06 para otra cosa)</span>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
-        <div class="ks-layout-bloque" id="c-quiz-i07">
-          <span class="ks-layout-bloque__etiqueta">I07 · Respuesta numérica</span>
+        <div class="ks-layout-bloque" id="c-quiz-numerica">
+          <span class="ks-layout-bloque__etiqueta">Respuesta numérica — sin número (el brief usa I07 para otra cosa)</span>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
-        <div class="ks-layout-bloque" id="c-quiz-i08">
-          <span class="ks-layout-bloque__etiqueta">I08 · Autoevaluación (escala) — sin nota, no cuenta como correcta/incorrecta</span>
+        <div class="ks-layout-bloque" id="c-quiz-autoevaluacion">
+          <span class="ks-layout-bloque__etiqueta">Autoevaluación (escala) — sin número (el brief usa I08 para otra cosa); sin nota, no cuenta como correcta/incorrecta</span>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
       </div>
@@ -1032,9 +1035,11 @@
         <code>a11y.js</code>, el motor que convierte el contrato de contenido en
         pantallas navegables. No hay nada que mostrar en estático aquí sin
         falsear lo que hace — la superficie de revisión real es
-        <a href="../src/index.html">src/index.html</a>, con el JSON de prueba de
-        cuatro pantallas (<code>content/ova-u1.js</code>) usando los layouts
-        L02, L05, L06 y L11 ya construidos arriba.
+        <a href="../src/index.html">src/index.html</a>, con el JSON de prueba
+        (<code>content/ova-u1.js</code> hoy tiene catorce pantallas; T2 sumó
+        las primeras cuatro, s01–s04, en L04/L12/L13/L04 con la numeración
+        post-C0 — ver PLAN-CONTENIDO.md §2.1) usando los layouts ya
+        construidos arriba.
       </p>
       <p class="ks-intro">
         Qué verificar ahí: recorrer las cuatro pantallas con clic y con
@@ -1104,7 +1109,7 @@
     <!-- ============================================================ -->
     <section id="layouts" class="ks-seccion" aria-labelledby="layouts-h">
       <h2 id="layouts-h">Layouts L01–L13</h2>
-      <p class="ks-intro">Relleno tomado del guion de la Unidad 1. Reflowean a una columna por defecto — ese es el estado de 320px, no un caso aparte. Redimensiona la ventana para ver los breakpoints.</p>
+      <p class="ks-intro">Numeración de BRIEF-DI.md, renumerada en C0 (4 sep) — ver PLAN-CONTENIDO.md §2.1. Relleno tomado del guion de la Unidad 1. Reflowean a una columna por defecto — ese es el estado de 320px, no un caso aparte. Redimensiona la ventana para ver los breakpoints.</p>
 
       <div class="ks-layout-bloque" id="l01">
         <span class="ks-layout-bloque__etiqueta">L01 · Portada de unidad</span>
@@ -1134,21 +1139,21 @@
       </div>
 
       <div class="ks-layout-bloque" id="l02">
-        <span class="ks-layout-bloque__etiqueta">L02 · Texto a una columna</span>
+        <span class="ks-layout-bloque__etiqueta">L02 · Media protagonista + texto debajo</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l02">
-            <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cápsula 1</span>
-            <h2 class="layout__titulo tipo-h2">Los tres mercados de Bolsa de Valores de Colombia</h2>
+            <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cápsula 2</span>
+            <h2 class="layout__titulo tipo-h2">Valorización de una acción</h2>
             <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">En Colombia el sistema financiero está compuesto por varios mercados. Uno de ellos es el mercado de capitales, donde se transan los títulos valor de las empresas que emiten activos como acciones, bonos y derivados.</p>
-              <p class="tipo-cuerpo">Bolsa de Valores de Colombia administra estos activos por medio de tres mercados: renta variable, renta fija y derivados. El foco de este curso está en el mercado de renta variable, es decir, en la inversión en acciones.</p>
+              <p class="tipo-cuerpo">La empresa Petrocaribe vende cada acción a $1.000 en el mercado primario. Un inversionista compra 500 acciones y, ocho meses después, el precio sube a $1.500 en el mercado secundario.</p>
             </div>
+            <div class="layout__media" id="l02-media"></div>
           </div>
         </div>
       </div>
 
       <div class="ks-layout-bloque" id="l03">
-        <span class="ks-layout-bloque__etiqueta">L03 · Texto + media lateral</span>
+        <span class="ks-layout-bloque__etiqueta">L03 · Media a un lado, texto al otro</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l03">
             <span class="layout__kicker tipo-etiqueta">Unidad 1 · Video</span>
@@ -1162,49 +1167,24 @@
       </div>
 
       <div class="ks-layout-bloque" id="l04">
-        <span class="ks-layout-bloque__etiqueta">L04 · Media protagonista</span>
+        <span class="ks-layout-bloque__etiqueta">L04 · Lectura larga con imagen de apoyo</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l04">
-            <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cápsula 2</span>
-            <h2 class="layout__titulo tipo-h2">Valorización de una acción</h2>
+            <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cápsula 1</span>
+            <h2 class="layout__titulo tipo-h2">Los tres mercados de Bolsa de Valores de Colombia</h2>
             <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">La empresa Petrocaribe vende cada acción a $1.000 en el mercado primario. Un inversionista compra 500 acciones y, ocho meses después, el precio sube a $1.500 en el mercado secundario.</p>
+              <p class="tipo-cuerpo">En Colombia el sistema financiero está compuesto por varios mercados. Uno de ellos es el mercado de capitales, donde se transan los títulos valor de las empresas que emiten activos como acciones, bonos y derivados.</p>
+              <p class="tipo-cuerpo">Bolsa de Valores de Colombia administra estos activos por medio de tres mercados: renta variable, renta fija y derivados. El foco de este curso está en el mercado de renta variable, es decir, en la inversión en acciones.</p>
             </div>
-            <div class="layout__media" id="l04-media"></div>
           </div>
         </div>
+        <p class="ks-intro">Media e imagen de apoyo son opcionales por brief; el motor todavía no la admite aquí (pendiente C1, ver PLAN-CONTENIDO.md §2.1). <code>datos</code> sí es opcional desde T7 — s08/s09/s10 en <code>content/ova-u1.js</code> lo usan (s09 con <code>datos.tipo:'proceso'</code>, el diagrama que antes de C0 tenía su propio layout L09).</p>
       </div>
 
       <div class="ks-layout-bloque" id="l05">
-        <span class="ks-layout-bloque__etiqueta">L05 · Cifra destacada</span>
+        <span class="ks-layout-bloque__etiqueta">L05 · Tarjetas comparativas (2–4)</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l05">
-            <span class="layout__kicker tipo-etiqueta">Contexto</span>
-            <p class="layout__titulo tipo-display-2">77 %</p>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo-lg">de los colombianos ahorra guardando el efectivo en su casa, y solo el 9 % lo hace a través de la inversión en activos financieros, según el Banco de Desarrollo de América Latina.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ks-layout-bloque" id="l06">
-        <span class="ks-layout-bloque__etiqueta">L06 · Cita o dato curioso</span>
-        <div class="ks-layout-marco">
-          <div class="layout layout--l06">
-            <span class="layout__kicker tipo-etiqueta">Dato</span>
-            <h2 class="layout__titulo tipo-h3">Invertir sin fronteras</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">A través del Mercado Global Colombiano (MGC), los inversionistas pueden comprar y vender valores extranjeros listados en mercados internacionales por medio de una sociedad comisionista de bolsa local.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ks-layout-bloque" id="l07">
-        <span class="ks-layout-bloque__etiqueta">L07 · Comparación de dos columnas</span>
-        <div class="ks-layout-marco">
-          <div class="layout layout--l07">
             <span class="layout__kicker tipo-etiqueta">Tipos de acciones</span>
             <h2 class="layout__titulo tipo-h2">Ordinarias y preferenciales</h2>
             <div class="layout__cuerpo">
@@ -1219,12 +1199,39 @@
             </div>
           </div>
         </div>
+        <p class="ks-intro">Hoy solo soporta 2 tarjetas y no tiene plantilla en <code>router.js</code>; soportar 3 y 4 queda para C1 (ver PLAN-CONTENIDO.md §2.1).</p>
+      </div>
+
+      <div class="ks-layout-bloque" id="l06">
+        <span class="ks-layout-bloque__etiqueta">L06 · Interacción a pantalla completa (T6, cableado real)</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l06">
+            <span class="layout__kicker tipo-etiqueta">Evaluación rápida</span>
+            <h2 class="layout__titulo tipo-h2">Antes de empezar, ¿cuánto sabes?</h2>
+            <div class="layout__interaccion" id="l06-interaccion"></div>
+          </div>
+        </div>
+        <p class="ks-intro">Mismo ejemplo que <code>s07</code> en <code>content/ova-u1.js</code> (I01, dos intentos) — la interacción real que se recorre de extremo a extremo en <code>src/index.html</code>, montada aquí por <code>router.js</code>: <code>PLANTILLAS.L06</code> delega en <code>OVA.quiz.crear()</code> igual que L02/L03 delegan en <code>OVA.media.crear()</code>.</p>
+      </div>
+
+      <div class="ks-layout-bloque" id="l07">
+        <span class="ks-layout-bloque__etiqueta">L07 · Pregunta — pendiente C1</span>
+        <div class="ks-layout-marco ks-ancho-marco">
+          <p class="ks-marcador">Variante de chrome sobre L06 (marcador — layout nuevo del brief, sin CSS todavía. Ver PLAN-CONTENIDO.md §2.1).</p>
+        </div>
       </div>
 
       <div class="ks-layout-bloque" id="l08">
-        <span class="ks-layout-bloque__etiqueta">L08 · Checklist con media de apoyo</span>
+        <span class="ks-layout-bloque__etiqueta">L08 · Resultado y retroalimentación — pendiente C1</span>
+        <div class="ks-layout-marco ks-ancho-marco">
+          <p class="ks-marcador">Layout nuevo de verdad (marcador — reusará <code>.callout</code> y <code>.anillo</code> de T5. Ver PLAN-CONTENIDO.md §2.1).</p>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="l09">
+        <span class="ks-layout-bloque__etiqueta">L09 · Ideas clave (3–5)</span>
         <div class="ks-layout-marco">
-          <div class="layout layout--l08">
+          <div class="layout layout--l09">
             <span class="layout__kicker tipo-etiqueta">Unidad 1</span>
             <h2 class="layout__titulo tipo-h2">Tres mercados, un solo sistema</h2>
             <div class="layout__cuerpo">
@@ -1238,79 +1245,13 @@
             <div class="layout__media ks-marcador">Infografía · Los tres mercados<br />(marcador — producción audiovisual)</div>
           </div>
         </div>
-      </div>
-
-      <div class="ks-layout-bloque" id="l09">
-        <span class="ks-layout-bloque__etiqueta">L09 · Proceso / línea de tiempo</span>
-        <div class="ks-layout-marco">
-          <div class="layout layout--l09">
-            <span class="layout__kicker tipo-etiqueta">Ejemplo</span>
-            <h2 class="layout__titulo tipo-h2">Cómo se calcula la valorización</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">La empresa Petrocaribe vendió cada acción a $1.000 en el mercado primario.</p>
-              <ol class="tipo-cuerpo">
-                <li>Un inversionista compra 500 acciones a $1.000 cada una.</li>
-                <li>Ocho meses después, el precio sube a $1.500.</li>
-                <li>La diferencia es $500, por lo que 500/1.000 = 50 % de valorización.</li>
-              </ol>
-            </div>
-          </div>
-        </div>
+        <p class="ks-intro">El brief pide media opcional aquí; el motor todavía la exige siempre, como antes de C0 (pendiente C1, ver PLAN-CONTENIDO.md §2.1).</p>
       </div>
 
       <div class="ks-layout-bloque" id="l10">
-        <span class="ks-layout-bloque__etiqueta">L10 · Interacción a pantalla completa (T6, cableado real)</span>
+        <span class="ks-layout-bloque__etiqueta">L10 · Cierre de unidad y siguiente paso</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l10">
-            <span class="layout__kicker tipo-etiqueta">Evaluación rápida</span>
-            <h2 class="layout__titulo tipo-h2">Antes de empezar, ¿cuánto sabes?</h2>
-            <div class="layout__interaccion" id="l10-interaccion"></div>
-          </div>
-        </div>
-        <p class="ks-intro">Mismo ejemplo que <code>s07</code> en <code>content/ova-u1.js</code> (I02, dos intentos) — la interacción real que se recorre de extremo a extremo en <code>src/index.html</code>, montada aquí por <code>router.js</code>: <code>PLANTILLAS.L10</code> delega en <code>OVA.quiz.crear()</code> igual que L03/L04 delegan en <code>OVA.media.crear()</code>.</p>
-      </div>
-
-      <div class="ks-layout-bloque" id="l11">
-        <span class="ks-layout-bloque__etiqueta">L11 · Término de glosario</span>
-        <div class="ks-layout-marco">
-          <div class="layout layout--l11">
-            <span class="layout__kicker tipo-etiqueta">Glosario</span>
-            <h2 class="layout__titulo tipo-h2">Acción</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo-lg">Título valor participativo que representa un porcentaje mínimo de propiedad de una empresa. Su titular participa de la rentabilidad del negocio como dueño de una fracción de la compañía.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ks-layout-bloque" id="l12">
-        <span class="ks-layout-bloque__etiqueta">L12 · Recurso descargable</span>
-        <div class="ks-layout-marco">
-          <div class="layout layout--l12">
-            <div class="layout__figura ks-marcador" aria-hidden="true">PDF</div>
-            <span class="layout__kicker tipo-etiqueta">Recurso descargable</span>
-            <h2 class="layout__titulo tipo-h2">Plantilla: mi perfil de riesgo</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">Un formato práctico para identificar si tu perfil de inversión es conservador, moderado o agresivo antes de tomar una decisión.</p>
-            </div>
-            <div class="layout__interaccion">
-              <a class="tarjeta-recurso" href="#l12">
-                <span class="tarjeta-recurso__icono" aria-hidden="true"><span class="icono">description</span></span>
-                <span class="tarjeta-recurso__info">
-                  <span class="tarjeta-recurso__titulo">Plantilla: mi perfil de riesgo</span>
-                  <span class="tarjeta-recurso__meta">PDF · 180 KB</span>
-                </span>
-                <span class="icono tarjeta-recurso__accion" aria-hidden="true">download</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ks-layout-bloque" id="l13">
-        <span class="ks-layout-bloque__etiqueta">L13 · Cierre de unidad</span>
-        <div class="ks-layout-marco">
-          <div class="layout layout--l13">
             <span class="layout__kicker tipo-etiqueta">Fin de la unidad 1</span>
             <h2 class="layout__titulo tipo-display-2">Ya conoces el contexto del mercado</h2>
             <div class="layout__cuerpo">
@@ -1330,6 +1271,60 @@
             </div>
           </div>
         </div>
+        <p class="ks-intro">Sin plantilla en <code>router.js</code> todavía (tampoco la tenía con el número anterior, L13) — pendiente C1.</p>
+      </div>
+
+      <div class="ks-layout-bloque" id="l11">
+        <span class="ks-layout-bloque__etiqueta">L11 · Recursos descargables</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l11">
+            <div class="layout__figura ks-marcador" aria-hidden="true">PDF</div>
+            <span class="layout__kicker tipo-etiqueta">Recurso descargable</span>
+            <h2 class="layout__titulo tipo-h2">Plantilla: mi perfil de riesgo</h2>
+            <div class="layout__cuerpo">
+              <p class="tipo-cuerpo">Un formato práctico para identificar si tu perfil de inversión es conservador, moderado o agresivo antes de tomar una decisión.</p>
+            </div>
+            <div class="layout__interaccion">
+              <a class="tarjeta-recurso" href="#l11">
+                <span class="tarjeta-recurso__icono" aria-hidden="true"><span class="icono">description</span></span>
+                <span class="tarjeta-recurso__info">
+                  <span class="tarjeta-recurso__titulo">Plantilla: mi perfil de riesgo</span>
+                  <span class="tarjeta-recurso__meta">PDF · 180 KB</span>
+                </span>
+                <span class="icono tarjeta-recurso__accion" aria-hidden="true">download</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        <p class="ks-intro">Sin plantilla en <code>router.js</code> todavía (tampoco la tenía con el número anterior, L12) — pendiente C1.</p>
+      </div>
+
+      <div class="ks-layout-bloque" id="l12">
+        <span class="ks-layout-bloque__etiqueta">L12 · Corte naranja, un dato que golpea</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l12">
+            <span class="layout__kicker tipo-etiqueta">Contexto</span>
+            <p class="layout__titulo tipo-display-2">77 %</p>
+            <div class="layout__cuerpo">
+              <p class="tipo-cuerpo-lg">de los colombianos ahorra guardando el efectivo en su casa, y solo el 9 % lo hace a través de la inversión en activos financieros, según el Banco de Desarrollo de América Latina.</p>
+            </div>
+          </div>
+        </div>
+        <p class="ks-intro">El brief pide esta pantalla sobre <code>--surface-brand</code>; sigue sin fondo propio, como antes de C0 — pendiente C1.</p>
+      </div>
+
+      <div class="ks-layout-bloque" id="l13">
+        <span class="ks-layout-bloque__etiqueta">L13 · Corte oscuro, cierre o transición</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l13">
+            <span class="layout__kicker tipo-etiqueta">Dato</span>
+            <h2 class="layout__titulo tipo-h3">Invertir sin fronteras</h2>
+            <div class="layout__cuerpo">
+              <p class="tipo-cuerpo">A través del Mercado Global Colombiano (MGC), los inversionistas pueden comprar y vender valores extranjeros listados en mercados internacionales por medio de una sociedad comisionista de bolsa local.</p>
+            </div>
+          </div>
+        </div>
+        <p class="ks-intro">El brief pide esta pantalla sobre <code>--surface-inverse</code>; sigue sobre <code>--surface-subtle-2</code>, como antes de C0 — pendiente C1.</p>
       </div>
     </section>
   </main>
@@ -1385,13 +1380,13 @@
       // no hay subtítulos, en vez de quedar visible sin hacer nada.
       montar('c-media-video-b', { tipo: 'video', src: VIDEO_DEMO });
 
-      montar('l03-media', {
+      montar('l02-media', {
         tipo: 'video',
         src: VIDEO_DEMO,
         vtt: VTT_DEMO,
         transcripcion: TRANSCRIPCION_DEMO
       });
-      montar('l04-media', {
+      montar('l03-media', {
         tipo: 'video',
         src: VIDEO_DEMO,
         vtt: VTT_DEMO,
@@ -1400,10 +1395,11 @@
     })();
   </script>
 
-  <!-- Motor de evaluación (T6): catálogo I01–I08, montado con
-       OVA.quiz.crear() igual que el reproductor de video de arriba —
-       mismo criterio, no depende del router/hash. l10-interaccion usa el
-       mismo ejemplo (I02, dos intentos) que s07 en content/ova-u1.js. -->
+  <!-- Motor de evaluación (T6): catálogo I01–I05 (más completar/numerica/
+       autoevaluacion, sin número), montado con OVA.quiz.crear() igual que
+       el reproductor de video de arriba — mismo criterio, no depende del
+       router/hash. l06-interaccion usa el mismo ejemplo (I01, dos
+       intentos) que s07 en content/ova-u1.js. -->
   <script>
     (function () {
       function montarQuiz(id, interaccion) {
@@ -1416,18 +1412,6 @@
       montarQuiz('c-quiz-i01', {
         tipo: 'I01',
         datos: {
-          enunciado: 'Una acción es un título de deuda.',
-          respuestaCorrecta: false,
-          intentos: 1,
-          retroalimentacion: {
-            incorrecto: 'Una acción es un título valor participativo (propiedad), no de deuda.'
-          }
-        }
-      });
-
-      montarQuiz('c-quiz-i02', {
-        tipo: 'I02',
-        datos: {
           enunciado: '¿Cuál de estos es un mercado administrado por BVC?',
           opciones: [
             { id: 'a', texto: 'Renta variable' },
@@ -1435,6 +1419,18 @@
             { id: 'c', texto: 'Bienes raíces' }
           ],
           correcta: 'a'
+        }
+      });
+
+      montarQuiz('c-quiz-i02', {
+        tipo: 'I02',
+        datos: {
+          enunciado: 'Una acción es un título de deuda.',
+          respuestaCorrecta: false,
+          intentos: 1,
+          retroalimentacion: {
+            incorrecto: 'Una acción es un título valor participativo (propiedad), no de deuda.'
+          }
         }
       });
 
@@ -1482,16 +1478,16 @@
         }
       });
 
-      montarQuiz('c-quiz-i06', {
-        tipo: 'I06',
+      montarQuiz('c-quiz-completar', {
+        tipo: 'completar',
         datos: {
           enunciado: 'Completa: el título valor participativo que representa una fracción de propiedad de una empresa se llama ______.',
           respuestas: ['acción', 'accion', 'acciones']
         }
       });
 
-      montarQuiz('c-quiz-i07', {
-        tipo: 'I07',
+      montarQuiz('c-quiz-numerica', {
+        tipo: 'numerica',
         datos: {
           enunciado: 'Compraste 500 acciones a $1.000 cada una. ¿Cuántos pesos invertiste en total?',
           respuesta: 500000,
@@ -1499,8 +1495,8 @@
         }
       });
 
-      montarQuiz('c-quiz-i08', {
-        tipo: 'I08',
+      montarQuiz('c-quiz-autoevaluacion', {
+        tipo: 'autoevaluacion',
         datos: {
           enunciado: '¿Qué tan seguro te sientes explicando qué es una acción?',
           escala: [
@@ -1513,8 +1509,8 @@
         }
       });
 
-      montarQuiz('l10-interaccion', {
-        tipo: 'I02',
+      montarQuiz('l06-interaccion', {
+        tipo: 'I01',
         datos: {
           id: 'u1-p1-mercado',
           enunciado: '¿Cuál de los siguientes mercados administra Bolsa de Valores de Colombia?',

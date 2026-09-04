@@ -1,21 +1,32 @@
 /* ============================================================
    quiz.js — motor de evaluación (T6).
 
-   Implementa el catálogo de interacciones I01–I08 (preguntas) y el
-   bloque de retroalimentación I14, compartido por las ocho. Este
-   archivo es la fuente de verdad de ese catálogo — igual que
-   layouts.css lo es para L01–L13 — porque CLAUDE.md no fijó de
-   antemano qué es cada tipo I01–I08 (solo nombra I09–I12, las
-   interacciones insignia de T8, e I14, el bloque de retro). El
-   catálogo de abajo es una decisión tomada en esta sesión, no una
+   Implementa el catálogo de interacciones I01–I05 (preguntas, más tres
+   tipos probados y funcionales sin número — ver más abajo) y el bloque
+   de retroalimentación I14, compartido por todas. Este archivo es la
+   fuente de verdad de ese catálogo — igual que layouts.css lo es para
+   L01–L13 — porque CLAUDE.md no fijó de antemano qué es cada tipo (solo
+   nombra I09–I12, las interacciones insignia de T8, e I14, el bloque de
+   retro). El catálogo de abajo fue una decisión tomada en T6, no una
    especificación previa; queda documentada aquí y en ESTADO.md para
    poder corregirla sin arqueología de código si la lectura no era la
    correcta.
 
+   Numeración: la de BRIEF-DI.md (CLAUDE.md, regla dura 8). C0 (4 sep)
+   renumeró I01/I02 — T6 los había construido al revés (I01 era
+   verdadero_falso, I02 era opcion_unica) — y le quitó el número a
+   completar/numerica/autoevaluacion, porque el brief reserva I06/I07/I08
+   para otros tres tipos que este proyecto no construye (I06 zonas
+   sensibles sobre imagen, I07 tarjetas volteables, I08 comparador de dos
+   columnas — ninguna pantalla de Jose los pide, ver PLAN-CONTENIDO.md
+   §2.2). Los tres tipos sin número siguen probados y funcionando por su
+   nombre en vez de por código: borrar código que funciona no ahorra
+   nada.
+
    Cada interacción del contrato de contenido sigue siendo un objeto
    {tipo, datos} — una pregunta por pantalla, igual que cada
    interacción insignia I09–I12 de T8 ocupa su propia pantalla
-   (L10, "interacción a pantalla completa"). "Banco de preguntas"
+   (L06, "interacción a pantalla completa"). "Banco de preguntas"
    (PLAN.md) es este catálogo de constructores por tipo, no una
    estructura de varias preguntas dentro de una sola pantalla:
    inventar esa estructura habría cambiado la forma {tipo, datos} que
@@ -26,14 +37,14 @@
    —0/ausente = ilimitados— y datos.retroalimentacion.correcto/
    incorrecto opcional para el texto largo del bloque I14):
 
-     I01 verdadero_falso  { enunciado, respuestaCorrecta:bool }
-     I02 opcion_unica     { enunciado, opciones:[{id,texto}], correcta:id }
+     I01 opcion_unica     { enunciado, opciones:[{id,texto}], correcta:id }
+     I02 verdadero_falso  { enunciado, respuestaCorrecta:bool }
      I03 opcion_multiple  { enunciado, opciones:[{id,texto}], correctas:[id…] }
      I04 relacionar       { enunciado, izquierda:[{id,texto}], derecha:[{id,texto}], pares:{idIzq:idDer} }
      I05 ordenar          { enunciado, pasos:[{id,texto}] (orden mostrado), orden:[id…] (correcto) }
-     I06 completar        { enunciado, respuestas:[texto…] (aceptadas) }
-     I07 numerica         { enunciado, respuesta:number, tolerancia:number=0, unidad:string }
-     I08 autoevaluacion   { enunciado, escala:[{valor,texto}] } — sin respuesta correcta, no cuenta en la nota.
+     completar            { enunciado, respuestas:[texto…] (aceptadas) } — sin número (el brief usa I06 para otra cosa).
+     numerica             { enunciado, respuesta:number, tolerancia:number=0, unidad:string } — sin número (el brief usa I07 para otra cosa).
+     autoevaluacion       { enunciado, escala:[{valor,texto}] } — sin número (el brief usa I08 para otra cosa); sin respuesta correcta, no cuenta en la nota.
 
    Ningún tipo usa arrastre: I04/I05 (los dos "de orden") resuelven con
    <select>, no drag-and-drop — mismo criterio que T8 exige de forma
@@ -64,11 +75,12 @@
    cualquier `interaccion` (crearInteraccion → OVA.quiz.crear) — así que
    estas cuatro viven aquí también, no en un archivo nuevo.
 
-   A diferencia de I01–I08, una interacción insignia NO es una pregunta
-   con intentos/Comprobar/Reintentar: es un widget exploratorio con su
-   propio armado y su propio momento de reporte a SCORM. `crear()` las
-   despacha por una tabla aparte (CONSTRUCTORES_INSIGNIA) antes de asumir
-   que todo lo demás es una pregunta I01–I08; cada constructor de este
+   A diferencia del catálogo de preguntas de arriba, una interacción
+   insignia NO es una pregunta con intentos/Comprobar/Reintentar: es un
+   widget exploratorio con su propio armado y su propio momento de
+   reporte a SCORM. `crear()` las despacha por una tabla aparte
+   (CONSTRUCTORES_INSIGNIA) antes de asumir que todo lo demás es una
+   pregunta del catálogo de arriba; cada constructor de este
    grupo arma su DOM completo (no un <fieldset> para que crear() lo
    envuelva) y decide él mismo cuándo llamar a reportarSCORM() — I09/I11/
    I12 (sesiones futuras) siguen el mismo patrón de despacho.
@@ -108,7 +120,7 @@
          un objeto mínimo compatible con reportarSCORM() (idScorm,
          tipoScorm:'other', textoRespuesta() serializa entradas.id=valor
          separadas por coma, textoCorrecta() null — no hay "correcta" en
-         un explorador de escenarios, mismo criterio que I08) y anuncia
+         un explorador de escenarios, mismo criterio que autoevaluacion) y anuncia
          el registro en un párrafo role="status" propio (`.calc-resumen`,
          mismo patrón que `.quiz-resumen`). No hay intentos ni bloqueo
          definitivo: se puede ajustar y volver a registrar cuantas veces
@@ -131,9 +143,9 @@
          mueve para explorar escenarios, no es un dato fijo); `limite`
          es el precio máximo que el comprador está dispuesto a pagar.
        - Tipo de orden: "A mercado" / "Límite" — un <fieldset>/<legend>
-         con dos <input type="radio"> nativos (mismo criterio que
-         I01–I08: el grupo y su navegación con flechas vienen gratis del
-         navegador), límite marcado por defecto porque es el caso que
+         con dos <input type="radio"> nativos (mismo criterio que el
+         catálogo de preguntas: el grupo y su navegación con flechas
+         vienen gratis del navegador), límite marcado por defecto porque es el caso que
          enseña la diferencia. El slider de límite se deshabilita
          (nunca se oculta) cuando el tipo es "a mercado".
        - Regla de ejecución (orden de COMPRA): a mercado siempre se
@@ -183,8 +195,8 @@
          siempre neutral) vía tipoScorm: 'sequencing' — el mismo mapeo
          que ya usa I05 para el tipo SCORM, aplicado aquí porque el
          dato de fondo es el mismo (secuenciar). Sigue sin tocar
-         cmi.core.score: eso es exclusivo de las preguntas gradables
-         I01–I08, ninguna insignia lo toca. No hay bloqueo ni límite de
+         cmi.core.score: eso es exclusivo de las preguntas gradables del
+         catálogo de arriba, ninguna insignia lo toca. No hay bloqueo ni límite de
          intentos — se puede reordenar y volver a comprobar cuantas
          veces se quiera, mismo criterio que I10/I11.
 
@@ -350,7 +362,7 @@
      Cada uno arma su <fieldset>/<legend> real (cierre de PLAN.md) y
      devuelve la misma interfaz: fieldset, retro, tipoScorm, idScorm,
      textoRespuesta()/textoCorrecta() (para cmi.interactions),
-     evaluar() ('correcto'|'incorrecto'|null — null es I08, no
+     evaluar() ('correcto'|'incorrecto'|null — null es autoevaluacion, no
      gradable), bloquear()/desbloquear() y revelarCorrecta(). */
 
   function construirVerdaderoFalso(idBase, idScorm, datos) {
@@ -931,8 +943,8 @@
      (enunciado, `.calc-calculadora__entradas`, resultado, acciones,
      resumen) — es literalmente "el patrón" que I10 debía establecer. Lo
      único nuevo es el selector de tipo de orden (fieldset/legend con dos
-     <input type="radio"> nativos, mismo criterio que I01–I08: el grupo
-     de radios y su navegación con flechas vienen gratis del navegador).
+     <input type="radio"> nativos, mismo criterio que el catálogo de
+     preguntas: el grupo de radios y su navegación con flechas vienen gratis del navegador).
      Regla de ejecución de una orden de COMPRA: a mercado siempre se
      ejecuta al precio de mercado vigente; a límite se ejecuta solo si el
      precio de mercado no supera el límite que definió el comprador — si
@@ -1115,7 +1127,7 @@
      escenario sin "correcta"), aquí sí hay un orden objetivamente
      correcto: «Comprobar orden» evalúa contra `ordenCorrecto` y
      reporta correct/wrong de verdad, sin tocar cmi.core.score (eso
-     sigue siendo exclusivo de I01–I08) ni bloquear el widget. */
+     sigue siendo exclusivo de las preguntas gradables) ni bloquear el widget. */
   function construirLineaTiempoOrdenable(idBase, idScorm, datos) {
     var eventos = datos.eventos || [];
     var ordenCorrecto = datos.ordenCorrecto || [];
@@ -1394,15 +1406,18 @@
     I12: construirDistribucionCapital
   };
 
+  // Numeración del brief tras C0 (ver la nota al inicio del archivo):
+  // I01/I02 van al revés de como los construyó T6, y completar/numerica/
+  // autoevaluacion se dispatchan por nombre, no por código I06/I07/I08.
   var CONSTRUCTORES = {
-    I01: construirVerdaderoFalso,
-    I02: construirOpcionUnica,
+    I01: construirOpcionUnica,
+    I02: construirVerdaderoFalso,
     I03: construirOpcionMultiple,
     I04: construirRelacionar,
     I05: construirOrdenar,
-    I06: construirCompletar,
-    I07: construirNumerica,
-    I08: construirAutoevaluacion
+    completar: construirCompletar,
+    numerica: construirNumerica,
+    autoevaluacion: construirAutoevaluacion
   };
 
   /* ---- Montaje ------------------------------------------------------
@@ -1430,7 +1445,7 @@
 
     var constructor = CONSTRUCTORES[interaccion.tipo];
     if (!constructor) {
-      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I08 ni I09–I12.');
+      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I05 (ni en completar/numerica/autoevaluacion) ni en I09–I12.');
     }
     var pregunta = constructor(idBase, idScorm, datos);
 

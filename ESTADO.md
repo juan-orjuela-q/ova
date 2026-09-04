@@ -31,6 +31,23 @@ sección siguiente.
 
 ---
 
+## Tareas de contenido (C0–C9)
+
+Ver `PLAN-CONTENIDO.md` — es el plan vigente sobre el que corren estas tareas.
+
+- [x] **C0 · Renumerar los catálogos al brief** — completada 4 sep
+- [ ] C1 · Layouts que faltan
+- [ ] C2 · Caja 16:9 y navegación pegada
+- [ ] C3 · Media: avatar y audio
+- [ ] C4 · Estado compartido
+- [ ] C5 · Interacciones nuevas
+- [ ] C6 · Interacciones ampliadas
+- [ ] C7 · Conversión del storyboard a contenido
+- [ ] C8 · Descargables y recursos
+- [ ] C9 · Empaquetado, auditoría y Moodle
+
+---
+
 ## Decisiones tomadas
 
 **27 ago — Catálogo de componentes atómicos/moleculares (T1.5, parte 1 de 2).**
@@ -1529,3 +1546,103 @@ tri-país.
 **Propuesta (G1–G4, X3).** Guion de presentación de 12 min más versión de 3,
 storyboard de muestra, ficha técnica con el licenciamiento de HeyGen **y de
 Degular**, cotización del curso demo, declaración de accesibilidad.
+
+---
+
+**4 sep — C0 cerrada: renumeración de los catálogos L01–L13/I01–I14 a los de
+BRIEF-DI.md, en rama `c0-renumeracion-catalogos`, sin tocar contenido ni
+comportamiento visual/funcional — solo números, claves y comentarios.**
+
+`BRIEF-DI-v2_nuam.md` (el documento de origen de Jose) no está en el
+repositorio — vivía en `/mnt/data/` cuando se escribió, fuera del árbol del
+proyecto. La tabla de equivalencias de `PLAN-CONTENIDO.md` §2.1/§2.2 ya
+distila exactamente lo que hacía falta de ese brief (nombre, significado y
+mapeo de cada código), así que fue la fuente única usada para esta tarea; no
+hizo falta pedir el archivo.
+
+**Alcance que se decidió mantener estrictamente mecánico.** La tabla de
+equivalencias de §2.1 lista, junto a varios renombres, ajustes de
+comportamiento (L04 admite `media` opcional, L09 admite `media` opcional, L05
+soporta 3–4 tarjetas, L12/L13 llevan superficie de marca/inversa). Se decidió
+NO aplicar ninguno de esos ajustes en C0: el cierre de la tarea en
+`PLAN-CONTENIDO.md` solo pide que los trece layouts se vean con los nombres
+correctos, que las catorce pantallas de prueba sigan navegando y que axe-core
+siga en cero — nada de eso depende de esas mejoras, y C1 ("Layouts que
+faltan") las nombra explícitamente como su propio trabajo. Meter esas mejoras
+aquí habría mezclado un cambio de comportamiento con un renombrado masivo,
+justo el tipo de mezcla que hace difícil revisar un diff grande. Si esa
+lectura del alcance no era la correcta, es fácil de corregir: son ajustes
+puntuales sobre layouts que ya quedaron con el nombre y la clase correctos.
+
+**La permutación, resuelta a mano en vez de con token temporal.** El aviso de
+`PLAN-CONTENIDO.md` §2.1.1 (renombrar en dos fases con `lXX-tmp` para no
+pisar colisiones de un buscar-y-reemplazar secuencial) es la manera segura de
+hacer esto con una herramienta ciega. Se optó por reescribir cada archivo con
+conocimiento completo del mapeo final en vez de correr un script de
+reemplazo — mismo resultado sin el riesgo, verificado al final con `grep`
+recursivo sobre `src/` y `dev/` buscando cada código viejo (`layout--l0X`,
+`PLANTILLAS.LXX`, `I01–I08`, ids como `l10-interaccion`) para confirmar que no
+quedó ninguno; no se generó ningún `-tmp` que limpiar.
+
+**Qué cambió, por archivo:**
+
+- `layouts.css` — los trece modificadores `.layout--l0X` reescritos con el
+  contenido que tenían sus equivalentes viejos (mapa completo en el
+  encabezado del archivo). Dos bloques viejos no migraron: `.layout--l09`
+  (proceso/línea de tiempo) se eliminó — ya estaba resuelto como
+  `datos.tipo:'proceso'` (T7); `.layout--l11` (término de glosario) se
+  eliminó — ya estaba resuelto como componente de T5
+  (`.termino-glosario`+`.modal`). L07 y L08 quedaron como comentarios sin
+  regla CSS (casillas nuevas del brief, sin contenido previo que migrar).
+- `router.js` — `PLANTILLAS` renombrado: `L02`(antes L04), `L03`(sin
+  cambio), `L04`(antes L02), `L06`(antes L10), `L12`(antes L05),
+  `L13`(antes L06). Las entradas viejas `L09` y `L11` se borraron (sus
+  layouts ya no existen — ver arriba). `CATALOGO_LAYOUTS` no cambió: sigue
+  siendo el rango L01–L13 completo, independiente de cuáles tengan
+  plantilla.
+- `quiz.js` — `CONSTRUCTORES`: `I01`/`I02` intercambiados
+  (`construirOpcionUnica`/`construirVerdaderoFalso`), y `I06`/`I07`/`I08`
+  perdieron el número — se dispatchan por nombre (`completar`, `numerica`,
+  `autoevaluacion`) porque el brief reserva esos tres códigos para tipos
+  que este proyecto no construye (zonas sensibles, tarjetas volteables,
+  comparador de dos columnas — ninguna pantalla de Jose los pide).
+  `CONSTRUCTORES_INSIGNIA` (I09–I12) no cambió: ya coincidía con el brief.
+- `content/ova-u1.js` — las catorce pantallas de prueba recodificadas
+  (`layout` e `interaccion.tipo`). Dos casos no fueron solo cambiar el
+  código: `s04` usaba el layout viejo de "término de glosario" (L11, ahora
+  inexistente) — se movió a L04 (texto plano), la misma pantalla y el
+  mismo contenido, sin la vitrina de modal que ahora vive en la kitchen
+  sink; `s09` usaba el layout viejo de "proceso" (L09, ahora inexistente)
+  — se movió a L04 con su mismo `datos.tipo:'proceso'`, que L04 ya sabe
+  renderizar (el `datos` opcional que T7 le dio al viejo L02).
+- `dev/kitchen-sink.html` — sección de layouts reordenada L01–L13 con las
+  etiquetas exactas del brief; L07/L08 muestran un marcador "pendiente
+  C1" en vez de una demo (no había nada que migrar). Catálogo de preguntas
+  reordenado I01/I02 e ids `c-quiz-i06/07/08` renombrados a
+  `c-quiz-completar/numerica/autoevaluacion`. Ids de montaje `l04-media` →
+  `l02-media`, `l10-interaccion` → `l06-interaccion`.
+- `components.css`, `base.css`, `charts.js` — solo comentarios: referencias
+  a números de layout/interacción viejos corregidas a los nuevos (anillo de
+  cifra, línea de tiempo horizontal, aviso de logro, motor de evaluación).
+- `CLAUDE.md` no se tocó — la regla dura 8 ya estaba escrita dando la
+  renumeración por hecha ("C0 los renumeró"), así que ya era correcta antes
+  de empezar.
+
+**Verificado con Playwright (Chromium) + axe-core, abriendo ambas páginas
+por `file://`:** los trece bloques de la kitchen sink muestran las etiquetas
+exactas del brief (L01 Portada de unidad … L13 Corte oscuro, cierre o
+transición); cero violaciones de axe-core (`wcag2a`+`wcag2aa`) en la kitchen
+sink y en `src/index.html`; las catorce pantallas de prueba (`s01`–`s14`) se
+recorren de punta a punta con «Siguiente» sin caer en el estado de error del
+motor ni un solo layout/interacción no reconocidos. Los únicos mensajes de
+consola son ruido conocido de axe-core intentando leer las hojas de estilo
+por `XMLHttpRequest` bajo `file://` (bloqueado por CORS, mismo hallazgo que
+T9 ya documentó) — cero errores propios de la aplicación (`[OVA] …`) en
+ninguna corrida. `grep` recursivo confirma cero rastros de la numeración
+vieja en `src/` y `dev/`.
+
+Sin verificar en esta sesión (fuera del cierre de C0, quedan para C1/C2):
+recorrido de teclado completo sobre las pantallas nuevas y 320px/zoom 200%
+— C0 no tocó ningún layout a nivel visual/estructural más allá de qué
+clase le corresponde a cada uno, así que hereda el mismo comportamiento
+responsive que ya tenían T1–T9.

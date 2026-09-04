@@ -157,7 +157,7 @@ a:active {
   font: var(--text-button);
 }
 
-/* Escalón de portada (L01/L13): más grande que la escala general.
+/* Escalón de portada (L01/L10; L10 era L13 antes de C0): más grande que la escala general.
    No sale de un token porque T1.5 tiene prohibido tocar tokens.css
    esta sesión — ver decisión en ESTADO.md. Escalar a token real la
    próxima vez que se revisen los valores de tipografía. */
