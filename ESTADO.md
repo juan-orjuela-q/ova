@@ -40,7 +40,7 @@ Ver `PLAN-CONTENIDO.md` — es el plan vigente sobre el que corren estas tareas.
 - [x] **C2 · Caja 16:9 y navegación pegada** — completada 4 sep
 - [x] **C3 · Media: avatar y audio** — completada 4 sep
 - [x] **C4 · Estado compartido** — completada 4 sep, rama `c4-estado-compartido`
-- [ ] C5 · Interacciones nuevas
+- [x] **C5 · Interacciones nuevas** — completada 4 sep, rama `c5-interacciones-nuevas`
 - [ ] C6 · Interacciones ampliadas
 - [ ] C7 · Conversión del storyboard a contenido
 - [ ] C8 · Descargables y recursos
@@ -2350,3 +2350,196 @@ matriz dentro de `construirDistribucionCapital`, leyendo
 `OVA.state.obtenerVariable` (ya disponible) pero comparando contra la
 distribución que el propio widget ya tiene en memoria — no hay que
 inventar nada en `state.js` para eso tampoco.
+
+---
+
+**4 sep — C5 cerrada: tres interacciones nuevas (I07, I08, I13), rama
+`c5-interacciones-nuevas`, despachadas por la misma tabla de widget
+autónomo que T8 ya usaba para I09–I12 — y tres bugs reales encontrados
+y corregidos por Playwright antes de cerrar, ninguno hipotético.**
+
+**Decisión de arquitectura, antes de escribir código.** Ninguna de las
+tres tiene un "correcto/incorrecto" por opción (I07/I08 son exploración
+sin evaluar, I13 suma puntos a una categoría en vez de calificar una
+respuesta), así que ninguna encaja en el patrón fieldset/Comprobar/
+Reintentar del catálogo de preguntas (I01–I05). Se despachan por
+`CONSTRUCTORES_INSIGNIA` — la tabla que T8 había nombrado en singular
+para I09–I12 y que, pese al nombre heredado, siempre fue "constructores
+de widget autónomo que arman su propio DOM y deciden solo cuándo
+reportar a SCORM", no "piezas insignia de unidad" en sentido estricto.
+El comentario junto a la tabla en `quiz.js` quedó corregido para decir
+esto explícitamente, en vez de dejar que el nombre mienta.
+
+**Qué se construyó, todo en `quiz.js` (documentado en su propio bloque
+de encabezado "C5", junto a los de I09–I12):**
+
+- **I07, tarjetas volteables.** Cada tarjeta es un `<button
+  aria-expanded>` real (pedido explícito del cierre de C5) con dos caras
+  hijas (`.calc-tarjeta__cara--frente/--reverso`) alternadas por
+  `hidden`; el ícono cambia de glifo (`help` → `task_alt`) junto con el
+  texto visible, nunca solo color, y cada volteo se anuncia por
+  `OVA.a11y.anunciar()` (la región compartida, no una propia). Es
+  reversible — volver a pulsar la tapa otra vez, no hay candado de una
+  sola vía. Al voltear las tres, se revela `retroalimentacion` (si el
+  contenido la trae) en un `.calc-resumen` (`role="status"`) y se
+  reporta una sola vez a `cmi.interactions` (tipoScorm `other`).
+- **I08, comparador de dos columnas.** Nace de un problema real de
+  layout, no de decoración: dos columnas angostas con etiquetas largas
+  no reflowean a 320px sin scroll horizontal (regla dura 7). En vez de
+  una `<table>`, cada fila es un `<button aria-pressed>` que siempre
+  muestra las dos columnas apiladas con su etiqueta de columna repetida
+  en texto — nunca se oculta ninguna, así que 320px y zoom 200% no
+  tienen nada que recortar. Pulsar una fila la marca "en foco de
+  comparación" (ícono + `aria-pressed` juntos) y arma la comparación
+  como oración en un `.calc-resumen`; una fila activa a la vez, pulsarla
+  de nuevo la desactiva. Reporta una sola vez a SCORM al pasar por las
+  cuatro filas, mismo criterio que I07.
+- **I13, test de perfil con resultado.** Reusa la cáscara
+  `.calc-calculadora` de I10–I12: un `<fieldset>`/`<legend>` con radios
+  (`.calc-opcion`, mismo grupo nativo que el selector de tipo de orden
+  de I11) por pregunta. «Ver resultado» empieza deshabilitado (mismo
+  patrón que «Registrar distribución» de I12) y se habilita solo cuando
+  las cuatro preguntas están respondidas. Al pulsarlo, suma los puntos
+  de las opciones elegidas y busca en `resultados` (evaluado en orden,
+  primera que matchea gana) la categoría con `minimo <= total <=
+  maximo`; sin match, pasa a `data-estado="error"` en vez de inventar un
+  resultado. **`datos.variable` fija la variable de contenido directo
+  con la categoría** (`OVA.state.establecerVariable`, sin "modo
+  contar/fijar" — eso es solo del catálogo de preguntas gradables) — es
+  la nota que C4 dejó pendiente explícitamente para esta sesión: la
+  llamada que le faltaba a `perfil_riesgo` desde que el mecanismo
+  genérico quedó listo sin productor real. `datos.aviso` agrega el
+  descargo orientativo/no-regulatorio como nota aparte del resultado.
+- **CSS (`components.css`):** `.calc-tarjetas`/`.calc-tarjeta` (grid de
+  tarjetas volteables), `.calc-comparador__*` (filas del comparador,
+  reusando el patrón de "ícono + borde cambian juntos" que ya usaba
+  "ejecutada" en I11), `.calc-test__opciones` (radios en columna, a
+  diferencia de la fila de `.calc-boleta__opciones` — son oraciones
+  largas, no "A mercado"/"Límite") y `.calc-calculadora__resultado-aviso`
+  (el descargo de I13). Ninguna clase nueva reutiliza `.quiz-` — mismo
+  criterio que T8 dejó establecido para toda la familia `.calc-`.
+- **`content/ova-u1.js`:** `s23` (L06, I07), `s24` (L06, I08) y `s25`
+  (L06, I13), insertadas antes de `s20` (el cierre real), mismo patrón
+  que C3 insertó `s21`/`s22`. Datos adaptados de los payloads reales de
+  Jose para P13/P28/P30 (`disenoInstruccional/storyboard_data_v2.json`)
+  — mismos textos, forma ajustada al contrato de `quiz.js`. `s25` es el
+  productor real de `perfil_riesgo` que faltaba desde C4.
+- **Kitchen sink:** sección nueva "Interacciones nuevas (C5)" dentro de
+  "Componentes", con las tres montadas de verdad vía `OVA.quiz.crear()`
+  — mismo criterio que la sección de I09–I12. Se agregaron
+  `storage.js`/`state.js` a los `<script>` de la página (no hacían falta
+  hasta ahora: ningún componente anterior llamaba a `OVA.state`), en el
+  mismo orden de dependencia que ya usa `src/index.html`.
+
+**Tres bugs reales encontrados con Playwright, ninguno hipotético:**
+
+1. **`.calc-tarjetas` no reflowaba a 320px + zoom de texto 200%
+   simultáneos.** `grid-template-columns: repeat(auto-fit, minmax(14rem,
+   1fr))` — un mínimo de grid en `rem` puro crece con la fuente: a 200%
+   de zoom, `14rem` mide 448px, más ancho que el viewport de 320px, así
+   que la tarjeta no podía encoger y desbordaba. Es el mismo hallazgo
+   que T1.5 dejó documentado el 27 ago para el ancho de lectura de L01
+   ("el `%` es lo que de verdad protege bajo zoom, la posición en
+   vw/vh no crece con la fuente"), aplicado aquí a un mínimo de grid en
+   vez de a un `max-width`. Arreglado con `minmax(min(14rem, 100%),
+   1fr)`. Encontrado porque la verificación de 320px/zoom 200% de esta
+   sesión, a diferencia de C1–C4, corrió las dos condiciones **a la
+   vez** por un orden accidental del script de verificación — combinar
+   ambas trampas resultó ser más estricto que verificarlas por separado
+   y encontró un bug real que un chequeo separado no habría visto. Vale
+   la pena mantener esa combinación en verificaciones futuras.
+2. **`OVA.state` no existía en la kitchen sink.** I13 llama a
+   `OVA.state.establecerVariable()` directo desde su constructor (mismo
+   patrón que I11 desde C4), pero la kitchen sink nunca había cargado
+   `state.js`/`storage.js` — ningún componente anterior los necesitaba.
+   `TypeError: Cannot read properties of undefined` al pulsar «Ver
+   resultado». I11 tiene el mismo código desde C4 pero nunca lo había
+   disparado porque su demo de la kitchen sink no le pasa
+   `datos.variable` — el bug ya existía en potencia, C5 fue quien lo
+   hizo real al querer demostrar `perfil_riesgo` de verdad. Arreglado
+   agregando los dos scripts en el orden de dependencia correcto
+   (`storage.js` → `scorm.js` → `state.js`, igual que
+   `src/index.html`), no envolviendo la llamada en un guard — un guard
+   habría enmascarado el mismo bug en producción si algún día
+   `src/index.html` cargara los scripts en el orden equivocado.
+3. **Falso positivo de axe-core por contraste, no un bug real —
+   diagnosticado a fondo antes de descartarlo.** Corriendo axe-core
+   sobre `s25` después de responder, recargar y navegar en fila por
+   `s23`→`s24`→`s25`, salía intermitentemente (2 de cada 3 corridas)
+   una violación de `color-contrast` en `.layout__kicker` y
+   `.layout__titulo`, con colores que variaban entre corridas
+   (`#828282`, `#a2a2a2`…) y siempre convergían hacia un gris más claro
+   que el real. Aislado con ocho recorridos limpios en pantalla fresca
+   (sin violación ninguna) contra el mismo recorrido con navegación
+   rápida en fila (violación en 4 de 5 intentos): axe-core estaba
+   sampleando el color mientras la animación de entrada del contenido
+   (`layout-entrada`, ítem 2 del inventario de movimiento,
+   opacity+translateY con `--dur-base`/`--stagger`) todavía estaba a
+   mitad de camino — el gris "real" tras terminar el fade siempre pasa
+   limpio. No es un bug de C5 ni de ningún código tocado esta sesión:
+   es una limitación conocida de axe-core con contenido animado,
+   confirmada haciendo que la violación desapareciera sola al esperar
+   a que la transición terminara antes de auditar, sin tocar una sola
+   línea de CSS. Anotado aquí para que quien audite con axe-core en C9
+   sepa esperar a que la animación de entrada asiente antes de leer
+   resultados de `color-contrast` — si no, va a perseguir un fantasma.
+
+**Verificado con Playwright (Chromium) + axe-core, con una API SCORM
+1.2 simulada, abriendo `dev/kitchen-sink.html` y `src/index.html` por
+`file://`:**
+
+- **Las tres, en la kitchen sink:** I07 con 3 tarjetas (volteo real con
+  Enter en foco, cara reverso visible, ícono cambia a `task_alt`, retro
+  general aparece tras voltear las tres, vuelve a tapar y sigue
+  reversible); I08 con 4 filas (`aria-pressed` real con Enter en foco,
+  resumen anuncia la comparación con el texto de las dos columnas,
+  última fila activa, pulsarla de nuevo la desactiva y vacía el
+  resumen); I13 con 4 preguntas («Ver resultado» deshabilitado sin
+  responder, se habilita al completar las cuatro, puntaje 12 →
+  `data-estado="ok"`, etiqueta "Perfil agresivo", aviso visible).
+- **320px y zoom de texto 200%, acotado a `#c-nuevas-c5`** (el resto de
+  la kitchen sink ya desbordaba a 320px por `.media-audio` de C3 y
+  `.dato-tabla` de T7 — confirmado corriendo el mismo chequeo contra el
+  estado de la rama antes de los cambios de C5, así que no es
+  regresión de esta sesión ni se intentó arreglar, fuera de alcance):
+  cero overflow, incluida la combinación 320px + zoom 200% a la vez que
+  encontró el bug 1 de arriba.
+- **`prefers-reduced-motion`:** la transición de `.calc-tarjeta`
+  (compartida por `.calc-comparador__fila`, mismo `var(--dur-fast)
+  var(--ease-out)`) mide `0.00001s` emulado, sin duplicar el media
+  query — hereda el colapso de `tokens.css`.
+- **axe-core (`wcag2a`+`wcag2aa`) en cero violaciones** en `#c-nuevas-c5`
+  (con las tres interactuadas, no solo en su estado inicial) y en las
+  tres pantallas nuevas de `src/index.html` (`s23`/`s24`/`s25`, con la
+  espera a que la animación de entrada asiente — ver el bug 3).
+- **Recorrido de teclado real (Tab, no clic) por las tres seguidas:** 3
+  botones de tarjeta → 4 botones de fila → 4 entradas de grupo de radio
+  (una por fieldset de pregunta — cada grupo de radios es su propia
+  parada de Tab, correcto) → el foco sigue de largo al contenido
+  siguiente de la página porque «Ver resultado» está `disabled` hasta
+  responder las cuatro, igual que `.boton:disabled` en el resto del
+  proyecto. Nada inalcanzable, nada atrapado.
+- **`src/index.html`, con una API SCORM 1.2 simulada:** navegar a
+  `#s23`/`#s24`/`#s25` monta cada interacción real vía
+  `PLANTILLAS.L06`/`crearInteraccion()`, sin cambios en `router.js` —
+  el mismo despacho genérico por `interaccion.tipo` que ya servía a
+  I01–I05/I09–I12 sirve a I07/I08/I13 sin tocarlo. Responder las cuatro
+  preguntas de `s25` y pulsar «Ver resultado» deja
+  `OVA.state.obtenerVariable('perfil_riesgo') === 'agresivo'`
+  (puntaje 12); recargar la página conserva el valor — la persistencia
+  genérica de C4 funciona igual para el productor nuevo, sin tocar
+  `state.js`.
+- Cero errores de consola propios en toda la corrida (aislado el ruido
+  conocido de axe-core bajo `file://` que T9 ya documentó, y el 404
+  esperado de la imagen de avatar de C3 que todavía no existe).
+
+**Cero hex nuevo** en los cuatro archivos tocados (`quiz.js`,
+`components.css`, `content/ova-u1.js`, `dev/kitchen-sink.html`).
+
+**Nota abierta para C7**, dejada también en `PLAN-CONTENIDO.md` junto al
+cierre de C5: el storyboard real de Jose ubica P13/P28 en layout L05
+("tarjetas comparativas"), no en L06 como las pantallas de prueba de
+esta sesión — `PLANTILLAS.L05` hoy no tiene ranura para `interaccion`.
+C7 decide si extiende L05 o convierte esas dos pantallas a L06/L07;
+ninguna de las dos requiere tocar `quiz.js`, el contrato de
+`interaccion.datos` para I07/I08 ya está completo y probado.

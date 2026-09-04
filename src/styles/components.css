@@ -1901,3 +1901,129 @@ a.cap-tarjeta:hover {
   gap: var(--sp-1);
   flex-shrink: 0;
 }
+
+/* ---- Test de perfil (I13) — grupo de radios por pregunta -----------
+   Mismo <fieldset class="calc-boleta__tipo"> + <label class="calc-
+   opcion"> que ya usa el selector de tipo de orden de I11; lo único
+   nuevo es que las opciones van en columna (son oraciones largas, no
+   "A mercado"/"Límite"), no en fila. */
+.calc-test__opciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* Nota de resultado (I13): el descargo/aviso de un test orientativo,
+   texto aparte del resultado principal, mismo nivel visual que
+   .calc-calculadora__resultado-etiqueta pero secundario. */
+.calc-calculadora__resultado-aviso {
+  color: var(--text-secondary);
+}
+
+/* ---- Tarjetas volteables (I07) --------------------------------------
+   Ver el bloque de documentación C5 en el encabezado de quiz.js. Grid
+   fluido en vez de un carrusel: a 320px cada tarjeta cae a una columna
+   sola, sin scroll horizontal. */
+.calc-tarjetas {
+  display: grid;
+  /* min(14rem, 100%), no 14rem a secas: a 320px + zoom de texto 200% un
+     mínimo de grid en rem puro no reflowea (14rem crece con la fuente
+     y supera el ancho del viewport) — mismo hallazgo que T1.5 dejó
+     documentado para el ancho de lectura de L01. */
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  gap: var(--sp-4);
+}
+.calc-tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--surface-default);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.calc-tarjeta:hover {
+  background: var(--surface-subtle);
+}
+.calc-tarjeta__icono {
+  font-size: 1.5rem;
+  color: var(--text-tertiary);
+}
+/* El ícono cambia de glifo (help → task_alt) junto con el texto que
+   muestra el botón — nunca solo el color, regla dura de CLAUDE.md. El
+   verde aquí es un acento adicional, no el único código del estado. */
+.calc-tarjeta[aria-expanded="true"] {
+  border-color: var(--nuam-green-500);
+}
+.calc-tarjeta[aria-expanded="true"] .calc-tarjeta__icono {
+  color: var(--nuam-green-500);
+}
+.calc-tarjeta__cara--reverso {
+  color: var(--text-secondary);
+}
+
+/* ---- Comparador de dos columnas (I08) -------------------------------
+   Ver el bloque de documentación C5 en el encabezado de quiz.js. Nunca
+   una <table> de dos columnas angostas (no reflowea a 320px sin scroll
+   horizontal): cada fila apila las dos columnas con su etiqueta de
+   columna repetida en texto, siempre visible. */
+.calc-comparador__encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-inline: var(--sp-5);
+  color: var(--text-secondary);
+}
+.calc-comparador__filas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.calc-comparador__fila {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--surface-default);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.calc-comparador__fila:hover {
+  background: var(--surface-subtle);
+}
+.calc-comparador__fila-icono {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+/* Fila activa: ícono + borde cambian juntos (nunca solo el color),
+   mismo patrón que la tarjeta de I07 y el "ejecutada" de I11. */
+.calc-comparador__fila--activa {
+  border-color: var(--nuam-green-500);
+}
+.calc-comparador__fila--activa .calc-comparador__fila-icono {
+  color: var(--nuam-green-500);
+}
+.calc-comparador__fila-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.calc-comparador__fila-valores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  color: var(--text-secondary);
+}

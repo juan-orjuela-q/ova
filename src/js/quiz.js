@@ -16,11 +16,13 @@
    renumeró I01/I02 — T6 los había construido al revés (I01 era
    verdadero_falso, I02 era opcion_unica) — y le quitó el número a
    completar/numerica/autoevaluacion, porque el brief reserva I06/I07/I08
-   para otros tres tipos que este proyecto no construye (I06 zonas
-   sensibles sobre imagen, I07 tarjetas volteables, I08 comparador de dos
-   columnas — ninguna pantalla de Jose los pide, ver PLAN-CONTENIDO.md
-   §2.2). Los tres tipos sin número siguen probados y funcionando por su
-   nombre en vez de por código: borrar código que funciona no ahorra
+   para otros tres tipos. De esos tres, I06 (zonas sensibles sobre imagen)
+   sigue sin construirse — ninguna pantalla de Jose lo pide, ver
+   PLAN-CONTENIDO.md §2.2 — pero I07 (tarjetas volteables) e I08
+   (comparador de dos columnas) sí se construyeron, en C5 (ver su bloque
+   de documentación más abajo, junto a I13). Los tres tipos sin número
+   (completar/numerica/autoevaluacion) siguen probados y funcionando por
+   su nombre en vez de por código: borrar código que funciona no ahorra
    nada.
 
    Cada interacción del contrato de contenido sigue siendo un objeto
@@ -248,6 +250,99 @@
          correct_responses (no hay una única distribución "correcta"
          en un ejercicio de armar portafolio), reenviable cuantas veces
          se quiera con la distribución vigente.
+
+   ---------------------------------------------------------------------
+   C5 (PLAN-CONTENIDO.md) — I07, I08, I13. Ninguna de las tres es una
+   pregunta gradable (I01–I05) ni una pieza insignia de unidad (I09–I12
+   son las cuatro de T8, de las piezas insignia de las unidades 2/3/5):
+   son interacciones normales de cápsula de la Unidad 1 que tampoco
+   encajan en el patrón fieldset/Comprobar/Reintentar porque ninguna
+   tiene un "correcto/incorrecto" por opción — I07/I08 son exploración
+   sin evaluación e I13 es un test que agrega puntos a una categoría, no
+   una respuesta correcta. Por eso las tres se despachan por la misma
+   tabla que I09–I12 (CONSTRUCTORES_INSIGNIA, ver la nota de arquitectura
+   más abajo) en vez de por CONSTRUCTORES: arman su propio DOM completo y
+   deciden ellas mismas cuándo reportar a SCORM, aunque numéricamente el
+   brief las ubique fuera del rango I09–I12.
+
+     I07 tarjetas_volteables { enunciado?, tarjetas:[{frente,reverso}], retroalimentacion? }
+       - Una `<button aria-expanded>` por tarjeta (pedido explícito del
+         cierre de C5 en PLAN-CONTENIDO.md) — Enter/Espacio y el foco
+         vienen gratis del navegador, mismo criterio que el resto del
+         catálogo. Cada tarjeta guarda dos caras (`.calc-tarjeta__cara`)
+         como hijos directos del botón; volver a pulsar la vuelve a
+         tapar — no es un candado de una sola vía como el bloqueo de una
+         pregunta gradable, es una ficha que se consulta cuantas veces
+         se quiera, mismo espíritu que I10–I12.
+       - El ícono del botón cambia de texto ('help' → 'task_alt') junto
+         con el texto visible al voltear — nunca solo un color — y cada
+         volteo se anuncia por `OVA.a11y.anunciar()` (la región
+         compartida de a11y.js, no una región propia), mismo patrón que
+         los botones "Mover antes/después" de I09.
+       - Sin arrastre y sin evaluación: no hay "correcta". Al voltear
+         las tarjetas completas al menos una vez, se revela
+         `retroalimentacion` (si el contenido la trae) en un
+         `.calc-resumen` (`role="status"`) y se reporta una sola vez a
+         `cmi.interactions` (tipoScorm 'other', neutral) — el mismo
+         criterio de "reportar al completar la exploración" que usa I08.
+       - `datos.id` opcional, igual que el resto del catálogo.
+
+     I08 comparador_columnas { enunciado?, columnas:[textoIzq,textoDer], filas:[{etiqueta,izquierda,derecha}] }
+       - Nace de un problema real de layout, no de decoración: dos
+         columnas lado a lado no reflowean limpio a 320px (regla dura 7
+         de CLAUDE.md prohíbe el scroll horizontal, y una tabla nativa de
+         dos columnas angostas con etiquetas largas lo produce). En vez
+         de una `<table>`, cada fila es un `<button aria-pressed>` que
+         siempre muestra las dos columnas apiladas con su etiqueta de
+         columna repetida en texto (`"Ordinarias: …" / "Preferenciales:
+         …"`) — nunca se oculta ninguna, así que zoom de texto 200% y
+         320px no tienen nada que recortar. Pulsar una fila la marca
+         como "en foco de comparación" (ícono + `aria-pressed` juntos,
+         nunca solo el borde) y arma la comparación como una oración en
+         un `.calc-resumen` (`role="status"`) — la interacción real que
+         pide el cierre de C5, no una tabla de solo lectura. Una fila
+         activa a la vez; pulsarla de nuevo la desactiva y vacía el
+         resumen.
+       - Reporta a `cmi.interactions` (tipoScorm 'other', neutral) una
+         sola vez, al pasar por todas las filas al menos una vez —
+         mismo criterio de "completar la exploración" que I07.
+       - Sin arrastre, sin evaluación, `datos.id` opcional.
+
+     I13 test_perfil { enunciado?, preguntas:[{enunciado,opciones:[{texto,puntos}]}], resultados:[{minimo,maximo?,categoria,etiqueta,texto}], variable?, aviso? }
+       - Reusa la cáscara `.calc-calculadora` (I10–I12): un
+         `<fieldset>`/`<legend>` con radios (`.calc-opcion`, mismo grupo
+         nativo que el selector de tipo de orden de I11) por pregunta,
+         resultado final en el mismo bloque `.calc-calculadora__resultado`.
+       - «Ver resultado» empieza deshabilitado (mismo patrón que
+         «Registrar distribución» en I12) y se habilita cuando las
+         `preguntas.length` están respondidas — nunca se puede calcular
+         un resultado a medias.
+       - Al pulsarlo: suma los `puntos` de las opciones elegidas y busca
+         en `resultados` (evaluado en orden, primera que matchea gana —
+         mismo criterio que `resultado.reglas` de L08/C4) la que cumple
+         `minimo <= total <= maximo` (`maximo` opcional = sin techo).
+         Sin match, el resultado pasa a `data-estado="error"` (ícono +
+         texto, nunca solo el borde) en vez de mostrar un resultado
+         inventado — un catálogo de `resultados` mal armado por el
+         contenido no debe fabricar una categoría falsa.
+       - `datos.variable` (nombre de variable de contenido, opcional):
+         al llegar a un resultado válido, fija esa variable directo con
+         `categoria` — sin "modo contar/fijar" (eso es solo del catálogo
+         de preguntas gradables I01–I05/completar/numerica/
+         autoevaluacion, ver `actualizarVariableContenido` más arriba),
+         mismo criterio que I11 fijó `resultado_boleta` en `enviar()`
+         (nota dejada por C4 en PLAN-CONTENIDO.md §6 para cuando
+         existiera I13: "una llamada directa a
+         OVA.state.establecerVariable(...) sin tocar quiz.js fuera de
+         esa llamada"). Reenviable cuantas veces se quiera, cada envío
+         sobreescribe el anterior — igual que I11/I12.
+       - `datos.aviso` (opcional): texto de descargo, añadido como nota
+         aparte del resultado — el orientativo/no-regulatorio que trae
+         el payload real de Jose (P30, "no reemplaza el perfilamiento
+         formal de un intermediario").
+       - Reporte a SCORM igual a I10–I12: tipoScorm 'other', sin
+         correct_responses (no hay una única respuesta "correcta" en un
+         test de autopercepción).
    ============================================================ */
 (function () {
   'use strict';
@@ -1446,16 +1541,317 @@
     return raiz;
   }
 
+  /* C5 — I07, tarjetas volteables. Ver el bloque de documentación C5 en
+     el encabezado del archivo. */
+  function construirTarjetasVolteables(idBase, idScorm, datos) {
+    var tarjetasDatos = datos.tarjetas || [];
+
+    var raiz = crear_('div', 'calc-calculadora');
+    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
+
+    var grilla = crear_('div', 'calc-tarjetas');
+    raiz.appendChild(grilla);
+
+    var tarjetas = tarjetasDatos.map(function (datosTarjeta, indice) {
+      var boton = document.createElement('button');
+      boton.type = 'button';
+      boton.className = 'calc-tarjeta';
+      boton.setAttribute('aria-expanded', 'false');
+
+      var icono = crear_('span', 'icono calc-tarjeta__icono', 'help');
+      icono.setAttribute('aria-hidden', 'true');
+      boton.appendChild(icono);
+
+      var caraFrente = crear_('span', 'calc-tarjeta__cara calc-tarjeta__cara--frente');
+      caraFrente.appendChild(crear_('span', 'tipo-h5', datosTarjeta.frente));
+      var caraReverso = crear_('span', 'calc-tarjeta__cara calc-tarjeta__cara--reverso', datosTarjeta.reverso);
+      caraReverso.hidden = true;
+      boton.appendChild(caraFrente);
+      boton.appendChild(caraReverso);
+
+      grilla.appendChild(boton);
+      return { boton: boton, icono: icono, caraFrente: caraFrente, caraReverso: caraReverso, volteada: false };
+    });
+
+    var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
+    resumen.setAttribute('role', 'status');
+    resumen.hidden = true;
+    raiz.appendChild(resumen);
+
+    var reportada = false;
+
+    function todasVolteadas() {
+      return tarjetas.every(function (t) { return t.volteada; });
+    }
+
+    function alternar(indice) {
+      var t = tarjetas[indice];
+      var d = tarjetasDatos[indice];
+      var expandido = t.boton.getAttribute('aria-expanded') === 'true';
+      var nuevo = !expandido;
+      t.boton.setAttribute('aria-expanded', String(nuevo));
+      t.caraFrente.hidden = nuevo;
+      t.caraReverso.hidden = !nuevo;
+      t.icono.textContent = nuevo ? 'task_alt' : 'help';
+      OVA.a11y.anunciar((nuevo ? 'Mostrando: ' : 'Volviendo a: ') + (nuevo ? d.reverso : d.frente));
+      if (nuevo) t.volteada = true;
+
+      if (!reportada && todasVolteadas()) {
+        reportada = true;
+        if (datos.retroalimentacion) {
+          resumen.hidden = false;
+          resumen.textContent = datos.retroalimentacion;
+        } else {
+          OVA.a11y.anunciar('Revisaste las ' + tarjetas.length + ' tarjetas.');
+        }
+        reportarSCORM({
+          idScorm: idScorm,
+          tipoScorm: 'other',
+          textoRespuesta: function () { return 'volteadas=' + tarjetas.length; },
+          textoCorrecta: function () { return null; }
+        }, 'neutral');
+      }
+    }
+
+    tarjetas.forEach(function (t, indice) {
+      t.boton.addEventListener('click', function () { alternar(indice); });
+    });
+
+    return raiz;
+  }
+
+  /* C5 — I08, comparador de dos columnas. Ver el bloque de
+     documentación C5 en el encabezado del archivo. */
+  function construirComparadorColumnas(idBase, idScorm, datos) {
+    var columnas = datos.columnas || ['Columna A', 'Columna B'];
+    var filasDatos = datos.filas || [];
+
+    var raiz = crear_('div', 'calc-calculadora');
+    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
+
+    var encabezado = crear_('div', 'calc-comparador__encabezado');
+    encabezado.setAttribute('aria-hidden', 'true');
+    encabezado.appendChild(crear_('span', 'calc-comparador__encabezado-item', columnas[0]));
+    encabezado.appendChild(crear_('span', 'calc-comparador__encabezado-item', columnas[1]));
+    raiz.appendChild(encabezado);
+
+    var lista = crear_('ul', 'calc-comparador__filas');
+    raiz.appendChild(lista);
+
+    var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
+    resumen.setAttribute('role', 'status');
+    resumen.hidden = true;
+    raiz.appendChild(resumen);
+
+    var activa = null;
+    var visitadas = {};
+    var reportada = false;
+
+    var filas = filasDatos.map(function (filaDatos, indice) {
+      var li = document.createElement('li');
+      var boton = document.createElement('button');
+      boton.type = 'button';
+      boton.className = 'calc-comparador__fila';
+      boton.setAttribute('aria-pressed', 'false');
+
+      var icono = crear_('span', 'icono calc-comparador__fila-icono', 'chevron_right');
+      icono.setAttribute('aria-hidden', 'true');
+      boton.appendChild(icono);
+
+      var textoWrap = crear_('span', 'calc-comparador__fila-texto');
+      textoWrap.appendChild(crear_('span', 'tipo-h5 calc-comparador__fila-etiqueta', filaDatos.etiqueta));
+      var valores = crear_('span', 'calc-comparador__fila-valores');
+      valores.appendChild(crear_('span', 'calc-comparador__valor', columnas[0] + ': ' + filaDatos.izquierda));
+      valores.appendChild(crear_('span', 'calc-comparador__valor', columnas[1] + ': ' + filaDatos.derecha));
+      textoWrap.appendChild(valores);
+      boton.appendChild(textoWrap);
+
+      li.appendChild(boton);
+      lista.appendChild(li);
+      return { boton: boton, icono: icono };
+    });
+
+    function revisarCompletado() {
+      if (reportada) return;
+      if (Object.keys(visitadas).length < filas.length) return;
+      reportada = true;
+      reportarSCORM({
+        idScorm: idScorm,
+        tipoScorm: 'other',
+        textoRespuesta: function () { return 'filas=' + filas.length; },
+        textoCorrecta: function () { return null; }
+      }, 'neutral');
+    }
+
+    function seleccionar(indice) {
+      if (activa != null) {
+        filas[activa].boton.setAttribute('aria-pressed', 'false');
+        filas[activa].boton.classList.remove('calc-comparador__fila--activa');
+        filas[activa].icono.textContent = 'chevron_right';
+      }
+      if (activa === indice) {
+        activa = null;
+        resumen.hidden = true;
+        resumen.textContent = '';
+        return;
+      }
+      activa = indice;
+      visitadas[indice] = true;
+      var f = filasDatos[indice];
+      filas[indice].boton.setAttribute('aria-pressed', 'true');
+      filas[indice].boton.classList.add('calc-comparador__fila--activa');
+      filas[indice].icono.textContent = 'task_alt';
+      resumen.hidden = false;
+      resumen.textContent = 'Comparando ' + f.etiqueta + ' — ' + columnas[0] + ': ' + f.izquierda + '. ' + columnas[1] + ': ' + f.derecha + '.';
+      revisarCompletado();
+    }
+
+    filas.forEach(function (f, indice) {
+      f.boton.addEventListener('click', function () { seleccionar(indice); });
+    });
+
+    return raiz;
+  }
+
+  /* C5 — I13, test de perfil con resultado. Ver el bloque de
+     documentación C5 en el encabezado del archivo. */
+  function construirTestPerfil(idBase, idScorm, datos) {
+    var preguntas = datos.preguntas || [];
+    var resultados = datos.resultados || [];
+
+    var raiz = crear_('div', 'calc-calculadora');
+    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
+
+    var entradas = crear_('div', 'calc-calculadora__entradas');
+    raiz.appendChild(entradas);
+
+    var respuestas = new Array(preguntas.length).fill(null);
+
+    var grupos = preguntas.map(function (pregunta, indice) {
+      var nombre = idBase + '-perfil-' + indice;
+      var fieldset = document.createElement('fieldset');
+      fieldset.className = 'calc-boleta__tipo';
+      fieldset.appendChild(crear_('legend', 'calc-campo__etiqueta', pregunta.enunciado));
+      var opciones = crear_('div', 'calc-test__opciones');
+      (pregunta.opciones || []).forEach(function (opcion, indiceOpcion) {
+        var input = document.createElement('input');
+        input.type = 'radio';
+        input.name = nombre;
+        input.id = nombre + '-' + indiceOpcion;
+        var label = crear_('label', 'calc-opcion');
+        label.setAttribute('for', input.id);
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(opcion.texto));
+        opciones.appendChild(label);
+        input.addEventListener('change', function () {
+          respuestas[indice] = opcion.puntos;
+          recalcularValidez();
+        });
+      });
+      fieldset.appendChild(opciones);
+      entradas.appendChild(fieldset);
+      return fieldset;
+    });
+
+    var resultado = crear_('div', 'calc-calculadora__resultado');
+    resultado.hidden = true;
+    var resultadoIcono = crear_('span', 'icono calc-calculadora__resultado-icono');
+    resultadoIcono.setAttribute('aria-hidden', 'true');
+    var resultadoTexto = crear_('div', 'calc-calculadora__resultado-texto');
+    var resultadoEtiqueta = crear_('p', 'calc-calculadora__resultado-etiqueta');
+    var resultadoValor = document.createElement('output');
+    resultadoValor.className = 'tipo-h5 calc-calculadora__resultado-valor';
+    var resultadoAviso = crear_('p', 'tipo-cuerpo-sm calc-calculadora__resultado-aviso');
+    resultadoAviso.hidden = true;
+    resultadoTexto.appendChild(resultadoEtiqueta);
+    resultadoTexto.appendChild(resultadoValor);
+    resultadoTexto.appendChild(resultadoAviso);
+    resultado.appendChild(resultadoIcono);
+    resultado.appendChild(resultadoTexto);
+    raiz.appendChild(resultado);
+
+    var acciones = crear_('div', 'calc-acciones');
+    var botonVer = crear_('button', 'boton', 'Ver resultado');
+    botonVer.type = 'button';
+    botonVer.disabled = true;
+    acciones.appendChild(botonVer);
+    raiz.appendChild(acciones);
+
+    var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
+    resumen.setAttribute('role', 'status');
+    raiz.appendChild(resumen);
+
+    function recalcularValidez() {
+      botonVer.disabled = respuestas.some(function (r) { return r == null; });
+    }
+
+    function buscarResultado(total) {
+      for (var i = 0; i < resultados.length; i++) {
+        var r = resultados[i];
+        if (total >= r.minimo && (r.maximo == null || total <= r.maximo)) return r;
+      }
+      return null;
+    }
+
+    function verResultado() {
+      if (botonVer.disabled) return;
+      var total = respuestas.reduce(function (a, b) { return a + b; }, 0);
+      var match = buscarResultado(total);
+      resultado.hidden = false;
+
+      if (match) {
+        resultado.dataset.estado = 'ok';
+        resultadoIcono.textContent = 'task_alt';
+        resultadoEtiqueta.textContent = match.etiqueta || match.categoria;
+        resultadoValor.textContent = match.texto || '';
+        if (datos.aviso) {
+          resultadoAviso.hidden = false;
+          resultadoAviso.textContent = datos.aviso;
+        }
+        if (datos.variable) OVA.state.establecerVariable(datos.variable, match.categoria);
+        resumen.textContent = 'Resultado registrado: perfil ' + (match.categoria || match.etiqueta) + '.';
+      } else {
+        resultado.dataset.estado = 'error';
+        resultadoIcono.textContent = 'error';
+        resultadoEtiqueta.textContent = 'No se pudo calcular tu perfil';
+        resultadoValor.textContent = 'El puntaje obtenido no coincide con ningún resultado configurado.';
+        resumen.textContent = 'No se registró resultado: revisa el contenido de esta pregunta.';
+      }
+
+      reportarSCORM({
+        idScorm: idScorm,
+        tipoScorm: 'other',
+        textoRespuesta: function () { return respuestas.join(','); },
+        textoCorrecta: function () { return null; }
+      }, 'neutral');
+    }
+
+    botonVer.addEventListener('click', verResultado);
+
+    return raiz;
+  }
+
+  // A pesar del nombre (heredado de T8, cuando solo cubría I09–I12), esta
+  // tabla es "constructores de widget autónomo, sin fieldset/Comprobar/
+  // Reintentar" — C5 sumó I07/I08/I13 aquí por la misma razón que I09–I12,
+  // no porque sean piezas insignia de unidad. Ver el bloque C5 en el
+  // encabezado del archivo.
   var CONSTRUCTORES_INSIGNIA = {
+    I07: construirTarjetasVolteables,
+    I08: construirComparadorColumnas,
     I09: construirLineaTiempoOrdenable,
     I10: construirCalculadoraParametrica,
     I11: construirBoletaCompra,
-    I12: construirDistribucionCapital
+    I12: construirDistribucionCapital,
+    I13: construirTestPerfil
   };
 
   // Numeración del brief tras C0 (ver la nota al inicio del archivo):
   // I01/I02 van al revés de como los construyó T6, y completar/numerica/
-  // autoevaluacion se dispatchan por nombre, no por código I06/I07/I08.
+  // autoevaluacion se dispatchan por nombre, no por número — el brief no
+  // les reserva código. I06 (zonas sensibles sobre imagen) sigue sin
+  // construirse; I07/I08/I13 se despachan por CONSTRUCTORES_INSIGNIA, no
+  // por esta tabla (ver la nota junto a esa tabla).
   var CONSTRUCTORES = {
     I01: construirOpcionUnica,
     I02: construirVerdaderoFalso,
@@ -1492,7 +1888,7 @@
 
     var constructor = CONSTRUCTORES[interaccion.tipo];
     if (!constructor) {
-      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I05 (ni en completar/numerica/autoevaluacion) ni en I09–I12.');
+      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I05 (ni en completar/numerica/autoevaluacion) ni en I07/I08/I09–I13.');
     }
     var pregunta = constructor(idBase, idScorm, datos);
 
