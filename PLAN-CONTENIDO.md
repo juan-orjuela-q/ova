@@ -309,6 +309,23 @@ sin scroll horizontal.
 ### C3 · Media: avatar y audio
 Tipo `avatar` (imagen + audio + VTT + transcripción) y reproductor de audio
 real sobre `.media-audio`. Degradación a imagen + transcripción sin audio.
+
+Tres cosas que C3 hereda y tiene que resolver, no descubrir:
+
+- **En L01 la media dejó de ser decorativa.** C1 la trata como fondo y la saca
+  del reproductor accesible, que era correcto para el relleno de stock. Pero
+  P01 lleva avatar con 16 segundos de locución: en el contenido real es
+  contenido, con transcripción obligatoria. L01 necesita distinguir las dos
+  cosas, no elegir una.
+- **El registro de instancias de `media.js` no se limpia al desmontar una
+  pantalla** (hallazgo de T4, anotado en `ESTADO.md`). Se dejó pasar porque
+  eran catorce pantallas de prueba; con 47 pantallas y 14 avatares, «un solo
+  reproductor activo a la vez» pasa a apoyarse en referencias muertas.
+  Que `router.js` avise a `media.js` al desmontar.
+- **La transcripción no es un extra de accesibilidad: es el placeholder.**
+  Mientras no haya audio, es lo único que lleva la locución de Jose a la
+  pantalla. Tiene que verse deliberada, no como un hueco.
+
 **Cierre:** operable solo con teclado, un reproductor activo a la vez,
 transcripción visible y descargable, y una pantalla sin archivo de audio se ve
 terminada, no rota.
