@@ -164,53 +164,79 @@ contra la tabla de Jose, con sus casos de prueba.
 
 ---
 
-## 4. Diseño: la caja 16:9
+## 4. Diseño: el marco fijo
 
 **Problema observado (Juan):** el OVA reflowea bien y aguanta zoom de texto,
-pero las pantallas cambian tanto de alto entre una y otra que navegar cansa. En
-Moodle el contenedor del SCORM tiene `max-width: 1390px`, que en 16:9 son
-≈780 px de alto.
+pero las pantallas cambian tanto de alto entre una y otra que navegar cansa.
 
-**Decisión: alto mínimo proporcional, no caja fija.** En pantallas
-horizontales cada pantalla mide al menos 9/16 del ancho, el contenido va
-centrado vertical y horizontalmente, y la barra de navegación queda pegada
-abajo. Si una pantalla larga excede esa altura, la página crece hacia abajo y
-la barra sigue visible — que es lo que mantiene el criterio de WCAG 1.4.4:
-con zoom de texto al 200 % el contenido sigue teniendo a dónde crecer, sin
-scroll interno atrapado ni contenido recortado.
+**Decisión revisada (Juan, 4 sep — sustituye el «alto mínimo proporcional» que
+este plan traía antes): marco fijo del alto del viewport, con las dos barras
+fijas y el scroll en el medio.** Elimina el salto de altura por completo en vez
+de acotarlo, y de paso borra toda la aritmética de `vw` del CSS.
+
+El 16:9 deja de ser una regla de CSS y pasa a ser dos cosas distintas:
+
+- **Configuración de Moodle (Pablo).** El contenedor del SCORM tiene
+  `max-width: 1390px`; hay que fijar el alto del reproductor en ~780 px para
+  que la caja salga en 16:9. Es un ajuste del módulo, no del OVA. **Coordinarlo
+  con Pablo en C9**, porque un alto por defecto de 500 px arruina la
+  composición de todas las pantallas.
+- **Presupuesto de autoría.** 1390×780 menos las dos barras es el espacio real
+  de contenido. Los presupuestos de texto por layout de `BRIEF-DI.md` §4 están
+  calculados para eso.
 
 ```css
-/* base.css */
+/* base.css — marco del OVA */
 body {
   display: grid;
   grid-template-rows: auto 1fr auto;   /* barra · pantalla · navegación */
-  min-block-size: 100dvh;
+  block-size: 100dvh;                  /* caja fija, no min-height */
+  overflow: hidden;                    /* el documento no scrollea nunca */
 }
-#app { display: flex; min-block-size: 0; }
-.layout { flex: 1 1 auto; justify-content: center; }   /* contenido al centro */
-
-@media (min-width: 48em) and (orientation: landscape) {
-  /* 56.25vw = 9/16 del ancho. El tope en 48.75rem (780px) evita que en un
-     monitor de 1920 la pantalla mida 1080 de alto: 780 es el objetivo de
-     diseño que sale del contenedor de Moodle, no un accidente del viewport. */
-  body { min-block-size: max(100dvh, min(56.25vw, 48.75rem)); }
-  .nav-barra   { position: sticky; inset-block-start: 0; z-index: 2; }
-  .nav-inferior{ position: sticky; inset-block-end: 0;   z-index: 2; }
+#app {
+  overflow-y: auto;                    /* el scroll vive aquí */
+  min-block-size: 0;                   /* sin esto el grid no deja encoger */
 }
+.layout { min-block-size: 100%; justify-content: center; }  /* contenido al centro */
 ```
 
-Tres detalles que hay que atender al implementarlo, no después:
+### 4.1 Portada a sangre
 
-1. `.layout--l01` trae su propio `min-height: 100dvh` — se elimina, ahora lo
-   pone el marco. Si no, la portada mide el doble.
-2. El centrado no aplica a todos: L01, L12 y L13 son pantallas de corte a
-   sangre y ya resuelven su propia composición.
-3. Las barras pegajosas comen alto útil con zoom al 200 %. Se verifica que a
-   200 % siga entrando al menos un párrafo de contenido entre las dos barras;
-   si no, las barras dejan de ser pegajosas por debajo de cierto alto
-   (`@media (min-height: …)`), que es más honesto que dejar una rendija.
+L01 va **sin barra superior ni barra inferior**: pantalla completa de verdad.
+El único camino hacia adelante es su botón «Comenzar», que es exactamente como
+Jose escribió P01. El skip link se conserva. No hay progreso ni drawer que
+esconder porque en la pantalla 1 todavía no hay nada que reanudar.
 
----
+### 4.2 Pantalla completa
+
+Botón en la barra superior, disponible en todo el recorrido, más una segunda
+aparición en la portada: en L01 el botón aparece a los pocos segundos, para
+ofrecer el modo inmersivo justo cuando el estudiante está entrando.
+
+### 4.3 Las cuatro trampas de esta tarea
+
+Ninguna es opcional y las cuatro se verifican antes de cerrar C2.
+
+1. **Una región con scroll necesita ser alcanzable con teclado.** `#app` con
+   `overflow-y: auto` scrollea con rueda y con dedo, pero quien navega solo con
+   teclado no puede llegar a ella en Safari si no es focalizable. Lleva
+   `tabindex="0"` y nombre accesible. `#app` ya tiene `tabindex="-1"` como
+   destino del skip link: pasa a `0`, no se le agrega un segundo contenedor.
+2. **`requestFullscreen()` puede estar bloqueado dentro de Moodle.** El iframe
+   del módulo SCORM no siempre trae `allowfullscreen`, y ahí la API falla en
+   silencio. Detectar con `document.fullscreenEnabled` y **ocultar el botón si
+   es false** — nunca dejar un botón que no hace nada. T4 ya se peleó con esto
+   para el video: reusar ese criterio, no inventar otro.
+3. **El botón que aparece solo en la portada no puede robar el foco.** Se
+   revela en una posición fija del DOM, no se inserta después del elemento que
+   tiene el foco. Bajo `prefers-reduced-motion` aparece sin transición, y
+   nunca es la única vía: el de la barra superior cubre el resto del recorrido.
+4. **Zoom de texto al 200 % con las barras fijas.** Es donde este modelo se
+   rompe: dos barras fijas más texto al doble pueden dejar una rendija de
+   contenido. Verificar que a 200 % siga entrando al menos un párrafo entre las
+   dos barras; si no, que las barras dejen de ser fijas por debajo de cierto
+   alto. Scroll vertical dentro de una región es conforme; contenido recortado
+   o inalcanzable no lo es.
 
 ## 5. Producción audiovisual
 

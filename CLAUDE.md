@@ -41,12 +41,15 @@ Estas no se negocian ni se re-discuten en cada sesión.
    lo que Jose escribió las 47 pantallas. El código tuvo otros hasta el 4 de
    septiembre; C0 los renumeró. Ver la tabla de equivalencias en
    `PLAN-CONTENIDO.md` §2 antes de tocar `layouts.css` o `quiz.js`.
-9. **Alto mínimo proporcional en horizontal.** En pantallas horizontales cada
-   pantalla mide al menos 9/16 del ancho (tope 780 px, que es el 16:9 del
-   contenedor SCORM de Moodle), con el contenido centrado y las barras de
-   navegación pegadas. Es un mínimo, no una caja fija: el contenido que no cabe
-   crece hacia abajo, nunca se recorta ni queda en scroll interno atrapado.
-   Ver `PLAN-CONTENIDO.md` §4.
+9. **Marco fijo, scroll en el medio.** El documento no scrollea: `body` mide
+   `100dvh` con `overflow: hidden`, las dos barras quedan fijas y el scroll
+   vive en `#app`. La portada (L01) es la excepción: va sin barras, a sangre.
+   El 16:9 no es CSS — es el alto que Pablo configura en el módulo SCORM de
+   Moodle (~780 px sobre los 1390 del contenedor) y el presupuesto de autoría
+   de `BRIEF-DI.md` §4. Ver `PLAN-CONTENIDO.md` §4, incluidas sus cuatro
+   trampas: región con scroll alcanzable por teclado, `fullscreenEnabled`
+   antes de mostrar el botón de pantalla completa, revelado sin robar foco y
+   zoom de texto al 200 % con las barras fijas.
 10. **El avatar es imagen fija + audio, no video.** Y toda pantalla con
    locución muestra su transcripción aunque el audio todavía no exista: esa
    degradación es el placeholder de producción, no un estado roto.
