@@ -1623,8 +1623,12 @@
       }));
 
       // L08 (C1): mismo constructor de cifra, montado dentro del layout
-      // real en vez de la vitrina de "Datos y gráficos" — mismos datos
-      // que s17 en content/ova-u1.js.
+      // real en vez de la vitrina de "Datos y gráficos". Valores fijos
+      // solo para mostrar el componente aquí — s17 en content/ova-u1.js
+      // ya no usa un par cifra/retro estático (C4 lo conectó a la
+      // variable de contenido aciertos_diagnostico, ver router.js
+      // obtenerResultado()); esta demo no depende del router, así que
+      // no puede mostrar ese comportamiento vivo — solo el componente.
       document.getElementById('l08-cifra').appendChild(OVA.charts.crear({
         tipo: 'cifra',
         valor: '4/5',

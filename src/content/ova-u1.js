@@ -126,6 +126,25 @@
    acordada con Juan) todavía no existen — s21/s22 apuntan ahí de todos
    modos, a propósito: el código tiene que degradar limpio a la
    ausencia del archivo, no evitarla usando otra imagen que sí exista.
+
+   C4 (4 sep) conecta s17 (L08) a la variable de contenido
+   aciertos_diagnostico en vez de a cifra/retro estáticos: no agrega
+   pantallas nuevas, reusa s07 y s16 (las dos únicas preguntas I01 que
+   ya existían antes de s17 en el recorrido) agregándoles
+   interaccion.datos.variable. Responder las dos cambia de verdad lo
+   que muestra s17 (tres reglas por umbral -- 2/2, 1/2, 0/2 -- más el
+   par cifra/retro estático de "todavía no respondiste" para cuando la
+   variable no tiene valor todavía), y recargar a mitad del recorrido
+   conserva el conteo. s12 (I11, boleta de compra) también queda
+   conectado a resultado_boleta -- cada «Enviar boleta» fija la
+   variable con el resultado completo --, pero sin pantalla nueva que
+   la muestre: ninguna pantalla de prueba anterior a C7 necesita
+   leerla todavía (P43, que sí, es contenido real de Jose).
+   perfil_riesgo no tiene productor aquí: su interacción (I13, test de
+   perfil) es C5. El contrato completo de
+   resultado.variable/resultado.reglas y de
+   interaccion.datos.variable vive documentado en router.js
+   (obtenerResultado) y quiz.js respectivamente, no aquí.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -239,7 +258,8 @@ window.OVA_CONTENIDO = {
           "retroalimentacion": {
             "correcto": "Renta variable es el mercado de las acciones, el foco de este curso.",
             "incorrecto": "BVC administra renta variable, renta fija y derivados — ninguno de esos es criptomonedas ni bienes raíces."
-          }
+          },
+          "variable": { "nombre": "aciertos_diagnostico" }
         }
       },
       "progreso": true
@@ -339,7 +359,8 @@ window.OVA_CONTENIDO = {
           "id": "u1-p3-boleta-compra",
           "enunciado": "Vas a comprar acciones de Petrocaribe. Elige el tipo de orden y ajusta los precios para ver cuándo se ejecutaría tu boleta.",
           "mercado": { "etiqueta": "Precio de mercado (simulado)", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 1000 },
-          "limite": { "etiqueta": "Tu precio límite de compra", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 950 }
+          "limite": { "etiqueta": "Tu precio límite de compra", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 950 },
+          "variable": { "nombre": "resultado_boleta" }
         }
       },
       "progreso": true
@@ -417,7 +438,8 @@ window.OVA_CONTENIDO = {
           "retroalimentacion": {
             "correcto": "El mercado primario es donde la empresa emite y vende acciones por primera vez, directamente a los inversionistas.",
             "incorrecto": "El mercado primario es donde la empresa emite y vende acciones por primera vez; el secundario es donde esas acciones se negocian después, entre inversionistas."
-          }
+          },
+          "variable": { "nombre": "aciertos_diagnostico" }
         }
       },
       "progreso": true
@@ -431,11 +453,41 @@ window.OVA_CONTENIDO = {
         "Este es un resumen de tus respuestas en la evaluación de esta cápsula."
       ],
       "resultado": {
-        "cifra": { "valor": "4/5", "etiqueta": "respuestas correctas", "porcentaje": 80 },
+        "variable": "aciertos_diagnostico",
+        "reglas": [
+          {
+            "minimo": 2,
+            "cifra": { "etiqueta": "respuestas correctas de 2", "porcentaje": 100 },
+            "retro": {
+              "tipo": "brand",
+              "titulo": "Buen dominio del contenido",
+              "texto": "Identificas con claridad los conceptos básicos del mercado de acciones. Sigue reforzando con la práctica de las siguientes cápsulas."
+            }
+          },
+          {
+            "minimo": 1,
+            "cifra": { "etiqueta": "respuestas correctas de 2", "porcentaje": 50 },
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Vas por buen camino",
+              "texto": "Acertaste una de las dos preguntas. Repasa el contenido de la cápsula antes de seguir."
+            }
+          },
+          {
+            "minimo": 0,
+            "cifra": { "etiqueta": "respuestas correctas de 2", "porcentaje": 0 },
+            "retro": {
+              "tipo": "alerta",
+              "titulo": "Repasa antes de continuar",
+              "texto": "No acertaste ninguna de las dos preguntas. Vuelve a repasar el contenido de la cápsula 1 antes de seguir."
+            }
+          }
+        ],
+        "cifra": { "valor": "—", "etiqueta": "todavía no respondiste las preguntas de esta cápsula" },
         "retro": {
-          "tipo": "brand",
-          "titulo": "Buen dominio del contenido",
-          "texto": "Identificas con claridad los conceptos básicos del mercado de acciones. Sigue reforzando con la práctica de las siguientes cápsulas."
+          "tipo": "nota",
+          "titulo": "Responde las preguntas anteriores",
+          "texto": "Vuelve atrás y responde las dos preguntas de esta cápsula para ver tu resultado aquí."
         }
       },
       "progreso": true

@@ -389,6 +389,47 @@ Variables de contenido en `state.js`: `aciertos_diagnostico`, `perfil_riesgo`,
 **Cierre:** responder P05–P09 cambia P10; P30 cambia P31 y la retro de P46/P47;
 recargar la página conserva las tres.
 
+**Cerrada 4 sep, rama `c4-estado-compartido` — el mecanismo genérico completo,
+cableado de punta a punta contra las dos interacciones que ya existían
+(I01–I05 e I11); `perfil_riesgo` queda probada a mano pero sin productor
+real, porque I13 es C5.** Detalle completo en `ESTADO.md`; resumen para
+quien siga con C5/C6/C7:
+
+- `OVA.state.obtenerVariable(nombre)` / `establecerVariable(nombre, valor)` /
+  `incrementarVariable(nombre, delta=1)` — el almacén, agnóstico de qué
+  significa cada variable. Persiste en `storage.js` y se reporta a
+  `cmi.suspend_data` (JSON de las tres); se restaura solo desde
+  `storage.js`, igual que `lesson_location` desde T2/T3 — no es una
+  inconsistencia nueva de C4.
+- **Preguntas gradables (I01–I05, catálogo de quiz.js):**
+  `interaccion.datos.variable: { nombre, modo?, valor? }`. Modo
+  `"contar"` (por defecto) suma 1 en cada acierto — es lo que usan `s07`/
+  `s16` para `aciertos_diagnostico`. Modo `"fijar"` asigna
+  `datos.variable.valor` literal en vez de sumar.
+- **Interacciones insignia (I09–I12):** no usan `datos.variable` — cada
+  una fija su variable directo desde su propio "reportar" (I11 ya lo
+  hace para `resultado_boleta` en `enviar()`). **C5, cuando construya
+  I13, sigue este mismo patrón** para `perfil_riesgo`: una llamada a
+  `OVA.state.establecerVariable('perfil_riesgo', categoría)` en el punto
+  donde I13 reporte su resultado, sin tocar `state.js` ni `quiz.js` fuera
+  de esa llamada.
+- **L08 (`router.js`, `obtenerResultado()`):** `pantalla.resultado.variable`
+  + `pantalla.resultado.reglas` (arreglo, primera que aplica gana — orden
+  de más exigente a menos): `{ valor: x, cifra?, retro? }` para
+  categóricos (igualdad estricta) o `{ minimo: n, cifra?, retro? }` para
+  contadores (`variable >= n`). Sin variable con valor o sin regla que
+  matchee, cae al `resultado.cifra`/`resultado.retro` estático de
+  siempre — ese es el estado "todavía sin dato". Dentro de la cifra
+  elegida, omitir `cifra.valor` la completa con el valor vivo de la
+  variable. Ejemplo real en `content/ova-u1.js`, `s17`.
+- **C6, la matriz de P46/P47 no es de aquí.** Cruzar `perfil_riesgo` con
+  la distribución del portafolio (`PLAN-CONTENIDO.md` §3.1) es lógica de
+  **I12 ampliada** (`construirDistribucionCapital` en `quiz.js`), no del
+  mecanismo de `reglas` de L08 — ese resuelve una variable contra un
+  layout de resultado, no dos variables cruzadas dentro de una
+  interacción. `OVA.state.obtenerVariable('perfil_riesgo')` ya está
+  disponible para que C6 lo use ahí directamente.
+
 ### C5 · Interacciones nuevas
 I07 tarjetas volteables, I08 comparador de dos columnas, I13 test de perfil.
 Ninguna con arrastre; I07 con `<button>` real por tarjeta y `aria-expanded`.
