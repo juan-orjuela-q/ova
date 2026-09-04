@@ -355,35 +355,34 @@
 
   // C1: portada de unidad. Único layout con <h1> (mismo criterio que la
   // kitchen sink: es la portada de toda la unidad, no una pantalla más
-  // dentro de ella). El botón "Comenzar" (o pantalla.cta, si el guion
+  // dentro de ella) y con media puramente decorativa — el video/imagen
+  // de fondo va aria-hidden y en loop mudo, no pasa por
+  // OVA.media.crear() (T4): ese reproductor construye controles reales
+  // pensados para media con contenido instruccional, y aquí el
+  // contenido real es el texto del panel, no el fondo. Los dos SVG de
+  // unión (mobile-top/-bottom, desktop) son decoración fija del layout,
+  // no contenido — no salen del JSON, igual que el marco no sale de
+  // pantalla.datos. El botón "Comenzar" (o pantalla.cta, si el guion
   // pide otro texto) avanza como "Siguiente" del chrome; no es un
   // layout con su propia navegación aparte.
   //
-  // C3: la media de fondo dejó de ser un solo caso — PLAN-CONTENIDO.md
-  // (C3, la nota de L01) lo advierte explícito: "la media dejó de ser
-  // decorativa" en cuanto P01 trae un avatar con locución real, y hay
-  // que distinguir los dos casos, no elegir uno.
-  //   - "video"/"imagen" (sin cambio de C1): puramente decorativa, va
-  //     aria-hidden y en loop mudo, no pasa por OVA.media.crear() — ese
-  //     reproductor construye controles reales pensados para media con
-  //     contenido instruccional, y aquí el contenido real (si lo hay)
-  //     está en panel.cuerpo, no en el fondo. Es el caso del relleno de
-  //     stock que ya usan las pantallas de prueba.
-  //   - "avatar" (C3): el fondo de .layout__media sigue siendo
-  //     decorativo (la foto fija del avatar, aria-hidden, mismo criterio
-  //     que arriba — no aporta información que el texto no traiga ya),
-  //     pero además se monta un OVA.media.crear(pantalla.media) real
-  //     dentro de .layout__panel, después del cuerpo: ahí vive la
-  //     locución real de la pantalla (audio + controles si existe,
-  //     transcripción siempre, con o sin audio — regla dura 10 de
-  //     CLAUDE.md). Los dos SVG de unión (mobile-top/-bottom, desktop)
-  //     son decoración fija del layout en cualquier caso — no salen del
-  //     JSON, igual que el marco no sale de pantalla.datos.
+  // C3: L01 puede además traer `pantalla.avatar` (mismo contrato de
+  // media.tipo:'avatar' — ver el encabezado de media.js — sin el campo
+  // "tipo", que aquí ya lo da el nombre del campo), un objeto
+  // independiente de `pantalla.media`. Van separados a propósito: L01
+  // es el único layout con dos zonas visuales (el fondo de
+  // .layout__media y el panel de texto), y el fondo se queda con el
+  // video en loop de siempre — el usuario lo pidió explícito, no se
+  // reemplaza por la foto fija del avatar solo porque la pantalla
+  // también tiene locución. `pantalla.avatar`, si existe, se monta con
+  // OVA.media.crear() de verdad dentro de .layout__panel, después del
+  // cuerpo: ahí vive la locución real de la portada (audio + controles
+  // si existe, transcripción siempre, con o sin audio — regla dura 10
+  // de CLAUDE.md), sin tocar el fondo.
   PLANTILLAS.L01 = function (pantalla) {
     var media = pantalla.media;
-    var tiposValidos = ['video', 'imagen', 'avatar'];
-    if (!media || tiposValidos.indexOf(media.tipo) === -1) {
-      throw new Error('L01 necesita "media" (tipo "video", "imagen" o "avatar") de fondo.');
+    if (!media || (media.tipo !== 'video' && media.tipo !== 'imagen')) {
+      throw new Error('L01 necesita "media" (tipo "video" o "imagen") de fondo.');
     }
     var raiz = crearRaiz('l01');
 
@@ -414,11 +413,19 @@
     });
     panel.appendChild(cuerpo);
 
-    // C3: contenido real del avatar (narración + transcripción),
-    // después del cuerpo y antes del CTA — sigue el orden de lectura
-    // kicker → título → cuerpo → narración → "Comenzar".
-    if (media.tipo === 'avatar') {
-      var narracion = OVA.media.crear(media);
+    // C3: contenido real del avatar (narración + transcripción), si la
+    // pantalla lo trae — después del cuerpo y antes del CTA, siguiendo
+    // el orden de lectura kicker → título → cuerpo → narración →
+    // "Comenzar". Objeto independiente del fondo (pantalla.media): ver
+    // la nota completa arriba, junto a PLANTILLAS.L01.
+    if (pantalla.avatar) {
+      var narracion = OVA.media.crear({
+        tipo: 'avatar',
+        imagen: pantalla.avatar.imagen,
+        audio: pantalla.avatar.audio,
+        vtt: pantalla.avatar.vtt,
+        transcripcion: pantalla.avatar.transcripcion
+      });
       if (!narracion) throw new Error('No se pudo construir el avatar de la portada (ver consola).');
       panel.appendChild(narracion);
     }
@@ -459,20 +466,10 @@
       video.appendChild(source);
       mediaFondo.appendChild(video);
     } else {
-      // "imagen" y "avatar" comparten el mismo fondo decorativo — solo
-      // cambia de qué campo del contrato sale la ruta (media.src contra
-      // media.imagen, ver el catálogo en el encabezado de media.js).
       var img = document.createElement('img');
-      img.src = media.tipo === 'avatar' ? media.imagen : media.src;
+      img.src = media.src;
       img.alt = '';
       img.setAttribute('aria-hidden', 'true');
-      // Mismo criterio que el avatar circular de media.js: sin archivo
-      // (las imágenes de public/img/avatar/ todavía no existen), la
-      // <img> se quita en vez de dejar un ícono de imagen rota — el
-      // marco negro de L01 queda visible detrás, no una caja rota.
-      img.addEventListener('error', function () {
-        if (img.parentNode) img.parentNode.removeChild(img);
-      });
       mediaFondo.appendChild(img);
     }
     var unionMobileTop = document.createElement('img');

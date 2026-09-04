@@ -2062,27 +2062,37 @@ camino.**
   que filtrar por `isConnected`. Verificado con Playwright: reproducir
   el audio de `s21`, navegar a `s22` y volver a `s21` no deja dos
   `<audio>` compitiendo ni un registro con referencias muertas.
-- **L01 distingue media decorativa de contenido real — la nota más
-  importante que `PLAN-CONTENIDO.md` dejó para esta sesión.**
-  `PLANTILLAS.L01` acepta ahora `media.tipo` en
-  `['video','imagen','avatar']`. Video/imagen: sin cambio de C1, el
-  fondo sigue aria-hidden y `OVA.media.crear()` ni se llama. Avatar: el
-  fondo de `.layout__media` sigue siendo decorativo (la foto fija,
-  aria-hidden — no aporta información que el texto no traiga ya), pero
-  además se monta un `OVA.media.crear(media)` real dentro de
-  `.layout__panel`, después del cuerpo y antes del botón "Comenzar" —
-  ahí vive la locución real de la portada (audio + controles si existe,
-  transcripción siempre). La tarjeta clara del avatar sobre el panel
-  naranja no choca con las reglas de contraste de CLAUDE.md: es opaca,
-  con su propio fondo `--surface-subtle` y su propia escala de color —
-  el naranja de fondo nunca queda detrás de texto informativo.
-- **`content/ova-u1.js`:** `s00` (L01, la portada real) cambia de
-  `media.tipo:"video"` a `"avatar"` — es el caso real de P01
-  (`PLAN-CONTENIDO.md` §5, avatar plano "abierto, con fondo"). Dos
-  pantallas nuevas antes del cierre real (`s20` sigue siendo el último
-  elemento del arreglo, el cierre de verdad): `s21` (L02, avatar **con**
-  audio) y `s22` (L03, avatar **sin** audio — la pantalla que demuestra
-  la degradación de la sección 3.2). Las tres apuntan a rutas de
+- **L01 separa fondo decorativo de contenido real en dos campos
+  distintos — la nota más importante que `PLAN-CONTENIDO.md` dejó para
+  esta sesión, con una corrección a mitad de camino.** Primer intento:
+  `PLANTILLAS.L01` aceptaba `media.tipo` en
+  `['video','imagen','avatar']`, y con avatar el fondo pasaba a ser la
+  foto fija en vez del video en loop. El usuario pidió explícito
+  mantener el video en loop de siempre en la portada — L01 es el único
+  layout con dos zonas visuales (fondo + panel), y una no debería
+  reemplazar a la otra solo porque la pantalla también tiene locución.
+  Arreglado separando los dos campos: `pantalla.media` vuelve a ser
+  exactamente lo que era en C1 (`"video"`/`"imagen"`, puramente
+  decorativo, `OVA.media.crear()` ni se llama), y se agregó
+  `pantalla.avatar` — un objeto independiente, mismo contrato que
+  `media.tipo:'avatar'` sin el campo "tipo" — que `PLANTILLAS.L01`
+  monta de verdad con `OVA.media.crear()` dentro de `.layout__panel`,
+  después del cuerpo y antes del botón "Comenzar", si la pantalla lo
+  trae. La tarjeta clara del avatar sobre el panel naranja no choca con
+  las reglas de contraste de CLAUDE.md: es opaca, con su propio fondo
+  `--surface-subtle` y su propia escala de color — el naranja de fondo
+  nunca queda detrás de texto informativo.
+- **`content/ova-u1.js`:** `s00` (L01, la portada real) **conserva su
+  `media.tipo:"video"` de siempre** (el mismo relleno de stock que ya
+  usaba) y suma el campo `avatar` nuevo — es el caso real de P01
+  (`PLAN-CONTENIDO.md` §5, avatar plano "abierto, con fondo") montado
+  como narración sobre el panel, sin tocar el fondo. Dos pantallas
+  nuevas antes del cierre real (`s20` sigue siendo el último elemento
+  del arreglo, el cierre de verdad): `s21` (L02, avatar **con** audio)
+  y `s22` (L03, avatar **sin** audio — la pantalla que demuestra la
+  degradación de la sección 3.2), estas dos con `media.tipo:'avatar'`
+  de verdad porque no comparten el problema de las dos zonas de L01.
+  Las tres pantallas (`s00`/`s21`/`s22`) apuntan a rutas de
   `public/img/avatar/avatar-{plano}-{fondo}-{n}.webp` que **todavía no
   existen**, a propósito — el código tiene que degradar limpio a la
   ausencia del archivo, no evitarla usando otra imagen que sí exista
@@ -2116,8 +2126,9 @@ camino.**
 - **Las 23 pantallas de `content/ova-u1.js`** (`s00`–`s22`) montan sin
   caer en el estado de error del motor.
 - **`s00`:** el avatar real (con botón de play) vive dentro de
-  `.layout__panel`; el fondo decorativo sigue `aria-hidden`/`alt=""`;
-  el botón "Comenzar" sigue presente y funcional.
+  `.layout__panel`; el fondo sigue siendo el video en loop de siempre,
+  `aria-hidden`/`alt=""`, sin pasar por `OVA.media.crear()`; el botón
+  "Comenzar" sigue presente y funcional.
 - **Un solo reproductor activo a la vez, cruzando tipos:** reproducir
   el avatar de la kitchen sink y luego el video los deja con el avatar
   pausado y el video sonando — el registro unificado de `pausarOtros`
@@ -2152,7 +2163,8 @@ camino.**
 - **Regresión de C2, sin romperse:** se corrió de nuevo la batería
   completa de C2 (marco fijo, trampas 1–4, pantalla completa) contra el
   código de esta sesión — sigue en cero fallos, incluidos los checks
-  sobre `s00`, que ahora es la pantalla avatar en vez de la de video.
+  sobre `s00`, que ahora también monta la narración del avatar además
+  de todo lo que C2 ya verificaba ahí.
 
 **Cero hex nuevo** en los cinco archivos de código tocados (`media.js`,
 `router.js`, `components.css`, `content/ova-u1.js`,

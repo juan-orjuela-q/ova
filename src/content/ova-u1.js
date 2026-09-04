@@ -104,21 +104,26 @@
 
    C3 (4 sep) suma el tipo de media "avatar" (imagen fija + audio
    opcional + subtítulos opcionales + transcripción obligatoria — ver
-   el catálogo completo en el encabezado de media.js). s00 (L01, la
-   portada) cambia de `media.tipo:"video"` a `"avatar"`: es el caso
-   real de P01 (PLAN-CONTENIDO.md §5, avatar plano "abierto, con
-   fondo"), y ejercita la rama nueva de PLANTILLAS.L01 que distingue
-   media decorativa de contenido real (la nota de C3 sobre L01 en
-   PLAN-CONTENIDO.md). s21 (L02) y s22 (L03) ejercitan el mismo tipo
-   fuera de L01 — el caso general de cualquier pantalla con avatar—,
-   uno con audio real (`public/audio/demo-avatar.mp3`, un tono de
-   prueba generado con ffmpeg, no locución de Jose) y otro sin: s22 es
-   la pantalla que demuestra la degradación de la sección 3.2 de
-   PLAN-CONTENIDO.md — transcripción directa, sin reproductor, viéndose
-   terminada. Las imágenes de `public/img/avatar/` (nomenclatura
-   `avatar-{plano}-{fondo}-{n}.webp`, acordada con Juan) todavía no
-   existen — las tres pantallas apuntan ahí de todos modos, a
-   propósito: el código tiene que degradar limpio a la ausencia del
+   el catálogo completo en el encabezado de media.js). s21 (L02) y s22
+   (L03) lo ejercitan como cualquier otro layout con una sola zona de
+   media: uno con audio real (`public/audio/demo-avatar.mp3`, un tono
+   de prueba generado con ffmpeg, no locución de Jose) y otro sin — s22
+   es la pantalla que demuestra la degradación de la sección 3.2 de
+   PLAN-CONTENIDO.md, transcripción directa sin reproductor, viéndose
+   terminada.
+
+   s00 (L01, la portada) es distinto: pedido explícito del usuario
+   después del primer intento de C3 (que reemplazaba el fondo por la
+   foto fija del avatar), el video en loop de `media` se queda como
+   estaba — L01 es el único layout con dos zonas visuales, y el fondo
+   no cambia solo porque la pantalla también tenga locución. La
+   narración real vive en el campo nuevo `avatar` (independiente de
+   `media`, mismo contrato sin el "tipo"), que `PLANTILLAS.L01` monta
+   de verdad dentro de `.layout__panel` — ver la nota completa junto a
+   esa plantilla en router.js. Las imágenes de `public/img/avatar/`
+   (nomenclatura `avatar-{plano}-{fondo}-{n}.webp`, acordada con Juan)
+   todavía no existen — las tres pantallas apuntan ahí de todos modos,
+   a propósito: el código tiene que degradar limpio a la ausencia del
    archivo, no evitarla usando otra imagen que sí exista.
    ============================================================ */
 window.OVA_CONTENIDO = {
@@ -135,7 +140,10 @@ window.OVA_CONTENIDO = {
         "¿Quieres aprender los fundamentos de la inversión en acciones? Es muy probable que en algún momento hayas querido obtener rentabilidad por tu capital, pero la falta de experiencia no te ha dejado aventurarte en el mercado accionario."
       ],
       "media": {
-        "tipo": "avatar",
+        "tipo": "video",
+        "src": "../public/videos/woman_Businesswoman_1920x1010.mp4"
+      },
+      "avatar": {
         "imagen": "../public/img/avatar/avatar-abierto-fondo-1.webp",
         "audio": "../public/audio/demo-avatar.mp3",
         "vtt": "WEBVTT\n\n00:00:00.000 --> 00:00:02.500\nBienvenida a la Academia Virtual nuam.\n\n00:00:02.500 --> 00:00:06.000\nEste es un tono de prueba para ejercitar el reproductor de avatar de C3.",

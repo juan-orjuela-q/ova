@@ -1109,7 +1109,7 @@
           </div>
         </div>
         <p class="ks-intro">
-          Este bloque muestra el caso de fondo puramente decorativo (video/imagen). Desde C3, <code>PLANTILLAS.L01</code> admite además <code>media.tipo:'avatar'</code>, donde el fondo sigue siendo decorativo pero se agrega un reproductor real (<code>OVA.media.crear()</code>, la misma pieza de la sección "Reproductor de avatar/audio" de abajo) dentro de <code>.layout__panel</code> — eso sí depende de <code>router.js</code>, así que se prueba en <code>s00</code> de <a href="../src/index.html">src/index.html</a>, no se falsea aquí con markup estático.
+          <code>media</code> (fondo de <code>.layout__media</code>) sigue siendo solo "video" o "imagen", puramente decorativo — el video en loop de este bloque no cambia aunque la pantalla también tenga locución. Desde C3, <code>PLANTILLAS.L01</code> admite además un campo independiente, <code>pantalla.avatar</code> (mismo contrato de <code>media.tipo:'avatar'</code>, sin el "tipo"), que monta un reproductor real (<code>OVA.media.crear()</code>, la misma pieza de la sección "Reproductor de avatar/audio" de abajo) dentro de <code>.layout__panel</code>, sin tocar el fondo — L01 es el único layout con dos zonas visuales, así que necesita las dos por separado. Eso sí depende de <code>router.js</code>, así que se prueba en <code>s00</code> de <a href="../src/index.html">src/index.html</a>, no se falsea aquí con markup estático.
         </p>
       </div>
 

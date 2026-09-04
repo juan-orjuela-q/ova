@@ -331,10 +331,18 @@ transcripción visible y descargable, y una pantalla sin archivo de audio se ve
 terminada, no rota.
 
 **Cerrada 4 sep, rama `c3-media-avatar-audio` — las tres cosas de arriba,
-resueltas:** L01 distingue `media.tipo` decorativo (video/imagen) de
-`avatar` (fondo decorativo + reproductor real dentro de `.layout__panel`);
-`OVA.media.limpiarInstancias()` nueva, llamada por `router.js` en cada
-navegación; la transcripción sin audio se muestra directa (no en
+resueltas, con una corrección a mitad de camino:** el primer intento hacía
+que `media.tipo:'avatar'` reemplazara el fondo de L01 (la foto fija en vez
+del video en loop); el usuario pidió mantener el video de siempre en la
+portada, así que quedó separado en dos campos — `pantalla.media`
+(`"video"`/`"imagen"`, el fondo decorativo de siempre, sin cambio) y
+`pantalla.avatar` (objeto nuevo e independiente, mismo contrato que
+`media.tipo:'avatar'` sin el campo "tipo"), que `PLANTILLAS.L01` monta
+de verdad dentro de `.layout__panel` sin tocar el fondo. Fuera de L01
+(cualquier layout con una sola zona de media), `media.tipo:'avatar'`
+sigue siendo el campo único, sin este desdoblamiento — ver la nota de
+abajo. `OVA.media.limpiarInstancias()` nueva, llamada por `router.js` en
+cada navegación; la transcripción sin audio se muestra directa (no en
 `<details>`) — es el placeholder, no un extra. Detalle completo en
 `ESTADO.md`.
 
@@ -350,6 +358,14 @@ navegación; la transcripción sin audio se muestra directa (no en
   Jose no trae datos de subtítulos por pantalla, omitir `vtt` entero —
   el reproductor funciona completo sin él (play/scrubber/transcripción),
   solo no aparece el botón CC.
+- **L01 es la excepción de dos campos — P01 la va a necesitar en C7.**
+  En cualquier layout con una sola zona de media, el avatar va completo
+  en `pantalla.media` (`{ tipo:'avatar', imagen, audio?, vtt?,
+  transcripcion }`). En L01 (la portada, dos zonas: fondo + panel) el
+  avatar va en `pantalla.avatar` **sin el campo "tipo"** (`{ imagen,
+  audio?, vtt?, transcripcion }`), y `pantalla.media` se queda con el
+  video/imagen de fondo de siempre, sin tocar. P01 usa L01, así que C7
+  arma sus dos campos por separado, no uno solo con `tipo:'avatar'`.
 - **`media.audio` es una ruta real, no Blob.** A diferencia de `media.vtt`
   (que sigue siendo texto WebVTT completo, por el bloqueo de `file://` a
   `<track src>` que T4 ya documentó), un `<audio><source src="…"></audio>`
