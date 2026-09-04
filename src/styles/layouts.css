@@ -347,6 +347,24 @@
     border-radius: var(--r-md);
   }
 }
+/* C7: cuando la pantalla trae "interaccion" en vez de "tarjetas"
+   (router.js, PLANTILLAS.L05 — P13/P28 del storyboard real), I07/I08
+   ya son en sí mismas la disposición comparable que promete L05, pero
+   .layout__interaccion no trae ningún tratamiento visual fuera de
+   L06/L07/L08/L10/L11 — sin esto se vería "pelado". Mismos tokens que
+   la caja de L06, no un tratamiento nuevo. */
+.layout--l05 .layout__interaccion {
+  background: var(--surface-subtle);
+  border-radius: var(--r-lg);
+  padding: var(--sp-8);
+}
+/* C7: nota opcional debajo de las tarjetas (P29 — "es un perfil
+   orientativo, no regulatorio" no es una cuarta tarjeta comparable).
+   --text-secondary sobre --surface-default, dentro del rango que
+   tokens.css documenta como seguro para ese color. */
+.layout--l05 .layout__nota {
+  color: var(--text-secondary);
+}
 
 /* ---- L06 · Interacción a pantalla completa -------------------------------
    Chrome mínimo: kicker y título centrados y compactos, la interacción

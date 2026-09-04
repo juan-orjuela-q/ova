@@ -42,7 +42,8 @@ Ver `PLAN-CONTENIDO.md` — es el plan vigente sobre el que corren estas tareas.
 - [x] **C4 · Estado compartido** — completada 4 sep, rama `c4-estado-compartido`
 - [x] **C5 · Interacciones nuevas** — completada 4 sep, rama `c5-interacciones-nuevas`
 - [x] **C6 · Interacciones ampliadas** — completada 4 sep, rama `c6-interacciones-ampliadas`
-- [ ] C7 · Conversión del storyboard a contenido
+- [x] **C7 · Conversión del storyboard a contenido** — completada 4 sep,
+      rama `c7-conversion-storyboard`
 - [ ] C8 · Descargables y recursos
 - [ ] C9 · Empaquetado, auditoría y Moodle
 
@@ -2703,3 +2704,179 @@ en el propio HTML explicando que comparten un solo `OVA.state` (como
 en la app real, donde solo hay un estudiante a la vez) así que mover
 sliders después de que las tres estén montadas hace que las tres lean
 el último perfil fijado.
+
+---
+
+**4 sep (sesión siguiente) — C7 cerrada, rama `c7-conversion-storyboard`:
+las 47 pantallas reales de Jose (P01–P47) reemplazan por completo el
+contenido de prueba de C0–C6 en `content/ova-u1.js`, con tres huecos
+reales del motor descubiertos y resueltos en el camino (no solo
+conversión mecánica).**
+
+**El script de conversión existe de verdad, pero no es 100 % automático
+— y eso es correcto, no un atajo.** `disenoInstruccional/
+storyboard_data_v2.json` mezcla dos formatos de `payload_interaccion`:
+un formato de texto con pipes (`"I01 | Enunciado: … | Opciones: … |
+Correcta: A | …"`) para I01/I02/I07/I08, y JSON estructurado para
+I09–I13. Lo primero se parsea mecánicamente (mismo criterio en las
+nueve pantallas que lo usan); lo segundo se reformatea mecánicamente
+contra el contrato exacto de `quiz.js`. Lo que el storyboard **no**
+fija de forma estructurada — qué imagen de avatar usa cada pantalla,
+las rutas de motion/infografía todavía sin producir, los rangos de
+slider que Jose no especificó para I11, el empaquetado de cifra/retro
+de L08 — es autoría de esta sesión, tomada contra las reglas que
+`PLAN-CONTENIDO.md` ya había fijado (no inventada sobre la marcha) y
+documentada en el encabezado de `content/ova-u1.js` y en la lista de
+pendientes más abajo. El script vive en el scratchpad de la sesión, no
+en el repo — es una herramienta de conversión de un solo uso, no
+código de producto; el resultado versionado es `content/ova-u1.js`.
+
+**Tres huecos reales del motor, encontrados al convertir, no
+anticipados por el plan — los tres resueltos, no rodeados:**
+
+1. **L08/L10/L13 no tenían ninguna ranura de media.** Las ocho
+   pantallas reales de esos tres layouts que llevan narración de
+   avatar (P10/P31/P43/P47 en L08; P35 en L10; P36/P40/P44 en L13) no
+   tenían dónde montarla — ninguna de las tres plantillas renderizaba
+   `pantalla.media` en absoluto. Se agregó el mismo patrón opcional que
+   L09 ya usaba (`if (pantalla.media) raiz.appendChild(crearMedia(…))`)
+   a las tres, en `router.js`.
+2. **L05 no tenía ranura de interacción.** Nota abierta que había
+   dejado C5: el storyboard real ubica P13 (I07) y P28 (I08) en L05,
+   no en L06. Se resolvió a favor de L05 (el layout que Jose eligió),
+   no convirtiendo las pantallas a L06: `PLANTILLAS.L05` acepta
+   `pantalla.interaccion` como alternativa a `pantalla.tarjetas` —
+   I07/I08 ya son en sí mismas la disposición de tarjetas comparables
+   que promete el layout, no hacía falta una tarjeta de solo lectura
+   por delante. De paso, P29 trae un disclaimer de una línea que no es
+   una cuarta tarjeta comparable (`pantalla.nota`, nuevo). Las dos
+   capacidades llevan su propio tratamiento en `layouts.css`
+   (`.layout--l05 .layout__interaccion` reusa los tokens de la caja de
+   L06; `.layout--l05 .layout__nota` usa `--text-secondary`).
+3. **`obtenerResultado()` solo comparaba la variable completa contra
+   `resultado.reglas`.** P43 (L08) necesita leer el subcampo `estado`
+   de `resultado_boleta`, que I11 fija como un objeto
+   (`{operacion,tipo,estado,…}`), no un valor simple — P10/P31/P47 no
+   lo necesitaban porque sus variables ya eran valores simples.
+   `resultado.campo` (opcional, nuevo) le dice a `obtenerResultado()`
+   qué subcampo leer antes de evaluar las reglas; sin él, el
+   comportamiento es idéntico al de antes.
+4. **Falta uno más, de producción, no de contrato: `media.js` no tenía
+   ningún tipo para una imagen fija sin controles.** Ocho pantallas del
+   storyboard real (motion sin avatar en P17/P21/P23, infografía en
+   L02/L03 en P14/P27/P33/P41/P45) necesitan un recurso visual que no
+   es video con controles ni avatar con locución — es una imagen o un
+   video decorativo cuyo archivo real (SVG/mp4) todavía no existe.
+   `media.js` suma un tercer tipo, `"imagen"` (`{tipo, src, alt?}`, sin
+   controles de reproducción), y tanto "imagen" como "video" degradan
+   ahora a `.media-marcador` (mismo lenguaje visual que `.layout__figura`
+   de L11: `--surface-subtle` + `--text-tertiary`) cuando la fuente
+   falla, en vez de una `<img>` rota o un reproductor con controles que
+   nunca van a funcionar — mismo criterio que C3 ya estableció para el
+   avatar. **Bug real encontrado por Playwright antes de cerrar, no
+   hipotético:** el primer intento de degradar "video" solo escuchaba
+   `error` en el propio `<video>`; bajo `file://` con un único
+   `<source>` que no existe, Chromium llega a `networkState ===
+   NETWORK_NO_SOURCE` sin disparar `error` en el `<video>` — hubo que
+   escuchar también en el `<source>` (guardado contra doble disparo).
+   Confirmado con Playwright tras el arreglo: `p17` (motion sin
+   producir) degrada limpio a `.media-marcador` con los controles
+   ocultos.
+
+**Decisiones de contenido, la parte que de verdad importa (detalle
+completo en el encabezado de `content/ova-u1.js`, no repetido aquí):**
+
+- **Kicker**: `unidad_capsula` del storyboard (`"Unidad 1 / Cápsula
+  2"` → `"Unidad 1 · Cápsula 2"`), mecánico en las 47 salvo p01 (usa el
+  antetítulo real de Jose como kicker de la portada, no una etiqueta
+  de unidad).
+- **Avatar (14 pantallas)**: `imagen` sale de la asignación de
+  plano/fondo de `PLAN-CONTENIDO.md` §5, numerada secuencialmente
+  dentro de cada grupo — 14 referencias contra ~12 imágenes reales que
+  Juan produce; qué archivo numerado reutiliza para cuáles pantallas
+  es su decisión. `transcripcion` es la `locucion` del storyboard sin
+  la marca de tiempo final; sin `audio` todavía (Juan las graba
+  aparte) — degrada a imagen + transcripción directa, el placeholder
+  de producción que exige la regla dura 10 de CLAUDE.md.
+- **Diagnóstico → `aciertos_diagnostico`** (P05–P09 escriben, P10 lee):
+  el storyboard no declara esta dependencia en su propio campo
+  `dependencias` (vacío en las cinco), pero `PLAN-CONTENIDO.md` §3.1 la
+  fija explícitamente y el propio texto de P10 (umbrales 0–2/3–4/5)
+  solo tiene sentido contra un diagnóstico de cinco preguntas.
+- **I12 (P46)** reusa tal cual `categorias`/`reglas`/`aviso` que C6 ya
+  había validado a mano contra este mismo payload en `s14`/`s26` del
+  contenido de prueba — no se re-derivó nada.
+- **P03** (L12) pierde la línea de atribución del storyboard ("World
+  Bank Global Findex 2025"): L12 no tiene una ranura de fuente aparte
+  del cuerpo. Queda en la lista de revisión, no se extendió el layout
+  para un solo caso sin confirmar antes con Jose si debe ser visible.
+
+**Verificado con Playwright (el atajo de `NODE_PATH` sobre el
+Playwright cacheado por `npx` seguía funcionando esta sesión), Chromium
+real, dos páginas:**
+
+- `src/index.html`: recorrido completo de las 47 pantallas de punta a
+  punta con clics reales (el botón «Comenzar» de la portada en p01,
+  «Siguiente» del resto) — los 47 títulos coinciden exactamente con
+  los de `storyboard_data_v2.json`, en el mismo orden P01→P47, cero
+  caída al estado de error del motor (`[role="alert"]` nunca
+  aparece). Los únicos errores de consola son `ERR_FILE_NOT_FOUND` de
+  las rutas de avatar/motion/infografía todavía sin producir — el
+  degrade esperado, no un fallo. Verificado además, puntual: p42 (I11)
+  arranca en el estado "expuesta" (el caso que enseña la diferencia
+  entre mercado y límite); p13/p28 (L05 + interacción) montan I07/I08
+  de verdad dentro de `.layout--l05`; p29 muestra la nota debajo de
+  las tarjetas; p10/p31/p43/p47 muestran el avatar dentro de L08; 320px
+  sin scroll horizontal en una muestra de cinco pantallas
+  representativas (p01, p13, p22, p42, p46).
+- `dev/kitchen-sink.html`: las cinco piezas nuevas (imagen, video
+  degradado, L05 con interacción, avatar en L08/L10/L13) montan sin
+  errores de consola nuevos. El desborde a 320px de la página completa
+  sigue presente — es el hallazgo ya documentado por T7/T8 (la tabla
+  `.dato-tabla` y componentes de T1–T4 desbordando bajo la condición
+  combinada de la página entera, pendiente de la auditoría de T9/C9),
+  confirmado con un barrido de `getBoundingClientRect()` que ninguno
+  de los elementos nuevos de esta sesión está entre los que desbordan.
+
+**No se corrió axe-core esta sesión** (no estaba cacheado como sí lo
+estaba Playwright) — queda para C9, que de todas formas audita las 47
+pantallas completas.
+
+**Lista de revisión para Jose/Juan, antes de dar C7 por completamente
+cerrado en producción (nada de esto bloquea la navegación ni el
+demo, todo está documentado también en el encabezado de
+`content/ova-u1.js`):**
+
+1. Confirmar los 14 nombres de archivo de avatar asignados por esta
+   sesión (`public/img/avatar/avatar-{plano}-{fondo}-{n}.webp`) contra
+   las ~12 imágenes que Juan realmente produzca — puede que reasigne
+   cuál archivo numerado sirve a cuáles pantallas.
+2. Producir (o encargar) los cuatro motion de P02/P17/P21/P23 en
+   `public/videos/motion/` y las cinco infografías de
+   P14/P27/P33/P41/P45 en `public/img/infografia/` — las rutas ya
+   están en el contenido, apuntando a archivos que todavía no existen
+   a propósito.
+3. Decidir qué hacer con la atribución de P03 ("World Bank Global
+   Findex 2025") que L12 no tiene dónde mostrar hoy.
+4. Los rangos de slider de precioActual/precioLimite/cantidad de la
+   boleta de P42 (L11 no los trae Jose, solo el escenario) y las
+   unidades/decimales de las salidas de I10 (P22/P24) son autoría de
+   esta sesión — revisar que el rango se sienta bien en la práctica,
+   no solo que sea matemáticamente correcto.
+5. Los títulos y el empaquetado de cada regla de L08 (P10/P31/P43/P47)
+   son autoría de esta sesión sobre las frases reales de Jose, no
+   texto inventado — pero sí es texto nuevo (un título por regla) que
+   vale la pena que alguien más lea antes de producción.
+6. Pendiente de C9: pasada completa de axe-core sobre las 47 pantallas
+   reales (no solo sobre contenido de prueba) y verificación de zoom
+   de texto 200% sobre las cinco piezas nuevas del motor.
+
+**Qué queda para C8/C9, en concreto:**
+
+- **C8** engancha los cuatro descargables reales de P34 (hoy
+  `href: '#'`, cuatro tarjetas sin archivo detrás) y produce/ubica los
+  assets de audio/motion/infografía de la lista de arriba.
+- **C9** repite el cierre de T9 (empaquetado SCORM, auditoría axe-core,
+  Moodle) contra las 47 pantallas reales en vez del contenido de
+  prueba — la primera vez que el paquete completo se prueba con
+  contenido de producción de punta a punta.

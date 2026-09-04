@@ -51,6 +51,28 @@
      `PLAN-CONTENIDO.md` lo pide explícito: "esa degradación es el
      placeholder, no una pantalla rota".
 
+   - **"imagen"** (C7): `{ tipo, src, alt? }`. Infografías y motion sin
+     avatar (P14/P17/P21/P23/P27/P33/P41/P45 del storyboard real): una
+     imagen fija sin controles de reproducción — a diferencia de
+     "avatar", no hay locución que reproducir aquí, así que no hay
+     play/scrubber/CC que construir. `alt` es opcional y por defecto ''
+     (decorativa): el texto real de la pantalla ya vive en
+     `pantalla.cuerpo`, así que la imagen es decorativa mientras no
+     exista el diagrama final — cuando Juan entregue la infografía real
+     (SVG, PLAN-CONTENIDO.md §5), quien la enganche le agrega un `alt`
+     que describa la estructura visual real, no antes: inventar un
+     texto alternativo para un diagrama que todavía no existe sería
+     describir algo que no está. Mismo criterio de degradación limpia
+     que "avatar": si `src` falla al cargar, se quita la `<img>` y
+     queda visible `.media-marcador` (ícono + `--surface-subtle`, ver
+     components.css) en vez de un ícono de imagen rota — nunca una
+     pantalla que se vea incompleta.
+   - **"video"** (T4) también degrada limpio desde C7: si la fuente
+     falla (rutas de motion todavía no producidas, mismo caso que
+     "imagen"), el `error` del `<video>` reemplaza el lienzo por el
+     mismo `.media-marcador` y oculta los controles — no tiene sentido
+     dejar play/scrubber operables sobre un video que no existe.
+
    Cualquier otro valor de `tipo` falla ruidoso en consola (mismo
    patrón que un layout desconocido en router.js) en vez de mostrar una
    caja vacía.
@@ -75,6 +97,21 @@
     if (texto) boton.textContent = texto;
     if (etiqueta) boton.setAttribute('aria-label', etiqueta);
     return boton;
+  }
+
+  // C7: caja de marcador compartida por "imagen" y por el degrade de
+  // "video" sin fuente real — mismo lenguaje visual que .layout__figura
+  // de L11 (--surface-subtle + --text-tertiary, el par que la auditoría
+  // axe-core de T9 ya validó sobre esa combinación de superficies).
+  function crearMarcador(nombreIcono) {
+    var marcador = document.createElement('div');
+    marcador.className = 'media-marcador';
+    var icono = document.createElement('span');
+    icono.className = 'icono';
+    icono.setAttribute('aria-hidden', 'true');
+    icono.textContent = nombreIcono;
+    marcador.appendChild(icono);
+    return marcador;
   }
 
   function pausarOtros(elemento) {
@@ -248,6 +285,25 @@
       play.setAttribute('aria-label', 'Reproducir');
     });
 
+    // C7: la fuente puede no existir todavía (motion sin producir) —
+    // mismo criterio de degradación limpia que la <img> del avatar:
+    // quitar el elemento roto y dejar un marcador visible en vez de un
+    // reproductor con controles que nunca van a funcionar. El error de
+    // una fuente que falla no siempre burbujea al <video> (verificado
+    // con Playwright: bajo file:// con un solo <source>, networkState
+    // llega a NETWORK_NO_SOURCE sin que video.error se llegue a poblar
+    // ni "error" se dispare en el propio <video>) — se escucha en los
+    // dos elementos y se degrada una sola vez.
+    var yaDegradado = false;
+    function alFallarFuente() {
+      if (yaDegradado) return;
+      yaDegradado = true;
+      if (video.parentNode) video.parentNode.replaceChild(crearMarcador('videocam_off'), video);
+      controles.hidden = true;
+    }
+    video.addEventListener('error', alFallarFuente);
+    fuente.addEventListener('error', alFallarFuente);
+
     function actualizarTiempo() {
       var duracion = isFinite(video.duration) ? video.duration : 0;
       tiempo.textContent = formatearTiempo(video.currentTime) + ' / ' + formatearTiempo(duracion);
@@ -312,6 +368,33 @@
     }
 
     instancias.push(video);
+    return raiz;
+  }
+
+  // C7: imagen fija sin controles — ver el catálogo completo en el
+  // encabezado del archivo. A diferencia de "avatar", aquí no hay
+  // locución que reproducir, así que no hay nada que construir salvo
+  // la propia <img> sobre su marcador de fondo.
+  function crearImagen(datos) {
+    if (!datos.src) {
+      console.error('[OVA] OVA.media.crear: media "imagen" necesita "src".');
+      return null;
+    }
+    var raiz = document.createElement('div');
+    raiz.className = 'media-imagen';
+    var marcador = crearMarcador('image');
+    var imagen = document.createElement('img');
+    imagen.className = 'media-imagen__elemento';
+    imagen.src = datos.src;
+    imagen.alt = datos.alt || '';
+    // Mismo criterio que el avatar de C3: sin archivo (infografías/
+    // motion todavía sin producir, PLAN-CONTENIDO.md §5), quitar la
+    // <img> deja el marcador visible en vez de un ícono de imagen rota.
+    imagen.addEventListener('error', function () {
+      if (imagen.parentNode) imagen.parentNode.removeChild(imagen);
+    });
+    marcador.appendChild(imagen);
+    raiz.appendChild(marcador);
     return raiz;
   }
 
@@ -503,9 +586,10 @@
     }
     if (datos.tipo === 'video') return crearVideo(datos);
     if (datos.tipo === 'avatar') return crearAvatar(datos);
+    if (datos.tipo === 'imagen') return crearImagen(datos);
     console.error(
       '[OVA] OVA.media.crear: tipo de media "' + datos.tipo + '" no soportado ' +
-      '(el catálogo es "video"/"avatar" — ver el encabezado de este archivo).'
+      '(el catálogo es "video"/"avatar"/"imagen" — ver el encabezado de este archivo).'
     );
     return null;
   }

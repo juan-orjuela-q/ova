@@ -605,6 +605,26 @@
         </div>
       </div>
 
+      <div class="ks-layout-bloque" id="c-media-imagen">
+        <span class="ks-layout-bloque__etiqueta">Imagen fija (C7, cableado real) — motion/infografía sin avatar</span>
+        <p class="ks-intro">
+          Tercer tipo del catálogo de <code>media.js</code>: una imagen sin
+          controles de reproducción, para las pantallas reales cuyo
+          <code>recurso</code> es "motion" o "infografía" en vez de "avatar"
+          (P14/P17/P21/P23/P27/P33/P41/P45 del storyboard). Las dos apuntan a
+          una ruta que todavía no existe a propósito — la de la izquierda
+          degrada a <code>.media-marcador</code> (mismo lenguaje visual que
+          <code>.layout__figura</code> de L11); la de la derecha demuestra que
+          el <code>&lt;video&gt;</code> de T4 degrada igual cuando su fuente
+          de motion todavía no existe, en vez de dejar controles que no
+          reproducen nada.
+        </p>
+        <div class="ks-layout-marco ks-muestras">
+          <div class="ks-media-marco" id="c-media-imagen-a"></div>
+          <div class="ks-media-marco" id="c-media-imagen-b"></div>
+        </div>
+      </div>
+
       <div class="ks-layout-bloque" id="c-linea-tiempo">
         <span class="ks-layout-bloque__etiqueta">Línea de tiempo conectada</span>
         <div class="ks-layout-marco ks-ancho-marco">
@@ -1254,9 +1274,20 @@
                 <p class="tipo-cuerpo-sm">Busca el máximo crecimiento posible y acepta la mayor volatilidad, incluso pérdidas significativas.</p>
               </div>
             </div>
+            <p class="layout__nota tipo-caption">Es un perfil orientativo, no regulatorio.</p>
           </div>
         </div>
-        <p class="ks-intro">C1 (4 sep) le agregó soporte real de 2 a 4 tarjetas: <code>flex-wrap</code> con base de 14rem por tarjeta en vez de asumir siempre dos columnas. Este ejemplo muestra 4; <code>content/ova-u1.js</code> (<code>s15</code>) muestra el caso de 3, recorrible de extremo a extremo en <a href="../src/index.html">src/index.html</a>.</p>
+        <p class="ks-intro">C1 (4 sep) le agregó soporte real de 2 a 4 tarjetas: <code>flex-wrap</code> con base de 14rem por tarjeta en vez de asumir siempre dos columnas. Este ejemplo muestra 4; <code>content/ova-u1.js</code> (<code>s15</code>) muestra el caso de 3, recorrible de extremo a extremo en <a href="../src/index.html">src/index.html</a>. La nota debajo (C7) es <code>pantalla.nota</code> — un disclaimer de una línea (P29 real) que no se pesa igual que las tarjetas comparables.</p>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L05 · con interacción incrustada (C7) — P13/P28 del storyboard real</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l05">
+            <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cápsula 1</span>
+            <h2 class="layout__titulo tipo-h2">Tres familias del mercado</h2>
+            <div class="layout__interaccion" id="l05-interaccion"></div>
+          </div>
+        </div>
+        <p class="ks-intro">Cuando la pantalla trae <code>interaccion</code> en vez de <code>tarjetas</code>, <code>PLANTILLAS.L05</code> monta esa interacción con la misma <code>crearInteraccion()</code> de L06/L07: I07/I08 ya son en sí mismas la disposición de tarjetas comparables que promete L05, así que no hace falta una tarjeta de solo lectura por delante. Resuelve la nota abierta que dejó C5 en <code>PLAN-CONTENIDO.md</code>.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l06">
@@ -1292,6 +1323,7 @@
             <div class="layout__cuerpo">
               <p class="tipo-cuerpo">Este es un resumen de tus respuestas en la evaluación de esta cápsula.</p>
             </div>
+            <div class="layout__media" id="l08-media"></div>
             <div class="layout__datos" id="l08-cifra"></div>
             <div class="layout__interaccion">
               <div class="callout callout--brand">
@@ -1304,7 +1336,7 @@
             </div>
           </div>
         </div>
-        <p class="ks-intro">Reusa <code>OVA.charts.crear({tipo:'cifra'})</code> (T7, motor real del anillo) para la cifra y <code>.callout</code> (T5) para la retroalimentación — el mismo candado tipo→ícono→color que ya resolvió <code>.quiz-retro</code>, sin un cuarto patrón nuevo. P10, P31, P43 y P47 van a leer esa cifra/retro de una variable de contenido en tiempo de ejecución (C4, todavía no existe); <code>router.js</code> ya pasa por un único punto de lectura (<code>obtenerResultado()</code>) para que ese trabajo no toque esta plantilla. Mismo ejemplo que <code>s17</code> en <code>content/ova-u1.js</code>.</p>
+        <p class="ks-intro">Reusa <code>OVA.charts.crear({tipo:'cifra'})</code> (T7, motor real del anillo) para la cifra y <code>.callout</code> (T5) para la retroalimentación — el mismo candado tipo→ícono→color que ya resolvió <code>.quiz-retro</code>, sin un cuarto patrón nuevo. C4 conectó esa cifra/retro a una variable de contenido en tiempo de ejecución (ver <code>router.js</code>, <code>obtenerResultado()</code>); mismo ejemplo que <code>s17</code> en <code>content/ova-u1.js</code>. El avatar de arriba es la ranura que C7 le agregó a este layout: P10/P31/P43/P47, las cuatro pantallas reales de L08, llevan narración de avatar.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l09">
@@ -1347,6 +1379,7 @@
             <div class="layout__cuerpo">
               <p class="tipo-cuerpo-lg">Identificaste los tres mercados de Bolsa de Valores de Colombia, qué es una acción y la diferencia entre acciones ordinarias y preferenciales.</p>
             </div>
+            <div class="layout__media" id="l10-media"></div>
             <div class="layout__interaccion">
               <div class="aviso-logro" role="status">
                 <div class="insignia" data-estado="desbloqueada">
@@ -1361,7 +1394,7 @@
             </div>
           </div>
         </div>
-        <p class="ks-intro">Mismo ejemplo que <code>s20</code> en <code>content/ova-u1.js</code> — "siguiente paso" del nombre del brief es el nav-inferior del chrome (T2/T3), este layout no lleva botón propio.</p>
+        <p class="ks-intro">Mismo ejemplo que <code>s20</code> en <code>content/ova-u1.js</code> — "siguiente paso" del nombre del brief es el nav-inferior del chrome (T2/T3), este layout no lleva botón propio. El avatar de arriba es la ranura que C7 le agregó: P35, el cierre real de la Unidad 1, lleva narración de avatar.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l11">
@@ -1420,9 +1453,10 @@
             <div class="layout__cuerpo">
               <p class="tipo-cuerpo">A través del Mercado Global Colombiano (MGC), los inversionistas pueden comprar y vender valores extranjeros listados en mercados internacionales por medio de una sociedad comisionista de bolsa local.</p>
             </div>
+            <div class="layout__media" id="l13-media"></div>
           </div>
         </div>
-        <p class="ks-intro">Sobre <code>--surface-inverse</code> a sangre desde C2 (4 sep), ya no una tarjeta flotante sobre blanco. Kicker en naranja-300 (la pareja pensada para texto naranja sobre inverse, no naranja-700).</p>
+        <p class="ks-intro">Sobre <code>--surface-inverse</code> a sangre desde C2 (4 sep), ya no una tarjeta flotante sobre blanco. Kicker en naranja-300 (la pareja pensada para texto naranja sobre inverse, no naranja-700). El avatar de abajo es la ranura que C7 le agregó: P36/P40/P44, las tres vistas previas de pieza insignia, llevan narración de avatar — <code>.media-audio</code> sigue siendo la misma tarjeta autocontenida sobre <code>--surface-subtle</code> que ya flota sobre <code>--surface-brand</code> en L01, ahora sobre <code>--surface-inverse</code>.</p>
       </div>
     </section>
   </main>
@@ -1524,6 +1558,31 @@
         imagen: IMAGEN_AVATAR_DEMO,
         transcripcion: TRANSCRIPCION_AVATAR_DEMO
       });
+
+      // C7: ranura de avatar nueva en L08/L10/L13 — mismo tono de
+      // prueba, sin audio (todavía sin grabar) en L08/L10 y con audio
+      // en L13 para seguir ejercitando esa ruta también aquí.
+      montar('l08-media', { tipo: 'avatar', imagen: IMAGEN_AVATAR_DEMO, transcripcion: TRANSCRIPCION_AVATAR_DEMO });
+      montar('l10-media', { tipo: 'avatar', imagen: IMAGEN_AVATAR_DEMO, transcripcion: TRANSCRIPCION_AVATAR_DEMO });
+      montar('l13-media', {
+        tipo: 'avatar',
+        imagen: IMAGEN_AVATAR_DEMO,
+        audio: AUDIO_DEMO,
+        vtt: VTT_AVATAR_DEMO,
+        transcripcion: TRANSCRIPCION_AVATAR_DEMO
+      });
+
+      // C7: "imagen", el tercer tipo del catálogo — ruta a propósito
+      // inexistente (infografías/motion de la conversión real todavía
+      // sin producir, PLAN-CONTENIDO.md §5), para demostrar la
+      // degradación limpia a .media-marcador en los dos casos que la
+      // usan (imagen y video).
+      montar('c-media-imagen-a', {
+        tipo: 'imagen',
+        src: '../public/img/infografia/demo-tres-familias.svg',
+        alt: ''
+      });
+      montar('c-media-imagen-b', { tipo: 'video', src: '../public/videos/motion/demo-inexistente.mp4' });
     })();
   </script>
 
@@ -1657,6 +1716,22 @@
             correcto: 'El mercado primario es donde la empresa emite y vende acciones por primera vez, directamente a los inversionistas.',
             incorrecto: 'El mercado primario es donde la empresa emite y vende acciones por primera vez; el secundario es donde esas acciones se negocian después, entre inversionistas.'
           }
+        }
+      });
+
+      // C7: L05 con interacción incrustada — mismo ejemplo que
+      // c-nuevas-i07 (I07 real, tarjetas volteables de P13).
+      montarQuiz('l05-interaccion', {
+        tipo: 'I07',
+        datos: {
+          id: 'u1-p13-tres-familias',
+          enunciado: 'Toca cada tarjeta para ver a qué familia del mercado pertenece.',
+          tarjetas: [
+            { frente: 'Renta variable', reverso: 'Resultado no garantizado: depende del precio y de los dividendos.' },
+            { frente: 'Renta fija', reverso: 'Condiciones de pago pactadas desde el inicio.' },
+            { frente: 'Derivados', reverso: 'Contratos cuyo valor depende de otro activo.' }
+          ],
+          retroalimentacion: 'Bien. Las acciones pertenecen a renta variable porque su rentabilidad no se conoce al comprar.'
         }
       });
 

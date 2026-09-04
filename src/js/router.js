@@ -49,6 +49,24 @@
 
    Nada de innerHTML con texto del contenido: todo nodo de texto se
    arma con createElement/textContent.
+
+   C7 (conversión del storyboard real): tres ampliaciones puntuales,
+   todas opcionales y retrocompatibles con el contenido de prueba de
+   C0–C6.
+   - PLANTILLAS.L05 acepta "interaccion" como alternativa a "tarjetas"
+     (P13/P28 del storyboard real ya son en sí mismas una disposición
+     de tarjetas comparables — I07/I08 — así que no hace falta una
+     tarjeta de solo lectura por delante) y una "nota" opcional debajo
+     (un disclaimer de una línea que no es una tarjeta comparable más).
+   - PLANTILLAS.L08/L10/L13 aceptan "media" opcional (avatar): las
+     ocho pantallas reales de esos tres layouts que llevan narración
+     de avatar (P10/P31/P35/P36/P40/P43/P44/P47) no tenían dónde
+     montarla antes de esta sesión — mismo patrón opcional que ya
+     usaba L09 con su media.
+   - obtenerResultado() acepta "resultado.campo": cuando la variable de
+     contenido guarda un objeto (resultado_boleta, que I11 fija como
+     {operacion,tipo,estado,…} — ver quiz.js) en vez de un valor
+     simple, este es el subcampo contra el que se comparan las reglas.
    ============================================================ */
 (function () {
   'use strict';
@@ -249,6 +267,16 @@
     var efectivo = resultado;
     if (resultado.variable) {
       var valorVariable = OVA.state.obtenerVariable(resultado.variable);
+      // C7: resultado.campo (opcional) — cuando la variable guarda un
+      // objeto en vez de un valor simple (p. ej. resultado_boleta, que
+      // I11 fija como { operacion, tipo, estado, … } — ver quiz.js),
+      // este es el subcampo que se compara contra las reglas, en vez
+      // del objeto completo. Sin "campo", el comportamiento es idéntico
+      // al de antes (compara la variable tal cual) — P10/P31/P47 siguen
+      // sin necesitarlo porque sus variables ya son valores simples.
+      if (resultado.campo && valorVariable != null) {
+        valorVariable = valorVariable[resultado.campo];
+      }
       if (valorVariable !== undefined && resultado.reglas) {
         var regla = resultado.reglas.filter(function (r) {
           if (r.valor !== undefined) return r.valor === valorVariable;
@@ -379,6 +407,21 @@
     a.appendChild(accion);
 
     return a;
+  }
+
+  // C7: nota opcional debajo de las tarjetas de L05 (P29 trae un
+  // disclaimer de una línea — "es un perfil orientativo, no
+  // regulatorio" — que no es una cuarta tarjeta comparable: pesarla
+  // igual que Conservador/Moderado/Agresivo la haría leer como una
+  // cuarta opción del mismo tipo). Clase propia en vez de reusar
+  // tipo-caption a secas: necesita el color secundario que ningún
+  // átomo transversal trae ya puesto (ver layouts.css, .layout--l05
+  // .layout__nota).
+  function crearNotaTarjetas(texto) {
+    var p = document.createElement('p');
+    p.className = 'layout__nota tipo-caption';
+    p.textContent = texto;
+    return p;
   }
 
   function crearRaiz(modificador) {
@@ -565,12 +608,29 @@
 
   // C1: 2 a 4 tarjetas comparables — ver crearTarjetasComparativas() más
   // arriba para el rango y el porqué de "tarjetas" en vez de "cuerpo".
+  //
+  // C7: el storyboard real ubica P13 (I07, tarjetas volteables) y P28
+  // (I08, comparador de columnas) en L05, no en L06 — nota abierta que
+  // dejó C5 en PLAN-CONTENIDO.md: "L05 hoy no tiene ranura para
+  // interaccion". Se resuelve aquí en vez de convertir esas dos
+  // pantallas a L06/L07: cuando la pantalla trae "interaccion" en vez
+  // de "tarjetas", L05 monta esa interacción (misma crearInteraccion()
+  // de L06/L07) porque I07/I08 YA son en sí mismas la disposición de
+  // tarjetas comparables que L05 promete — no hacía falta una tarjeta
+  // de solo lectura por delante. "tarjetas" e "interaccion" son
+  // mutuamente excluyentes; layouts.css agrega el mismo tratamiento de
+  // caja que usa L06 para que no quede sin estilo.
   PLANTILLAS.L05 = function (pantalla) {
     var raiz = crearRaiz('l05');
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
-    raiz.appendChild(crearTarjetasComparativas(pantalla.tarjetas));
+    if (pantalla.interaccion) {
+      raiz.appendChild(crearInteraccion(pantalla.interaccion));
+    } else {
+      raiz.appendChild(crearTarjetasComparativas(pantalla.tarjetas));
+    }
+    if (pantalla.nota) raiz.appendChild(crearNotaTarjetas(pantalla.nota));
     return { raiz: raiz, titulo: titulo };
   };
 
@@ -611,6 +671,11 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
     if (pantalla.cuerpo) raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    // C7: avatar opcional — P10/P31/P43/P47, las cuatro pantallas reales
+    // de L08, traen narración de avatar (recurso "avatar" en el
+    // storyboard); antes de C7 este layout no tenía ninguna ranura de
+    // media. Mismo patrón opcional que ya usa L09 con su media.
+    if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
 
     if (resultado.cifra) {
       var cifra = document.createElement('div');
@@ -667,6 +732,10 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h3');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    // C7: avatar opcional — P36/P40/P44, las tres vistas previas de
+    // pieza insignia, traen narración de avatar; mismo patrón opcional
+    // que L08/L09/L10.
+    if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
     return { raiz: raiz, titulo: titulo };
   };
 
@@ -684,6 +753,9 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-display-2');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo-lg'));
+    // C7: avatar opcional — P35 (cierre real de la Unidad 1) trae
+    // narración de avatar; mismo patrón opcional que L08/L09.
+    if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
     var interaccion = document.createElement('div');
     interaccion.className = 'layout__interaccion';
     interaccion.appendChild(crearAvisoLogro(pantalla.logro));

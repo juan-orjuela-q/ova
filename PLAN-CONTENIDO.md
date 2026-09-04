@@ -515,10 +515,34 @@ de revisión.** Después, revisión pantalla por pantalla de las 47.
 **Cierre:** las 47 pantallas navegan de P01 a P47 sin una sola caída al estado
 de error del motor, y la revisión de las 47 está firmada.
 
+**Cerrada 4 sep, rama `c7-conversion-storyboard`.** Las 47 pantallas
+reemplazan el contenido de prueba en `content/ova-u1.js`; recorrido completo
+verificado con Playwright (títulos, orden, cero caída al estado de error).
+Detalle completo, incluidos tres huecos reales del motor que aparecieron al
+convertir (L08/L10/L13 sin ranura de media, L05 sin ranura de interacción —
+resuelve la nota abierta de C5 sobre P13/P28 —, y `resultado.campo` para leer
+un subcampo de una variable-objeto) y un cuarto tipo de media nuevo
+(`"imagen"`, más degrade de `"video"` a un marcador cuando la fuente no
+existe), en `ESTADO.md`. La lista de revisión para Jose/Juan (nombres de
+archivo de avatar, rutas de motion/infografía todavía sin producir, la
+atribución de P03, rangos de slider de P42 autoría de esta sesión) también
+vive ahí, no se repite aquí.
+
 ### C8 · Descargables y recursos
 Los cuatro descargables de Jose enganchados en P34 (L11): calculadora XLSX,
 checklist, hoja de perfil, glosario tri-país. PDF etiquetados, no imágenes.
 **Cierre:** los cuatro se descargan desde el OVA, en Moodle y en URL directa.
+
+**Punto de partida que deja C7:** `content/ova-u1.js`, pantalla `p34` (L11),
+ya trae las cuatro tarjetas de `pantalla.recursos` con título y meta reales
+(tomados del storyboard), pero `href: '#'` — sin archivo detrás. C8 solo
+necesita reemplazar ese `href` por la ruta real de cada archivo (los cuatro
+documentos ya existen en `disenoInstruccional/`: `Calculadora_valorizacion_
+dividendos_v2.xlsx`, y los otros tres dentro de `Descargables_Produccion_
+v2.docx`/`Descargables_Master_v2.md` — hay que exportarlos a sus formatos
+finales, PDF etiquetados según el brief) y decidir si `.tarjeta-recurso`
+necesita el atributo `download` (router.js hoy lo omite a propósito mientras
+no hay archivo real, ver el comentario junto a `crearTarjetaRecurso`).
 
 ### C9 · Empaquetado, auditoría y Moodle
 Regenerar el paquete, auditoría axe-core sobre las 47 pantallas, prueba real en
