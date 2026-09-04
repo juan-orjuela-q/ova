@@ -37,7 +37,7 @@ Ver `PLAN-CONTENIDO.md` — es el plan vigente sobre el que corren estas tareas.
 
 - [x] **C0 · Renumerar los catálogos al brief** — completada 4 sep
 - [x] **C1 · Layouts que faltan** — completada 4 sep
-- [ ] C2 · Caja 16:9 y navegación pegada
+- [x] **C2 · Caja 16:9 y navegación pegada** — completada 4 sep
 - [ ] C3 · Media: avatar y audio
 - [ ] C4 · Estado compartido
 - [ ] C5 · Interacciones nuevas
@@ -1819,3 +1819,194 @@ de que el layout admite varias, no una.
 superficie de L12/L13 (ver arriba), el recorrido de teclado manual con
 lector de pantalla (C9), y la caja 16:9/navegación pegada de la sección 4
 de `PLAN-CONTENIDO.md` — eso es C2, la siguiente tarea del plan.
+
+---
+
+**4 sep — C2 cerrada: marco fijo del OVA, en rama
+`c2-marco-fijo-navegacion`. El documento no scrollea nunca, las dos
+barras quedan clavadas y el scroll vive en `#app`; L01 va sin barra
+superior ni inferior; L12/L13 pasan a `--surface-brand`/`--surface-inverse`
+a sangre; botón de pantalla completa en la barra superior más una
+segunda aparición revelada en la portada. Antes de escribir código se
+releyó §4 de `PLAN-CONTENIDO.md`: el usuario avisó que la spec había
+cambiado ese mismo día (de "alto mínimo proporcional" a "marco fijo"),
+así que la sesión partió de la versión vigente, no de la que traía
+`ESTADO.md` en la cabeza.**
+
+**Qué se construyó:**
+
+- **`body`/`#app` como grid de tres filas** (`base.css`): `body`
+  mide `100dvh` con `overflow:hidden` y `grid-template-rows: auto 1fr
+  auto`; `#app` es la fila `1fr` con `overflow-y:auto`. `.layout` (T1,
+  `layouts.css`) gana `min-block-size:100%` (llena como mínimo el alto
+  fijo de `#app`, elimina el salto entre pantallas) y
+  `justify-content:center` (centra contenido corto; el largo simplemente
+  crece y `#app` lo scrollea). L01 sigue fijando su propio
+  `min-height:100dvh` — redundante con la regla general pero inofensivo,
+  no se tocó.
+- **Escapado a `body.ova-marco`, no al selector `body` a secas — el
+  hallazgo real de la sesión.** `base.css` es compartido con
+  `dev/kitchen-sink.html` (mismo `<link>`), que es una sola página larga
+  con los trece layouts y todos los componentes uno debajo del otro y
+  depende de que el documento scrollee normal. La primera versión
+  (`body { display:grid; block-size:100dvh; overflow:hidden }` sin
+  escapar) le rompía la página entera a la kitchen sink: Playwright
+  midió `body.scrollHeight` en 27815px contra un `clientHeight` de
+  800px — casi todo el catálogo de componentes quedaba clipeado e
+  inalcanzable, la superficie de revisión del proyecto (CLAUDE.md) rota
+  en silencio. Arreglado agregando `class="ova-marco"` solo al `<body>`
+  de `src/index.html` y escapando las reglas de grid a `body.ova-marco`;
+  la kitchen sink recuperó su `overflow:visible`/`display:block` de
+  siempre sin tocar una línea de `dev/kitchen-sink.html`. Reverificado:
+  `body.scrollHeight` vuelve a ser 27815px con `clientHeight` igual (la
+  página scrollea completa), cero violaciones de axe-core.
+- **`#app` alcanzable por teclado (trampa 1 de §4.3).** `tabindex="-1"`
+  (T3) pasó a `"0"` con `aria-label="Contenido de la pantalla"` —sigue
+  siendo el destino del skip link, pero ahora también es una parada de
+  Tab por derecho propio, necesaria porque una región con su propio
+  scroll no es alcanzable por teclado en todos los navegadores solo con
+  `overflow-y:auto`.
+- **Botón de pantalla completa, dos apariciones (trampa 2 de §4.3).**
+  `#nav-pantalla-completa` en la barra superior (disponible en todo el
+  recorrido salvo L01) y `#nav-portada-completa`, hijo directo de
+  `<body>` —no de `.layout--l01`, que tiene `overflow:hidden` para
+  recortar los SVG de unión y podría clipear un `position:fixed`
+  anidado según el navegador—, revelado solo en L01. Las dos comparten
+  manejador de click y listener de `fullscreenchange` en `router.js`
+  (`document.documentElement` como objetivo). `document.fullscreenEnabled
+  || document.webkitFullscreenEnabled` decide si existen: si es falso
+  (iframe de Moodle sin `allowfullscreen`), los dos quedan `hidden` para
+  siempre — mismo criterio que el botón de pantalla completa de
+  `media.js` en T4, verificado explícitamente simulando
+  `fullscreenEnabled=false` con Playwright.
+- **Revelado de la portada sin robar foco (trampa 3 de §4.3).**
+  `gestionarBotonPortada()` en `router.js`: al entrar a L01 arranca
+  `hidden`, un `setTimeout` de 4000ms ("a los pocos segundos") lo
+  desoculta y, en el siguiente frame, agrega `.es-visible` para el
+  fundido (`--dur-base`, ya colapsa a 1ms bajo `prefers-reduced-motion`
+  en `tokens.css` — no se duplicó el media query). Nunca llama a
+  `.focus()`. Se re-oculta y limpia el temporizador en cada navegación
+  (salir de L01, o volver a entrar sin dejar un timer viejo corriendo).
+- **Fallback de la trampa 4 (§4.3, zoom 200%).** `@media (max-height:
+  36em)`: por debajo de esa altura visual, `body.ova-marco` vuelve a
+  `display:block`/`overflow:visible` y `#app` a `overflow-y:visible` —
+  el documento entero scrollea, como antes de C2, en vez de mantener dos
+  barras clavadas sobre una franja demasiado angosta para leer. El punto
+  de corte se ajustó verificando 320×568 con zoom de texto al 200 %
+  (el caso real más angosto): con el marco fijo activo ahí, un párrafo de
+  `s08` medía 665px de alto contra 568px de viewport — no entraba nada
+  legible entre las barras. Con el fallback, el párrafo completo queda
+  alcanzable por scroll de página y no hay scroll horizontal.
+- **L01 sin barras (regla dura 9).** `actualizarChromePorLayout()` en
+  `router.js`: `header.hidden`/`footer.hidden` siguen a
+  `pantalla.layout === 'L01'`. Al ser `hidden` (no una clase de
+  visibilidad), la fila `auto` que le correspondía en el grid de body
+  colapsa a 0 sola — no hizo falta una regla de CSS aparte para ese
+  caso.
+- **L12 sobre `--surface-brand`, L13 sobre `--surface-inverse`, las dos
+  a sangre** (`layouts.css`) — lo que C1 dejó fuera de alcance a
+  propósito. El fondo va en la raíz `.layout` (que ya mide
+  `min-block-size:100%` de `#app`), no en una tarjeta angosta sobre
+  blanco: es lo que las convierte en cortes de verdad en vez de cajas
+  flotantes. Contraste según CLAUDE.md ("sobre naranja el cuerpo va en
+  gris 950, blanco solo en display"): L12 usa `--text-on-brand-display`
+  (blanco) solo en el título (`tipo-display-2`, sí califica como
+  "display"), `--text-on-brand` (gris 950) en kicker y cuerpo, igual que
+  L01. L13 usa `--text-on-inverse` (blanco) para título/cuerpo y
+  naranja-300 —no naranja-700— para el kicker: la regla de usar 700 es
+  para texto sobre superficie clara, sobre inverse la pareja pensada
+  para eso ya la usa la transcripción del reproductor de video (T4). Se
+  retiraron el `max-width`/`padding`/`border-radius` que armaban la
+  "tarjeta" de L13; el ancho de lectura lo sigue acotando
+  `.layout__cuerpo` (42rem por defecto, sin cambio) más un
+  `.layout__titulo { max-width: 42rem }` nuevo para que las dos líneas
+  compartan columna.
+- **Comentarios de L12/L13 en `layouts.css` corregidos** (ya no dicen
+  "queda pendiente para C1"), y los dos párrafos correspondientes de
+  `dev/kitchen-sink.html` actualizados igual.
+
+**Dos bugs reales encontrados con Playwright antes de cerrar la tarea,
+ninguno hipotético:**
+
+1. **320px se rompió en cinco de las 21 pantallas** (`s01`, `s08`,
+   `s11`, `s15`, `s16`) — confirmado que era una regresión de esta
+   sesión y no algo preexistente corriendo el mismo diagnóstico contra
+   `master` (limpio ahí). Causa: al pasar `body` a `display:grid`,
+   `.nav-barra`/`#app`/`.nav-inferior` pasaron a ser *ítems de grid*, y
+   un ítem de grid recibe un mínimo automático (`auto`) que por defecto
+   es el tamaño min-content de su contenido más ancho — no 0, aunque
+   `.nav-barra__titulo` adentro ya tuviera su propio `min-width:0` desde
+   T3. Antes de C2 `.nav-barra` era un bloque normal sin ese piso
+   automático y su flexbox interno podía encoger el título libremente;
+   al volverse ítem de grid, el título dejó de importar y `.nav-barra`
+   entera se negaba a bajar de ~432px en un viewport de 320px
+   (confirmado inspeccionando el ancho computado con Playwright).
+   Arreglado con `min-inline-size:0` explícito en los tres ítems
+   (`#app` en `base.css`; `.nav-barra`/`.nav-inferior` en
+   `components.css`) — el mismo problema que ya resolvía
+   `min-block-size:0` en `#app`, pero en el eje horizontal.
+2. **El botón de la portada se revelaba igual sin pantalla completa
+   disponible.** `gestionarBotonPortada()` programaba su temporizador
+   de 4000ms sin consultar si `document.fullscreenEnabled` era
+   verdadero — la señal la calculaba `configurarPantallaCompleta()`
+   pero solo la usaba para el botón de la barra, no para el de la
+   portada. Encontrado simulando `fullscreenEnabled=false` +
+   `webkitFullscreenEnabled=false` juntos con Playwright (Chromium
+   expone las dos propiedades reflejando el mismo permiso real; apagar
+   solo la primera no simula el caso real de un iframe sin
+   `allowfullscreen`). Arreglado guardando la disponibilidad en
+   `pantallaCompletaDisponible` (module-level) y consultándola también
+   en `gestionarBotonPortada()`.
+
+**Verificado con Playwright (Chromium) + axe-core, con una API SCORM
+1.2 simulada, abriendo `src/index.html` y `dev/kitchen-sink.html` por
+`file://`:**
+
+- **1390×780, las 21 pantallas de `content/ova-u1.js`:** `body` nunca
+  scrollea (`scrollHeight<=clientHeight` en las 21); `body.clientHeight`
+  mide exactamente 780px en las 20 pantallas con chrome (sin salto
+  entre ninguna); `s00` (L01) con header y footer `hidden`, el resto
+  con los dos visibles.
+- **320px y zoom de texto 200%, cada condición por separado, en las 21
+  pantallas de `src/index.html` y en la kitchen sink completa:** cero
+  scroll horizontal en ambos casos (`scrollWidth<=clientWidth`,
+  confirmado programáticamente).
+- **320×568 + zoom 200% simultáneos (trampa 4):** el fallback de
+  `max-height:36em` se activa, un párrafo real de `s08` queda completo
+  y alcanzable por scroll de página, sin scroll horizontal.
+- **Teclado:** Tab desde el skip link recorre drawer-abrir →
+  pantalla-completa → `#app` (nueva parada) → Anterior/Siguiente, sin
+  nada inalcanzable; `#app` confirmado dentro de la secuencia de Tab.
+  El drawer sigue abriendo con Enter, atrapando el foco y devolviéndolo
+  con Escape al botón que lo abrió — sin regresión de T3 por los
+  cambios de chrome de esta sesión.
+- **Pantalla completa:** con `fullscreenEnabled` real (Chromium
+  headless lo tiene), el botón de la barra aparece en toda pantalla
+  salvo L01; en L01 el de la portada arranca oculto, se revela a los
+  ~4s con `.es-visible`/`opacity:1`, y el foco activo tras revelarse
+  sigue siendo el `<h1>` de la portada (nunca el botón). Con
+  `fullscreenEnabled=false` simulado (las dos propiedades, estándar y
+  `webkit`), los dos botones quedan `hidden` para siempre, incluso
+  después de esperar el temporizador completo en L01.
+- **axe-core (`wcag2a`+`wcag2aa`) en cero violaciones** en las 21
+  pantallas de `src/index.html` y en `dev/kitchen-sink.html` completa
+  (incluida la verificación aislada de L12/L13 con sus nuevos colores
+  de superficie).
+- Cero errores de consola (`pageerror`+`console.error` de la app; el
+  ruido conocido de axe-core bajo `file://` que T9 ya documentó sigue
+  ahí, sin relación con esta sesión) en toda la corrida.
+
+**Cero hex nuevo** en los seis archivos tocados (`base.css`,
+`layouts.css`, `components.css`, `router.js`, `index.html`,
+`dev/kitchen-sink.html`) — todos los colores nuevos de L12/L13 salen de
+tokens ya existentes (`--surface-brand`, `--surface-inverse`,
+`--text-on-brand`, `--text-on-brand-display`, `--text-on-inverse`,
+`--nuam-orange-300`).
+
+**Pendiente, fuera de esta sesión.** Pablo tiene que fijar el alto del
+reproductor SCORM del módulo de Moodle en ~780px (`PLAN-CONTENIDO.md`
+§4 ya lo anota como coordinación de C9; un alto por defecto de 500px
+arruina la composición de las 21 pantallas contra el presupuesto de
+autoría de `BRIEF-DI.md` §4). El recorrido de teclado manual con lector
+de pantalla real sigue siendo trabajo de C9, igual que quedó anotado al
+cerrar C1.

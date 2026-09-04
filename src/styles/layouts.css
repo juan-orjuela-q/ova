@@ -51,6 +51,14 @@
 .layout {
   display: flex;
   flex-direction: column;
+  /* C2 (PLAN-CONTENIDO.md §4): min-block-size:100% de #app (que ya mide
+     el alto fijo del marco, ver base.css) es lo que elimina el salto de
+     alto entre pantallas — cada layout ocupa como mínimo la misma caja
+     sin importar cuánto texto traiga. justify-content:center centra el
+     contenido corto dentro de esa caja; el contenido largo simplemente
+     crece más allá del 100% y #app lo scrollea, nunca al revés. */
+  min-block-size: 100%;
+  justify-content: center;
   gap: var(--sp-6);
   width: 100%;
   padding-block: var(--sp-10);
@@ -548,11 +556,26 @@
 
 /* ---- L12 · Corte naranja, un dato que golpea ------------------------------
    kicker de contexto + cifra grande junto a su explicación. Antes de
-   C0 era .layout--l05 ("cifra destacada"). El brief pide esta pantalla
-   sobre --surface-brand; sigue sin fondo propio, como el código
-   anterior — el tratamiento de superficie queda pendiente para C1 (ver
-   PLAN-CONTENIDO.md §2.1, fila L12). ---------------------------------
+   C0 era .layout--l05 ("cifra destacada"). C2 (4 sep) le agregó el
+   tratamiento de superficie que el brief pedía desde el principio:
+   --surface-brand a sangre (el fondo va en la raíz .layout, que ya mide
+   min-block-size:100% de #app — no una caja angosta encima de blanco),
+   lo que convierte la pantalla en un corte de verdad. Contraste según
+   CLAUDE.md ("sobre naranja el cuerpo va en gris 950, blanco solo en
+   display"): el título usa tipo-display-2 (36-56px/700), así que
+   --text-on-brand-display (blanco) cumple; kicker y cuerpo no son
+   display, van en --text-on-brand (gris 950), igual que L01. ----------
    Ej.: "77 % de los colombianos ahorra guardando efectivo en casa". --- */
+.layout--l12 {
+  background: var(--surface-brand);
+  color: var(--text-on-brand);
+}
+.layout--l12 .layout__kicker {
+  color: var(--text-on-brand);
+}
+.layout--l12 .layout__titulo {
+  color: var(--text-on-brand-display);
+}
 @media (min-width: 40em) {
   .layout--l12 {
     display: grid;
@@ -568,17 +591,30 @@
 }
 
 /* ---- L13 · Corte oscuro, cierre o transición ------------------------------
-   Bloque enmarcado sobre superficie subtle-2, sin cambio de grid.
-   Antes de C0 era .layout--l06 ("cita o dato curioso"). El brief pide
-   esta pantalla sobre --surface-inverse; sigue sobre subtle-2, como el
-   código anterior — el tratamiento de superficie queda pendiente para
-   C1 (ver PLAN-CONTENIDO.md §2.1, fila L13). -----------------------
+   Antes de C0 era .layout--l06 ("cita o dato curioso"). C2 (4 sep) le
+   agregó el tratamiento de superficie del brief: --surface-inverse a
+   sangre, mismo criterio que L12 arriba — la superficie va en la raíz
+   .layout (min-block-size:100% de #app), no en una tarjeta flotante
+   sobre blanco, así que deja de leerse como una caja y pasa a ser un
+   corte real de la pantalla. Se retiran el max-width/padding/
+   border-radius que antes armaban esa tarjeta: el ancho de lectura lo
+   sigue acotando .layout__cuerpo (42rem por defecto) y .layout__titulo
+   se acota igual para que las dos líneas del bloque de texto compartan
+   columna en vez de que el título se estire a todo el ancho de la
+   pantalla. Kicker en naranja-300, no naranja-700: la regla de
+   CLAUDE.md de usar 700 es para texto sobre superficie clara, sobre
+   inverse pasa AA con la pareja pensada para eso (mismo par que ya usa
+   la transcripción del reproductor de video, T4). --------------------
    Ej.: dato del Mercado Global Colombiano. ------------------------------ */
 .layout--l13 {
-  max-width: 40rem;
-  padding: var(--sp-8);
-  background: var(--surface-subtle-2);
-  border-radius: var(--r-lg);
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+}
+.layout--l13 .layout__kicker {
+  color: var(--nuam-orange-300);
+}
+.layout--l13 .layout__titulo {
+  max-width: 42rem;
 }
 
 /* ---- Movimiento — entrada de contenido (T1.5, punto 2) -----------------

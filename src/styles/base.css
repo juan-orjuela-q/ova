@@ -79,6 +79,86 @@ body {
   overflow-wrap: break-word;
 }
 
+/* ---- Marco fijo del OVA (C2, PLAN-CONTENIDO.md §4) -------------------
+   Escapado a `body.ova-marco`, no al selector `body` a secas: base.css
+   lo comparte con dev/kitchen-sink.html (mismo archivo, mismo <link>),
+   que es una página larga de una sola pieza —trece layouts más todos
+   los componentes, uno debajo del otro— y depende de que el documento
+   scrollee normal. Un `body { display:grid; block-size:100dvh;
+   overflow:hidden }` sin escapar clipeaba ahí casi todo el contenido a
+   los primeros 800px de alto (encontrado con Playwright antes de cerrar
+   C2: `body.scrollHeight` medía 27815px contra un `clientHeight` de
+   800). Solo `src/index.html` declara esta clase en su `<body>`: es el
+   único documento con el armazón de tres filas (barra superior, #app,
+   barra inferior) que este modelo asume.
+
+   El documento del OVA no scrollea nunca: body mide el viewport exacto
+   (no un mínimo) y las tres filas del grid reparten ese alto fijo. El
+   scroll real vive en #app (overflow-y: auto); las dos barras quedan
+   clavadas arriba y abajo sin moverse entre pantallas, así que recorrer
+   la unidad no da saltos de alto. dvh y no vh: vh en móvil mide la
+   ventana con la barra de direcciones oculta, que no es el alto real
+   disponible. Cuando header/footer están `hidden` (L01, la portada —
+   ver router.js), la fila "auto" que les corresponde colapsa a 0 sola:
+   es una fila explícita de grid-template-rows, no una que dependa de su
+   contenido para existir, así que no hace falta una regla aparte. */
+body.ova-marco {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  block-size: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* #app ya tenía tabindex="-1" como destino del skip link (T3); pasa a
+   "0" porque una región con su propio scroll necesita ser alcanzable
+   por teclado de verdad (trampa 1 de PLAN-CONTENIDO.md §4.3: en Safari,
+   overflow-y:auto no es suficiente por sí solo) — no se le agrega un
+   segundo contenedor, es el mismo elemento el que gana la parada de
+   Tab. min-block-size:0 es lo que le permite encogerse por debajo de su
+   contenido dentro de una fila 1fr del grid; sin esto el grid no deja
+   que #app quede más chico que el alto de todas las pantallas juntas y
+   el "marco fijo" nunca aparece.
+
+   min-inline-size:0 en los tres hijos de abajo (#app, .nav-barra,
+   .nav-inferior en components.css) es la otra mitad del mismo problema,
+   en el eje horizontal — y el que de verdad rompía 320px: un hijo de
+   grid, igual que un hijo de flex, recibe un mínimo automático (auto)
+   que por defecto es el tamaño min-content de su contenido, no 0. Antes
+   de C2 .nav-barra era un bloque normal (ancho = 100% del body, sin ese
+   mínimo automático) y su flexbox interno podía encoger
+   .nav-barra__titulo libremente gracias a min-width:0 (T3). Al pasar
+   body a grid, .nav-barra pasó a ser un ítem de grid con su propio piso
+   de min-content — el min-width:0 de .layout__titulo seguía ahí pero ya
+   no importaba, porque el hijo de grid completo se negaba a encoger por
+   debajo de su contenido más ancho (confirmado con Playwright: sin esta
+   regla, .nav-barra medía 432px de ancho en 320px de viewport). */
+#app {
+  overflow-y: auto;
+  min-block-size: 0;
+  min-inline-size: 0;
+}
+
+/* Trampa 4 de PLAN-CONTENIDO.md §4.3: a 320px de ancho y 200% de zoom de
+   texto, dos barras fijas más el texto al doble pueden no dejar espacio
+   real para un párrafo entre ellas. Por debajo de esta altura, el marco
+   fijo se desarma y el documento vuelve a scrollear completo (el modelo
+   de T1-T9, previo a C2) — scroll de página es conforme, contenido
+   recortado o inalcanzable no lo es. El punto de corte (36em = 576px)
+   se ajusta contra el caso real más angosto (320×568 al 200% de zoom)
+   verificado con Playwright antes de cerrar C2. */
+@media (max-height: 36em) {
+  body.ova-marco {
+    display: block;
+    block-size: auto;
+    min-block-size: 100dvh;
+    overflow: visible;
+  }
+  #app {
+    overflow-y: visible;
+  }
+}
+
 /* ---- Encabezados por defecto --------------------------------------- */
 h1 {
   font: var(--text-h1);
