@@ -255,6 +255,7 @@
     <a href="#componentes">Componentes</a>
     <a href="#c-datos">Datos y gráficos</a>
     <a href="#c-insignia-t8">Interacciones insignia</a>
+    <a href="#c-nuevas-c5">Interacciones nuevas (C5)</a>
     <a href="#movimiento">Movimiento</a>
     <a href="#motor">Motor</a>
     <a href="#chrome">Chrome</a>
@@ -976,6 +977,55 @@
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
       </div>
+
+      <div class="ks-layout-bloque" id="c-nuevas-c5">
+        <span class="ks-layout-bloque__etiqueta">Interacciones nuevas (C5) — I07, I08, I13</span>
+        <p class="ks-intro">
+          Las tres interacciones de <code>PLAN-CONTENIDO.md</code> C5,
+          montadas con el mismo <code>OVA.quiz.crear()</code> de arriba.
+          Ninguna es una pregunta gradable ni una pieza insignia de unidad
+          (I09–I12): son exploración de cápsula sin "correcto/incorrecto"
+          por opción, así que se despachan por la misma tabla de widget
+          autónomo que I09–I12 — ver el bloque de documentación C5 en el
+          encabezado de <code>quiz.js</code>. Ninguna usa arrastre.
+        </p>
+        <div class="ks-layout-bloque" id="c-nuevas-i07">
+          <span class="ks-layout-bloque__etiqueta">I07 · Tarjetas volteables — tres familias del mercado</span>
+          <p class="ks-intro">
+            Cada tarjeta es un <code>&lt;button aria-expanded&gt;</code>
+            real — Enter/Espacio y el foco vienen gratis del navegador.
+            Al voltear, el ícono cambia de glifo junto con el texto
+            (nunca solo el color); vuelve a pulsarla para taparla otra
+            vez. Voltea las tres para ver la retroalimentación general.
+          </p>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 40rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-nuevas-i08">
+          <span class="ks-layout-bloque__etiqueta">I08 · Comparador de dos columnas — ordinarias frente a preferenciales</span>
+          <p class="ks-intro">
+            Nunca una <code>&lt;table&gt;</code> de dos columnas angostas
+            (no reflowea a 320px sin scroll horizontal): cada fila apila
+            las dos columnas con su etiqueta repetida en texto, siempre
+            visible. Pulsa una fila para ponerla en foco de comparación
+            (<code>aria-pressed</code> + ícono, la oración de comparación
+            aparece debajo en una región <code>role="status"</code>).
+          </p>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 40rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-nuevas-i13">
+          <span class="ks-layout-bloque__etiqueta">I13 · Test de perfil con resultado — perfil de riesgo</span>
+          <p class="ks-intro">
+            Reusa la cáscara <code>.calc-calculadora</code> de I10–I12:
+            un grupo de radios (<code>.calc-opcion</code>) por pregunta.
+            «Ver resultado» empieza deshabilitado hasta responder las
+            cuatro; al pulsarlo suma los puntos, busca la categoría en
+            <code>resultados</code> y fija la variable de contenido
+            <code>perfil_riesgo</code> con <code>OVA.state.establecerVariable()</code>
+            — la nota que C4 dejó pendiente para esta sesión.
+          </p>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ============================================================ -->
@@ -1365,7 +1415,13 @@
        OVA.scorm.disponible() da false y quiz.js simplemente no reporta
        nada, sin errores. -->
   <script src="../src/js/a11y.js"></script>
+  <script src="../src/js/storage.js"></script>
   <script src="../src/js/scorm.js"></script>
+  <!-- state.js: no lo necesitaba ningún componente hasta C5 — I13 llama a
+       OVA.state.establecerVariable() directo desde su constructor (mismo
+       patrón que I11 desde C4), así que hace falta cargarlo aquí aunque
+       esta página no tenga router/progreso real. -->
+  <script src="../src/js/state.js"></script>
   <script src="../src/js/media.js"></script>
   <script src="../src/js/quiz.js"></script>
   <script src="../src/js/charts.js"></script>
@@ -1786,6 +1842,113 @@
             { id: 'rentaFija', etiqueta: 'Renta fija', valorInicial: 45 },
             { id: 'derivados', etiqueta: 'Derivados', valorInicial: 15 }
           ]
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+
+  <!-- C5: I07, tarjetas volteables, montada con OVA.quiz.crear() — mismo
+       punto de entrada que el resto del catálogo, ver el bloque de
+       documentación C5 en el encabezado de quiz.js. Datos adaptados del
+       payload real de Jose para P13 (disenoInstruccional/
+       storyboard_data_v2.json). -->
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-nuevas-i07');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I07',
+        datos: {
+          id: 'u1-p6-tres-familias',
+          enunciado: 'Toca cada tarjeta para ver a qué familia del mercado pertenece.',
+          tarjetas: [
+            { frente: 'Renta variable', reverso: 'Resultado no garantizado: depende del precio y de los dividendos.' },
+            { frente: 'Renta fija', reverso: 'Condiciones de pago pactadas desde el inicio.' },
+            { frente: 'Derivados', reverso: 'Contratos cuyo valor depende de otro activo.' }
+          ],
+          retroalimentacion: 'Bien. Las acciones pertenecen a renta variable porque su rentabilidad no se conoce al comprar.'
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+
+  <!-- C5: I08, comparador de dos columnas — mismo criterio que I07 de
+       arriba. Datos adaptados del payload real de Jose para P28. -->
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-nuevas-i08');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I08',
+        datos: {
+          id: 'u1-p7-ordinarias-preferenciales',
+          enunciado: 'Compara las acciones ordinarias con las preferenciales, fila por fila.',
+          columnas: ['Acciones ordinarias', 'Acciones preferenciales'],
+          filas: [
+            { etiqueta: 'Voto', izquierda: 'Normalmente sí', derecha: 'Normalmente no' },
+            { etiqueta: 'Dividendos', izquierda: 'Proporcionales', derecha: 'Preferencia económica' },
+            { etiqueta: 'Prioridad en liquidación', izquierda: 'Menor', derecha: 'Mayor, después de acreedores' },
+            { etiqueta: 'Enfoque', izquierda: 'Participación', derecha: 'Ingreso preferente' }
+          ]
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+
+  <!-- C5: I13, test de perfil con resultado — mismo criterio que I07/I08
+       de arriba. Datos adaptados del payload real de Jose para P30;
+       fija la variable de contenido perfil_riesgo (C4) al llegar a un
+       resultado, la nota que C4 dejó pendiente para esta sesión. -->
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-nuevas-i13');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I13',
+        datos: {
+          id: 'u1-p8-perfil-riesgo',
+          enunciado: 'Responde estas cuatro preguntas para conocer tu perfil de riesgo orientativo.',
+          preguntas: [
+            {
+              enunciado: 'Si tu inversión baja 10 % en un mes, ¿qué harías?',
+              opciones: [
+                { texto: 'Vender para evitar más pérdida', puntos: 1 },
+                { texto: 'Revisar y esperar si el objetivo sigue vigente', puntos: 2 },
+                { texto: 'Comprar más si el análisis lo justifica', puntos: 3 }
+              ]
+            },
+            {
+              enunciado: '¿Cuál es tu horizonte principal?',
+              opciones: [
+                { texto: 'Menos de un año', puntos: 1 },
+                { texto: 'Entre uno y tres años', puntos: 2 },
+                { texto: 'Más de tres años', puntos: 3 }
+              ]
+            },
+            {
+              enunciado: '¿Qué tan importante es tener liquidez inmediata?',
+              opciones: [
+                { texto: 'Muy importante', puntos: 1 },
+                { texto: 'Medianamente importante', puntos: 2 },
+                { texto: 'Poco importante para este capital', puntos: 3 }
+              ]
+            },
+            {
+              enunciado: '¿Qué prefieres al invertir?',
+              opciones: [
+                { texto: 'Preservar capital', puntos: 1 },
+                { texto: 'Equilibrar riesgo y retorno', puntos: 2 },
+                { texto: 'Buscar mayor retorno aceptando volatilidad', puntos: 3 }
+              ]
+            }
+          ],
+          resultados: [
+            { minimo: 4, maximo: 6, categoria: 'conservador', etiqueta: 'Perfil conservador', texto: 'Prioriza preservar capital y reducir pérdidas; debe cuidar concentración y liquidez.' },
+            { minimo: 7, maximo: 9, categoria: 'moderado', etiqueta: 'Perfil moderado', texto: 'Acepta fluctuaciones razonables y busca equilibrio entre crecimiento y control de riesgo.' },
+            { minimo: 10, maximo: 12, categoria: 'agresivo', etiqueta: 'Perfil agresivo', texto: 'Tolera mayor volatilidad por potencial de retorno, pero necesita análisis y límites de concentración.' }
+          ],
+          variable: 'perfil_riesgo',
+          aviso: 'Resultado orientativo y educativo; no reemplaza el perfilamiento formal de un intermediario.'
         }
       });
       if (contenedor && nodo) contenedor.appendChild(nodo);

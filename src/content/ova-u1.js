@@ -145,6 +145,32 @@
    resultado.variable/resultado.reglas y de
    interaccion.datos.variable vive documentado en router.js
    (obtenerResultado) y quiz.js respectivamente, no aquí.
+
+   C5 (4 sep) suma s23/s24/s25 (las tres L06, mismo layout que s07/s11-14/
+   s16 — cualquier interaccion.tipo pasa por la misma crearInteraccion()):
+   I07 (tarjetas volteables), I08 (comparador de dos columnas) e I13
+   (test de perfil), para ejercitar las tres de extremo a extremo en
+   src/index.html y no solo en la kitchen sink. Datos adaptados de los
+   payloads reales de Jose para P13/P28/P30
+   (disenoInstruccional/storyboard_data_v2.json) — mismos textos, forma
+   ajustada al contrato de quiz.js. s25 (I13) fija perfil_riesgo al
+   llegar a un resultado: es el productor que le faltaba a esa variable
+   desde que C4 la dejó preparada sin nadie que la escribiera. El
+   catálogo completo de las tres, con la forma exacta de
+   interaccion.datos por tipo, vive documentado en el encabezado de
+   quiz.js junto al resto.
+
+   Nota abierta para C7: el storyboard real de Jose ubica P13 y P28 en
+   layout L05 ("tarjetas comparativas") con su interacción I07/I08
+   adentro, no en L06 ("interacción a pantalla completa") como aquí —
+   L05 hoy no tiene ranura para interaccion (PLANTILLAS.L05 en
+   router.js solo monta tarjetas de solo lectura). Esta pantalla de
+   prueba usa L06 porque es la única plantilla que ya sabe montar
+   cualquier interaccion.tipo del catálogo; C7 decide si extiende L05
+   para admitir una interacción incrustada o si convierte esas
+   pantallas a L06/L07 contra el criterio real de layouts.css. No es
+   una discrepancia nueva de C5 — es el mismo tipo de desajuste
+   catálogo-contra-contenido que C0 ya resolvió una vez para L01–L13.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -546,6 +572,102 @@ window.OVA_CONTENIDO = {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-1.webp",
         "transcripcion": "Esta es la locución completa de la pantalla, escrita por Jose, mostrada directamente porque el audio todavía no existe. Cuando Juan lo grabe, esta misma transcripción pasa a vivir dentro de un reproductor real, sin que el contenido cambie."
+      },
+      "progreso": true
+    },
+    {
+      "id": "s23",
+      "layout": "L06",
+      "titulo": "Tres familias del mercado",
+      "kicker": "Unidad 1 · Cápsula 1",
+      "interaccion": {
+        "tipo": "I07",
+        "datos": {
+          "id": "u1-p6-tres-familias",
+          "enunciado": "Toca cada tarjeta para ver a qué familia del mercado pertenece.",
+          "tarjetas": [
+            { "frente": "Renta variable", "reverso": "Resultado no garantizado: depende del precio y de los dividendos." },
+            { "frente": "Renta fija", "reverso": "Condiciones de pago pactadas desde el inicio." },
+            { "frente": "Derivados", "reverso": "Contratos cuyo valor depende de otro activo." }
+          ],
+          "retroalimentacion": "Bien. Las acciones pertenecen a renta variable porque su rentabilidad no se conoce al comprar."
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s24",
+      "layout": "L06",
+      "titulo": "Ordinarias frente a preferenciales",
+      "kicker": "Unidad 1 · Cápsula 4",
+      "interaccion": {
+        "tipo": "I08",
+        "datos": {
+          "id": "u1-p7-ordinarias-preferenciales",
+          "enunciado": "Compara las acciones ordinarias con las preferenciales, fila por fila.",
+          "columnas": ["Acciones ordinarias", "Acciones preferenciales"],
+          "filas": [
+            { "etiqueta": "Voto", "izquierda": "Normalmente sí", "derecha": "Normalmente no" },
+            { "etiqueta": "Dividendos", "izquierda": "Proporcionales", "derecha": "Preferencia económica" },
+            { "etiqueta": "Prioridad en liquidación", "izquierda": "Menor", "derecha": "Mayor, después de acreedores" },
+            { "etiqueta": "Enfoque", "izquierda": "Participación", "derecha": "Ingreso preferente" }
+          ]
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s25",
+      "layout": "L06",
+      "titulo": "¿Cuál es tu perfil?",
+      "kicker": "Unidad 1 · Cápsula 4",
+      "interaccion": {
+        "tipo": "I13",
+        "datos": {
+          "id": "u1-p8-perfil-riesgo",
+          "enunciado": "Responde estas cuatro preguntas para conocer tu perfil de riesgo orientativo.",
+          "preguntas": [
+            {
+              "enunciado": "Si tu inversión baja 10 % en un mes, ¿qué harías?",
+              "opciones": [
+                { "texto": "Vender para evitar más pérdida", "puntos": 1 },
+                { "texto": "Revisar y esperar si el objetivo sigue vigente", "puntos": 2 },
+                { "texto": "Comprar más si el análisis lo justifica", "puntos": 3 }
+              ]
+            },
+            {
+              "enunciado": "¿Cuál es tu horizonte principal?",
+              "opciones": [
+                { "texto": "Menos de un año", "puntos": 1 },
+                { "texto": "Entre uno y tres años", "puntos": 2 },
+                { "texto": "Más de tres años", "puntos": 3 }
+              ]
+            },
+            {
+              "enunciado": "¿Qué tan importante es tener liquidez inmediata?",
+              "opciones": [
+                { "texto": "Muy importante", "puntos": 1 },
+                { "texto": "Medianamente importante", "puntos": 2 },
+                { "texto": "Poco importante para este capital", "puntos": 3 }
+              ]
+            },
+            {
+              "enunciado": "¿Qué prefieres al invertir?",
+              "opciones": [
+                { "texto": "Preservar capital", "puntos": 1 },
+                { "texto": "Equilibrar riesgo y retorno", "puntos": 2 },
+                { "texto": "Buscar mayor retorno aceptando volatilidad", "puntos": 3 }
+              ]
+            }
+          ],
+          "resultados": [
+            { "minimo": 4, "maximo": 6, "categoria": "conservador", "etiqueta": "Perfil conservador", "texto": "Prioriza preservar capital y reducir pérdidas; debe cuidar concentración y liquidez." },
+            { "minimo": 7, "maximo": 9, "categoria": "moderado", "etiqueta": "Perfil moderado", "texto": "Acepta fluctuaciones razonables y busca equilibrio entre crecimiento y control de riesgo." },
+            { "minimo": 10, "maximo": 12, "categoria": "agresivo", "etiqueta": "Perfil agresivo", "texto": "Tolera mayor volatilidad por potencial de retorno, pero necesita análisis y límites de concentración." }
+          ],
+          "variable": "perfil_riesgo",
+          "aviso": "Resultado orientativo y educativo; no reemplaza el perfilamiento formal de un intermediario."
+        }
       },
       "progreso": true
     },

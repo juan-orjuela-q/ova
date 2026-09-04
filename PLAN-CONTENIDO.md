@@ -436,6 +436,30 @@ Ninguna con arrastre; I07 con `<button>` real por tarjeta y `aria-expanded`.
 **Cierre:** las tres en la kitchen sink con sus estados, recorridas con teclado,
 estado anunciado por ARIA y no solo por color.
 
+**Cerrada 4 sep, rama `c5-interacciones-nuevas`.** Las tres construidas en
+`quiz.js`, despachadas por la misma tabla de widget autónomo que ya usaban
+I09–I12 (arman su propio DOM, sin fieldset/Comprobar/Reintentar — ninguna
+tiene "correcto/incorrecto" por opción). I13 fija `perfil_riesgo`
+(`OVA.state.establecerVariable`) al llegar a un resultado — el productor que
+esa variable no tenía desde C4. Detalle completo, con los tres bugs
+encontrados y corregidos por Playwright antes de cerrar (grid de I07 sin
+reflow bajo zoom 200%, `OVA.state` faltante en la kitchen sink, y un falso
+positivo de axe-core por samplear contraste a mitad de la animación de
+entrada), en `ESTADO.md`.
+
+**Nota abierta para C7 — L05 contra L06 en P13/P28.** El storyboard real de
+Jose ubica P13 (I07) y P28 (I08) en layout **L05** ("tarjetas comparativas"),
+no en L06 ("interacción a pantalla completa"). Hoy `PLANTILLAS.L05` en
+`router.js` no tiene ranura para `interaccion` — solo monta tarjetas de
+solo lectura (`crearTarjetasComparativas`) — así que las pantallas de
+prueba de C5 (`s23`/`s24` en `content/ova-u1.js`) usan L06 para poder
+ejercitar I07/I08 de extremo a extremo mientras tanto. C7 decide: o bien
+extiende L05 para admitir una interacción incrustada debajo de las
+tarjetas de solo lectura, o convierte P13/P28 a L06/L07 contra el criterio
+real de `layouts.css`. No es una discrepancia nueva de C5 — es el mismo
+tipo de desajuste catálogo-contra-contenido que C0 ya resolvió una vez
+para L01–L13 (§2.1); esta vez es acotado a dos pantallas, no a las 47.
+
 ### C6 · Interacciones ampliadas
 I09 a modo recorrido, I10 con fórmulas `valorizacion` y `dividendo_por_accion`
 y salidas múltiples, I11 contra la tabla de verdad de ocho filas, I12 con
