@@ -88,12 +88,39 @@
    portafolio que el estudiante arma repartiendo 100 % entre ellas —
    reusa OVA.charts.crear({tipo:'distribucion'}) de T7 para la vista
    viva en vez de un gráfico nuevo.
+
+   C1 (4 sep) suma las siete pantallas que exigían layout nuevo: s00
+   (L01, portada de unidad — se agrega al principio del arreglo, no al
+   final como el resto, porque es literalmente la portada; su id
+   "s00" no rompe nada, state.js/router.js navegan por posición en el
+   arreglo, no por el texto del id) y, al final, s15 (L05, tarjetas
+   comparativas — 3, para probar el rango 2–4 con un número que la
+   kitchen sink no cubre, que muestra 4), s16 (L07, pregunta), s17
+   (L08, resultado y retroalimentación — con datos estáticos por ahora;
+   C4 los hará dinámicos), s18 (L09, ideas clave sin media, el caso
+   nuevo que C1 le agregó al layout — la kitchen sink cubre el caso
+   con media), s19 (L11, recursos descargables) y s20 (L10, cierre de
+   unidad — al final de verdad, es el cierre).
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
   "titulo": "Contexto sobre el mercado, la bolsa y las acciones",
   "unidad": 1,
   "pantallas": [
+    {
+      "id": "s00",
+      "layout": "L01",
+      "titulo": "Contexto: el mercado, la bolsa y las acciones",
+      "kicker": "Unidad 1",
+      "cuerpo": [
+        "¿Quieres aprender los fundamentos de la inversión en acciones? Es muy probable que en algún momento hayas querido obtener rentabilidad por tu capital, pero la falta de experiencia no te ha dejado aventurarte en el mercado accionario."
+      ],
+      "media": {
+        "tipo": "video",
+        "src": "../public/videos/woman_Businesswoman_1920x1010.mp4"
+      },
+      "progreso": true
+    },
     {
       "id": "s01",
       "layout": "L04",
@@ -330,6 +357,100 @@ window.OVA_CONTENIDO = {
             { "id": "derivados", "etiqueta": "Derivados", "valorInicial": 15 }
           ]
         }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s15",
+      "layout": "L05",
+      "titulo": "¿Qué tan dispuesto estás a asumir riesgo?",
+      "kicker": "Perfil de riesgo",
+      "tarjetas": [
+        { "titulo": "Conservador", "texto": "Prioriza preservar el capital y tolera variaciones mínimas en el corto plazo." },
+        { "titulo": "Moderado", "texto": "Busca equilibrio entre crecimiento y estabilidad, con variaciones moderadas." },
+        { "titulo": "Agresivo", "texto": "Prioriza el crecimiento y tolera variaciones altas a cambio de mayor rentabilidad esperada." }
+      ],
+      "progreso": true
+    },
+    {
+      "id": "s16",
+      "layout": "L07",
+      "titulo": "¿Qué diferencia al mercado primario del secundario?",
+      "kicker": "Cápsula 1",
+      "interaccion": {
+        "tipo": "I01",
+        "datos": {
+          "id": "u1-p6-mercado-primario-secundario",
+          "enunciado": "Un inversionista compra acciones directamente de la empresa emisora, en su primera emisión. ¿En qué mercado ocurre esa compra?",
+          "intentos": 2,
+          "opciones": [
+            { "id": "a", "texto": "Mercado primario" },
+            { "id": "b", "texto": "Mercado secundario" },
+            { "id": "c", "texto": "Mercado de derivados" }
+          ],
+          "correcta": "a",
+          "retroalimentacion": {
+            "correcto": "El mercado primario es donde la empresa emite y vende acciones por primera vez, directamente a los inversionistas.",
+            "incorrecto": "El mercado primario es donde la empresa emite y vende acciones por primera vez; el secundario es donde esas acciones se negocian después, entre inversionistas."
+          }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s17",
+      "layout": "L08",
+      "titulo": "Así te fue en la evaluación rápida",
+      "kicker": "Resultado",
+      "cuerpo": [
+        "Este es un resumen de tus respuestas en la evaluación de esta cápsula."
+      ],
+      "resultado": {
+        "cifra": { "valor": "4/5", "etiqueta": "respuestas correctas", "porcentaje": 80 },
+        "retro": {
+          "tipo": "brand",
+          "titulo": "Buen dominio del contenido",
+          "texto": "Identificas con claridad los conceptos básicos del mercado de acciones. Sigue reforzando con la práctica de las siguientes cápsulas."
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "s18",
+      "layout": "L09",
+      "titulo": "Lo esencial de esta cápsula",
+      "kicker": "Ideas clave",
+      "cuerpo": [
+        "Una acción es un título de propiedad, no de deuda.",
+        "Su rentabilidad no se conoce de forma anticipada.",
+        "El precio se mueve según la oferta y la demanda en el mercado secundario."
+      ],
+      "progreso": true
+    },
+    {
+      "id": "s19",
+      "layout": "L11",
+      "titulo": "Plantilla: mi perfil de riesgo",
+      "kicker": "Recurso descargable",
+      "cuerpo": [
+        "Un formato práctico para identificar si tu perfil de inversión es conservador, moderado o agresivo antes de tomar una decisión."
+      ],
+      "recursos": [
+        { "titulo": "Plantilla: mi perfil de riesgo", "meta": "PDF · 180 KB", "href": "#", "icono": "description" }
+      ],
+      "progreso": true
+    },
+    {
+      "id": "s20",
+      "layout": "L10",
+      "titulo": "Ya conoces el contexto del mercado",
+      "kicker": "Fin de la unidad 1",
+      "cuerpo": [
+        "Identificaste los tres mercados de Bolsa de Valores de Colombia, qué es una acción y la diferencia entre acciones ordinarias y preferenciales."
+      ],
+      "logro": {
+        "titulo": "¡Completaste la Unidad 1!",
+        "texto": "Contexto sobre el mercado, la bolsa y las acciones."
       },
       "progreso": true
     }

@@ -36,7 +36,7 @@ sección siguiente.
 Ver `PLAN-CONTENIDO.md` — es el plan vigente sobre el que corren estas tareas.
 
 - [x] **C0 · Renumerar los catálogos al brief** — completada 4 sep
-- [ ] C1 · Layouts que faltan
+- [x] **C1 · Layouts que faltan** — completada 4 sep
 - [ ] C2 · Caja 16:9 y navegación pegada
 - [ ] C3 · Media: avatar y audio
 - [ ] C4 · Estado compartido
@@ -1646,3 +1646,176 @@ recorrido de teclado completo sobre las pantallas nuevas y 320px/zoom 200%
 — C0 no tocó ningún layout a nivel visual/estructural más allá de qué
 clase le corresponde a cada uno, así que hereda el mismo comportamiento
 responsive que ya tenían T1–T9.
+
+---
+
+**4 sep — C1 cerrada: los siete layouts que faltaban (L01, L05, L07, L08,
+L09, L10, L11), en rama `c1-layouts-faltantes`. Los trece del catálogo
+L01–L13 renderizan desde el JSON de contenido, no solo en la kitchen sink.**
+
+**Alcance, tal como lo pidió el usuario — ni más ni menos.** El pedido
+enumeró exactamente estas siete plantillas más dos ajustes puntuales (L05
+soporta 2–4 tarjetas, L09 admite media opcional y pierde el comentario de
+marca). `PLAN-CONTENIDO.md` §2.1 también deja pendientes de C1 el
+tratamiento de superficie de L12 (`--surface-brand`) y L13
+(`--surface-inverse`) — **deliberadamente no se tocaron**: no estaban en el
+pedido de esta sesión y son un cambio de otra naturaleza (color/superficie,
+no "falta la plantilla"). Los comentarios de `layouts.css` junto a esos dos
+layouts ya no dicen "queda pendiente para C1" (esta sesión *es* C1 y no lo
+hizo) — dicen que queda pendiente a secas, para no contradecirse a sí
+mismos la próxima vez que alguien los lea.
+
+**Qué se construyó, layout por layout:**
+
+- **L01 · Portada de unidad.** Solo faltaba la plantilla (el CSS ya estaba
+  terminado). Único layout con `<h1>` real (es la portada de toda la
+  unidad, no una pantalla más) y con media puramente decorativa: el
+  video/imagen de fondo va `aria-hidden` y en loop mudo, sin pasar por
+  `OVA.media.crear()` (T4) — ese reproductor construye controles pensados
+  para media con contenido instruccional, y aquí el contenido real es el
+  texto del panel naranja, no el fondo. Los dos SVG de unión
+  (`union_graf_nuam*.svg`, ya en `public/graf/`) son decoración fija del
+  layout, no contenido: no salen del JSON. El botón "Comenzar" (o
+  `pantalla.cta`, si el guion pide otro texto) llama a
+  `OVA.router.siguiente()` — no es una navegación propia del layout, es el
+  mismo "Siguiente" del chrome disparado desde otro lugar de la pantalla.
+- **L05 · Tarjetas comparativas (2–4).** El CSS asumía siempre dos
+  columnas (`flex: 1 1 0`, sin wrap); ahora es `flex: 1 1 14rem` con
+  `flex-wrap`, que reparte cualquier cantidad en filas de ~14rem en vez de
+  aplastar 4 tarjetas fijas en el rango 640–900px. Contrato nuevo:
+  `pantalla.tarjetas` (arreglo de `{titulo, texto}`, 2 a 4 elementos) en
+  vez de `cuerpo` — cada tarjeta necesita su propio título, un párrafo
+  suelto no alcanza. Fuera de ese rango, falla ruidoso: el CSS no está
+  pensado para 1 o 5 y no se verificó.
+- **L07 · Pregunta.** La casilla más discutible del pedido: "que se sienta
+  distinta de L06 sin ser otro layout". Se resolvió reusando la misma
+  `crearInteraccion()`/`OVA.quiz.crear()` de L06 (mismo catálogo I01–I05)
+  y cambiando solo el chrome — kicker con ícono (`help`), título alineado
+  a la izquierda en vez de centrado, y el panel de la interacción como
+  tarjeta con acento de marca en el borde izquierdo (mismo idioma que
+  `.callout`/`.quiz-retro`, sin inventar un cuarto patrón de "estado con
+  color"), en vez del relleno plano `--surface-subtle` de L06. Ancho más
+  angosto (40rem contra 56rem) porque una pregunta es lectura, no un
+  tablero de controles. Si esta lectura del "chrome propio" no era la que
+  el usuario tenía en mente, es un cambio acotado a `layouts.css` +
+  `crearKickerConIcono()` en `router.js`, nada más se apoya en ella.
+- **L08 · Resultado y retroalimentación.** El único layout nuevo de
+  verdad. Reusa dos piezas ya construidas en vez de inventar una tercera:
+  `OVA.charts.crear({tipo:'cifra'})` (T7, el motor real del anillo) para
+  la cifra de resultado y `.callout` (T5) para la retroalimentación,
+  dentro de `.layout__datos`/`.layout__interaccion` (los mismos elementos
+  reutilizables del inventario de movimiento, así que heredan la entrada
+  escalonada sin trabajo extra). **La parte "déjalo preparado para texto
+  en tiempo de ejecución" (P10/P31/P43/P47 van a leer una variable de
+  contenido de C4, que todavía no existe):** se resolvió con un único
+  punto de lectura, `obtenerResultado(pantalla)` en `router.js`, que hoy
+  solo devuelve `pantalla.resultado` tal cual. No se construyó ninguna
+  máquina de variables de contenido — eso es trabajo de C4, y adivinar su
+  forma ahora habría sido diseñar para un requisito hipotético. Lo que
+  deja "preparado" es que cuando C4 exista, ese es el único lugar que hay
+  que tocar para mezclar el valor en vivo con — o en vez de — el del
+  JSON, sin que la plantilla ni `layouts.css` se enteren del cambio.
+- **L09 · Ideas clave.** Dos ajustes, no una plantilla desde cero (ya
+  tenía CSS y contenido de ejemplo en la kitchen sink, pero ninguna
+  entrada en `PLANTILLAS`). Media opcional: resuelto con `:has()` en CSS
+  (`.layout--l09:not(:has(.layout__media))` cae a una columna) en vez de
+  una clase modificadora que `router.js` tendría que acordarse de poner —
+  el DOM ya dice si hay media o no, no hace falta un segundo lugar donde
+  ese hecho pueda desincronizarse. El cuerpo pasó de párrafos a lista real
+  (`<ul>` con ícono de check decorativo + texto): "ideas clave" son
+  puntos, no prosa corrida. El comentario que nombraba "los 3 mercados de
+  Bolsa de Valores de Colombia" como ejemplo se quitó, tal como se pidió
+  — esa marca no va a ninguna parte del demo; el contenido de ejemplo en
+  sí (que sigue nombrando BVC, igual que el resto de `content/ova-u1.js`)
+  no se tocó, porque neutralizar la marca en el contenido real es trabajo
+  de C7, no de C1.
+- **L10 · Cierre de unidad.** Reusa `.aviso-logro`/`.insignia` de T5, que
+  ya existían como maqueta pero nunca se habían cableado contra contenido
+  real. "Siguiente paso" del nombre del brief se interpretó como el
+  nav-inferior del chrome (T2/T3) — el layout no lleva su propio botón de
+  navegación, porque no hay nada más allá del cierre de unidad que el
+  motor necesite ofrecer aquí; la unidad siguiente la habilita Moodle
+  (fuera de alcance, regla dura de CLAUDE.md). Si la intención real era
+  otra (un botón propio de "ir a la siguiente unidad"), no hay evidencia
+  de eso en `PLAN-CONTENIDO.md` ni en la kitchen sink previa — queda
+  documentada esta lectura para poder corregirla sin arqueología.
+  `pantalla.logro.titulo` es obligatorio: sin él no hay nada que mostrar
+  en el momento celebratorio de la unidad.
+- **L11 · Recursos descargables.** `pantalla.recursos` es un arreglo, no
+  un objeto único — el nombre del layout ya es plural y P34 va a
+  enganchar los cuatro descargables de Jose en una sola pantalla (C8):
+  construir la plantilla para uno solo habría significado rehacerla en
+  C8 para nada. Sin atributo `download` en el `<a>`: con un `href`
+  todavía sin archivo real detrás (C8 los engancha), agregarlo dispara al
+  navegador a intentar descargar la página actual en vez de no hacer
+  nada — se agrega cuando el archivo real exista. La figura pasó del
+  marcador de texto "PDF" de la kitchen sink a un ícono real
+  (`folder_open`) dentro de la misma caja de 4rem que ya tenía CSS.
+
+**Verificado con Playwright (Chromium) + axe-core, sobre el zip real no —
+sobre `src/index.html` y `dev/kitchen-sink.html` por `file://`, con una API
+SCORM 1.2 simulada como en T6–T9:**
+
+- **Las 21 pantallas de `content/ova-u1.js`** (`s00` nueva al principio —
+  L01, la portada real de la unidad — más `s01`–`s14` que ya existían y
+  `s15`–`s20` nuevas al final para L05/L07/L08/L09/L11/L10, en ese orden)
+  se recorren de punta a punta con «Siguiente» sin un solo layout
+  cayendo al estado de error del motor y **cero errores de consola**
+  (`pageerror` + `console.error`) en toda la corrida.
+- **axe-core (`wcag2a`+`wcag2aa`) en cero violaciones** en cada una de
+  las 21 pantallas de `src/index.html` y en `dev/kitchen-sink.html`
+  completa. Sobre las siete pantallas nuevas se corrió además sin filtro
+  de tags (todas las reglas de axe-core, no solo WCAG 2 A/AA): también
+  cero. **Un hallazgo falso-positivo, no un bug real:** la primera
+  corrida (esperando solo 150ms tras cada clic en «Siguiente», el mismo
+  tiempo que ya usaban las verificaciones de T6–T9) marcó
+  `color-contrast` en `s19` — desapareció por completo al esperar a que
+  terminara la animación de entrada (`--dur-base` + `--stagger` × 4 ≈
+  400ms) antes de auditar: axe-core estaba midiendo contraste sobre un
+  elemento todavía a mitad de fundido de opacidad, no sobre el color
+  final. No es una regresión de las verificaciones anteriores (que
+  esperaban menos porque nada en T1–T9 tenía cuatro niveles de stagger
+  apilados como L11); queda anotado por si vuelve a aparecer en C2 o C7.
+- **320px sin scroll horizontal y zoom de texto 200% sin scroll
+  horizontal, cada condición por separado** (mismo criterio que T1–T9 y
+  la decisión explícita de T9 de no combinarlas): verificado en las 21
+  pantallas de `src/index.html` y en la kitchen sink completa
+  (`scrollWidth === clientWidth` en los dos casos, confirmado
+  programáticamente, no solo visual).
+- **Foco.** Se auditaron los elementos focalizables dentro de `#app` en
+  las siete pantallas nuevas: ninguna imagen/SVG decorativo de L01 quedó
+  alcanzable con Tab (el `aria-hidden` en el contenedor los saca del
+  árbol de accesibilidad, confirmado programáticamente vía
+  `closest('[aria-hidden="true"]')`), y el único focalizable nuevo por
+  pantalla es el que se esperaba (el botón de L01, los controles de la
+  pregunta de L07, el enlace de recurso de L11) más el `<h2>`/`<h1>`
+  con `tabindex="-1"` que ya pone `a11y.js` en cada navegación. No se
+  hizo un recorrido de Tab manual pantalla por pantalla — la auditoría
+  programática cubre lo que un recorrido manual habría buscado (nada
+  inesperado en el orden de tabulación); si hace falta el recorrido
+  manual real con lector de pantalla, es trabajo de C9 (auditoría final).
+- Capturas de pantalla de las siete pantallas nuevas y de los bloques
+  nuevos de la kitchen sink revisadas visualmente (no solo con
+  aserciones): confirman que L07 se lee distinto de L06, que L08 muestra
+  el anillo de cifra y el callout juntos, que L05 acomoda 4 tarjetas en
+  una fila a 1280px y 3 en `src/index.html`, y que L11 apila dos tarjetas
+  de recurso sin recortarse.
+
+**Cero hex nuevo** en los cuatro archivos tocados (`layouts.css`,
+`router.js`, `content/ova-u1.js`, `dev/kitchen-sink.html`) — confirmado con
+`git diff` + grep de patrones `#[0-9a-f]{3,6}`.
+
+**Kitchen sink.** Los seis marcadores "pendiente C1" (L05, L07, L08, L09,
+L10, L11) se reemplazaron por markup real: L05 ahora muestra 4 tarjetas
+(perfil de riesgo, para probar el extremo que `content/ova-u1.js` no
+cubre — ahí se usa 3), L07/L08 se montan en vivo con
+`OVA.quiz.crear()`/`OVA.charts.crear()` igual que el resto de componentes
+cableados de la página, L09 gana un segundo ejemplo "sin media" (el caso
+nuevo que esta sesión le agregó al layout) además del que ya tenía con
+media, y L11 muestra dos tarjetas de recurso para dejar constancia visual
+de que el layout admite varias, no una.
+
+**Qué queda fuera de esta sesión, explícitamente:** el tratamiento de
+superficie de L12/L13 (ver arriba), el recorrido de teclado manual con
+lector de pantalla (C9), y la caja 16:9/navegación pegada de la sección 4
+de `PLAN-CONTENIDO.md` — eso es C2, la siguiente tarea del plan.

@@ -13,8 +13,8 @@
    L11) ya estaba resuelto como componente de T5 (`.termino-glosario`
    + `.modal`), usable dentro de cualquier layout, así que la variante
    de layout dedicada se retiró. L07 (Pregunta) y L08 (Resultado y
-   retroalimentación) son casillas nuevas del brief sin CSS todavía —
-   quedan para C1.
+   retroalimentación) eran casillas nuevas del brief sin CSS — C1
+   (4 sep) les agregó el suyo.
 
    Bloque .layout, elementos reutilizables (.layout__kicker,
    .layout__titulo, .layout__cuerpo, .layout__media, .layout__figura,
@@ -317,17 +317,23 @@
 /* ---- L05 · Tarjetas comparativas (2–4) -----------------------------------
    El cuerpo mismo se divide en tarjetas comparables: el contenedor
    .layout sigue apilado, solo su cuerpo pasa a fila. Antes de C0 era
-   .layout--l07. Hoy solo soporta 2 tarjetas (asume dos hijos en
-   .layout__cuerpo); soportar 3 y 4 y la plantilla en router.js quedan
-   pendientes para C1 (ver PLAN-CONTENIDO.md §2.1, fila L05). ---------
+   .layout--l07. C1 (4 sep) le agregó soporte real de 2 a 4 tarjetas:
+   `flex: 1 1 14rem` con `flex-wrap` reparte cualquier cantidad de
+   tarjetas en filas de ~14rem cada una en vez de asumir siempre dos
+   columnas — con 2 caben lado a lado desde 40em; con 4, a ese mismo
+   ancho envuelven en 2×2 y se acomodan en una sola fila recién en
+   pantallas más anchas. Sin esto, 4 tarjetas fijas a `flex: 1 1 0`
+   se habrían aplastado ilegibles en el rango 640–900px. ---------
    Ej.: renta fija vs. renta variable, ordinarias vs. preferenciales. --- */
 @media (min-width: 40em) {
   .layout--l05 .layout__cuerpo {
     flex-direction: row;
+    flex-wrap: wrap;
     max-width: none;
   }
   .layout--l05 .layout__cuerpo > * {
-    flex: 1 1 0;
+    flex: 1 1 14rem;
+    min-width: 14rem;
     padding: var(--sp-5);
     background: var(--surface-subtle);
     border-radius: var(--r-md);
@@ -356,22 +362,79 @@
 }
 
 /* ---- L07 · Pregunta -------------------------------------------------------
-   Variante de chrome sobre L06 (mismo "interacción a pantalla
-   completa", chrome propio de pregunta). Casilla nueva del brief, sin
-   CSS todavía — queda para C1 (ver PLAN-CONTENIDO.md §2.1, fila L07).
-   ------------------------------------------------------------------- */
+   Variante de chrome sobre L06 (misma "interacción a pantalla
+   completa" — router.js reusa la misma crearInteraccion()/quiz.js
+   detrás de las dos), con el chrome propio de una pregunta: es la
+   pantalla más repetida del curso (9 de 47), así que su lectura tiene
+   que sentirse distinta de un panel genérico de calculadora/insignia
+   sin ser un layout nuevo de verdad. Tres diferencias deliberadas
+   contra L06: kicker con ícono (en vez de centrado y mudo), título
+   alineado a la izquierda (L06 lo centra), y el panel de la
+   interacción como tarjeta con acento de marca en el borde izquierdo
+   — mismo idioma que `.callout`/`.quiz-retro` (T5/T6), no relleno
+   plano de superficie subtle como en L06. Ancho más angosto (40rem
+   contra 56rem de L06) porque una pregunta es lectura, no un tablero
+   de controles. C1 (4 sep). ------------------------------------------- */
+.layout--l07 {
+  max-width: 40rem;
+}
+.layout--l07 .layout__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--text-brand);
+}
+.layout--l07 .layout__titulo {
+  text-align: left;
+}
+.layout--l07 .layout__interaccion {
+  min-height: 0;
+  display: block;
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+  border-inline-start: 3px solid var(--border-brand);
+  border-radius: var(--r-md);
+  padding: var(--sp-6);
+}
 
 /* ---- L08 · Resultado y retroalimentación ----------------------------------
-   Layout nuevo de verdad (no viene de ningún código anterior): reusa
-   `.callout` y `.anillo` de T5. Sin CSS todavía — queda para C1 (ver
-   PLAN-CONTENIDO.md §2.1, fila L08). --------------------------------- */
+   Layout nuevo de verdad (no viene de ningún código anterior). Reusa
+   dos piezas ya construidas en vez de inventar una tercera: la cifra
+   de resultado es `.layout__datos` con `OVA.charts.crear({tipo:
+   'cifra'})` (T7 — el motor real del anillo, no el `<div class=
+   "anillo">` estático de la kitchen sink) y la retroalimentación es
+   `.callout` (T5) dentro de `.layout__interaccion`. P10, P31, P43 y
+   P47 arman esa cifra/retro a partir de una variable de contenido que
+   C4 todavía no existe (`aciertos_diagnostico`, `perfil_riesgo`,
+   `resultado_boleta` — ver PLAN-CONTENIDO.md §3.1): esto es CSS de
+   arreglo espacial, no de datos, así que "dejarlo preparado para texto
+   en tiempo de ejecución" es trabajo de router.js (ver
+   `obtenerResultado()` ahí), no de este archivo. C1 (4 sep). --------- */
+.layout--l08 {
+  max-width: 40rem;
+  text-align: center;
+}
+.layout--l08 .layout__cuerpo {
+  margin-inline: auto;
+}
+.layout--l08 .layout__datos {
+  display: flex;
+  justify-content: center;
+}
+.layout--l08 .layout__interaccion {
+  text-align: left;
+}
 
 /* ---- L09 · Ideas clave (3–5) ----------------------------------------------
    Lista principal en 2fr, media de apoyo más angosta que L03. Antes
    de C0 era .layout--l08 ("checklist con media"). El brief pide media
-   opcional; sigue siendo obligatoria como en el código anterior —
-   queda pendiente para C1 (ver PLAN-CONTENIDO.md §2.1, fila L09). ----
-   Ej.: los 3 mercados de Bolsa de Valores de Colombia. ------------------ */
+   opcional (P32/P39 no la usan) — C1 (4 sep) lo resolvió con
+   `:has()`: si `.layout__media` no está en el DOM (router.js solo lo
+   agrega cuando `pantalla.media` existe, igual que en L04), la grilla
+   de dos columnas de abajo no aplica y el bloque cae a una sola
+   columna de ancho de lectura en vez de dejar un hueco vacío donde
+   iba la media. `router.js` es quien decide *si* se agrega el
+   elemento; este archivo solo decide *cómo* se ve en cada caso. ------ */
 @media (min-width: 48em) {
   .layout--l09 {
     display: grid;
@@ -386,12 +449,45 @@
   .layout--l09 .layout__titulo { grid-area: titulo; }
   .layout--l09 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
   .layout--l09 .layout__media { grid-area: media; }
+  .layout--l09:not(:has(.layout__media)) {
+    grid-template-columns: 1fr;
+    max-width: 42rem;
+    grid-template-areas:
+      "kicker"
+      "titulo"
+      "cuerpo";
+  }
+}
+/* Ideas clave como lista real (router.js las arma como <ul>, no <p>):
+   ícono de check + texto, alineados arriba porque el texto puede
+   pasar a dos líneas. El check es decorativo (aria-hidden en
+   router.js) — el orden de lectura de la lista ya comunica que son
+   puntos, no hace falta que el ícono cargue significado propio.
+   list-style:none + padding-inline-start:0 pisan el reset de
+   ul/ol de base.css (bullet nativo + sangría de --sp-6): sin esto
+   el marcador nativo se dibujaría junto al ícono de check, dos
+   marcadores para la misma idea. */
+.layout--l09 .layout__cuerpo {
+  list-style: none;
+  padding-inline-start: 0;
+}
+.layout--l09 .layout__cuerpo li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+.layout--l09 .layout__cuerpo li .icono {
+  flex-shrink: 0;
+  color: var(--nuam-green-500);
+  margin-block-start: 0.2em;
 }
 
 /* ---- L10 · Cierre de unidad y siguiente paso ------------------------------
    Igual arreglo que L01, más una interacción centrada (insignia).
-   Antes de C0 era .layout--l13. Sin plantilla en router.js todavía
-   (tampoco la tenía con el número anterior) — queda para C1. -------- */
+   Antes de C0 era .layout--l13. "Siguiente paso" del nombre del brief
+   es el nav-inferior del chrome (T2/T3), no un botón propio del
+   layout: no hay nada más allá del cierre de unidad que el motor
+   necesite ofrecer aquí — la unidad siguiente la habilita Moodle. --- */
 .layout--l10 {
   max-width: 46rem;
   text-align: center;
@@ -404,17 +500,33 @@
 
 /* ---- L11 · Recursos descargables ------------------------------------------
    Figura fija junto al texto, acción a ancho completo debajo. Antes
-   de C0 era .layout--l12. Sin plantilla en router.js todavía (tampoco
-   la tenía con el número anterior) — queda para C1. ------------------ */
+   de C0 era .layout--l12. router.js (C1) admite más de un descargable
+   por pantalla (`pantalla.recursos`, arreglo) porque el nombre del
+   layout ya es plural y P34 va a enganchar los cuatro descargables de
+   Jose (C8) en esta misma pantalla — así no hay que rehacer la
+   plantilla cuando lleguen. `.layout__interaccion` apila las tarjetas
+   con gap en vez de asumir una sola. */
 .layout--l11 .layout__figura {
   width: 4rem;
   aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   /* --surface-subtle, no --surface-subtle-2: cualquier texto/ícono en
      --text-tertiary encima (la nota de tokens.css es "solo sobre default
      y subtle") mide 4.41:1 sobre subtle-2, no llega a 4.5:1 — hallazgo de
      la auditoría axe-core de T9 sobre el marcador de la kitchen sink. */
   background: var(--surface-subtle);
+  color: var(--text-tertiary);
   border-radius: var(--r-md);
+}
+.layout--l11 .layout__figura .icono {
+  font-size: 1.75rem;
+}
+.layout--l11 .layout__interaccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
 }
 @media (min-width: 40em) {
   .layout--l11 {

@@ -1182,24 +1182,32 @@
       </div>
 
       <div class="ks-layout-bloque" id="l05">
-        <span class="ks-layout-bloque__etiqueta">L05 · Tarjetas comparativas (2–4)</span>
+        <span class="ks-layout-bloque__etiqueta">L05 · Tarjetas comparativas (2–4) — con 4, cableado real por <code>PLANTILLAS.L05</code></span>
         <div class="ks-layout-marco">
           <div class="layout layout--l05">
-            <span class="layout__kicker tipo-etiqueta">Tipos de acciones</span>
-            <h2 class="layout__titulo tipo-h2">Ordinarias y preferenciales</h2>
+            <span class="layout__kicker tipo-etiqueta">Perfil de riesgo</span>
+            <h2 class="layout__titulo tipo-h2">¿Qué tan dispuesto estás a asumir riesgo?</h2>
             <div class="layout__cuerpo">
               <div>
-                <p class="tipo-h5">Acciones ordinarias</p>
-                <p class="tipo-cuerpo-sm">Dan derecho a voto en la Asamblea General de Accionistas y a recibir dividendos según las utilidades de la empresa.</p>
+                <p class="tipo-h5">Conservador</p>
+                <p class="tipo-cuerpo-sm">Prioriza preservar el capital y tolera variaciones mínimas en el corto plazo.</p>
               </div>
               <div>
-                <p class="tipo-h5">Acciones preferenciales</p>
-                <p class="tipo-cuerpo-sm">Sacrifican el derecho al voto a cambio de un dividendo mínimo preferencial y prioridad de pago si la empresa se liquida.</p>
+                <p class="tipo-h5">Moderado</p>
+                <p class="tipo-cuerpo-sm">Busca equilibrio entre crecimiento y estabilidad, con variaciones moderadas.</p>
+              </div>
+              <div>
+                <p class="tipo-h5">Agresivo</p>
+                <p class="tipo-cuerpo-sm">Prioriza el crecimiento y tolera variaciones altas a cambio de mayor rentabilidad esperada.</p>
+              </div>
+              <div>
+                <p class="tipo-h5">Muy agresivo</p>
+                <p class="tipo-cuerpo-sm">Busca el máximo crecimiento posible y acepta la mayor volatilidad, incluso pérdidas significativas.</p>
               </div>
             </div>
           </div>
         </div>
-        <p class="ks-intro">Hoy solo soporta 2 tarjetas y no tiene plantilla en <code>router.js</code>; soportar 3 y 4 queda para C1 (ver PLAN-CONTENIDO.md §2.1).</p>
+        <p class="ks-intro">C1 (4 sep) le agregó soporte real de 2 a 4 tarjetas: <code>flex-wrap</code> con base de 14rem por tarjeta en vez de asumir siempre dos columnas. Este ejemplo muestra 4; <code>content/ova-u1.js</code> (<code>s15</code>) muestra el caso de 3, recorrible de extremo a extremo en <a href="../src/index.html">src/index.html</a>.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l06">
@@ -1215,41 +1223,74 @@
       </div>
 
       <div class="ks-layout-bloque" id="l07">
-        <span class="ks-layout-bloque__etiqueta">L07 · Pregunta — pendiente C1</span>
-        <div class="ks-layout-marco ks-ancho-marco">
-          <p class="ks-marcador">Variante de chrome sobre L06 (marcador — layout nuevo del brief, sin CSS todavía. Ver PLAN-CONTENIDO.md §2.1).</p>
+        <span class="ks-layout-bloque__etiqueta">L07 · Pregunta (C1, cableado real)</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l07">
+            <span class="layout__kicker tipo-etiqueta"><span class="icono" aria-hidden="true">help</span>Cápsula 1</span>
+            <h2 class="layout__titulo tipo-h2">¿Qué diferencia al mercado primario del secundario?</h2>
+            <div class="layout__interaccion" id="l07-interaccion"></div>
+          </div>
         </div>
+        <p class="ks-intro">Mismo <code>OVA.quiz.crear()</code> que L06 (I01, dos intentos) — el chrome es lo que cambia: kicker con ícono, título a la izquierda y el panel de la interacción como tarjeta con acento de marca en vez del relleno plano de L06, para que se sienta distinta siendo la pregunta más repetida del curso (9/47 pantallas). Mismo ejemplo que <code>s16</code> en <code>content/ova-u1.js</code>.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l08">
-        <span class="ks-layout-bloque__etiqueta">L08 · Resultado y retroalimentación — pendiente C1</span>
-        <div class="ks-layout-marco ks-ancho-marco">
-          <p class="ks-marcador">Layout nuevo de verdad (marcador — reusará <code>.callout</code> y <code>.anillo</code> de T5. Ver PLAN-CONTENIDO.md §2.1).</p>
+        <span class="ks-layout-bloque__etiqueta">L08 · Resultado y retroalimentación (C1, cableado real) — layout nuevo de verdad</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l08">
+            <span class="layout__kicker tipo-etiqueta">Resultado</span>
+            <h2 class="layout__titulo tipo-h2">Así te fue en la evaluación rápida</h2>
+            <div class="layout__cuerpo">
+              <p class="tipo-cuerpo">Este es un resumen de tus respuestas en la evaluación de esta cápsula.</p>
+            </div>
+            <div class="layout__datos" id="l08-cifra"></div>
+            <div class="layout__interaccion">
+              <div class="callout callout--brand">
+                <span class="icono callout__icono" aria-hidden="true">lightbulb</span>
+                <div class="callout__cuerpo">
+                  <p class="callout__titulo">Buen dominio del contenido</p>
+                  <p class="tipo-cuerpo-sm">Identificas con claridad los conceptos básicos del mercado de acciones. Sigue reforzando con la práctica de las siguientes cápsulas.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        <p class="ks-intro">Reusa <code>OVA.charts.crear({tipo:'cifra'})</code> (T7, motor real del anillo) para la cifra y <code>.callout</code> (T5) para la retroalimentación — el mismo candado tipo→ícono→color que ya resolvió <code>.quiz-retro</code>, sin un cuarto patrón nuevo. P10, P31, P43 y P47 van a leer esa cifra/retro de una variable de contenido en tiempo de ejecución (C4, todavía no existe); <code>router.js</code> ya pasa por un único punto de lectura (<code>obtenerResultado()</code>) para que ese trabajo no toque esta plantilla. Mismo ejemplo que <code>s17</code> en <code>content/ova-u1.js</code>.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l09">
-        <span class="ks-layout-bloque__etiqueta">L09 · Ideas clave (3–5)</span>
+        <span class="ks-layout-bloque__etiqueta">L09 · Ideas clave (3–5) — con media, cableado real por <code>PLANTILLAS.L09</code></span>
         <div class="ks-layout-marco">
           <div class="layout layout--l09">
             <span class="layout__kicker tipo-etiqueta">Unidad 1</span>
             <h2 class="layout__titulo tipo-h2">Tres mercados, un solo sistema</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">Bolsa de Valores de Colombia administra estos activos a través de tres mercados:</p>
-              <ul class="tipo-cuerpo">
-                <li>Renta variable — la rentabilidad no se conoce de forma anticipada.</li>
-                <li>Renta fija — la rentabilidad se conoce desde el inicio de la negociación.</li>
-                <li>Derivados — contratos entre dos partes para comprar o vender un activo en el futuro.</li>
-              </ul>
-            </div>
+            <ul class="layout__cuerpo">
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Renta variable — la rentabilidad no se conoce de forma anticipada.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Renta fija — la rentabilidad se conoce desde el inicio de la negociación.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Derivados — contratos entre dos partes para comprar o vender un activo en el futuro.</span></li>
+            </ul>
             <div class="layout__media ks-marcador">Infografía · Los tres mercados<br />(marcador — producción audiovisual)</div>
           </div>
         </div>
-        <p class="ks-intro">El brief pide media opcional aquí; el motor todavía la exige siempre, como antes de C0 (pendiente C1, ver PLAN-CONTENIDO.md §2.1).</p>
+        <p class="ks-intro">router.js arma el cuerpo como lista real (ícono de check + texto), no párrafos: es "ideas clave", no prosa. La media (infografía, sin producir todavía) sigue siendo la maqueta <code>.ks-marcador</code> de siempre.</p>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · Ideas clave — sin media (el caso que C1 agregó; P32/P39 no la usan)</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l09">
+            <span class="layout__kicker tipo-etiqueta">Ideas clave</span>
+            <h2 class="layout__titulo tipo-h2">Lo esencial de esta cápsula</h2>
+            <ul class="layout__cuerpo">
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Una acción es un título de propiedad, no de deuda.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Su rentabilidad no se conoce de forma anticipada.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>El precio se mueve según la oferta y la demanda en el mercado secundario.</span></li>
+            </ul>
+          </div>
+        </div>
+        <p class="ks-intro">El brief pide media opcional; C1 (4 sep) lo resolvió con <code>:has()</code> en layouts.css — sin <code>.layout__media</code> en el DOM, la grilla de dos columnas de arriba no aplica y el bloque cae a una columna de ancho de lectura. Mismo ejemplo que <code>s18</code> en <code>content/ova-u1.js</code>.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l10">
-        <span class="ks-layout-bloque__etiqueta">L10 · Cierre de unidad y siguiente paso</span>
+        <span class="ks-layout-bloque__etiqueta">L10 · Cierre de unidad y siguiente paso (C1, cableado real por <code>PLANTILLAS.L10</code>)</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l10">
             <span class="layout__kicker tipo-etiqueta">Fin de la unidad 1</span>
@@ -1271,18 +1312,18 @@
             </div>
           </div>
         </div>
-        <p class="ks-intro">Sin plantilla en <code>router.js</code> todavía (tampoco la tenía con el número anterior, L13) — pendiente C1.</p>
+        <p class="ks-intro">Mismo ejemplo que <code>s20</code> en <code>content/ova-u1.js</code> — "siguiente paso" del nombre del brief es el nav-inferior del chrome (T2/T3), este layout no lleva botón propio.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l11">
-        <span class="ks-layout-bloque__etiqueta">L11 · Recursos descargables</span>
+        <span class="ks-layout-bloque__etiqueta">L11 · Recursos descargables (C1, cableado real por <code>PLANTILLAS.L11</code>) — admite varios</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l11">
-            <div class="layout__figura ks-marcador" aria-hidden="true">PDF</div>
-            <span class="layout__kicker tipo-etiqueta">Recurso descargable</span>
-            <h2 class="layout__titulo tipo-h2">Plantilla: mi perfil de riesgo</h2>
+            <div class="layout__figura" aria-hidden="true"><span class="icono">folder_open</span></div>
+            <span class="layout__kicker tipo-etiqueta">Recursos descargables</span>
+            <h2 class="layout__titulo tipo-h2">Materiales de esta cápsula</h2>
             <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">Un formato práctico para identificar si tu perfil de inversión es conservador, moderado o agresivo antes de tomar una decisión.</p>
+              <p class="tipo-cuerpo">Dos formatos para practicar lo visto: identifica tu perfil de riesgo y repasa los términos clave.</p>
             </div>
             <div class="layout__interaccion">
               <a class="tarjeta-recurso" href="#l11">
@@ -1293,10 +1334,18 @@
                 </span>
                 <span class="icono tarjeta-recurso__accion" aria-hidden="true">download</span>
               </a>
+              <a class="tarjeta-recurso" href="#l11">
+                <span class="tarjeta-recurso__icono" aria-hidden="true"><span class="icono">menu_book</span></span>
+                <span class="tarjeta-recurso__info">
+                  <span class="tarjeta-recurso__titulo">Glosario del curso</span>
+                  <span class="tarjeta-recurso__meta">PDF · 240 KB</span>
+                </span>
+                <span class="icono tarjeta-recurso__accion" aria-hidden="true">download</span>
+              </a>
             </div>
           </div>
         </div>
-        <p class="ks-intro">Sin plantilla en <code>router.js</code> todavía (tampoco la tenía con el número anterior, L12) — pendiente C1.</p>
+        <p class="ks-intro"><code>pantalla.recursos</code> es un arreglo, no un solo objeto: P34 va a enganchar los cuatro descargables de Jose en una sola pantalla (C8), así que la plantilla ya admite varios desde el origen. <code>content/ova-u1.js</code> (<code>s19</code>) muestra el caso de uno solo, recorrible en <a href="../src/index.html">src/index.html</a>.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l12">
@@ -1509,6 +1558,25 @@
         }
       });
 
+      montarQuiz('l07-interaccion', {
+        tipo: 'I01',
+        datos: {
+          id: 'u1-p6-mercado-primario-secundario',
+          enunciado: 'Un inversionista compra acciones directamente de la empresa emisora, en su primera emisión. ¿En qué mercado ocurre esa compra?',
+          intentos: 2,
+          opciones: [
+            { id: 'a', texto: 'Mercado primario' },
+            { id: 'b', texto: 'Mercado secundario' },
+            { id: 'c', texto: 'Mercado de derivados' }
+          ],
+          correcta: 'a',
+          retroalimentacion: {
+            correcto: 'El mercado primario es donde la empresa emite y vende acciones por primera vez, directamente a los inversionistas.',
+            incorrecto: 'El mercado primario es donde la empresa emite y vende acciones por primera vez; el secundario es donde esas acciones se negocian después, entre inversionistas.'
+          }
+        }
+      });
+
       montarQuiz('l06-interaccion', {
         tipo: 'I01',
         datos: {
@@ -1549,6 +1617,16 @@
         tipo: 'cifra',
         valor: '500',
         etiqueta: 'acciones de Petrocaribe compradas en el ejemplo de este curso'
+      }));
+
+      // L08 (C1): mismo constructor de cifra, montado dentro del layout
+      // real en vez de la vitrina de "Datos y gráficos" — mismos datos
+      // que s17 en content/ova-u1.js.
+      document.getElementById('l08-cifra').appendChild(OVA.charts.crear({
+        tipo: 'cifra',
+        valor: '4/5',
+        etiqueta: 'respuestas correctas',
+        porcentaje: 80
       }));
 
       document.getElementById('c-datos-tabla-marco').appendChild(OVA.charts.crear({
