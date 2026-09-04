@@ -39,6 +39,14 @@
    tarea futura que dependa de un layout nuevo agrega su entrada a
    PLANTILLAS, nunca reinterpreta esta función.
 
+   C1 (4 sep) agregó las siete que faltaban: PLANTILLAS.L01 (portada de
+   unidad), L05 (tarjetas comparativas, 2 a 4), L07 (pregunta, variante
+   de chrome sobre la misma crearInteraccion() de L06), L08 (resultado
+   y retroalimentación, layout nuevo de verdad), L09 (ideas clave,
+   media ahora opcional), L10 (cierre de unidad) y L11 (recursos
+   descargables, admite varios). Con esto PLANTILLAS cubre L01–L13
+   completo salvo los dos códigos retirados de arriba.
+
    Nada de innerHTML con texto del contenido: todo nodo de texto se
    arma con createElement/textContent.
    ============================================================ */
@@ -137,6 +145,203 @@
     return contenedor;
   }
 
+  // C1: kicker con ícono para L07 — variante del kicker plano de arriba.
+  // El ícono es decorativo (aria-hidden), el texto sigue siendo el único
+  // portador real de "esto es una pregunta".
+  function crearKickerConIcono(texto, nombreIcono) {
+    var span = document.createElement('span');
+    span.className = 'layout__kicker tipo-etiqueta';
+    var icono = document.createElement('span');
+    icono.className = 'icono';
+    icono.setAttribute('aria-hidden', 'true');
+    icono.textContent = nombreIcono;
+    span.appendChild(icono);
+    span.appendChild(document.createTextNode(texto));
+    return span;
+  }
+
+  // C1: L09 pinta sus ideas clave como lista real (<ul>), no como
+  // párrafos sueltos — es "ideas clave", no prosa. Cada <li> lleva un
+  // ícono de check decorativo (aria-hidden: el orden de la lista ya
+  // comunica que son puntos) más el texto real.
+  function crearListaIdeas(items, claseTexto) {
+    var ul = document.createElement('ul');
+    ul.className = 'layout__cuerpo';
+    (items || []).forEach(function (texto) {
+      var li = document.createElement('li');
+      li.className = claseTexto;
+      var icono = document.createElement('span');
+      icono.className = 'icono';
+      icono.setAttribute('aria-hidden', 'true');
+      icono.textContent = 'check_circle';
+      li.appendChild(icono);
+      var span = document.createElement('span');
+      span.textContent = texto;
+      li.appendChild(span);
+      ul.appendChild(li);
+    });
+    return ul;
+  }
+
+  // C1: L05, de 2 a 4 tarjetas comparables. A diferencia de crearCuerpo
+  // (párrafos sueltos), cada tarjeta necesita su propio título — así
+  // que el contrato de L05 usa "tarjetas", no "cuerpo". El rango 2–4 lo
+  // fija PLAN-CONTENIDO.md §2.1 (fila L05); fuera de ese rango el CSS
+  // (flex-wrap con base 14rem) no está pensado y falla ruidoso en vez
+  // de renderizar algo que no se verificó.
+  function crearTarjetasComparativas(tarjetas) {
+    if (!tarjetas || tarjetas.length < 2 || tarjetas.length > 4) {
+      throw new Error('L05 necesita "tarjetas" (arreglo de 2 a 4 elementos).');
+    }
+    var contenedor = document.createElement('div');
+    contenedor.className = 'layout__cuerpo';
+    tarjetas.forEach(function (tarjeta) {
+      var div = document.createElement('div');
+      var titulo = document.createElement('p');
+      titulo.className = 'tipo-h5';
+      titulo.textContent = tarjeta.titulo;
+      var texto = document.createElement('p');
+      texto.className = 'tipo-cuerpo-sm';
+      texto.textContent = tarjeta.texto;
+      div.appendChild(titulo);
+      div.appendChild(texto);
+      contenedor.appendChild(div);
+    });
+    return contenedor;
+  }
+
+  // C1: L08 lee su cifra/retroalimentación de pantalla.resultado — hoy
+  // siempre viene tal cual del JSON estático de contenido. P10, P31,
+  // P43 y P47 van a necesitar que ese valor salga de una variable de
+  // contenido en tiempo de ejecución (aciertos_diagnostico,
+  // perfil_riesgo, resultado_boleta — C4, todavía no existe). Pasar
+  // por este único punto de lectura es lo que "deja preparado" ese
+  // trabajo sin inventar la maquinaria de C4 ahora: cuando exista,
+  // esta función es el único lugar que hay que tocar para mezclar el
+  // valor en vivo con — o en vez de — el de pantalla.resultado, sin
+  // que PLANTILLAS.L08 ni layouts.css se enteren del cambio.
+  function obtenerResultado(pantalla) {
+    var resultado = pantalla.resultado;
+    if (!resultado || (!resultado.cifra && !resultado.retro)) {
+      throw new Error('Esta pantalla no trae "resultado" (cifra y/o retro) y su layout lo necesita.');
+    }
+    return resultado;
+  }
+
+  // C1: la caja de retroalimentación de L08 reusa .callout (T5) tal
+  // cual — mismo candado de tipo→ícono→color que ya resolvió
+  // .quiz-retro en T6, para no inventar un cuarto patrón de "estado
+  // con color" en el proyecto.
+  function crearCalloutResultado(retro) {
+    var ICONOS = { nota: 'info', brand: 'lightbulb', alerta: 'warning' };
+    var tipo = retro.tipo && ICONOS[retro.tipo] ? retro.tipo : 'nota';
+    var div = document.createElement('div');
+    div.className = 'callout' + (tipo !== 'nota' ? ' callout--' + tipo : '');
+    var icono = document.createElement('span');
+    icono.className = 'icono callout__icono';
+    icono.setAttribute('aria-hidden', 'true');
+    icono.textContent = ICONOS[tipo];
+    div.appendChild(icono);
+    var cuerpo = document.createElement('div');
+    cuerpo.className = 'callout__cuerpo';
+    if (retro.titulo) {
+      var titulo = document.createElement('p');
+      titulo.className = 'callout__titulo';
+      titulo.textContent = retro.titulo;
+      cuerpo.appendChild(titulo);
+    }
+    var texto = document.createElement('p');
+    texto.className = 'tipo-cuerpo-sm';
+    texto.textContent = retro.texto;
+    cuerpo.appendChild(texto);
+    div.appendChild(cuerpo);
+    return div;
+  }
+
+  // C1: aviso de logro de L10 — misma pieza que T5 ya dejó lista
+  // (.aviso-logro + .insignia[data-estado="desbloqueada"]), cableada
+  // aquí por primera vez contra contenido real en vez de markup fijo
+  // de la kitchen sink.
+  function crearAvisoLogro(logro) {
+    var aviso = document.createElement('div');
+    aviso.className = 'aviso-logro';
+    aviso.setAttribute('role', 'status');
+
+    var insignia = document.createElement('div');
+    insignia.className = 'insignia';
+    insignia.dataset.estado = 'desbloqueada';
+    var iconoEnvoltura = document.createElement('span');
+    iconoEnvoltura.className = 'insignia__icono';
+    iconoEnvoltura.setAttribute('aria-hidden', 'true');
+    var icono = document.createElement('span');
+    icono.className = 'icono';
+    icono.textContent = logro.icono || 'military_tech';
+    iconoEnvoltura.appendChild(icono);
+    insignia.appendChild(iconoEnvoltura);
+    var insigniaTexto = document.createElement('span');
+    insigniaTexto.className = 'insignia__texto';
+    insigniaTexto.textContent = 'Desbloqueada';
+    insignia.appendChild(insigniaTexto);
+    aviso.appendChild(insignia);
+
+    var textoEnvoltura = document.createElement('div');
+    textoEnvoltura.className = 'aviso-logro__texto';
+    var tituloLogro = document.createElement('p');
+    tituloLogro.className = 'tipo-h4';
+    tituloLogro.textContent = logro.titulo;
+    textoEnvoltura.appendChild(tituloLogro);
+    if (logro.texto) {
+      var textoLogro = document.createElement('p');
+      textoLogro.className = 'tipo-cuerpo-sm';
+      textoLogro.textContent = logro.texto;
+      textoEnvoltura.appendChild(textoLogro);
+    }
+    aviso.appendChild(textoEnvoltura);
+
+    return aviso;
+  }
+
+  // C1: tarjeta de descarga de L11 — misma pieza que T5 dejó como
+  // maqueta (.tarjeta-recurso), cableada aquí por primera vez. Sin
+  // atributo `download`: con un `href` real todavía sin archivo detrás
+  // (C8 los engancha), agregarlo dispararía el navegador intentando
+  // descargar la página actual en vez de no hacer nada — se agrega
+  // cuando el archivo real exista.
+  function crearTarjetaRecurso(recurso) {
+    var a = document.createElement('a');
+    a.className = 'tarjeta-recurso';
+    a.href = recurso.href;
+
+    var iconoEnvoltura = document.createElement('span');
+    iconoEnvoltura.className = 'tarjeta-recurso__icono';
+    iconoEnvoltura.setAttribute('aria-hidden', 'true');
+    var icono = document.createElement('span');
+    icono.className = 'icono';
+    icono.textContent = recurso.icono || 'description';
+    iconoEnvoltura.appendChild(icono);
+    a.appendChild(iconoEnvoltura);
+
+    var info = document.createElement('span');
+    info.className = 'tarjeta-recurso__info';
+    var titulo = document.createElement('span');
+    titulo.className = 'tarjeta-recurso__titulo';
+    titulo.textContent = recurso.titulo;
+    info.appendChild(titulo);
+    var meta = document.createElement('span');
+    meta.className = 'tarjeta-recurso__meta';
+    meta.textContent = recurso.meta;
+    info.appendChild(meta);
+    a.appendChild(info);
+
+    var accion = document.createElement('span');
+    accion.className = 'icono tarjeta-recurso__accion';
+    accion.setAttribute('aria-hidden', 'true');
+    accion.textContent = 'download';
+    a.appendChild(accion);
+
+    return a;
+  }
+
   function crearRaiz(modificador) {
     var raiz = document.createElement('div');
     // .layout--transicion es la animación de cambio de pantalla
@@ -147,6 +352,104 @@
   }
 
   var PLANTILLAS = {};
+
+  // C1: portada de unidad. Único layout con <h1> (mismo criterio que la
+  // kitchen sink: es la portada de toda la unidad, no una pantalla más
+  // dentro de ella) y con media puramente decorativa — el video/imagen
+  // de fondo va aria-hidden y en loop mudo, no pasa por
+  // OVA.media.crear() (T4): ese reproductor construye controles reales
+  // pensados para media con contenido instruccional, y aquí el
+  // contenido real es el texto del panel, no el fondo. Los dos SVG de
+  // unión (mobile-top/-bottom, desktop) son decoración fija del layout,
+  // no contenido — no salen del JSON, igual que el marco no sale de
+  // pantalla.datos. El botón "Comenzar" (o pantalla.cta, si el guion
+  // pide otro texto) avanza como "Siguiente" del chrome; no es un
+  // layout con su propia navegación aparte.
+  PLANTILLAS.L01 = function (pantalla) {
+    if (!pantalla.media || (pantalla.media.tipo !== 'video' && pantalla.media.tipo !== 'imagen')) {
+      throw new Error('L01 necesita "media" (tipo "video" o "imagen") de fondo.');
+    }
+    var raiz = crearRaiz('l01');
+
+    var panel = document.createElement('div');
+    panel.className = 'layout__panel';
+
+    var unionMobileBottom = document.createElement('img');
+    unionMobileBottom.className = 'layout__union layout__union--mobile-bottom';
+    unionMobileBottom.src = '../public/graf/union_graf_nuam_mobile_bottom.svg';
+    unionMobileBottom.alt = '';
+    unionMobileBottom.setAttribute('aria-hidden', 'true');
+    panel.appendChild(unionMobileBottom);
+
+    if (pantalla.kicker) panel.appendChild(crearKicker(pantalla.kicker));
+
+    var titulo = document.createElement('h1');
+    titulo.className = 'layout__titulo tipo-portada-titulo';
+    titulo.textContent = pantalla.titulo;
+    panel.appendChild(titulo);
+
+    var cuerpo = document.createElement('div');
+    cuerpo.className = 'layout__cuerpo';
+    (pantalla.cuerpo || []).forEach(function (texto) {
+      var p = document.createElement('p');
+      p.className = 'tipo-portada-cuerpo';
+      p.textContent = texto;
+      cuerpo.appendChild(p);
+    });
+    panel.appendChild(cuerpo);
+
+    var boton = document.createElement('button');
+    boton.type = 'button';
+    boton.className = 'boton boton--portada';
+    boton.appendChild(document.createTextNode((pantalla.cta || 'Comenzar') + ' '));
+    var iconoBoton = document.createElement('span');
+    iconoBoton.className = 'boton__icono';
+    iconoBoton.setAttribute('aria-hidden', 'true');
+    iconoBoton.textContent = 'arrow_forward';
+    boton.appendChild(iconoBoton);
+    boton.addEventListener('click', function () { OVA.router.siguiente(); });
+    panel.appendChild(boton);
+
+    var unionDesktop = document.createElement('img');
+    unionDesktop.className = 'layout__union layout__union--desktop';
+    unionDesktop.src = '../public/graf/union_graf_nuam.svg';
+    unionDesktop.alt = '';
+    unionDesktop.setAttribute('aria-hidden', 'true');
+    panel.appendChild(unionDesktop);
+
+    raiz.appendChild(panel);
+
+    var media = document.createElement('div');
+    media.className = 'layout__media';
+    if (pantalla.media.tipo === 'video') {
+      var video = document.createElement('video');
+      video.autoplay = true;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.setAttribute('aria-hidden', 'true');
+      var source = document.createElement('source');
+      source.src = pantalla.media.src;
+      source.type = 'video/mp4';
+      video.appendChild(source);
+      media.appendChild(video);
+    } else {
+      var img = document.createElement('img');
+      img.src = pantalla.media.src;
+      img.alt = '';
+      img.setAttribute('aria-hidden', 'true');
+      media.appendChild(img);
+    }
+    var unionMobileTop = document.createElement('img');
+    unionMobileTop.className = 'layout__union layout__union--mobile-top';
+    unionMobileTop.src = '../public/graf/union_graf_nuam_mobile_top.svg';
+    unionMobileTop.alt = '';
+    unionMobileTop.setAttribute('aria-hidden', 'true');
+    media.appendChild(unionMobileTop);
+    raiz.appendChild(media);
+
+    return { raiz: raiz, titulo: titulo };
+  };
 
   // Antes de C0 esta era PLANTILLAS.L04 ("media protagonista").
   PLANTILLAS.L02 = function (pantalla) {
@@ -189,6 +492,17 @@
     return { raiz: raiz, titulo: titulo };
   };
 
+  // C1: 2 a 4 tarjetas comparables — ver crearTarjetasComparativas() más
+  // arriba para el rango y el porqué de "tarjetas" en vez de "cuerpo".
+  PLANTILLAS.L05 = function (pantalla) {
+    var raiz = crearRaiz('l05');
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    raiz.appendChild(titulo);
+    raiz.appendChild(crearTarjetasComparativas(pantalla.tarjetas));
+    return { raiz: raiz, titulo: titulo };
+  };
+
   // Antes de C0 esta era PLANTILLAS.L10 ("interacción a pantalla
   // completa"). Sin .layout__cuerpo a propósito: kicker + título
   // compactos y centrados, la interacción ocupa el espacio principal —
@@ -199,6 +513,69 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
     raiz.appendChild(crearInteraccion(pantalla.interaccion));
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  // C1: variante de chrome sobre L06 — misma crearInteraccion() (mismo
+  // catálogo I01–I05 de quiz.js), kicker con ícono y título a la
+  // izquierda en vez de centrado (ver layouts.css, .layout--l07). Es
+  // la pantalla más repetida del curso (9/47).
+  PLANTILLAS.L07 = function (pantalla) {
+    var raiz = crearRaiz('l07');
+    raiz.appendChild(crearKickerConIcono(pantalla.kicker || 'Pregunta', 'help'));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    raiz.appendChild(titulo);
+    raiz.appendChild(crearInteraccion(pantalla.interaccion));
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  // C1: resultado y retroalimentación — layout nuevo de verdad. Lee su
+  // cifra/retro por obtenerResultado(), el único punto que C4 va a
+  // tocar cuando agregue variables de contenido en tiempo de ejecución
+  // (ver la nota junto a esa función, más arriba).
+  PLANTILLAS.L08 = function (pantalla) {
+    var resultado = obtenerResultado(pantalla);
+    var raiz = crearRaiz('l08');
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    raiz.appendChild(titulo);
+    if (pantalla.cuerpo) raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+
+    if (resultado.cifra) {
+      var cifra = document.createElement('div');
+      cifra.className = 'layout__datos';
+      var nodoCifra = OVA.charts.crear({
+        tipo: 'cifra',
+        valor: resultado.cifra.valor,
+        etiqueta: resultado.cifra.etiqueta,
+        porcentaje: resultado.cifra.porcentaje
+      });
+      if (!nodoCifra) throw new Error('L08: no se pudo construir la cifra de resultado (ver consola).');
+      cifra.appendChild(nodoCifra);
+      raiz.appendChild(cifra);
+    }
+
+    if (resultado.retro) {
+      var interaccion = document.createElement('div');
+      interaccion.className = 'layout__interaccion';
+      interaccion.appendChild(crearCalloutResultado(resultado.retro));
+      raiz.appendChild(interaccion);
+    }
+
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  // C1: ideas clave (3–5). Media ahora opcional (P32/P39 no la usan) —
+  // a diferencia de crearMedia() en L02/L03, aquí solo se agrega si
+  // pantalla.media existe, mismo criterio que "datos" en L04. El
+  // cuerpo se arma como lista real (crearListaIdeas), no párrafos.
+  PLANTILLAS.L09 = function (pantalla) {
+    var raiz = crearRaiz('l09');
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    raiz.appendChild(titulo);
+    raiz.appendChild(crearListaIdeas(pantalla.cuerpo, 'tipo-cuerpo'));
+    if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
     return { raiz: raiz, titulo: titulo };
   };
 
@@ -219,6 +596,60 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h3');
     raiz.appendChild(titulo);
     raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  // C1: cierre de unidad. "Siguiente paso" del nombre del brief es el
+  // nav-inferior del chrome (T2/T3) — este layout no lleva su propio
+  // botón de navegación, ver la nota de layouts.css junto a
+  // .layout--l10. pantalla.logro es obligatorio: sin él no hay nada
+  // que mostrar en el momento celebratorio de la unidad.
+  PLANTILLAS.L10 = function (pantalla) {
+    if (!pantalla.logro || !pantalla.logro.titulo) {
+      throw new Error('Esta pantalla no trae "logro" (título del aviso de logro) y su layout lo necesita.');
+    }
+    var raiz = crearRaiz('l10');
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-display-2');
+    raiz.appendChild(titulo);
+    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo-lg'));
+    var interaccion = document.createElement('div');
+    interaccion.className = 'layout__interaccion';
+    interaccion.appendChild(crearAvisoLogro(pantalla.logro));
+    raiz.appendChild(interaccion);
+    return { raiz: raiz, titulo: titulo };
+  };
+
+  // C1: recursos descargables. pantalla.recursos es un arreglo (P34 va
+  // a enganchar los cuatro descargables de Jose en una sola pantalla,
+  // C8) — ver la nota de layouts.css junto a .layout--l11.
+  PLANTILLAS.L11 = function (pantalla) {
+    if (!pantalla.recursos || !pantalla.recursos.length) {
+      throw new Error('Esta pantalla no trae "recursos" (arreglo de descargables) y su layout lo necesita.');
+    }
+    var raiz = crearRaiz('l11');
+
+    var figura = document.createElement('div');
+    figura.className = 'layout__figura';
+    figura.setAttribute('aria-hidden', 'true');
+    var iconoFigura = document.createElement('span');
+    iconoFigura.className = 'icono';
+    iconoFigura.textContent = 'folder_open';
+    figura.appendChild(iconoFigura);
+    raiz.appendChild(figura);
+
+    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+    raiz.appendChild(titulo);
+    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+
+    var interaccion = document.createElement('div');
+    interaccion.className = 'layout__interaccion';
+    pantalla.recursos.forEach(function (recurso) {
+      interaccion.appendChild(crearTarjetaRecurso(recurso));
+    });
+    raiz.appendChild(interaccion);
+
     return { raiz: raiz, titulo: titulo };
   };
 
