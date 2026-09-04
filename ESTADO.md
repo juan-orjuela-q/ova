@@ -2082,21 +2082,24 @@ camino.**
   las reglas de contraste de CLAUDE.md: es opaca, con su propio fondo
   `--surface-subtle` y su propia escala de color — el naranja de fondo
   nunca queda detrás de texto informativo.
-- **`content/ova-u1.js`:** `s00` (L01, la portada real) **conserva su
-  `media.tipo:"video"` de siempre** (el mismo relleno de stock que ya
-  usaba) y suma el campo `avatar` nuevo — es el caso real de P01
-  (`PLAN-CONTENIDO.md` §5, avatar plano "abierto, con fondo") montado
-  como narración sobre el panel, sin tocar el fondo. Dos pantallas
-  nuevas antes del cierre real (`s20` sigue siendo el último elemento
-  del arreglo, el cierre de verdad): `s21` (L02, avatar **con** audio)
-  y `s22` (L03, avatar **sin** audio — la pantalla que demuestra la
-  degradación de la sección 3.2), estas dos con `media.tipo:'avatar'`
-  de verdad porque no comparten el problema de las dos zonas de L01.
-  Las tres pantallas (`s00`/`s21`/`s22`) apuntan a rutas de
-  `public/img/avatar/avatar-{plano}-{fondo}-{n}.webp` que **todavía no
-  existen**, a propósito — el código tiene que degradar limpio a la
+- **`content/ova-u1.js`:** `s00` (L01, la portada real) **se queda solo
+  con su `media.tipo:"video"` de siempre** (el mismo relleno de stock
+  que ya usaba) — segundo pedido explícito del usuario en la misma
+  sesión: primero mantener el video en vez de la foto fija, después que
+  esta pantalla en particular no lleva narración de avatar en absoluto.
+  El campo `pantalla.avatar` que `PLANTILLAS.L01` sabe montar (ver
+  arriba) queda cableado y probado, pero **ninguna pantalla de este
+  contenido de prueba lo usa hoy** — a la espera de una portada real
+  que sí traiga locución. Dos pantallas nuevas antes del cierre real
+  (`s20` sigue siendo el último elemento del arreglo, el cierre de
+  verdad) sí ejercitan `media.tipo:'avatar'` de verdad, porque no
+  comparten el problema de las dos zonas de L01: `s21` (L02, avatar
+  **con** audio) y `s22` (L03, avatar **sin** audio — la pantalla que
+  demuestra la degradación de la sección 3.2). Las dos apuntan a rutas
+  de `public/img/avatar/avatar-{plano}-{fondo}-{n}.webp` que **todavía
+  no existen**, a propósito — el código tiene que degradar limpio a la
   ausencia del archivo, no evitarla usando otra imagen que sí exista
-  (pedido explícito del usuario). `s00`/`s21` usan un audio real nuevo,
+  (pedido explícito del usuario). `s21` usa un audio real nuevo,
   `public/audio/demo-avatar.mp3` (un tono de 6s generado con `ffmpeg`,
   no locución de Jose) — confirma que `<audio><source src="…"></audio>`
   funciona bajo `file://` sin el workaround de Blob que sí hace falta
@@ -2116,8 +2119,9 @@ camino.**
   `OVA.media.crear({tipo:'avatar'})` (con y sin audio), mismo criterio
   que el reproductor de video de T4. El bloque estático de L01 en la
   sección "Layouts" no se reescribió (esa integración depende de
-  `router.js`, no se falsea con markup aparte) — se le agregó una nota
-  señalando que el caso avatar se prueba en `s00` de `src/index.html`.
+  `router.js`, no se falsea con markup aparte) — la nota que lo
+  acompaña explica que `pantalla.avatar` existe y quedó probado, pero
+  que ninguna pantalla real de `content/ova-u1.js` lo usa por ahora.
 
 **Verificado con Playwright (Chromium) + axe-core, con una API SCORM
 1.2 simulada, abriendo `src/index.html` y `dev/kitchen-sink.html` por
@@ -2125,21 +2129,20 @@ camino.**
 
 - **Las 23 pantallas de `content/ova-u1.js`** (`s00`–`s22`) montan sin
   caer en el estado de error del motor.
-- **`s00`:** el avatar real (con botón de play) vive dentro de
-  `.layout__panel`; el fondo sigue siendo el video en loop de siempre,
-  `aria-hidden`/`alt=""`, sin pasar por `OVA.media.crear()`; el botón
-  "Comenzar" sigue presente y funcional.
+- **`s00`:** sin narración de avatar (pedido explícito del usuario) —
+  `.layout__panel` no monta nada nuevo; el fondo sigue siendo el video
+  en loop de siempre, `aria-hidden`/`alt=""`, sin pasar por
+  `OVA.media.crear()`; el botón "Comenzar" sigue presente y funcional.
+  El caso avatar-dentro-de-L01 (secuencia de Tab completa hasta el
+  reproductor, teclado real sobre el scrubber/CC) se verificó contra
+  esta misma pantalla mientras sí tenía el campo `avatar` de prueba,
+  antes de que el usuario pidiera quitarlo — ver el detalle en la
+  entrada del commit anterior de esta sesión; la ruta de código no
+  cambió, solo el contenido de `s00`.
 - **Un solo reproductor activo a la vez, cruzando tipos:** reproducir
   el avatar de la kitchen sink y luego el video los deja con el avatar
   pausado y el video sonando — el registro unificado de `pausarOtros`
   funciona entre `<audio>` y `<video>`, no solo dentro del mismo tipo.
-- **Teclado real, sin un solo clic:** foco en el scrubber del avatar,
-  flecha derecha cambia `currentTime`; Enter en el CC alterna
-  `aria-pressed` (y el estado real del `track`). Secuencia de Tab
-  completa en `s00`: skip link → `#app` → play → scrubber → CC → «Ver
-  transcripción» → «Comenzar» → (nada más: el botón de pantalla
-  completa de la portada, de C2, todavía no se reveló a los 400ms de
-  la prueba) → vuelta al skip link — nada inalcanzable, nada atrapado.
 - **Subtítulos en vivo:** saltar el audio a distintos `currentTime`
   actualiza `.media-audio__captions` con el texto de la cue activa;
   apagar el CC la vacía; reencenderlo la retoma en el siguiente cue.
@@ -2162,9 +2165,7 @@ camino.**
   mismo mensaje genérico de Chromium ("Failed to load resource").
 - **Regresión de C2, sin romperse:** se corrió de nuevo la batería
   completa de C2 (marco fijo, trampas 1–4, pantalla completa) contra el
-  código de esta sesión — sigue en cero fallos, incluidos los checks
-  sobre `s00`, que ahora también monta la narración del avatar además
-  de todo lo que C2 ya verificaba ahí.
+  código de esta sesión — sigue en cero fallos, `s00` incluida.
 
 **Cero hex nuevo** en los cinco archivos de código tocados (`media.js`,
 `router.js`, `components.css`, `content/ova-u1.js`,

@@ -112,19 +112,20 @@
    PLAN-CONTENIDO.md, transcripción directa sin reproductor, viéndose
    terminada.
 
-   s00 (L01, la portada) es distinto: pedido explícito del usuario
-   después del primer intento de C3 (que reemplazaba el fondo por la
-   foto fija del avatar), el video en loop de `media` se queda como
-   estaba — L01 es el único layout con dos zonas visuales, y el fondo
-   no cambia solo porque la pantalla también tenga locución. La
-   narración real vive en el campo nuevo `avatar` (independiente de
-   `media`, mismo contrato sin el "tipo"), que `PLANTILLAS.L01` monta
-   de verdad dentro de `.layout__panel` — ver la nota completa junto a
-   esa plantilla en router.js. Las imágenes de `public/img/avatar/`
-   (nomenclatura `avatar-{plano}-{fondo}-{n}.webp`, acordada con Juan)
-   todavía no existen — las tres pantallas apuntan ahí de todos modos,
-   a propósito: el código tiene que degradar limpio a la ausencia del
-   archivo, no evitarla usando otra imagen que sí exista.
+   s00 (L01, la portada) se quedó solo con su `media.tipo:"video"` de
+   siempre — pedido explícito del usuario, primero mantener el video en
+   loop en vez de la foto fija del avatar, y después que esta pantalla
+   en particular no lleva narración de avatar en absoluto. L01 sigue
+   aceptando un campo `avatar` independiente de `media` (mismo contrato
+   que `media.tipo:'avatar'` sin el "tipo"), que `PLANTILLAS.L01` monta
+   de verdad dentro de `.layout__panel` cuando la pantalla lo trae — ver
+   la nota completa junto a esa plantilla en router.js — pero ninguna
+   pantalla de este contenido de prueba lo ejercita hoy; queda cableado
+   para cuando una portada real sí lo necesite. Las imágenes de
+   `public/img/avatar/` (nomenclatura `avatar-{plano}-{fondo}-{n}.webp`,
+   acordada con Juan) todavía no existen — s21/s22 apuntan ahí de todos
+   modos, a propósito: el código tiene que degradar limpio a la
+   ausencia del archivo, no evitarla usando otra imagen que sí exista.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -142,12 +143,6 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "video",
         "src": "../public/videos/woman_Businesswoman_1920x1010.mp4"
-      },
-      "avatar": {
-        "imagen": "../public/img/avatar/avatar-abierto-fondo-1.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "vtt": "WEBVTT\n\n00:00:00.000 --> 00:00:02.500\nBienvenida a la Academia Virtual nuam.\n\n00:00:02.500 --> 00:00:06.000\nEste es un tono de prueba para ejercitar el reproductor de avatar de C3.",
-        "transcripcion": "Bienvenida a la Academia Virtual nuam.\nEste es un tono de prueba para ejercitar el reproductor de avatar de C3, no la locución real de Jose."
       },
       "progreso": true
     },
