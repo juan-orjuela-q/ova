@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="styles/layouts.css" />
   <link rel="stylesheet" href="styles/components.css" />
 </head>
-<body>
+<body class="ova-marco">
   <!-- Skip link (T3): primer elemento tabulable de la página. Salta a
        #app, que tiene tabindex="-1" más abajo para poder recibir foco
        aunque no sea nativamente focalizable. Apunta a "#app" y no al
@@ -72,12 +72,43 @@
       <span id="nav-guardado-icono" class="icono" aria-hidden="true">cloud_done</span>
       <span id="nav-guardado-texto">Guardado</span>
     </p>
+
+    <!-- Pantalla completa (C2), disponible en todo el recorrido salvo
+         L01 (la portada esconde esta barra entera — regla dura 9 de
+         CLAUDE.md, tiene su propio botón más abajo). Arranca `hidden`:
+         router.js solo lo revela si document.fullscreenEnabled es
+         true, nunca deja un botón que no hace nada (misma trampa 2 de
+         PLAN-CONTENIDO.md §4.3 que ya resolvió media.js en T4). -->
+    <button id="nav-pantalla-completa" class="boton-icono" type="button" hidden>
+      <span class="icono" aria-hidden="true">fullscreen</span>
+      <span class="u-oculto-visualmente">Pantalla completa</span>
+    </button>
   </header>
 
-  <!-- El router (T2) monta aquí la pantalla activa. tabindex="-1":
-       destino del skip link, no forma parte del orden de tabulación
-       normal (a eso ya llega quien navega con Tab por su cuenta). -->
-  <main id="app" tabindex="-1"></main>
+  <!-- El router (T2) monta aquí la pantalla activa. tabindex="0" (C2,
+       antes "-1"): sigue siendo el destino del skip link, pero además
+       #app tiene su propio scroll desde C2 (el marco fijo de
+       base.css/layouts.css) y una región con scroll necesita ser
+       alcanzable por teclado de verdad, no solo con rueda o dedo —
+       trampa 1 de PLAN-CONTENIDO.md §4.3. aria-label le da nombre
+       accesible a esa nueva parada de Tab. -->
+  <main id="app" tabindex="0" aria-label="Contenido de la pantalla"></main>
+
+  <!-- Segunda aparición del botón de pantalla completa (C2, sección 4.2
+       de PLAN-CONTENIDO.md): vive fuera de #app y de .layout--l01 a
+       propósito. .layout--l01 tiene overflow:hidden (recorta los SVG de
+       unión) y un position:fixed anidado ahí puede quedar clipeado
+       según el navegador; como hijo directo de <body> no depende de
+       eso. Arranca `hidden` (nunca un botón que no hace nada, mismo
+       criterio que el de arriba) y además oculto por opacidad: solo se
+       revela cuando la pantalla activa es L01, y ahí router.js espera
+       unos segundos antes de mostrarlo — nunca roba el foco porque
+       nunca llama a .focus(), solo quita `hidden` y agrega una clase
+       (trampa 3 de PLAN-CONTENIDO.md §4.3). -->
+  <button id="nav-portada-completa" class="boton-icono boton-icono--portada" type="button" hidden>
+    <span class="icono" aria-hidden="true">fullscreen</span>
+    <span class="u-oculto-visualmente">Pantalla completa</span>
+  </button>
 
   <!-- Barra inferior (T2, cableada; T3 no la toca). -->
   <footer class="nav-inferior">

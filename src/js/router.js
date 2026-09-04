@@ -760,6 +760,109 @@
     if (texto) texto.textContent = ok ? 'Guardado' : 'No se pudo guardar en este dispositivo';
   }
 
+  /* ---- Chrome: marco fijo — barras ocultas en la portada (C2) --------
+     L01 va sin barra superior ni inferior, a sangre (regla dura 9 de
+     CLAUDE.md): `hidden` las saca del grid de body (base.css) además
+     de ocultarlas, así que la fila que les tocaba colapsa a 0 sola.
+     No hay nada más que esconder: L01 no tiene progreso ni drawer que
+     tenga sentido ofrecer todavía (es la pantalla 1), así que basta con
+     las dos barras completas. */
+  function actualizarChromePorLayout(pantalla) {
+    var esPortada = pantalla.layout === 'L01';
+    var header = document.querySelector('.nav-barra');
+    var footer = document.querySelector('.nav-inferior');
+    if (header) header.hidden = esPortada;
+    if (footer) footer.hidden = esPortada;
+  }
+
+  /* ---- Chrome: pantalla completa (C2) -------------------------------
+     Un solo botón real de la barra superior (#nav-pantalla-completa,
+     disponible en todo el recorrido salvo L01, que esconde la barra
+     entera) más una segunda aparición fija en la portada
+     (#nav-portada-completa, ver index.html) — los dos alternan el mismo
+     document.documentElement, así que comparten un único manejador de
+     click y un único listener de fullscreenchange. document.fullscreenEnabled
+     es falso dentro de un iframe de Moodle sin allowfullscreen: ahí los
+     dos botones se quedan `hidden` para siempre, nunca un control que
+     falla en silencio al pulsarlo (mismo criterio que el botón de
+     pantalla completa de media.js en T4 — trampa 2 de
+     PLAN-CONTENIDO.md §4.3). */
+  var TEMPORIZADOR_PORTADA_MS = 4000; // "a los pocos segundos" (§4.2)
+  var temporizadorPortada = null;
+  // Calculado una sola vez en configurarPantallaCompleta(); gestionarBotonPortada()
+  // lo consulta en cada navegación para no programar la revelación del botón
+  // de la portada cuando no hay pantalla completa que ofrecer.
+  var pantallaCompletaDisponible = false;
+
+  function alternarPantallaCompleta() {
+    if (document.fullscreenElement === document.documentElement) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else {
+      var solicitar = document.documentElement.requestFullscreen ||
+        document.documentElement.webkitRequestFullscreen;
+      var resultado = solicitar.call(document.documentElement);
+      // Safari antiguo no devuelve promesa; los demás sí. Un rechazo
+      // (permiso denegado por el iframe embebedor, p. ej.) no debe
+      // reventar en consola — mismo tratamiento que media.js en T4.
+      if (resultado && resultado.catch) resultado.catch(function () {});
+    }
+  }
+
+  function actualizarIconoPantallaCompleta() {
+    var activo = document.fullscreenElement === document.documentElement;
+    [
+      document.getElementById('nav-pantalla-completa'),
+      document.getElementById('nav-portada-completa')
+    ].forEach(function (boton) {
+      if (!boton) return;
+      var icono = boton.querySelector('.icono');
+      if (icono) icono.textContent = activo ? 'fullscreen_exit' : 'fullscreen';
+      var etiqueta = boton.querySelector('.u-oculto-visualmente');
+      if (etiqueta) etiqueta.textContent = activo ? 'Salir de pantalla completa' : 'Pantalla completa';
+    });
+  }
+
+  function configurarPantallaCompleta() {
+    pantallaCompletaDisponible = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+    if (!pantallaCompletaDisponible) return;
+    var botonBarra = document.getElementById('nav-pantalla-completa');
+    var botonPortada = document.getElementById('nav-portada-completa');
+    if (botonBarra) {
+      botonBarra.hidden = false;
+      botonBarra.addEventListener('click', alternarPantallaCompleta);
+    }
+    if (botonPortada) {
+      botonPortada.addEventListener('click', alternarPantallaCompleta);
+    }
+    document.addEventListener('fullscreenchange', actualizarIconoPantallaCompleta);
+    document.addEventListener('webkitfullscreenchange', actualizarIconoPantallaCompleta);
+  }
+
+  // C2, sección 4.2/4.3 (trampa 3): revela el botón de la portada unos
+  // segundos después de llegar a L01, sin robarle el foco a nadie —
+  // solo quita `hidden` y, en el frame siguiente, agrega la clase que
+  // dispara el fundido en CSS (components.css, .boton-icono--portada).
+  // No llama a .focus() en ningún momento. Se re-oculta al salir de L01
+  // (o al volver a entrar, para no dejar un temporizador viejo corriendo
+  // sobre una visita nueva).
+  function gestionarBotonPortada(pantalla) {
+    var boton = document.getElementById('nav-portada-completa');
+    if (!boton) return;
+    window.clearTimeout(temporizadorPortada);
+    boton.hidden = true;
+    boton.classList.remove('es-visible');
+    // Sin pantalla completa disponible no hay nada que revelar — mismo
+    // criterio que el botón de la barra, que ni siquiera se desoculta en
+    // configurarPantallaCompleta() cuando esto es falso.
+    if (!pantallaCompletaDisponible || pantalla.layout !== 'L01') return;
+    temporizadorPortada = window.setTimeout(function () {
+      boton.hidden = false;
+      window.requestAnimationFrame(function () {
+        boton.classList.add('es-visible');
+      });
+    }, TEMPORIZADOR_PORTADA_MS);
+  }
+
   /* ---- Chrome: botón de reanudar (T3) -----------------------------
      Aparece solo cuando el estudiante usó el drawer o "Anterior" para
      revisar una pantalla ya vista y su posición actual quedó detrás de
@@ -911,12 +1014,14 @@
     }
 
     var inst = OVA.state.instantanea();
+    actualizarChromePorLayout(pantalla);
     actualizarNavInferior(inst);
     actualizarBarraSuperior(pantalla);
     actualizarProgreso(inst);
     actualizarGuardado();
     actualizarReanudar(inst);
     actualizarDrawer(inst);
+    gestionarBotonPortada(pantalla);
     document.title = pantalla.titulo + ' · ' + contenidoActual.titulo;
 
     // En la carga inicial no se roba el foco: el usuario todavía no
@@ -972,6 +1077,7 @@
     construirDrawer(contenido);
     configurarDrawer();
     configurarBarraSuperior();
+    configurarPantallaCompleta();
     window.addEventListener('hashchange', alCambiarHash);
     navegarA(OVA.state.actual().id, { esInicial: true });
   }

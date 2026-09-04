@@ -359,6 +359,37 @@
   font-size: 1.25rem;
 }
 
+/* ---- Botón de pantalla completa de la portada (C2, componentes) --------
+   Segunda aparición del control de pantalla completa (la primera vive
+   dentro de .nav-barra y usa .boton-icono tal cual, sin modificador).
+   Este vive fuera de .nav-barra —hijo directo de <body>, ver la nota de
+   index.html— así que necesita su propia posición fija y su propio
+   fondo: sobre L01 puede caer encima del panel naranja o de la media,
+   ninguno garantiza contraste con el texto/ícono por defecto de
+   .boton-icono (--text-primary sobre transparente), por eso pisa
+   fondo+color con el mismo par inverse que ya usa el skip link.
+   Arranca en opacity:0 (router.js quita `hidden` primero, así que el
+   fundido tiene un valor de partida real que animar) y --dur-base ya
+   colapsa a 1ms bajo prefers-reduced-motion en tokens.css — no se
+   duplica ese media query aquí (trampa 3 de PLAN-CONTENIDO.md §4.3:
+   "aparece sin transición" bajo movimiento reducido). */
+.boton-icono--portada {
+  position: fixed;
+  top: var(--sp-4);
+  right: var(--sp-4);
+  z-index: 50;
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.boton-icono--portada:hover {
+  background: var(--nuam-grey-800);
+}
+.boton-icono--portada.es-visible {
+  opacity: 1;
+}
+
 /* ---- Barra de progreso (T3, componentes) -------------------------------
    div propio con role="progressbar", no <progress> nativo: el ítem 4 del
    inventario de movimiento de CLAUDE.md exige animar el avance con
@@ -401,6 +432,12 @@
   padding-inline: var(--sp-4);
   background: var(--surface-default);
   border-block-end: 1px solid var(--border-default);
+  /* C2: hijo del grid de body desde el marco fijo (base.css) — sin esto
+     hereda el mínimo automático de grid (min-content de su contenido
+     más ancho) y se niega a encoger por debajo de eso a 320px, aunque
+     .nav-barra__titulo ya tenga su propio min-width:0. Ver la nota
+     completa junto a #app en base.css. */
+  min-inline-size: 0;
 }
 .nav-barra__titulo {
   font: var(--text-h5);
@@ -436,6 +473,9 @@
   padding-inline: var(--sp-6);
   background: var(--surface-default);
   border-block-start: 1px solid var(--border-default);
+  /* C2: mismo mínimo automático de grid que .nav-barra — ver la nota
+     junto a #app en base.css. */
+  min-inline-size: 0;
 }
 .nav-inferior__paso {
   color: var(--text-tertiary);
