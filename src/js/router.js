@@ -210,22 +210,61 @@
     return contenedor;
   }
 
-  // C1: L08 lee su cifra/retroalimentación de pantalla.resultado — hoy
-  // siempre viene tal cual del JSON estático de contenido. P10, P31,
-  // P43 y P47 van a necesitar que ese valor salga de una variable de
-  // contenido en tiempo de ejecución (aciertos_diagnostico,
-  // perfil_riesgo, resultado_boleta — C4, todavía no existe). Pasar
-  // por este único punto de lectura es lo que "deja preparado" ese
-  // trabajo sin inventar la maquinaria de C4 ahora: cuando exista,
-  // esta función es el único lugar que hay que tocar para mezclar el
-  // valor en vivo con — o en vez de — el de pantalla.resultado, sin
-  // que PLANTILLAS.L08 ni layouts.css se enteren del cambio.
+  // C1/C4: L08 lee su cifra/retroalimentación de pantalla.resultado.
+  // Sin "variable", es el JSON estático de siempre. Con "variable"
+  // (C4), lee OVA.state.obtenerVariable(resultado.variable) — la
+  // escribe quiz.js, ver su encabezado — y elige entre
+  // resultado.reglas la primera que aplique (evaluadas en el orden
+  // del arreglo: el contenido las ordena de la más exigente a la
+  // menos, la primera que matchea gana):
+  //   { valor: x, cifra?, retro? }    — variable === x (comparación
+  //                                      estricta, para valores
+  //                                      categóricos como perfil_riesgo)
+  //   { minimo: n, cifra?, retro? }   — variable >= n (para contadores
+  //                                      como aciertos_diagnostico)
+  // Si la variable todavía no tiene valor (el estudiante no llegó a
+  // responder) o ninguna regla matchea, cae a resultado.cifra/retro
+  // tal cual — ese par hace de estado "todavía sin dato", no hay que
+  // escribir un tercer camino para eso. Dentro de la cifra elegida,
+  // omitir "valor" muestra el número vivo de la variable tal cual
+  // (aciertos_diagnostico: el contenido no necesita repetir el
+  // conteo a mano en cada regla) — si el contenido sí escribe un
+  // "valor" propio, ese gana, mismo criterio de "más específico
+  // gana" que el resto del contrato de contenido.
+  function mezclarCifraConVariable(resultado, valorVariable) {
+    var copia = {};
+    Object.keys(resultado).forEach(function (clave) { copia[clave] = resultado[clave]; });
+    var cifra = {};
+    Object.keys(resultado.cifra).forEach(function (clave) { cifra[clave] = resultado.cifra[clave]; });
+    cifra.valor = valorVariable;
+    copia.cifra = cifra;
+    return copia;
+  }
+
   function obtenerResultado(pantalla) {
     var resultado = pantalla.resultado;
-    if (!resultado || (!resultado.cifra && !resultado.retro)) {
+    if (!resultado) {
       throw new Error('Esta pantalla no trae "resultado" (cifra y/o retro) y su layout lo necesita.');
     }
-    return resultado;
+    var efectivo = resultado;
+    if (resultado.variable) {
+      var valorVariable = OVA.state.obtenerVariable(resultado.variable);
+      if (valorVariable !== undefined && resultado.reglas) {
+        var regla = resultado.reglas.filter(function (r) {
+          if (r.valor !== undefined) return r.valor === valorVariable;
+          if (r.minimo !== undefined) return valorVariable >= r.minimo;
+          return false;
+        })[0];
+        if (regla) efectivo = regla;
+      }
+      if (efectivo.cifra && efectivo.cifra.valor === undefined && valorVariable !== undefined) {
+        efectivo = mezclarCifraConVariable(efectivo, valorVariable);
+      }
+    }
+    if (!efectivo.cifra && !efectivo.retro) {
+      throw new Error('Esta pantalla no trae "resultado" (cifra y/o retro) y su layout lo necesita.');
+    }
+    return efectivo;
   }
 
   // C1: la caja de retroalimentación de L08 reusa .callout (T5) tal

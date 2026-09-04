@@ -39,7 +39,7 @@ Ver `PLAN-CONTENIDO.md` — es el plan vigente sobre el que corren estas tareas.
 - [x] **C1 · Layouts que faltan** — completada 4 sep
 - [x] **C2 · Caja 16:9 y navegación pegada** — completada 4 sep
 - [x] **C3 · Media: avatar y audio** — completada 4 sep
-- [ ] C4 · Estado compartido
+- [x] **C4 · Estado compartido** — completada 4 sep, rama `c4-estado-compartido`
 - [ ] C5 · Interacciones nuevas
 - [ ] C6 · Interacciones ampliadas
 - [ ] C7 · Conversión del storyboard a contenido
@@ -2179,3 +2179,174 @@ C4/C7 sobre media") para el detalle completo: el contrato exacto de
 `media.tipo:'avatar'`, qué campos son opcionales, y la confirmación de
 que `media.audio` es una ruta real (no Blob) mientras que `media.vtt`
 sigue siendo texto WebVTT completo.
+
+**4 sep — C4 cerrada: variables de contenido, rama `c4-estado-compartido`,
+con el catálogo I01–I05/I11 conectado al mecanismo genérico y una
+decisión de alcance explícita sobre lo que sí se pudo cerrar de punta a
+punta y lo que queda documentado para C5/C7.**
+
+**Decisión de alcance, antes de escribir código.** El cierre de C4 en
+`PLAN-CONTENIDO.md` §6 describe el resultado final con contenido real
+("responder P05–P09 cambia P10; P30 cambia P31…"), pero P05–P47 no
+existen todavía — son C7. De las tres variables, solo dos tienen hoy
+una interacción real que las produzca: `aciertos_diagnostico` (el
+catálogo de preguntas I01–I05, ya construido en T6) y `resultado_boleta`
+(I11, ya construida en T8). `perfil_riesgo` la produce I13 (test de
+perfil), que es **C5** — no existe todavía. Mismo criterio que C3 dejó
+notas para C4/C7 sin construir lo que no le tocaba: C4 construye el
+mecanismo genérico completo (funciona para cualquier nombre de
+variable, incluida `perfil_riesgo` desde ya, probado a mano) y lo
+cablea de punta a punta contra las dos interacciones que sí existen;
+la nota para C5 queda en `PLAN-CONTENIDO.md`.
+
+**Qué se construyó:**
+
+- **`state.js` — el almacén.** Un segundo objeto plano `variables`
+  (junto a `pantallas`/`indiceActual`/`visitadas`, mismo ciclo de vida:
+  se carga en `init()` desde `storage.js` bajo la clave `variables`,
+  namespaced por `contenidoId` igual que `progreso`). Tres funciones
+  nuevas, expuestas en `OVA.state`: `obtenerVariable(nombre)`,
+  `establecerVariable(nombre, valor)` (fija y persiste) e
+  `incrementarVariable(nombre, delta=1)` (suma sobre el valor actual,
+  arrancando en 0 si no existía — nunca `NaN` por sumar sobre
+  `undefined`). `state.js` no sabe qué significan las variables ni
+  quién las escribe, mismo espíritu de agnosticismo que ya tiene
+  `storage.js` — es un almacén con nombre, no lógica de negocio.
+- **Persistencia asimétrica, igual que el progreso — decisión
+  deliberada, no un descuido.** Cada `establecerVariable()` escribe en
+  `storage.js` (localStorage) y en SCORM (`cmi.suspend_data`, con las
+  variables serializadas completas en JSON — SCORM 1.2 no tiene un
+  slot propio para "variables de contenido" y tres claves cortas están
+  lejísimos del límite de 4096 caracteres), pero `init()` solo restaura
+  desde `storage.js`. Es exactamente el mismo patrón que
+  `cmi.core.lesson_location` desde T2/T3: se reporta a la LMS en cada
+  cambio, nunca se lee de vuelta desde la API. Si hace falta restaurar
+  desde `suspend_data` (cambio de dispositivo dentro de Moodle, por
+  ejemplo) es trabajo aparte — hoy ningún otro dato del OVA se restaura
+  desde la LMS tampoco, no es una inconsistencia nueva de C4.
+- **`quiz.js` — quién escribe.** `datos.variable` opcional en
+  cualquiera de las ocho preguntas del catálogo (I01–I05 más
+  completar/numerica/autoevaluacion): `{ nombre, modo?, valor? }`.
+  Modo `"contar"` (por defecto) suma 1 cuando `evaluar()` devuelve
+  `"correcto"` — el caso de `aciertos_diagnostico`, una pregunta por
+  pantalla que va acumulando. Modo `"fijar"` asigna literalmente
+  `datos.variable.valor` en vez de sumar — para una sola pregunta que
+  decide un valor categórico de una vez (autoevaluacion queda fuera en
+  la práctica: nunca devuelve `"correcto"`, así que este campo no tiene
+  efecto ahí, documentado en el encabezado). La escritura vive en
+  `comprobar()`, la única función que conoce el resultado real de
+  `evaluar()` — ningún constructor de tipo individual sabe de
+  variables. **I11 (boleta de compra) es distinta a propósito:** no es
+  una pregunta con "correcto/incorrecto", así que no pasa por
+  `comprobar()`. `datos.variable.nombre` ahí fija la variable directo
+  en `enviar()` con el resultado completo (`{ tipo, ejecutada,
+  precioMercado, precioLimite }`) cada vez que se envía la boleta —
+  sin modo, porque cada envío siempre reemplaza al anterior.
+- **`router.js` — quién lee.** `obtenerResultado()` (la función que
+  `PLANTILLAS.L08` ya usaba desde C1, dejada explícitamente como "el
+  único lugar que hay que tocar") ahora entiende un campo opcional
+  `pantalla.resultado.variable`: si está, lee
+  `OVA.state.obtenerVariable(...)` y busca en
+  `pantalla.resultado.reglas` (arreglo, evaluado en orden — la primera
+  que aplica gana, así que el contenido las ordena de más exigente a
+  menos) la que matchea por `valor` (igualdad estricta, para
+  categóricos como `perfil_riesgo`) o por `minimo` (`variable >= n`,
+  para contadores como `aciertos_diagnostico`). Sin variable con valor
+  todavía, o si ninguna regla matchea, cae al par `resultado.cifra`/
+  `resultado.retro` estático de siempre — ese es el estado "todavía sin
+  responder", no hace falta un tercer camino de código para él. Dentro
+  de la cifra elegida, si el contenido omite `cifra.valor`, se completa
+  con el valor vivo de la variable tal cual (así `aciertos_diagnostico`
+  no se repite a mano en cada regla); si el contenido sí trae un
+  `valor` propio, ese gana. `PLANTILLAS.L08` no cambió una sola línea —
+  sigue leyendo `resultado.cifra`/`resultado.retro` del objeto que le
+  devuelve `obtenerResultado()`, exactamente como anticipó el
+  comentario de C1.
+- **`content/ova-u1.js` — sin pantallas nuevas.** `s17` (L08) pasa de
+  cifra/retro estáticos a `resultado.variable: 'aciertos_diagnostico'`
+  con tres reglas por umbral (2/2, 1/2, 0/2) más el par estático de
+  "todavía no respondiste". Se reusaron `s07` y `s16` — las dos únicas
+  preguntas I01 que ya existían antes de `s17` en el recorrido —
+  agregándoles `interaccion.datos.variable`, en vez de escribir
+  preguntas nuevas: responder esas dos ya es, de punta a punta, el
+  mismo mecanismo que P05–P09 → P10 va a necesitar con las cinco
+  preguntas reales de Jose. `s12` (I11, boleta) queda conectado a
+  `resultado_boleta`, pero **sin pantalla nueva que la muestre**:
+  ninguna pantalla de prueba antes de C7 necesita leerla todavía (eso
+  es P43, contenido real). `perfil_riesgo` no tiene productor en este
+  contenido de prueba — no hay I13 todavía.
+
+**Verificado con Playwright, abriendo `src/index.html` por `file://`
+(tres corridas independientes, sin axe-core esta vez: C4 no agrega
+componentes ni marcado nuevo, reusa los mismos DOM de quiz.js/router.js
+que T6/T8/C1 ya auditaron — el riesgo de accesibilidad no cambió):**
+
+- Responder `s07` (I01) correcto sube `aciertos_diagnostico` de
+  `undefined` a `1`; responder `s16` incorrecto **no** lo sube (se
+  queda en `1`) — el modo "contar" solo suma en acierto, nunca en
+  fallo ni al reintentar sin acertar.
+- `s17` con `aciertos_diagnostico=1` muestra la cifra en vivo (`"1"`,
+  sin que el contenido la haya escrito a mano) y el título de la regla
+  `minimo:1` ("Vas por buen camino").
+- **Recargar la página a mitad del recorrido** (parado en `s17`)
+  conserva `aciertos_diagnostico=1` y la pantalla actual (`#s17`) — las
+  dos cosas que pide el cierre de C4 sobre persistencia.
+- Volver a `s16` y responder correcto esta vez sube la variable a `2`;
+  `s17` cambia de verdad a la regla `minimo:2` ("Buen dominio del
+  contenido") sin recargar la página — la lectura es en vivo en cada
+  montaje de la pantalla, no solo al cargar.
+- `s12`: «Enviar boleta» fija `resultado_boleta` con la forma completa
+  (`{tipo:"limite", ejecutada:false, precioMercado:1000,
+  precioLimite:950}` con los valores por defecto del slider).
+- `localStorage` (`ova:u1-contexto-mercado:variables`) trae las dos
+  variables juntas tras la corrida completa.
+- **Con una API SCORM 1.2 simulada** (mismo mecanismo de T6/C3):
+  responder `s07` escribe `cmi.suspend_data` con
+  `{"aciertos_diagnostico":1}`, JSON válido.
+- **Prueba genérica del almacén, sin depender de ningún contenido:**
+  `OVA.state.establecerVariable('perfil_riesgo', 'moderado')` y
+  `obtenerVariable()` funcionan solos; dos llamadas a
+  `incrementarVariable('contador_prueba')` sin argumento previo dan
+  `2` (arranca en 0) — confirma que el mecanismo ya sirve para
+  `perfil_riesgo` en cuanto C5 construya I13, sin tocar `state.js` de
+  nuevo.
+- 320px sin scroll horizontal en `s17` en sus dos estados (sin
+  responder y en la regla de `minimo:2`); zoom de texto 200% sin scroll
+  horizontal en el estado de `minimo:2`.
+- Cero errores de consola en las cuatro corridas (con y sin SCORM
+  simulado).
+
+**Cero hex nuevo** en los cinco archivos tocados (`state.js`,
+`quiz.js`, `router.js`, `content/ova-u1.js`, `dev/kitchen-sink.html` —
+este último solo con un comentario corregido, sin CSS nuevo).
+
+**Kitchen sink:** no se agregó sección nueva (C4 no es un componente
+visual, mismo criterio que T2/T6 con el motor y el reporte a SCORM). Se
+corrigió un comentario que había quedado falso: la demo estática de
+L08 decía "mismos datos que s17 en content/ova-u1.js", y desde esta
+sesión `s17` ya no tiene datos estáticos — el comentario ahora aclara
+que la demo no depende del router y por eso no puede mostrar el
+comportamiento vivo, solo el componente.
+
+**Nota para C5:** cuando exista I13 (test de perfil), fijar
+`perfil_riesgo` es una llamada directa a
+`OVA.state.establecerVariable('perfil_riesgo', <categoría>)` desde su
+constructor en `quiz.js` — mismo patrón que I11 usó para
+`resultado_boleta` en esta sesión (una interacción insignia sin
+"correcto/incorrecto" fija su variable directo al reportar, sin pasar
+por `datos.variable`/modo "contar"/"fijar", que es solo para el
+catálogo de preguntas gradables). Ninguna pieza de `state.js` ni de
+`router.js` necesita cambiar para eso — ya está probado a mano en esta
+sesión con una variable de prueba genérica.
+
+**Nota para C6:** la matriz de retro de seis reglas que cruza
+`perfil_riesgo` con la distribución del portafolio (P46/P47,
+`PLAN-CONTENIDO.md` §3.1) es de **I12 ampliada**, no de
+`obtenerResultado()`/L08 — el mecanismo de "reglas" que construyó C4
+resuelve una variable contra un layout de resultado, no dos variables
+cruzadas dentro de una interacción. C6 necesita su propia lógica de
+matriz dentro de `construirDistribucionCapital`, leyendo
+`OVA.state.obtenerVariable('perfil_riesgo')` con
+`OVA.state.obtenerVariable` (ya disponible) pero comparando contra la
+distribución que el propio widget ya tiene en memoria — no hay que
+inventar nada en `state.js` para eso tampoco.

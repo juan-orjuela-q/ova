@@ -51,6 +51,23 @@
    explícita para I09 ("alternativa de teclado al arrastre"), aplicado
    aquí desde el origen en vez de corregirlo después.
 
+   C4 — datos.variable, opcional en cualquiera de las ocho de arriba
+   (I01–I05 más completar/numerica/autoevaluacion): escribe en la
+   variable de contenido de state.js (ver el encabezado de state.js)
+   cuando la respuesta queda "correcta" — nunca en incorrecta ni
+   neutral, así que autoevaluacion (que jamás devuelve "correcto") no
+   tiene forma útil de usar este campo.
+     datos.variable: { nombre, modo?, valor? }
+       - modo "contar" (por defecto): suma 1 a la variable, arrancando
+         en 0 si no existía — el caso de aciertos_diagnostico, una
+         pregunta por pantalla que va sumando.
+       - modo "fijar": asigna literalmente datos.variable.valor —
+         para una sola pregunta que decide un valor categórico en vez
+         de acumular (p. ej. una pregunta que por sí sola fija un
+         perfil, a diferencia de I13, que lo hace con varias).
+   La escritura pasa por comprobar() (única función que conoce el
+   resultado real de evaluar()), no por cada constructor.
+
    Reporte a SCORM: cada "Comprobar" agrega una fila a
    cmi.interactions (id, type, student_response, correct_responses,
    result, time) vía scorm.js, y en preguntas gradables actualiza
@@ -163,6 +180,13 @@
          objeto compatible con reportarSCORM() (tipoScorm 'other',
          sin correct_responses) y puede reenviarse cuantas veces se
          quiera tras ajustar los sliders.
+       - C4: `datos.variable.nombre` opcional — a diferencia del
+         "modo contar/fijar" de las preguntas de arriba, aquí no hace
+         falta modo: cada «Enviar boleta» fija esa variable de
+         contenido directo con el resultado computado ({ tipo,
+         ejecutada, precioMercado, precioLimite }), sobreescribiendo
+         el envío anterior. Es la base de resultado_boleta —
+         PLAN-CONTENIDO.md §3.1, P43 leyendo el resultado de P42.
 
      I09 linea_tiempo_ordenable { enunciado?, operacion?, eventos:[{id,texto}], ordenCorrecto:[id…] }
        - Base de C1 (cápsula de "los tres mercados"). `eventos` llega en
@@ -289,6 +313,21 @@
     );
     OVA.scorm.establecerValor(base + 'time', horaSCORM());
     OVA.scorm.confirmar();
+  }
+
+  // C4 — ver el bloque "datos.variable" del encabezado. Solo se llama
+  // desde comprobar() (I01–I05/completar/numerica/autoevaluacion) con
+  // el resultado real de evaluar(); nunca desde una interacción
+  // insignia, que no tiene un "correcto" así (I11 escribe su variable
+  // directo en enviar(), sin pasar por aquí).
+  function actualizarVariableContenido(cfgVariable, resultado) {
+    if (!cfgVariable || !cfgVariable.nombre) return;
+    if (resultado !== 'correcto') return;
+    if (cfgVariable.modo === 'fijar') {
+      OVA.state.establecerVariable(cfgVariable.nombre, cfgVariable.valor);
+    } else {
+      OVA.state.incrementarVariable(cfgVariable.nombre, 1);
+    }
   }
 
   /* ---- Bloque de retroalimentación (I14) ---------------------------
@@ -1106,6 +1145,14 @@
         textoCorrecta: function () { return null; }
       };
       reportarSCORM(pregunta, 'neutral');
+      if (datos.variable && datos.variable.nombre) {
+        OVA.state.establecerVariable(datos.variable.nombre, {
+          tipo: r.tipo,
+          ejecutada: r.ejecutada,
+          precioMercado: r.precioMercado,
+          precioLimite: r.precioLimite
+        });
+      }
       resumen.textContent = r.ejecutada
         ? 'Boleta enviada: se ejecutó a ' + textoValor(mercado.cfg, r.precioMercado) + '.'
         : 'Boleta enviada: quedó pendiente (no se ejecutó).';
@@ -1496,6 +1543,7 @@
       pregunta.retro.mostrar(resultado || 'neutral', msg.titulo, msg.detalle);
       reportarSCORM(pregunta, resultado);
       actualizarNota(resultado);
+      actualizarVariableContenido(datos.variable, resultado);
 
       pregunta.bloquear();
       botonComprobar.hidden = true;
