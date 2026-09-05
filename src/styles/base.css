@@ -127,7 +127,7 @@ body.ova-marco {
    que por defecto es el tamaño min-content de su contenido, no 0. Antes
    de C2 .nav-barra era un bloque normal (ancho = 100% del body, sin ese
    mínimo automático) y su flexbox interno podía encoger
-   .nav-barra__titulo libremente gracias a min-width:0 (T3). Al pasar
+   .nav-migas libremente gracias a min-width:0 (T3, D1). Al pasar
    body a grid, .nav-barra pasó a ser un ítem de grid con su propio piso
    de min-content — el min-width:0 de .layout__titulo seguía ahí pero ya
    no importaba, porque el hijo de grid completo se negaba a encoger por

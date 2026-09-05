@@ -486,13 +486,59 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-migas">
-        <span class="ks-layout-bloque__etiqueta">Migas de pan</span>
+        <span class="ks-layout-bloque__etiqueta">Migas de pan — Unidad › Cápsula › Tema (D1)</span>
+        <p class="ks-intro">
+          Un <code>&lt;ol&gt;</code> semántico de 2 o 3 ítems, nunca enlaces: ningún nivel tiene pantalla de destino propia dentro de la OVA, ese índice es el drawer. <code>router.js</code> (<code>actualizarMigas</code>) llena texto y alterna <code>hidden</code>/<code>aria-current</code>; aquí van los tres estados fijos a mano para poder revisarlos sin navegar.
+        </p>
+        <p class="ks-intro"><strong>Con cápsula</strong> — cápsula (secundaria, trunca con elipsis) y tema (actual, en negrita) en la segunda línea.</p>
         <div class="ks-layout-marco ks-ancho-marco">
-          <nav class="nav-migas" aria-label="Ruta de navegación de ejemplo">
+          <nav class="nav-migas" aria-label="Ubicación (ejemplo con cápsula)">
             <ol>
-              <li><a href="#l02">Unidad 1</a></li>
-              <li><a href="#l03">Cápsula 1</a></li>
-              <li aria-current="page">¿Qué es una acción?</li>
+              <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
+              <li class="nav-migas__capsula">
+                <span class="nav-migas__separador" aria-hidden="true">›</span>
+                <span class="nav-migas__texto">Qué es una acción</span>
+              </li>
+              <li class="nav-migas__tema" aria-current="page">
+                <span class="nav-migas__separador" aria-hidden="true">›</span>
+                <span>Tres ventajas de ser accionista</span>
+              </li>
+            </ol>
+          </nav>
+        </div>
+        <p class="ks-intro"><strong>Sin cápsula</strong> — Apertura/Cierre de unidad: <code>capsula</code> es <code>null</code>, el ítem de cápsula no existe y el tema no lleva separador colgado.</p>
+        <div class="ks-layout-marco ks-ancho-marco">
+          <nav class="nav-migas" aria-label="Ubicación (ejemplo sin cápsula)">
+            <ol>
+              <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
+              <li class="nav-migas__tema" aria-current="page">
+                <span>Ideas clave de la unidad</span>
+              </li>
+            </ol>
+          </nav>
+        </div>
+        <p class="ks-intro"><strong>Truncado, más la excepción de primera pantalla</strong> — a la izquierda, un nombre de cápsula largo que corta con elipsis a 320px sin tocar el tema; a la derecha, la primera pantalla de una cápsula muestra solo la cápsula (mismo texto que el título sería ruido repetido).</p>
+        <div class="ks-layout-marco" style="display: flex; flex-wrap: wrap; gap: var(--sp-6);">
+          <nav class="nav-migas" style="max-width: 220px;" aria-label="Ubicación (ejemplo truncado)">
+            <ol>
+              <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
+              <li class="nav-migas__capsula">
+                <span class="nav-migas__separador" aria-hidden="true">›</span>
+                <span class="nav-migas__texto">Tipos de acciones y perfil de riesgo del inversionista</span>
+              </li>
+              <li class="nav-migas__tema" aria-current="page">
+                <span class="nav-migas__separador" aria-hidden="true">›</span>
+                <span>¿Cuál es tu perfil?</span>
+              </li>
+            </ol>
+          </nav>
+          <nav class="nav-migas" style="max-width: 220px;" aria-label="Ubicación (ejemplo primera pantalla de cápsula)">
+            <ol>
+              <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
+              <li class="nav-migas__capsula" aria-current="page">
+                <span class="nav-migas__separador" aria-hidden="true">›</span>
+                <span class="nav-migas__texto">¿En qué mercado estás entrando?</span>
+              </li>
             </ol>
           </nav>
         </div>
@@ -511,7 +557,19 @@
         <div class="ks-layout-marco">
           <header class="nav-barra">
             <button class="boton-icono" type="button" aria-expanded="false"><span class="icono" aria-hidden="true">menu</span><span class="u-oculto-visualmente">Abrir índice de la unidad</span></button>
-            <p class="nav-barra__titulo">Unidad 1 · Contexto sobre el mercado</p>
+            <nav class="nav-migas" aria-label="Ubicación (ejemplo)">
+              <ol>
+                <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
+                <li class="nav-migas__capsula">
+                  <span class="nav-migas__separador" aria-hidden="true">›</span>
+                  <span class="nav-migas__texto">Qué es una acción</span>
+                </li>
+                <li class="nav-migas__tema" aria-current="page">
+                  <span class="nav-migas__separador" aria-hidden="true">›</span>
+                  <span>Tres ventajas de ser accionista</span>
+                </li>
+              </ol>
+            </nav>
             <div class="nav-barra__progreso">
               <span>5 / 13 pantallas</span>
               <div class="barra-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="13" aria-valuenow="5" aria-label="Progreso de la unidad (ejemplo)">
@@ -521,6 +579,9 @@
             <p class="nav-barra__guardado"><span class="icono" aria-hidden="true">cloud_done</span> Guardado</p>
           </header>
         </div>
+        <p class="ks-intro">
+          El título plano de T3 (<code>.nav-barra__titulo</code>) se reemplazó en D1 por la miga de pan real (<code>.nav-migas</code>, sección propia arriba con sus tres estados) — mismo componente, no una versión aparte para la barra.
+        </p>
         <p class="ks-intro">
           El relleno naranja de la barra de progreso usa <code>--surface-subtle-2</code> (gris 100) como track, no <code>--surface-muted</code> (gris 200): CLAUDE.md prohíbe naranja de relleno del gris 200 al 600. El avance anima con <code>transform: scaleX()</code> en <code>--dur-slow</code> (ítem 4 del inventario de movimiento) — nunca <code>width</code>.
         </p>
@@ -544,7 +605,10 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-nav-drawer">
-        <span class="ks-layout-bloque__etiqueta">Drawer de índice — cableado en T3</span>
+        <span class="ks-layout-bloque__etiqueta">Drawer de índice — cableado en T3, agrupado desde D1</span>
+        <p class="ks-intro">
+          <code>construirDrawer()</code> agrupa por unidad (<code>&lt;h3&gt;</code>) y, dentro, por cápsula (<code>&lt;h4&gt;</code>) — encabezados reales, no <code>&lt;div&gt;</code>, para saltar de grupo en grupo con lector de pantalla. Sin <code>&lt;h4&gt;</code> cuando <code>capsula</code> es <code>null</code> (Apertura/Cierre): esas pantallas quedan directo bajo el <code>&lt;h3&gt;</code> de la unidad, como el primer grupo de este ejemplo.
+        </p>
         <div class="ks-layout-marco">
           <div class="nav-drawer" style="position: static; max-width: none;">
             <div class="nav-drawer__cabecera">
@@ -552,9 +616,20 @@
               <button class="boton-icono" type="button"><span class="icono" aria-hidden="true">close</span><span class="u-oculto-visualmente">Cerrar índice</span></button>
             </div>
             <nav aria-label="Pantallas de la unidad (ejemplo)">
-              <a class="nav-drawer__item" href="#" data-estado="completado"><span class="icono" aria-hidden="true">check_circle</span> Contexto del mercado</a>
-              <a class="nav-drawer__item" href="#" aria-current="step" data-estado="actual"><span class="icono" aria-hidden="true">radio_button_checked</span> ¿Qué es una acción?</a>
-              <a class="nav-drawer__item" href="#" data-estado="pendiente"><span class="icono" aria-hidden="true">radio_button_unchecked</span> Valorización de una acción</a>
+              <h3 class="nav-drawer__grupo-unidad">Unidad 1</h3>
+              <ul class="nav-drawer__lista">
+                <li><a class="nav-drawer__item" href="#" data-estado="completado"><span class="icono" aria-hidden="true">check_circle</span> Unidad 1: Mercado, bolsa y acciones</a></li>
+                <li><a class="nav-drawer__item" href="#" data-estado="completado"><span class="icono" aria-hidden="true">check_circle</span> Objetivos de aprendizaje</a></li>
+              </ul>
+              <h4 class="nav-drawer__grupo-capsula">¿En qué mercado estás entrando?</h4>
+              <ul class="nav-drawer__lista">
+                <li><a class="nav-drawer__item" href="#" data-estado="completado"><span class="icono" aria-hidden="true">check_circle</span> Cápsula 1: ¿En qué mercado estás entrando?</a></li>
+              </ul>
+              <h4 class="nav-drawer__grupo-capsula">Qué es una acción</h4>
+              <ul class="nav-drawer__lista">
+                <li><a class="nav-drawer__item" href="#" aria-current="step" data-estado="actual"><span class="icono" aria-hidden="true">radio_button_checked</span> ¿Qué es una acción?</a></li>
+                <li><a class="nav-drawer__item" href="#" data-estado="pendiente"><span class="icono" aria-hidden="true">radio_button_unchecked</span> Tres ventajas de ser accionista</a></li>
+              </ul>
             </nav>
           </div>
         </div>

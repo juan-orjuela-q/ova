@@ -300,38 +300,86 @@
   color: var(--text-secondary);
 }
 
-/* ---- Migas de pan (T1.5, componentes) ---------------------------------- */
+/* ---- Migas de pan (T1.5 maqueta → D1: jerarquía Unidad › Cápsula ›
+   Tema real) -------------------------------------------------------------
+   Un único <ol> semántico de 2 o 3 ítems; visualmente dos líneas.
+   `.nav-migas__unidad` fuerza el salto de línea con flex-basis:100%
+   sobre el <ol> en flex-wrap (ya declarado abajo) — cápsula y tema
+   quedan en la segunda línea sin necesitar un contenedor aparte. Sin
+   <a>: ningún nivel tiene pantalla de destino propia dentro de la OVA
+   (index.html, nota junto al marcado). La cápsula trunca con elipsis
+   sobre su span de texto (no sobre el <li> completo, que también
+   contiene el separador — el ellipsis de CSS no reparte bien el corte
+   entre varias cajas hijas); el tema nunca se trunca
+   (flex-shrink:0). */
+.nav-migas {
+  flex: 1 1 auto;
+  min-width: 0;
+}
 .nav-migas ol {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-1) var(--sp-2);
+  align-items: baseline;
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-1);
   list-style: none;
   padding-inline-start: 0;
-  font: var(--text-body-sm);
+  margin: 0;
 }
-.nav-migas li {
+.nav-migas__unidad {
+  flex-basis: 100%;
+}
+.nav-migas__capsula,
+.nav-migas__tema {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--sp-2);
 }
-.nav-migas li:not(:last-child)::after {
-  content: "/";
+.nav-migas__capsula {
+  min-width: 0;
+  font: var(--text-body-sm);
+  color: var(--text-secondary);
+}
+.nav-migas__capsula .nav-migas__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-migas__tema {
+  /* Nunca trunca con elipsis (a diferencia de la cápsula): en vez de
+     flex-shrink:0 rígido —que a 320px + zoom de texto 200% se negaba a
+     encoger y desbordaba horizontalmente, verificado con Playwright—
+     min-width:0 deja que el texto envuelva a una segunda línea cuando
+     de verdad no cabe. En anchos normales sigue viéndose en una sola
+     línea, sin diferencia visual. */
+  min-width: 0;
+  font: var(--text-h5);
+  color: var(--text-primary);
+}
+/* Cuando la excepción de "primera pantalla de cápsula" (router.js) deja
+   la cápsula como ítem actual, hereda el mismo peso que el tema en vez
+   de quedarse con el tratamiento secundario de arriba. */
+.nav-migas [aria-current="page"] {
+  font: var(--text-h5);
+  color: var(--text-primary);
+}
+.nav-migas__separador {
   color: var(--text-tertiary);
 }
-.nav-migas a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  transition: color var(--dur-fast) var(--ease-out);
-}
-.nav-migas a:hover {
-  color: var(--text-brand);
-  text-decoration: underline;
-}
-.nav-migas [aria-current="page"] {
-  color: var(--text-primary);
-  font-weight: 600;
+
+/* Por debajo de 40em la miga colapsa a una sola cosa por línea: la
+   unidad arriba (ya es su propia línea) y el tema justo debajo, sin la
+   cápsula —sigue disponible en el drawer— ni un separador colgado sin
+   nada antes. */
+@media (max-width: 39.999em) {
+  .nav-migas__capsula {
+    display: none;
+  }
+  .nav-migas__tema .nav-migas__separador {
+    display: none;
+  }
 }
 
 /* ---- Botón de solo ícono (T3, componentes) -----------------------------
@@ -435,17 +483,9 @@
   /* C2: hijo del grid de body desde el marco fijo (base.css) — sin esto
      hereda el mínimo automático de grid (min-content de su contenido
      más ancho) y se niega a encoger por debajo de eso a 320px, aunque
-     .nav-barra__titulo ya tenga su propio min-width:0. Ver la nota
+     .nav-migas ya tenga su propio min-width:0 (D1). Ver la nota
      completa junto a #app en base.css. */
   min-inline-size: 0;
-}
-.nav-barra__titulo {
-  font: var(--text-h5);
-  min-width: 0;
-  flex: 1 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .nav-barra__progreso {
   display: flex;
@@ -542,6 +582,35 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-tertiary);
+}
+.nav-drawer__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  list-style: none;
+  padding-inline-start: 0;
+  margin: 0;
+}
+/* ---- Agrupación del drawer por Unidad › Cápsula (D1) --------------------
+   Encabezados reales (<h3>/<h4> en router.js), no <div>: un lector de
+   pantalla salta de grupo en grupo por encabezado. Sin <h4> cuando
+   `capsula` es null (Apertura/Cierre) — no hay nombre que anunciar, esas
+   pantallas quedan directo bajo el <h3> de la unidad. */
+.nav-drawer__grupo-unidad {
+  font: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  margin-block: var(--sp-4) 0;
+}
+.nav-drawer__grupo-unidad:first-child {
+  margin-block-start: 0;
+}
+.nav-drawer__grupo-capsula {
+  font: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-block: var(--sp-2) 0;
 }
 .nav-drawer__item {
   display: flex;

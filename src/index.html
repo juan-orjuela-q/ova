@@ -46,7 +46,24 @@
       <span class="u-oculto-visualmente">Abrir índice de la unidad</span>
     </button>
 
-    <p id="nav-barra-titulo" class="nav-barra__titulo"></p>
+    <!-- Migas de pan / jerarquía (D1): Unidad › Cápsula › Tema. Sin
+         <a>: ningún nivel tiene pantalla de destino propia dentro de
+         la OVA, ese índice navegable es el drawer. router.js
+         (actualizarMigas) llena texto y alterna hidden/aria-current
+         en cada navegación — ver la nota completa ahí. -->
+    <nav id="nav-migas" class="nav-migas" aria-label="Ubicación">
+      <ol>
+        <li id="nav-migas-unidad" class="nav-migas__unidad eyebrow eyebrow--subtle"></li>
+        <li id="nav-migas-capsula" class="nav-migas__capsula" hidden>
+          <span class="nav-migas__separador" aria-hidden="true">›</span>
+          <span id="nav-migas-capsula-texto" class="nav-migas__texto"></span>
+        </li>
+        <li id="nav-migas-tema" class="nav-migas__tema" aria-current="page">
+          <span id="nav-migas-tema-separador" class="nav-migas__separador" aria-hidden="true" hidden>›</span>
+          <span id="nav-migas-tema-texto"></span>
+        </li>
+      </ol>
+    </nav>
 
     <div class="nav-barra__progreso">
       <span id="nav-progreso-texto"></span>

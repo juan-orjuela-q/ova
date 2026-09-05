@@ -874,19 +874,58 @@
     if (paso) paso.textContent = 'Pantalla ' + (inst.indice + 1) + ' de ' + inst.total;
   }
 
-  /* ---- Chrome: barra superior (T3) -------------------------------
-     Título, barra de progreso y estado de guardado. La barra de
-     progreso es un div propio con role="progressbar", no un
-     <progress> nativo: el ítem 4 del inventario de movimiento exige
-     animar su avance con --dur-slow, y solo transform/opacity pueden
-     animarse (nunca width) — un <progress> no expone su relleno
-     interno para transicionarlo así entre navegadores. El track usa
-     --surface-subtle-2 (gris 100), no --surface-muted (gris 200):
-     CLAUDE.md prohíbe naranja de relleno sobre superficies del gris
-     200 al 600, y este relleno es naranja. */
-  function actualizarBarraSuperior(pantalla) {
-    var titulo = document.getElementById('nav-barra-titulo');
-    if (titulo) titulo.textContent = pantalla.titulo;
+  /* ---- Chrome: migas de pan / jerarquía (D1) ----------------------
+     Unidad › Cápsula › Tema como un <ol> semántico de 2 o 3 ítems,
+     nunca enlaces: ningún nivel tiene una pantalla de destino propia
+     dentro de la OVA — ese índice navegable es el drawer, no la miga.
+     CSS fuerza la unidad a su propia línea (flex-basis:100% sobre el
+     primer ítem); cápsula y tema quedan en la segunda. Cuando
+     `capsula` es null (Apertura/Cierre) el ítem de cápsula se oculta
+     y el tema pierde su separador — "Tema" solo. Cuando el título de
+     la pantalla es el mismo nombre de la cápsula (su primera
+     pantalla), se muestra solo la cápsula como ítem actual: repetir
+     el mismo texto dos veces separado por "›" es ruido. El separador
+     es un <span aria-hidden="true"> real del DOM (index.html), no
+     contenido generado por CSS, porque un lector de pantalla no
+     siempre ignora el ::after con texto y esto es puramente
+     decorativo. */
+  function tituloSinPrefijo(titulo) {
+    var i = titulo.indexOf(':');
+    return i === -1 ? titulo : titulo.slice(i + 1).trim();
+  }
+
+  function actualizarMigas(pantalla) {
+    var unidad = document.getElementById('nav-migas-unidad');
+    var capsula = document.getElementById('nav-migas-capsula');
+    var capsulaTexto = document.getElementById('nav-migas-capsula-texto');
+    var tema = document.getElementById('nav-migas-tema');
+    var temaTexto = document.getElementById('nav-migas-tema-texto');
+    var temaSeparador = document.getElementById('nav-migas-tema-separador');
+
+    if (unidad) unidad.textContent = pantalla.unidad || '';
+    if (capsulaTexto) capsulaTexto.textContent = pantalla.capsula || '';
+    if (temaTexto) temaTexto.textContent = pantalla.titulo;
+
+    var esPrimeraDeCapsula = !!pantalla.capsula &&
+      tituloSinPrefijo(pantalla.titulo) === pantalla.capsula;
+
+    if (capsula) {
+      capsula.hidden = !pantalla.capsula;
+      if (esPrimeraDeCapsula) {
+        capsula.setAttribute('aria-current', 'page');
+      } else {
+        capsula.removeAttribute('aria-current');
+      }
+    }
+    if (tema) {
+      tema.hidden = esPrimeraDeCapsula;
+      if (esPrimeraDeCapsula) {
+        tema.removeAttribute('aria-current');
+      } else {
+        tema.setAttribute('aria-current', 'page');
+      }
+    }
+    if (temaSeparador) temaSeparador.hidden = !pantalla.capsula || esPrimeraDeCapsula;
   }
 
   function actualizarProgreso(inst) {
@@ -1037,20 +1076,55 @@
     if (pantalla) navegarA(pantalla.id);
   }
 
-  /* ---- Chrome: drawer de índice (T3) -------------------------------
+  /* ---- Chrome: drawer de índice (T3, agrupado desde D1) -----------
      Lista generada una vez por contenido; cada navegación solo
      actualiza estado/aria-current de los items ya construidos. Estados
      con ícono y texto, nunca solo color (regla dura de CLAUDE.md): no
      hay estado "bloqueado" aquí —eso es entre unidades, lo resuelve
      Moodle (fuera de alcance)—, dentro de una unidad toda pantalla es
-     alcanzable. */
+     alcanzable.
+
+     D1: se agrupa por unidad (<h3>) y, dentro, por cápsula (<h4>) —
+     encabezados reales, no <div>, para que un lector de pantalla
+     pueda saltar de grupo en grupo. Cuando `capsula` es null
+     (Apertura/Cierre) esas pantallas quedan en su propia <ul> bajo el
+     <h3> de la unidad, sin <h4> intermedio: no hay nombre de cápsula
+     que anunciar. Los grupos se detectan por el cambio de valor
+     consecutivo, no por un mapa aparte — el contenido ya viene
+     ordenado y cada unidad/cápsula es un tramo contiguo. */
   function construirDrawer(contenido) {
     var titulo = document.getElementById('drawer-titulo');
     var lista = document.getElementById('drawer-lista');
     if (titulo) titulo.textContent = contenido.titulo;
     if (!lista) return;
     while (lista.firstChild) lista.removeChild(lista.firstChild);
+
+    var unidadActual;
+    var capsulaActual;
+    var listaActual = null;
+
     contenido.pantallas.forEach(function (pantalla) {
+      if (pantalla.unidad !== unidadActual) {
+        unidadActual = pantalla.unidad;
+        capsulaActual = undefined;
+        var h3 = document.createElement('h3');
+        h3.className = 'nav-drawer__grupo-unidad';
+        h3.textContent = unidadActual || '';
+        lista.appendChild(h3);
+      }
+      if (pantalla.capsula !== capsulaActual) {
+        capsulaActual = pantalla.capsula;
+        if (capsulaActual) {
+          var h4 = document.createElement('h4');
+          h4.className = 'nav-drawer__grupo-capsula';
+          h4.textContent = capsulaActual;
+          lista.appendChild(h4);
+        }
+        listaActual = document.createElement('ul');
+        listaActual.className = 'nav-drawer__lista';
+        lista.appendChild(listaActual);
+      }
+      var fila = document.createElement('li');
       var item = document.createElement('a');
       item.className = 'nav-drawer__item';
       item.href = '#' + pantalla.id;
@@ -1059,14 +1133,16 @@
       icono.setAttribute('aria-hidden', 'true');
       item.appendChild(icono);
       item.appendChild(document.createTextNode(' ' + pantalla.titulo));
-      lista.appendChild(item);
+      fila.appendChild(item);
+      listaActual.appendChild(fila);
     });
   }
 
   function actualizarDrawer(inst) {
     var lista = document.getElementById('drawer-lista');
     if (!lista) return;
-    Array.prototype.forEach.call(lista.children, function (item, indice) {
+    var items = lista.querySelectorAll('.nav-drawer__item');
+    Array.prototype.forEach.call(items, function (item, indice) {
       var pantalla = contenidoActual.pantallas[indice];
       var esActual = indice === inst.indice;
       var visitada = inst.visitadas.indexOf(pantalla.id) !== -1;
@@ -1172,7 +1248,7 @@
     var inst = OVA.state.instantanea();
     actualizarChromePorLayout(pantalla);
     actualizarNavInferior(inst);
-    actualizarBarraSuperior(pantalla);
+    actualizarMigas(pantalla);
     actualizarProgreso(inst);
     actualizarGuardado();
     actualizarReanudar(inst);

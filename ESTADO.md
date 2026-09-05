@@ -2894,7 +2894,9 @@ de C7, antes de cerrar C8/C9.
       `d-rediseno-chrome` desde ahí el 5 sep.
 - [x] **D8 · Capa de assets dummy** — completada 5 sep, sobre
       `d-rediseno-chrome`. Detalle abajo.
-- [ ] D1–D7, D9, D10 · pendientes.
+- [x] **D1 · Jerarquía como dato: Unidad › Cápsula › Tema** — completada
+      5 sep. Detalle abajo.
+- [ ] D2–D7, D9, D10 · pendientes.
 
 **5 sep — D8 cerrada: capa completa de assets dummy en rutas de
 producción exactas, más un hueco real del motor encontrado al mirar el
@@ -3072,3 +3074,108 @@ sobrescribir el archivo en su misma ruta, sin tocar
 Sigue pendiente, sin cambio desde el cierre de C7 (no es parte de D8):
 los cuatro descargables de P34 (`href: '#'`) y la atribución de P03 —
 ambos quedan para C8.
+
+**5 sep — D1 cerrada: Unidad › Cápsula › Tema como dato real, breadcrumb
+en la barra superior y drawer agrupado, sobre `master` (rama
+`d-rediseno-chrome` ya mergeada por D8).**
+
+**Contrato de contenido.** Las 47 pantallas de `content/ova-u1.js`
+suman `unidad` y `capsula`, calculados con un script propio (no a
+mano) contra `unidad_capsula` de `storyboard_data_v2.json` — los
+límites de cada tramo (qué rango de pantallas cae en cada cápsula) se
+verificaron 1 a 1 contra el `id` del storyboard antes de escribir
+nada, no se asumieron. Los valores de `capsula` son literalmente los
+de la tabla de `PLAN-REDISENO.md` §D1 (no se re-derivaron del título
+por código): 15 pantallas quedan con `capsula: null` (las 11 de
+Apertura + las 4 de Cierre). `kicker` no se tocó — sigue siendo lo que
+pintan los layouts dentro de la pantalla, campo aparte del breadcrumb
+del chrome, tal como fija el plan.
+
+**Breadcrumb real, sin enlaces.** Sustituye a `#nav-barra-titulo` (un
+`<p>` plano). Es un único `<nav aria-label="Ubicación"><ol>` de 2 o 3
+ítems — decisión propia no explícita en el plan: ningún nivel
+(unidad/cápsula/tema) tiene una pantalla de destino dentro de la OVA,
+así que son texto, no `<a>` — el índice navegable sigue siendo el
+drawer. Visualmente dos líneas logradas sin un segundo contenedor:
+`.nav-migas__unidad` fuerza el salto con `flex-basis:100%` dentro del
+`flex-wrap:wrap` que ya traía `.nav-migas ol` de la maqueta de T1.5, y
+reusa `.eyebrow.eyebrow--subtle` en vez de inventar un tratamiento de
+texto nuevo (mismo criterio de "generalización, no duplicación" que ya
+dejó T5 documentado). El separador "›" es un `<span aria-hidden="true">`
+real del DOM, no contenido `::after` — un lector de pantalla no
+siempre ignora el `::after` con texto y esto es puramente decorativo.
+`router.js` (`actualizarMigas`) alterna `hidden`/`aria-current` según
+tres casos: sin cápsula (Apertura/Cierre) → solo tema, sin separador;
+con cápsula → "Cápsula › Tema"; primera pantalla de una cápsula (su
+título, quitando el prefijo antes de los dos puntos, coincide con el
+nombre de la cápsula) → solo cápsula como ítem actual, sin repetir el
+mismo texto dos veces. Por debajo de 40em la cápsula se oculta por CSS
+(sigue disponible en el drawer) y el tema queda solo, sin separador
+colgado.
+
+**Bug real encontrado con Playwright, no hipotético — y su arreglo:**
+la primera versión de `.nav-migas__tema` usaba `flex-shrink: 0` (tal
+como sugiere la letra de `PLAN-REDISENO.md` §D1, "el tema flex-shrink:0
+hasta donde alcance") para que nunca se truncara con elipsis, a
+diferencia de la cápsula. A 320px + zoom de texto 200% con un tema
+largo ("Tres familias del mercado") eso desbordaba horizontalmente
+14px (`nav-barra` medía 320px pero `scrollWidth` 413px) — `flex-shrink:
+0` fija el ítem a su ancho de una sola línea sin envolver, y a esa
+combinación de ancho/zoom no había espacio. La regla dura 7 de
+CLAUDE.md (320px + zoom 200% sin scroll horizontal) no es negociable
+así que se resolvió a favor de ella: se quitó `flex-shrink:0`, se
+agregó `min-width:0`, y el tema ahora envuelve a una segunda línea de
+texto en vez de truncarse o desbordar — en anchos normales no hay
+diferencia visual, sigue en una sola línea. La lectura de "hasta donde
+alcance" quedó siendo "nunca corta contenido con elipsis", no
+"nunca ocupa una segunda línea".
+
+**Drawer agrupado.** `construirDrawer()` recorre las pantallas y abre
+un `<h3>` nuevo cada vez que cambia `unidad` y un `<h4>` cada vez que
+cambia `capsula` (detección por tramo contiguo, sin mapa aparte: el
+contenido ya viene ordenado). Sin `<h4>` cuando `capsula` es `null` —
+esas pantallas quedan directo bajo el `<h3>` de la unidad. Encabezados
+reales, no `<div>`, para que un lector de pantalla salte de grupo en
+grupo. `actualizarDrawer()` pasó de iterar `lista.children` (asumía
+que cada hijo era un ítem) a `lista.querySelectorAll('.nav-drawer__item')`,
+porque ahora hay encabezados y `<ul>` intercalados — mismo
+comportamiento de antes (estado completado/actual/pendiente con ícono
+y texto), solo el selector cambió.
+
+**Verificado con Playwright (Python, Chromium cacheado), `src/index.html`
+por `file://`:** los tres casos del breadcrumb confirmados por atributo
+real (no visual) en p01 (portada, sin barra), p12 (primera de cápsula
+1, solo cápsula con `aria-current`), p13 (dentro de la cápsula,
+"Cápsula › Tema" con separador visible) y p32 (Cierre, solo tema, sin
+separador); p36 confirma que la unidad cambia a "Unidad 2" a mitad del
+recorrido con su cápsula real ("Anatomía de un Repo"), no un `null`. El
+drawer real trae los 4 `<h3>` esperados (Unidad 1/2/3/5) y los 7 `<h4>`
+esperados (4 cápsulas + 3 piezas insignia), 47 ítems, y el ítem actual
+correcto tras navegar. Corte de la miga a 320px → oculta cápsula
+confirmado por `display` computado en 320/600 (oculta) y 700/1280
+(visible) — el punto de corte de 40em cae exactamente entre 600 y
+700px. 320px + zoom de texto 200% sin scroll horizontal en los cinco
+casos anteriores tras el arreglo del bug de `flex-shrink`. Cero errores
+de consola en `src/index.html` y en `dev/kitchen-sink.html` (los 3
+`ERR_FILE_NOT_FOUND` de la kitchen sink son la degradación deliberada
+de D8, no nuevos). Cero hex nuevo en los archivos tocados
+(`content/ova-u1.js`, `index.html`, `router.js`, `components.css`,
+`base.css`).
+
+**Overflow horizontal preexistente encontrado, no introducido por
+D1 — documentado, no arreglado aquí:** `dev/kitchen-sink.html` ya
+desbordaba a 320px (398px de `scrollWidth`) antes de esta sesión,
+por `.dato-tabla` (T7, tabla de comparación de rendimientos) —
+confirmado con `git stash` contra el estado anterior a D1. Fuera de
+alcance de esta tarea; lo hereda quien cierre D10 (verificación
+final) o quien retome T7.
+
+**Kitchen sink.** La sección "Migas de pan" pasó de una sola muestra
+de maqueta a las tres formas que pide el cierre de D1: con cápsula,
+sin cápsula, y truncado + la excepción de primera pantalla de cápsula
+lado a lado. La demo de "Barra superior" (T3) reemplazó su
+`<p class="nav-barra__titulo">` por el mismo componente real. La demo
+de "Drawer de índice" (T3) pasó a mostrar la agrupación real
+(`<h3>`/`<h4>`/`<ul>`) en vez de una lista plana de tres ítems. Los
+comentarios que en `base.css`/`components.css` seguían nombrando
+`.nav-barra__titulo` (ya eliminada) se actualizaron a `.nav-migas`.

@@ -140,6 +140,8 @@ window.OVA_CONTENIDO = {
       "id": "p01",
       "layout": "L01",
       "titulo": "Unidad 1: Mercado, bolsa y acciones",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Introducción a la inversión en acciones",
       "cuerpo": [
         "Aprende el contexto básico del mercado accionario, qué es una acción, cómo se generan valorización y dividendos, y qué perfil de riesgo debes reconocer antes de invertir."
@@ -160,6 +162,8 @@ window.OVA_CONTENIDO = {
       "id": "p02",
       "layout": "L04",
       "titulo": "Objetivos de aprendizaje",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "cuerpo": [
         "Al finalizar esta unidad podrás:",
@@ -180,6 +184,8 @@ window.OVA_CONTENIDO = {
       "id": "p03",
       "layout": "L12",
       "titulo": "Invertir empieza por cambiar la forma de ahorrar",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "cuerpo": [
         "En 2024, solo 40% de los adultos en economías en desarrollo ahorró en una cuenta financiera."
@@ -190,6 +196,8 @@ window.OVA_CONTENIDO = {
       "id": "p04",
       "layout": "L02",
       "titulo": "Antes de empezar: mide tu punto de partida",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "cuerpo": [
         "Responde cinco preguntas rápidas. No tienen nota; sirven para que identifiques qué conceptos ya conoces y cuáles debes reforzar durante la unidad."
@@ -206,6 +214,8 @@ window.OVA_CONTENIDO = {
       "id": "p05",
       "layout": "L07",
       "titulo": "Diagnóstico 1",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I01",
@@ -243,6 +253,8 @@ window.OVA_CONTENIDO = {
       "id": "p06",
       "layout": "L07",
       "titulo": "Diagnóstico 2",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I02",
@@ -266,6 +278,8 @@ window.OVA_CONTENIDO = {
       "id": "p07",
       "layout": "L07",
       "titulo": "Diagnóstico 3",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I01",
@@ -303,6 +317,8 @@ window.OVA_CONTENIDO = {
       "id": "p08",
       "layout": "L07",
       "titulo": "Diagnóstico 4",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I02",
@@ -326,6 +342,8 @@ window.OVA_CONTENIDO = {
       "id": "p09",
       "layout": "L07",
       "titulo": "Diagnóstico 5",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I01",
@@ -363,6 +381,8 @@ window.OVA_CONTENIDO = {
       "id": "p10",
       "layout": "L08",
       "titulo": "Tu punto de partida",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "media": {
         "tipo": "avatar",
@@ -423,6 +443,8 @@ window.OVA_CONTENIDO = {
       "id": "p11",
       "layout": "L05",
       "titulo": "Las cuatro cápsulas de la unidad",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "tarjetas": [
         {
@@ -448,6 +470,8 @@ window.OVA_CONTENIDO = {
       "id": "p12",
       "layout": "L02",
       "titulo": "Cápsula 1: ¿En qué mercado estás entrando?",
+      "unidad": "Unidad 1",
+      "capsula": "¿En qué mercado estás entrando?",
       "kicker": "Unidad 1 · Cápsula 1",
       "cuerpo": [
         "Primero ubicaremos las acciones dentro del mercado de capitales y diferenciaremos tres grandes familias: renta variable, renta fija y derivados."
@@ -464,6 +488,8 @@ window.OVA_CONTENIDO = {
       "id": "p13",
       "layout": "L05",
       "titulo": "Tres familias del mercado",
+      "unidad": "Unidad 1",
+      "capsula": "¿En qué mercado estás entrando?",
       "kicker": "Unidad 1 · Cápsula 1",
       "interaccion": {
         "tipo": "I07",
@@ -493,6 +519,8 @@ window.OVA_CONTENIDO = {
       "id": "p14",
       "layout": "L03",
       "titulo": "Dónde encaja la inversión en acciones",
+      "unidad": "Unidad 1",
+      "capsula": "¿En qué mercado estás entrando?",
       "kicker": "Unidad 1 · Cápsula 1",
       "cuerpo": [
         "Las acciones son el instrumento característico de la renta variable. Puedes ganar por valorización o dividendos, pero también puedes perder si el precio baja o si la empresa no distribuye utilidades."
@@ -508,6 +536,8 @@ window.OVA_CONTENIDO = {
       "id": "p15",
       "layout": "L07",
       "titulo": "Comprobación cápsula 1",
+      "unidad": "Unidad 1",
+      "capsula": "¿En qué mercado estás entrando?",
       "kicker": "Unidad 1 · Cápsula 1",
       "interaccion": {
         "tipo": "I01",
@@ -542,6 +572,8 @@ window.OVA_CONTENIDO = {
       "id": "p16",
       "layout": "L02",
       "titulo": "Cápsula 2: Qué es una acción",
+      "unidad": "Unidad 1",
+      "capsula": "Qué es una acción",
       "kicker": "Unidad 1 · Cápsula 2",
       "cuerpo": [
         "Ahora veremos por qué una acción te convierte en propietario de una fracción de una empresa y qué implica ser accionista."
@@ -558,6 +590,8 @@ window.OVA_CONTENIDO = {
       "id": "p17",
       "layout": "L02",
       "titulo": "Propiedad fraccionada",
+      "unidad": "Unidad 1",
+      "capsula": "Qué es una acción",
       "kicker": "Unidad 1 · Cápsula 2",
       "cuerpo": [
         "Ejemplo: si Andina Cementos emite 1.000.000 de acciones y tú compras 100, tienes una participación pequeña, pero real, en la compañía."
@@ -573,6 +607,8 @@ window.OVA_CONTENIDO = {
       "id": "p18",
       "layout": "L05",
       "titulo": "Tres ventajas de ser accionista",
+      "unidad": "Unidad 1",
+      "capsula": "Qué es una acción",
       "kicker": "Unidad 1 · Cápsula 2",
       "tarjetas": [
         {
@@ -594,6 +630,8 @@ window.OVA_CONTENIDO = {
       "id": "p19",
       "layout": "L07",
       "titulo": "Comprobación cápsula 2",
+      "unidad": "Unidad 1",
+      "capsula": "Qué es una acción",
       "kicker": "Unidad 1 · Cápsula 2",
       "interaccion": {
         "tipo": "I02",
@@ -614,6 +652,8 @@ window.OVA_CONTENIDO = {
       "id": "p20",
       "layout": "L02",
       "titulo": "Cápsula 3: Valorización y dividendo",
+      "unidad": "Unidad 1",
+      "capsula": "Valorización y dividendo",
       "kicker": "Unidad 1 · Cápsula 3",
       "cuerpo": [
         "Esta cápsula explica las dos fuentes básicas de retorno en acciones: vender a mayor precio y recibir parte de utilidades distribuidas."
@@ -630,6 +670,8 @@ window.OVA_CONTENIDO = {
       "id": "p21",
       "layout": "L02",
       "titulo": "El caso Petrocaribe: de $1.000 a $1.500",
+      "unidad": "Unidad 1",
+      "capsula": "Valorización y dividendo",
       "kicker": "Unidad 1 · Cápsula 3",
       "cuerpo": [
         "Compras 500 acciones de Petrocaribe a $1.000 cada una. Ocho meses después, el precio sube a $1.500. La diferencia por acción es $500 y la valorización es 50%."
@@ -645,6 +687,8 @@ window.OVA_CONTENIDO = {
       "id": "p22",
       "layout": "L06",
       "titulo": "Calcula tú la valorización",
+      "unidad": "Unidad 1",
+      "capsula": "Valorización y dividendo",
       "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {
         "tipo": "I10",
@@ -729,6 +773,8 @@ window.OVA_CONTENIDO = {
       "id": "p23",
       "layout": "L02",
       "titulo": "El dividendo: reparto de utilidades",
+      "unidad": "Unidad 1",
+      "capsula": "Valorización y dividendo",
       "kicker": "Unidad 1 · Cápsula 3",
       "cuerpo": [
         "Banco del Sur genera utilidades. La asamblea decide qué porcentaje se reparte. El dividendo por acción se calcula dividiendo el monto a repartir entre el número de acciones."
@@ -744,6 +790,8 @@ window.OVA_CONTENIDO = {
       "id": "p24",
       "layout": "L06",
       "titulo": "Calcula el dividendo por acción",
+      "unidad": "Unidad 1",
+      "capsula": "Valorización y dividendo",
       "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {
         "tipo": "I10",
@@ -826,6 +874,8 @@ window.OVA_CONTENIDO = {
       "id": "p25",
       "layout": "L07",
       "titulo": "Comprobación cápsula 3",
+      "unidad": "Unidad 1",
+      "capsula": "Valorización y dividendo",
       "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {
         "tipo": "I01",
@@ -864,6 +914,8 @@ window.OVA_CONTENIDO = {
       "id": "p26",
       "layout": "L02",
       "titulo": "Cápsula 4: Tipos de acciones y perfil",
+      "unidad": "Unidad 1",
+      "capsula": "Tipos de acciones y perfil",
       "kicker": "Unidad 1 · Cápsula 4",
       "cuerpo": [
         "Ahora conectaremos los derechos de las acciones con tu perfil de riesgo y tus objetivos de inversión."
@@ -880,6 +932,8 @@ window.OVA_CONTENIDO = {
       "id": "p27",
       "layout": "L03",
       "titulo": "Derechos políticos y económicos",
+      "unidad": "Unidad 1",
+      "capsula": "Tipos de acciones y perfil",
       "kicker": "Unidad 1 · Cápsula 4",
       "cuerpo": [
         "Derechos políticos: participación y voto cuando aplica.",
@@ -896,6 +950,8 @@ window.OVA_CONTENIDO = {
       "id": "p28",
       "layout": "L05",
       "titulo": "Ordinarias frente a preferenciales",
+      "unidad": "Unidad 1",
+      "capsula": "Tipos de acciones y perfil",
       "kicker": "Unidad 1 · Cápsula 4",
       "interaccion": {
         "tipo": "I08",
@@ -936,6 +992,8 @@ window.OVA_CONTENIDO = {
       "id": "p29",
       "layout": "L05",
       "titulo": "Los tres perfiles de riesgo",
+      "unidad": "Unidad 1",
+      "capsula": "Tipos de acciones y perfil",
       "kicker": "Unidad 1 · Cápsula 4",
       "tarjetas": [
         {
@@ -958,6 +1016,8 @@ window.OVA_CONTENIDO = {
       "id": "p30",
       "layout": "L06",
       "titulo": "¿Cuál es tu perfil?",
+      "unidad": "Unidad 1",
+      "capsula": "Tipos de acciones y perfil",
       "kicker": "Unidad 1 · Cápsula 4",
       "interaccion": {
         "tipo": "I13",
@@ -1067,6 +1127,8 @@ window.OVA_CONTENIDO = {
       "id": "p31",
       "layout": "L08",
       "titulo": "Tu resultado",
+      "unidad": "Unidad 1",
+      "capsula": "Tipos de acciones y perfil",
       "kicker": "Unidad 1 · Cápsula 4",
       "media": {
         "tipo": "avatar",
@@ -1114,6 +1176,8 @@ window.OVA_CONTENIDO = {
       "id": "p32",
       "layout": "L09",
       "titulo": "Ideas clave de la unidad",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Cierre",
       "cuerpo": [
         "Las acciones pertenecen a la renta variable.",
@@ -1128,6 +1192,8 @@ window.OVA_CONTENIDO = {
       "id": "p33",
       "layout": "L02",
       "titulo": "Las tres bolsas de nuam",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Cierre",
       "cuerpo": [
         "Colombia: Bolsa de Valores de Colombia | Supervisor: SFC | Depósito: Deceval.",
@@ -1145,6 +1211,8 @@ window.OVA_CONTENIDO = {
       "id": "p34",
       "layout": "L11",
       "titulo": "Recursos para llevarte",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Cierre",
       "cuerpo": [
         "Además del contenido de la unidad, tendrás cuatro herramientas para usar después."
@@ -1181,6 +1249,8 @@ window.OVA_CONTENIDO = {
       "id": "p35",
       "layout": "L10",
       "titulo": "Qué sigue después de esta unidad",
+      "unidad": "Unidad 1",
+      "capsula": null,
       "kicker": "Unidad 1 · Cierre",
       "cuerpo": [
         "En la siguiente unidad profundizarás en conceptos del mercado bursátil: mercado primario y secundario, operaciones de contado, repos, transferencia temporal de valores y actores del ecosistema."
@@ -1201,6 +1271,8 @@ window.OVA_CONTENIDO = {
       "id": "p36",
       "layout": "L13",
       "titulo": "Vista previa Unidad 2: Anatomía de un Repo",
+      "unidad": "Unidad 2",
+      "capsula": "Anatomía de un Repo",
       "kicker": "Unidad 2 · Pieza insignia Repo",
       "cuerpo": [
         "Objetivo: convertir una explicación densa en una línea de tiempo recorrible de tres momentos: inicio, plazo y regreso."
@@ -1217,6 +1289,8 @@ window.OVA_CONTENIDO = {
       "id": "p37",
       "layout": "L06",
       "titulo": "Repo paso a paso",
+      "unidad": "Unidad 2",
+      "capsula": "Anatomía de un Repo",
       "kicker": "Unidad 2 · Pieza insignia Repo",
       "interaccion": {
         "tipo": "I09",
@@ -1254,6 +1328,8 @@ window.OVA_CONTENIDO = {
       "id": "p38",
       "layout": "L07",
       "titulo": "Comprobación Repo",
+      "unidad": "Unidad 2",
+      "capsula": "Anatomía de un Repo",
       "kicker": "Unidad 2 · Pieza insignia Repo",
       "interaccion": {
         "tipo": "I02",
@@ -1274,6 +1350,8 @@ window.OVA_CONTENIDO = {
       "id": "p39",
       "layout": "L09",
       "titulo": "Cierre pieza Repo",
+      "unidad": "Unidad 2",
+      "capsula": "Anatomía de un Repo",
       "kicker": "Unidad 2 · Pieza insignia Repo",
       "cuerpo": [
         "El repo busca liquidez.",
@@ -1287,6 +1365,8 @@ window.OVA_CONTENIDO = {
       "id": "p40",
       "layout": "L13",
       "titulo": "Vista previa Unidad 3: Tu primera orden",
+      "unidad": "Unidad 3",
+      "capsula": "Tu primera orden",
       "kicker": "Unidad 3 · Pieza insignia Orden",
       "cuerpo": [
         "Objetivo: practicar la diferencia entre orden a mercado y orden límite antes de enviar una instrucción real."
@@ -1303,6 +1383,8 @@ window.OVA_CONTENIDO = {
       "id": "p41",
       "layout": "L03",
       "titulo": "Mercado vs límite",
+      "unidad": "Unidad 3",
+      "capsula": "Tu primera orden",
       "kicker": "Unidad 3 · Pieza insignia Orden",
       "cuerpo": [
         "Orden a mercado: busca ejecución rápida al mejor precio disponible.",
@@ -1319,6 +1401,8 @@ window.OVA_CONTENIDO = {
       "id": "p42",
       "layout": "L06",
       "titulo": "Simula tu primera orden",
+      "unidad": "Unidad 3",
+      "capsula": "Tu primera orden",
       "kicker": "Unidad 3 · Pieza insignia Orden",
       "interaccion": {
         "tipo": "I11",
@@ -1365,6 +1449,8 @@ window.OVA_CONTENIDO = {
       "id": "p43",
       "layout": "L08",
       "titulo": "Resultado de la orden",
+      "unidad": "Unidad 3",
+      "capsula": "Tu primera orden",
       "kicker": "Unidad 3 · Pieza insignia Orden",
       "media": {
         "tipo": "avatar",
@@ -1413,6 +1499,8 @@ window.OVA_CONTENIDO = {
       "id": "p44",
       "layout": "L13",
       "titulo": "Vista previa Unidad 5: Arma tu portafolio",
+      "unidad": "Unidad 5",
+      "capsula": "Arma tu portafolio",
       "kicker": "Unidad 5 · Pieza insignia Portafolio",
       "cuerpo": [
         "Objetivo: repartir capital entre tres emisores ficticios y recibir retroalimentación según el perfil obtenido en P30."
@@ -1429,6 +1517,8 @@ window.OVA_CONTENIDO = {
       "id": "p45",
       "layout": "L03",
       "titulo": "Tres emisores ficticios",
+      "unidad": "Unidad 5",
+      "capsula": "Arma tu portafolio",
       "kicker": "Unidad 5 · Pieza insignia Portafolio",
       "cuerpo": [
         "Petrocaribe: alto riesgo, sensible a precios de energía.",
@@ -1446,6 +1536,8 @@ window.OVA_CONTENIDO = {
       "id": "p46",
       "layout": "L06",
       "titulo": "Distribuye $10.000",
+      "unidad": "Unidad 5",
+      "capsula": "Arma tu portafolio",
       "kicker": "Unidad 5 · Pieza insignia Portafolio",
       "interaccion": {
         "tipo": "I12",
@@ -1552,6 +1644,8 @@ window.OVA_CONTENIDO = {
       "id": "p47",
       "layout": "L08",
       "titulo": "Retro de portafolio",
+      "unidad": "Unidad 5",
+      "capsula": "Arma tu portafolio",
       "kicker": "Unidad 5 · Pieza insignia Portafolio",
       "media": {
         "tipo": "avatar",
