@@ -8,14 +8,19 @@ sirve como sitio estático en URL directa. Entrega: 8 de septiembre de 2026.
 
 - `CLAUDE.md` — las reglas. Cambia solo cuando cambia una regla.
 - `PLAN.md` — cómo se construyó el motor (T1–T9). Cerrado el 29 de agosto.
-- `PLAN-CONTENIDO.md` — **el plan vigente**: montar el diseño instruccional de
-  Jose (47 pantallas) sobre el motor. Tareas C0–C9.
+- `PLAN-CONTENIDO.md` — montar el diseño instruccional de Jose (47 pantallas)
+  sobre el motor. Tareas C0–C9; C0–C7 cerradas, C8 y C9 pendientes.
+- `PLAN-REDISENO.md` — **el plan vigente** (5 sep): jerarquía Unidad › Cápsula ›
+  Tema, barra superior inverse, progreso en %, preferencias del curso,
+  autolocución, dos pantallas nuevas y movimiento. Tareas D0–D10. Su sección 0
+  lleva las decisiones ya tomadas: no se re-discuten.
 - `ESTADO.md` — qué está hecho y qué se decidió. Se actualiza al cerrar cada sesión.
 - `disenoInstruccional/` — el paquete de Jose (v2, 3 sep). Es la fuente del
   contenido: no se reescribe, no se recorta, no se sustituye una interacción
   por otra más barata. Donde el motor no llega, se amplía el motor.
 
-Lee `ESTADO.md` y `PLAN-CONTENIDO.md` al empezar cualquier sesión.
+Lee `ESTADO.md` y `PLAN-REDISENO.md` al empezar cualquier sesión (y
+`PLAN-CONTENIDO.md` si tocas contenido, catálogos o empaquetado).
 
 ## Reglas duras
 
