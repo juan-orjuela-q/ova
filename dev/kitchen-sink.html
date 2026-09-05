@@ -416,6 +416,14 @@
         </div>
       </div>
 
+      <div class="ks-layout-bloque" id="c-botones-inverse">
+        <span class="ks-layout-bloque__etiqueta">Botón — outline inverse (D2, barra superior)</span>
+        <p class="ks-intro">Distinto de <code>.boton--blanco.boton--outline</code> de arriba: borde <code>--border-inverse</code> (gris 700), no blanco puro, y el hover pasa a gris 800 en vez de a relleno claro — es el que usa «Reanudar» en <code>.nav-barra</code>.</p>
+        <div class="ks-layout-marco ks-muestras ks-muestras--inverse">
+          <button class="boton boton--outline boton--inverse" type="button"><span class="boton__icono" aria-hidden="true">play_circle</span> Reanudar</button>
+        </div>
+      </div>
+
       <div class="ks-layout-bloque" id="c-botones-naranja">
         <span class="ks-layout-bloque__etiqueta">Botón — naranja (solo talla grande)</span>
         <p class="ks-intro">No existe una variante pequeña: <code>.boton--naranja</code> sin <code>.boton--grande</code> cae al relleno negro por defecto en vez de romper el contraste — ver la regla del botón naranja pequeño en CLAUDE.md.</p>
@@ -553,7 +561,7 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-nav-barra">
-        <span class="ks-layout-bloque__etiqueta">Barra superior — cableada en T3</span>
+        <span class="ks-layout-bloque__etiqueta">Barra superior — cableada en T3, inverse desde D2</span>
         <div class="ks-layout-marco">
           <header class="nav-barra">
             <button class="boton-icono" type="button" aria-expanded="false"><span class="icono" aria-hidden="true">menu</span><span class="u-oculto-visualmente">Abrir índice de la unidad</span></button>
@@ -576,20 +584,24 @@
                 <span class="barra-progreso__relleno" style="transform: scaleX(0.38);"></span>
               </div>
             </div>
+            <button class="boton boton--outline boton--inverse" type="button">
+              <span class="boton__icono" aria-hidden="true">play_circle</span> Reanudar
+            </button>
             <p class="nav-barra__guardado"><span class="icono" aria-hidden="true">cloud_done</span> Guardado</p>
+            <button class="boton-icono" type="button"><span class="icono" aria-hidden="true">fullscreen</span><span class="u-oculto-visualmente">Pantalla completa</span></button>
           </header>
         </div>
         <p class="ks-intro">
-          El título plano de T3 (<code>.nav-barra__titulo</code>) se reemplazó en D1 por la miga de pan real (<code>.nav-migas</code>, sección propia arriba con sus tres estados) — mismo componente, no una versión aparte para la barra.
+          El título plano de T3 (<code>.nav-barra__titulo</code>) se reemplazó en D1 por la miga de pan real (<code>.nav-migas</code>, sección propia arriba con sus tres estados) — mismo componente, no una versión aparte para la barra. La sección de migas de arriba se queda sobre superficie clara a propósito: es donde se documentan sus tres estados, y solo la instancia real dentro de <code>.nav-barra</code> pasa a los tonos de superficie inversa de D2 (scoped, ver el comentario junto a <code>.nav-migas__separador</code> en <code>components.css</code>).
         </p>
         <p class="ks-intro">
-          El relleno naranja de la barra de progreso usa <code>--surface-subtle-2</code> (gris 100) como track, no <code>--surface-muted</code> (gris 200): CLAUDE.md prohíbe naranja de relleno del gris 200 al 600. El avance anima con <code>transform: scaleX()</code> en <code>--dur-slow</code> (ítem 4 del inventario de movimiento) — nunca <code>width</code>.
+          D2 pasó la barra a <code>--surface-inverse</code>. El track de la barra de progreso pasó de <code>--surface-subtle-2</code> (gris 100) a gris 800 —naranja 500 sobre gris 800 mide 3.9:1, cumple el 3:1 de componente no textual—, el relleno sigue siendo naranja 500 y sigue animando con <code>transform: scaleX()</code> en <code>--dur-slow</code> (ítem 4 del inventario de movimiento), nunca <code>width</code>. El porcentaje del texto (D3, todavía pendiente) no es parte de esta tarea.
         </p>
         <p class="ks-intro">
-          El botón de reanudar (<code>#nav-reanudar</code> en <code>index.html</code>) no tiene demo estática aquí: solo existe cuando hay una pantalla más avanzada que la actual, y eso depende de <code>state.js</code>. Aparece y se prueba en <a href="../src/index.html">src/index.html</a> volviendo con el drawer a una pantalla ya vista.
+          El botón de reanudar usa la variante nueva <code>.boton--outline.boton--inverse</code> (borde <code>--border-inverse</code>, etiqueta blanca) en vez de <code>.boton--outline</code> a secas —ese outline por defecto es borde y texto negro, invisible sobre esta barra—. En <code>index.html</code> solo aparece cuando hay una pantalla más avanzada que la actual (depende de <code>state.js</code>); se prueba de verdad en <a href="../src/index.html">src/index.html</a> volviendo con el drawer a una pantalla ya vista.
         </p>
         <p class="ks-intro">
-          El indicador de guardado también cambia de ícono y texto —nunca solo de color— si <code>localStorage</code> no está disponible: <code>cloud_off</code> / «No se pudo guardar en este dispositivo».
+          El indicador de guardado también cambia de ícono y texto —nunca solo de color— si <code>localStorage</code> no está disponible: <code>cloud_off</code> / «No se pudo guardar en este dispositivo». Su color y el de la unidad en la miga pasan a <code>--text-on-inverse-2</code> (gris 400, texto informativo válido sobre inverse).
         </p>
       </div>
 

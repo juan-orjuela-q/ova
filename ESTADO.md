@@ -2896,7 +2896,8 @@ de C7, antes de cerrar C8/C9.
       `d-rediseno-chrome`. Detalle abajo.
 - [x] **D1 · Jerarquía como dato: Unidad › Cápsula › Tema** — completada
       5 sep. Detalle abajo.
-- [ ] D2–D7, D9, D10 · pendientes.
+- [x] **D2 · Barra superior inverse** — completada 5 sep. Detalle abajo.
+- [ ] D3–D7, D9, D10 · pendientes.
 
 **5 sep — D8 cerrada: capa completa de assets dummy en rutas de
 producción exactas, más un hueco real del motor encontrado al mirar el
@@ -3179,3 +3180,113 @@ de "Drawer de índice" (T3) pasó a mostrar la agrupación real
 (`<h3>`/`<h4>`/`<ul>`) en vez de una lista plana de tres ítems. Los
 comentarios que en `base.css`/`components.css` seguían nombrando
 `.nav-barra__titulo` (ya eliminada) se actualizaron a `.nav-migas`.
+
+**5 sep — D2 cerrada: barra superior a `--surface-inverse`, con un
+hallazgo de contraste real que obligó a apartarse de la letra del
+plan en un punto — documentado, no silenciado.**
+
+**Qué se tocó, todo en `components.css` salvo lo señalado:**
+
+- **`.nav-barra`** pasa de `--surface-default`/`--border-default` a
+  `--surface-inverse`/`--border-inverse`. El borde es un divisor
+  decorativo (como `.regla`), no identifica un componente por sí
+  solo —el cambio de color de fondo ya separa la barra del contenido—
+  así que no le aplica el mínimo de 3:1 de WCAG 1.4.11.
+- **`.nav-migas` repintado, scoped a `.nav-barra .nav-migas`, no en las
+  clases base.** `.nav-migas` sigue siendo el mismo componente que la
+  kitchen sink muestra suelto sobre superficie clara (sección "Migas
+  de pan", documentando sus tres estados desde D1) — repintar la clase
+  base habría dejado esa demo ilegible. Unidad, cápsula y separador
+  pasan a `--text-on-inverse-2` (gris 400); tema y el ítem con
+  `aria-current="page"` pasan a `--text-on-inverse` (blanco).
+- **`.nav-barra__progreso`/`.nav-barra__guardado`** de `--text-secondary`
+  a `--text-on-inverse-2`, tal como pide el plan.
+- **`.nav-barra .boton-icono`** (scoped, no la clase base — la reutilizan
+  el drawer y el modal sobre superficie clara): ícono blanco, hover
+  gris 800, active gris 700. Cubre `#drawer-abrir` y
+  `#nav-pantalla-completa`, los dos únicos `.boton-icono` que viven
+  dentro de la barra.
+- **`.barra-progreso`** (track) de `--surface-subtle-2` (gris 100) a
+  gris 800 directo en la clase base, no scoped: el componente solo
+  vive dentro de `.nav-barra` en todo el proyecto (verificado por
+  grep), no hacía falta duplicar la regla. Naranja 500 sobre gris 800
+  mide 4.29:1 (por encima del 3:1 de componente no textual; el 3.9:1
+  que estimaba `PLAN-REDISENO.md` §D2 era una cifra a ojo, la medida
+  real con la fórmula de contraste de WCAG es la de arriba). El
+  relleno no cambió.
+- **`.boton--outline.boton--inverse`**, modificador nuevo — lo usa
+  «Reanudar» (`#nav-reanudar`, `index.html`), el único
+  `.boton--outline` que vive dentro de la barra (el de «Anterior» en
+  la barra inferior y los de quiz.js siguen en su outline negro de
+  siempre, sobre superficie clara, sin tocar).
+
+**Hallazgo real de contraste, no hipotético — y por qué el código
+final no dice lo mismo que el texto del plan.** `PLAN-REDISENO.md`
+§D2 especificaba el borde de esta variante como `--border-inverse`
+(gris 700). Medido de verdad contra `--surface-inverse` (gris 950) con
+la fórmula de contraste relativo de WCAG dio **1.81:1** — no llega al
+3:1 que exige 1.4.11 para el borde de un botón outline, que es
+exactamente el rasgo visual que identifica dónde está el control (sin
+relleno de por medio). `--border-inverse` está pensado para
+separadores sobre fondos menos oscuros que este; contra gris 950 se
+queda corto. Regla dura 2 de `CLAUDE.md` ("cada componente nace
+accesible o no se da por terminado") pesa más que la letra literal del
+plan, así que el borde se resolvió con `--nuam-grey-400` en su lugar
+(el mismo valor que ya usa `--text-on-inverse-2`): **7.80:1**, de sobra
+por encima del mínimo, sin blanco puro (que sí habría cumplido pero
+se sentía como más peso visual del que pedía un botón secundario). La
+etiqueta y el ícono del botón siguen siendo blancos, tal como pedía el
+plan.
+
+**Verificado con Playwright (Python, Chromium), dos páginas:**
+
+- Los cinco pares de contraste que el cierre de D2 pide anotar, todos
+  medidos con la fórmula real de WCAG (no estimados): unidad/separador
+  sobre la barra 7.80:1, tema y `aria-current` 19.68:1, guardado
+  7.80:1, «Reanudar» (texto) 19.68:1 y (borde, tras el arreglo de
+  arriba) 7.80:1, ícono de `.boton-icono` 19.68:1, relleno naranja de
+  la barra de progreso sobre su track 4.29:1. Los seis primeros son
+  pares de texto/ícono (mínimo 4.5:1 o 3:1 según tamaño); el último es
+  el 3:1 de componente no textual — todos cumplen.
+- El anillo de foco no se tocó y sigue naranja 500 sobre gris 950;
+  confirmado con Tab real (no `.focus()` programático — un intento
+  inicial con `.focus()` synthetic reportaba `outline: none` falso,
+  purely un artefacto de que Chromium no siempre resuelve
+  `:focus-visible` para foco disparado por script; con Tab de verdad
+  desde el link de saltar hasta `#drawer-abrir` y `#nav-pantalla-
+  completa` en `src/index.html` el anillo aparece sólido en los dos).
+- La sección "Migas de pan" de la kitchen sink (demos sueltas, fuera
+  de `.nav-barra`) se verificó sin cambios tras el scoping: la unidad
+  ahí sigue en naranja 700 (`rgb(204, 52, 0)`), no en gris — confirma
+  que el repintado de D2 no se escapó a esa demo.
+- Hover real (no solo CSS leído) sobre `#drawer-abrir` y «Reanudar» en
+  la kitchen sink: los dos pasan a `rgb(39, 39, 39)` (gris 800) al
+  pasar el mouse.
+- 320px sin scroll horizontal en `src/index.html` (incluida una
+  pantalla con la barra visible, `p02`, con y sin un proxy de zoom de
+  texto al 200%); 1280px con el mismo proxy sin desbordar. Cero
+  errores de consola nuevos en `src/index.html`. Cero hex nuevo en los
+  tres archivos tocados (`git diff` filtrado contra `#[0-9a-f]{3,8}`,
+  cero coincidencias).
+- Los dos fallos que sí sigue reportando la kitchen sink no son de
+  esta tarea: el desborde a 320px de `.dato-tabla` (documentado como
+  preexistente en el cierre de D1) y los tres `ERR_FILE_NOT_FOUND`
+  deliberados de la demo de degradación de avatar (D8). Ninguno de los
+  dos cambió con D2.
+
+**Kitchen sink.** El bloque "Barra superior" (T3/D1) ahora muestra los
+seis controles reales de la barra en su variante inverse, no solo
+tres: se agregaron el botón de «Reanudar» (antes documentado como "sin
+demo estática aquí") y el de pantalla completa, en el mismo orden que
+`index.html`. El bloque de botones ganó una entrada nueva, "Botón —
+outline inverse (D2, barra superior)", junto a las de negro/blanco/
+naranja que ya existían — mismo criterio de "cada modificador nuevo se
+documenta en la matriz". Los tres párrafos de `ks-intro` de esa
+sección se reescribieron para explicar los tokens nuevos en vez de los
+de T3.
+
+**Sigue pendiente para D3** (no tocado aquí, a propósito): el texto de
+`.nav-barra__progreso` sigue diciendo "N / M pantallas" y el
+`aria-label` sigue siendo "Progreso de la unidad" — D2 es solo el
+repintado de la barra, D3 es quien cambia ese texto a porcentaje y
+recalcula el denominador.

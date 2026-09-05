@@ -161,6 +161,29 @@
   border-color: var(--nuam-orange-600);
 }
 
+/* Outline inverse (D2): la usa «Reanudar» en la barra superior, ahora
+   sobre --surface-inverse. PLAN-REDISENO.md §D2 proponía --border-
+   inverse (gris 700) para este borde, pero medido contra --surface-
+   inverse (gris 950) da 1.81:1 — no llega al 3:1 de componente no
+   textual que exige WCAG 1.4.11 (--border-inverse es gris 700 sobre
+   gris 700-ish de dividers claros, no pensado para esta combinación
+   tan oscura). Se usa --nuam-grey-400 en su lugar (7.8:1, el mismo
+   valor que --text-on-inverse-2): sigue siendo un borde discreto, no
+   blanco puro como `.boton--blanco`, pero cumple contraste de verdad.
+   El hover reutiliza el mismo gris 800 que el resto de los controles
+   de esta barra (`.boton-icono` más abajo), no un relleno claro. */
+.boton--outline.boton--inverse {
+  color: var(--text-on-inverse);
+  border-color: var(--nuam-grey-400);
+  background: transparent;
+}
+.boton--outline.boton--inverse:hover {
+  background: var(--nuam-grey-800);
+}
+.boton--outline.boton--inverse:active {
+  background: var(--nuam-grey-700);
+}
+
 /* ---- Icono genérico (T1.5, componentes) -------------------------------
    Independiente de `.boton__icono` (que además anima el translateX en
    hover del botón): esta es la base tipográfica de Material Symbols
@@ -369,6 +392,31 @@
   color: var(--text-tertiary);
 }
 
+/* D2: la barra superior pasó a --surface-inverse; `.nav-migas` en
+   cambio sigue siendo el mismo componente que la kitchen sink muestra
+   suelto sobre superficie clara (sección "Migas de pan", fuera de
+   `.nav-barra`) para documentar sus tres estados — por eso el
+   repintado va scoped a `.nav-barra .nav-migas`, no a las clases base:
+   cambiar el color base habría dejado esa demo ilegible. --text-on-
+   inverse-2 (gris 400) para lo secundario (unidad, cápsula, separador)
+   y --text-on-inverse (blanco) para lo que ya era texto primario
+   (tema, o la cápsula cuando hace de ítem actual). */
+.nav-barra .nav-migas__unidad {
+  color: var(--text-on-inverse-2);
+}
+.nav-barra .nav-migas__capsula {
+  color: var(--text-on-inverse-2);
+}
+.nav-barra .nav-migas__tema {
+  color: var(--text-on-inverse);
+}
+.nav-barra .nav-migas [aria-current="page"] {
+  color: var(--text-on-inverse);
+}
+.nav-barra .nav-migas__separador {
+  color: var(--text-on-inverse-2);
+}
+
 /* Por debajo de 40em la miga colapsa a una sola cosa por línea: la
    unidad arriba (ya es su propia línea) y el tema justo debajo, sin la
    cápsula —sigue disponible en el drawer— ni un separador colgado sin
@@ -438,21 +486,24 @@
   opacity: 1;
 }
 
-/* ---- Barra de progreso (T3, componentes) -------------------------------
+/* ---- Barra de progreso (T3, componentes; track en D2) ------------------
    div propio con role="progressbar", no <progress> nativo: el ítem 4 del
    inventario de movimiento de CLAUDE.md exige animar el avance con
    --dur-slow, y solo transform/opacity pueden animarse — ancho fijo al
    100%, el relleno real lo da `transform: scaleX()` en JS (router.js),
-   nunca `width`. El track es --surface-subtle-2 (gris 100) a propósito:
-   CLAUDE.md prohíbe naranja de relleno sobre superficies del gris 200 al
-   600, y --surface-muted (gris 200) cae justo en ese rango. */
+   nunca `width`. El track era --surface-subtle-2 (gris 100) porque
+   CLAUDE.md prohíbe naranja de relleno del gris 200 al 600; D2 pasó la
+   barra superior —único lugar donde vive este componente— a
+   --surface-inverse, así que el track pasa a gris 800: naranja 500
+   sobre gris 800 mide 3.9:1, cumple el 3:1 de componente no textual
+   (el relleno sigue siendo naranja 500, sin cambio). */
 .barra-progreso {
   position: relative;
   width: 8rem;
   max-width: 30vw;
   height: 6px;
   border-radius: var(--r-pill);
-  background: var(--surface-subtle-2);
+  background: var(--nuam-grey-800);
   overflow: hidden;
 }
 .barra-progreso__relleno {
@@ -466,11 +517,20 @@
   transition: transform var(--dur-slow) var(--ease-out);
 }
 
-/* ---- Barra superior (T3, componentes) ----------------------------------
+/* ---- Barra superior (T3, componentes; inverse desde D2) ----------------
    Landmark <header> (banner) cableado por router.js: título, botón del
    drawer, progreso, reanudar y guardado. --nav-reanudar se oculta con
    `hidden`, no con una clase de visibilidad, para salir también del
-   orden de tabulación cuando no aplica. */
+   orden de tabulación cuando no aplica.
+
+   D2 pasó el fondo a --surface-inverse para separar "dónde estoy"
+   (arriba, negro) de "cómo avanzo" (abajo, la barra inferior sigue
+   clara — no se toca). El borde pasa de --border-default a
+   --border-inverse por la misma razón que el resto de la cadena: un
+   gris 200 sobre gris 950 no aporta nada, --border-inverse (gris 700)
+   es el token que CLAUDE.md reserva exactamente para esto. El anillo
+   de foco no cambia: naranja 500 sobre gris 950 mide 5.65:1, ya
+   cumplía antes de este cambio. */
 .nav-barra {
   display: flex;
   align-items: center;
@@ -478,8 +538,8 @@
   gap: var(--sp-2) var(--sp-4);
   padding-block: var(--sp-3);
   padding-inline: var(--sp-4);
-  background: var(--surface-default);
-  border-block-end: 1px solid var(--border-default);
+  background: var(--surface-inverse);
+  border-block-end: 1px solid var(--border-inverse);
   /* C2: hijo del grid de body desde el marco fijo (base.css) — sin esto
      hereda el mínimo automático de grid (min-content de su contenido
      más ancho) y se niega a encoger por debajo de eso a 320px, aunque
@@ -491,15 +551,31 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  color: var(--text-secondary);
+  color: var(--text-on-inverse-2);
   font: var(--text-caption);
 }
 .nav-barra__guardado {
   display: flex;
   align-items: center;
   gap: var(--sp-1);
-  color: var(--text-secondary);
+  color: var(--text-on-inverse-2);
   font: var(--text-caption);
+}
+
+/* Botón de solo ícono dentro de la barra: `.boton-icono` a secas asume
+   --text-primary sobre una superficie clara (drawer, modal, chrome de
+   video la usan así) — scoped a `.nav-barra` para no repintar esos
+   otros usos. Icono blanco, hover gris 800 (mismo par que el track de
+   la barra de progreso de aquí arriba y que `.boton--outline.boton--
+   inverse`, no un color nuevo). */
+.nav-barra .boton-icono {
+  color: var(--text-on-inverse);
+}
+.nav-barra .boton-icono:hover {
+  background: var(--nuam-grey-800);
+}
+.nav-barra .boton-icono:active {
+  background: var(--nuam-grey-700);
 }
 
 /* ---- Barra inferior (T2, cableada; T3 no la reescribe) ----------------- */
