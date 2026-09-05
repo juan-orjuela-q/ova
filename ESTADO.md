@@ -2880,3 +2880,195 @@ demo, todo está documentado también en el encabezado de
   Moodle) contra las 47 pantallas reales en vez del contenido de
   prueba — la primera vez que el paquete completo se prueba con
   contenido de producción de punta a punta.
+
+---
+
+## PLAN-REDISENO.md (D0–D10)
+
+Plan vigente desde el 5 de septiembre — ver `PLAN-REDISENO.md` para las
+diez tareas y el porqué de cada decisión de la sección 0. Corre después
+de C7, antes de cerrar C8/C9.
+
+- [x] **D0 · Higiene de rama** — el árbol ya estaba limpio (C7 se
+      mergeó directo a `master`, commit `df90e89`); se abrió
+      `d-rediseno-chrome` desde ahí el 5 sep.
+- [x] **D8 · Capa de assets dummy** — completada 5 sep, sobre
+      `d-rediseno-chrome`. Detalle abajo.
+- [ ] D1–D7, D9, D10 · pendientes.
+
+**5 sep — D8 cerrada: capa completa de assets dummy en rutas de
+producción exactas, más un hueco real del motor encontrado al mirar el
+curso completo por primera vez (L04 nunca montaba `pantalla.media`,
+resuelto).**
+
+**Por qué esta tarea va antes que las demás del plan (sección 0, punto
+2):** de los 28 archivos de media que el contenido real ya referenciaba,
+solo existían los 4 PNG de referencia de avatar — ninguna infografía,
+ningún motion, ningún audio de avatar. El curso completo degradaba a
+placeholder o a transcripción sola; no se podía *mirar*, y mirarlo es lo
+que este plan necesita para las decisiones de D1–D9. Nada de esto es
+producción final: es la capa que hace que sustituir sea sobrescribir un
+archivo, no volver a tocar `content/ova-u1.js`.
+
+**Herramientas de esta sesión, ninguna nueva en el proyecto —
+Pillow y Playwright se usaron solo como herramientas de generación y
+verificación, no quedan como dependencias del OVA (regla dura 5, que es
+sobre dependencias en tiempo de ejecución del propio OVA, no sobre las
+herramientas de autoría):** `pip install pillow` ya estaba disponible;
+se instalaron además `cairosvg` (falló: pide `libcairo` nativo, no
+disponible en Windows sin instalar aparte — abandonado) y `playwright`
+(sí funcionó: reutilizó el Chromium ya cacheado en
+`~/AppData/Local/ms-playwright` por una sesión anterior de Node, sin
+descargar nada nuevo). `ffmpeg` ya estaba instalado en el sistema
+(`~/Documents/ffmpeg`).
+
+**Los 14 avatar — recortes reales por plano, no reencuadres
+genéricos.** Los 4 PNG de `public/img/avatar/` (dos retratos de
+"Claudia", uno de "Sofia", uno de gesto de cuerpo completo) se
+recortaron con Pillow contra un punto de anclaje propio por foto (centro
+aproximado de la cara, fijado a mano mirando cada imagen) y tres niveles
+de zoom — abierto (~98% del lado menor, casi el encuadre completo),
+medio (~60%) y primer plano (~30–36%, functionally sin fondo: a esa
+distancia focal el óvalo de fondo que sobrevive en las esquinas queda
+fuera del círculo de 48px que pinta `.media-audio__avatar` en pantalla).
+Salida 640×640 webp calidad 82. Los 14 nombres exactos ya estaban
+fijados por `content/ova-u1.js` (C7) y por `PLAN-CONTENIDO.md` §5 — no
+se inventó nomenclatura nueva, solo se llenaron los archivos que
+faltaban. **Nota real para producción:** "sin fondo" aquí es una
+aproximación por recorte agresivo + máscara circular del componente, no
+una separación de fondo real (rotoscopia/croma) — si el avatar llega a
+mostrarse más grande que el círculo de 48px actual en algún rediseño
+futuro, esa aproximación deja de sostenerse y hace falta la separación
+real.
+
+**Las 5 infografías — SVG dibujados a mano contra el contenido real de
+cada pantalla, no cajas grises.** Cada una traza la estructura que la
+pantalla explica, con paths de conexión reales (`class="trazo"`, con
+`stroke`, ninguno solo relleno) para que D9 pueda animarlos con
+`stroke-dasharray`/`stroke-dashoffset` sin rehacer el SVG:
+
+  - `p14-renta-variable.svg` — las tres familias del mercado con
+    "Acciones" anidada en renta variable, bifurcada en "Puedes ganar"
+    (valorización, dividendos) y "Puedes perder" (precio a la baja, sin
+    reparto) — ícono + texto + color en los dos desenlaces, nunca solo
+    color (regla dura 3).
+  - `p27-derechos-politicos-economicos.svg` — una acción bifurcada en
+    derechos políticos (participación y voto) y económicos (dividendos y
+    beneficios patrimoniales).
+  - `p33-tres-bolsas-nuam.svg` — tres tarjetas (Colombia/Perú/Chile) con
+    bolsa, supervisor y depósito; sin banderas a propósito (fuera de
+    alcance de CLAUDE.md cualquier cosa que lea como selector de país —
+    esto es contenido neutro sobre las tres bolsas, no una variación por
+    país).
+  - `p41-mercado-vs-limite.svg` — orden a mercado (ejecución inmediata)
+    frente a orden límite (puede no ejecutarse), cada resultado con su
+    propio ícono, no solo el texto.
+  - `p45-tres-emisores.svg` — Petrocaribe/Andina Cementos/Banco del Sur
+    con medidor de tres barras por nivel de riesgo y el nivel repetido
+    como texto explícito debajo (regla dura 3: el número de barras
+    llenas nunca es el único código).
+
+  **Excepción documentada a la regla dura 1 de CLAUDE.md, la misma que
+  ya cubre `public/graf/union_graf_nuam.svg` desde T1.5:** un SVG
+  cargado como `media.tipo:'imagen'` (`<img src>`) es un documento aparte
+  que no puede leer los custom properties de `tokens.css` del documento
+  host. La paleta de los cinco se copió literal de `tokens.css` el 5 sep
+  y queda anotada dentro de cada SVG (comentario con el valor exacto de
+  cada token usado) para poder mantenerla en sincronía si `tokens.css`
+  cambia. viewBox `0 0 1600 900` (16:9 exacto, igual que
+  `.media-marcador`) para que `object-fit: cover` no recorte nada.
+  Verificados renderizando cada uno con Chromium vía Playwright (ver
+  herramientas arriba) — los cinco se ven completos, sin overflow, con
+  el trazo de conexión donde corresponde.
+
+**Los 4 motion — recortes reales del único video con el que cuenta el
+proyecto, no clips inventados.** `public/videos/woman_Businesswoman_
+1920x1010.mp4` (5.1s, sin pista de audio) recortado con ffmpeg en cuatro
+ventanas de 3s con arranque escalonado (0.0/0.5/1.0/1.5s) para que los
+cuatro no sean el mismo frame congelado, reencodeado a h264/libx264
+(`-an`, sin audio: el original no la trae) a
+`public/videos/motion/p02-objetivos-aprendizaje.mp4`,
+`p17-propiedad-fraccionada.mp4`, `p21-caso-petrocaribe.mp4` y
+`p23-dividendo-reparto.mp4` — los cuatro nombres que ya fijó C7.
+
+**El audio de las 14 pantallas de avatar — cableado del contrato, no
+archivos nuevos.** `public/audio/demo-avatar.mp3` (6s) y
+`public/audio/loc1_objetivos.mp3` (15s) ya existían en el repo sin que
+ninguna pantalla los referenciara todavía (campo `media.audio` muerto
+desde C3). Se agregó `"audio"` a las 14 pantallas de avatar
+(p01/p04/p10/p12/p16/p20/p26/p31/p35/p36/p40/p43/p44/p47), alternando
+los dos archivos 7/7 en el orden en que aparecen. Ninguno de los dos
+dura lo mismo que su transcripción — es el desfase esperado del
+placeholder, no un bug: la transcripción sigue siendo la fuente real
+(regla dura 10), el audio solo deja de estar mudo.
+
+**Hueco real del motor encontrado al recorrer el curso completo por
+primera vez, no anticipado por el plan — resuelto, no rodeado:**
+`PLANTILLAS.L04` (router.js) nunca montaba `pantalla.media`, solo
+`pantalla.datos` — un comentario propio en `layouts.css` ya lo dejaba
+anotado desde T7 ("el brief pide además imagen de apoyo opcional
+(media)... sigue sin admitirla, queda pendiente para C1") y C1 nunca lo
+cerró. Como P02 (real, motion con transcripción) es la única pantalla
+que usa L04 con `media`, esto era invisible en todas las verificaciones
+anteriores (P02 nunca lanzaba error: `crearMedia` simplemente no se
+llamaba) hasta que D8 le dio un archivo real a esa ruta y la pantalla
+seguía sin mostrar nada. Mismo patrón que ya usan L08/L09/L10/L13
+(`if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media))`);
+en `layouts.css`, `.layout__media` de L04 comparte el mismo
+`max-width: 42rem` que ya tenía `.layout__datos` (mismo ancho de
+lectura, no un layout de imagen a ancho completo).
+
+**Verificado con Playwright (Chromium cacheado, ver herramientas
+arriba), `src/index.html` por `file://`:**
+
+- Recorrido completo de las 47 pantallas reales con clics reales
+  (`.boton--portada` en p01, `#nav-siguiente` en el resto): cero errores
+  de consola, cero `pageerror`, cero `<img>` con `naturalWidth === 0`,
+  cero `.media-marcador` visible sin `<img>`/`<video>` real encima (la
+  condición exacta del cierre de D8).
+- Pasada aparte sobre `<video>`/`<audio>` de las 47: cero
+  `networkState === NETWORK_NO_SOURCE` y cero `.error` — los cuatro
+  motion y las 14 pistas de avatar cargan de verdad (`readyState 4` /
+  dimensiones reales confirmadas en p02: 1920×1010).
+- 320px sin scroll horizontal en las ocho pantallas con media nueva
+  (p01, p02, p12, p14, p27, p33, p41, p45) — `scrollWidth` de `html` y
+  `body` iguales a su `clientWidth` en los ocho casos.
+- `dev/kitchen-sink.html`: se ajustó `IMAGEN_AVATAR_DEMO` de
+  `avatar-medio-confondo-3.webp` (que D8 acaba de producir de verdad) a
+  `avatar-demo-inexistente.webp` — mismo patrón que ya usan
+  `demo-tres-familias.svg` y `demo-inexistente.mp4` en el mismo archivo:
+  esa demo existe justamente para mostrar la degradación a círculo
+  vacío, y habría dejado de demostrarla en silencio si se apuntaba a un
+  archivo que D8 volvió real. Recargada tras el cambio: exactamente 3
+  `ERR_FILE_NOT_FOUND` (los tres paths deliberadamente inexistentes),
+  cero error nuevo.
+
+**Cero hex nuevo** en los dos archivos de código tocados (`router.js`,
+`layouts.css` — `git diff` filtrado contra `#[0-9a-f]{3,8}`, cero
+coincidencias en líneas agregadas). Los hex dentro de los cinco SVG son
+la excepción documentada de arriba, no código del proyecto.
+
+**Capa de placeholder — lista exacta para producción audiovisual**
+(la que pide el cierre de D8; sustituir cualquiera de estos es
+sobrescribir el archivo en su misma ruta, sin tocar
+`content/ova-u1.js`):
+
+| Ruta | Qué es hoy | Qué debe reemplazarlo |
+|---|---|---|
+| `public/img/avatar/avatar-abierto-confondo-{1..4}.webp` | Recorte grande de una de las 4 fotos de referencia | Fotografía real del avatar elegido, plano abierto, con fondo |
+| `public/img/avatar/avatar-medio-confondo-{1..4}.webp` | Recorte medio de una de las 4 fotos de referencia | Fotografía real, plano medio, con fondo |
+| `public/img/avatar/avatar-primerplano-sinfondo-{1..6}.webp` | Recorte muy cerrado (sin separación real de fondo) | Fotografía real, primer plano, con separación de fondo real |
+| `public/img/infografia/p14-renta-variable.svg` | Diagrama vectorial propio, paleta de marca | Diagrama final de producción (mismas dimensiones 16:9) |
+| `public/img/infografia/p27-derechos-politicos-economicos.svg` | ídem | ídem |
+| `public/img/infografia/p33-tres-bolsas-nuam.svg` | ídem | ídem |
+| `public/img/infografia/p41-mercado-vs-limite.svg` | ídem | ídem |
+| `public/img/infografia/p45-tres-emisores.svg` | ídem | ídem |
+| `public/videos/motion/p02-objetivos-aprendizaje.mp4` | Recorte de 3s de `woman_Businesswoman_1920x1010.mp4`, sin relación con el guion | Motion real de P02 |
+| `public/videos/motion/p17-propiedad-fraccionada.mp4` | ídem | Motion real de P17 |
+| `public/videos/motion/p21-caso-petrocaribe.mp4` | ídem | Motion real de P21 |
+| `public/videos/motion/p23-dividendo-reparto.mp4` | ídem | Motion real de P23 |
+| `media.audio` en las 14 pantallas de avatar | `demo-avatar.mp3`/`loc1_objetivos.mp3` alternados, sin relación con la transcripción de cada pantalla | Locución real grabada para cada una de las 14 transcripciones |
+
+Sigue pendiente, sin cambio desde el cierre de C7 (no es parte de D8):
+los cuatro descargables de P34 (`href: '#'`) y la atribución de P03 —
+ambos quedan para C8.

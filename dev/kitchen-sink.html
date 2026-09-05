@@ -1532,10 +1532,12 @@
       });
 
       // C3: avatar/audio, mismo criterio que el video de arriba — imagen
-      // de public/img/avatar/ que todavía no existe (a propósito, degrada
-      // sola) y un tono de prueba generado con ffmpeg, no locución real.
+      // inexistente a propósito (mismo patrón que demo-tres-familias.svg
+      // y demo-inexistente.mp4 más abajo), para seguir demostrando la
+      // degradación a círculo vacío ahora que D8 produjo los 14 webp
+      // reales — y un tono de prueba generado con ffmpeg, no locución real.
       var AUDIO_DEMO = '../public/audio/demo-avatar.mp3';
-      var IMAGEN_AVATAR_DEMO = '../public/img/avatar/avatar-medio-confondo-3.webp';
+      var IMAGEN_AVATAR_DEMO = '../public/img/avatar/avatar-demo-inexistente.webp';
       var TRANSCRIPCION_AVATAR_DEMO =
         'Bienvenida a la Academia Virtual nuam.\n' +
         'Este es un tono de prueba para ejercitar el reproductor de avatar de C3, no la locución real de Jose.';

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-hidden="true">
+  <title>Dónde encaja la inversión en acciones</title>
+  <!--
+    Placeholder de producción (D8, PLAN-REDISENO.md). Paleta copiada de
+    tokens.css el 5-sep-2026 (si tokens.css cambia, actualizar aquí
+    también). Excepción documentada a la regla dura 1 de CLAUDE.md: un SVG
+    referenciado como imagen (media.tipo imagen, en media.js) es un
+    documento aparte, no puede leer custom properties del documento host
+    (mismo motivo que public/graf/union_graf_nuam.svg ya usa su propia
+    paleta fija desde T1.5).
+    nuam orange 500 FF4201, nuam orange 700 CC3400,
+    nuam grey 0 FFFFFF, nuam grey 50 FAFAFA, nuam grey 200 E6E6E6,
+    nuam grey 300 D3D3D3, nuam grey 600 535353, nuam grey 950 0B0B0B,
+    nuam green 500 0E9753, nuam green 700 0A7340,
+    nuam red 500 D92D20, nuam red 700 C42217.
+
+    Trazos de conexión con clase trazo: paths reales con stroke, listos
+    para stroke-dasharray y stroke-dashoffset en D9 (movimiento).
+  -->
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <!-- Tres familias del mercado -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <!-- Renta variable (destacada: aquí viven las acciones) -->
+    <rect x="60" y="70" width="460" height="250" rx="20" fill="#FFFFFF" stroke="#FF4201" stroke-width="4"/>
+    <text x="290" y="130" text-anchor="middle" font-size="34" font-weight="700" fill="#0B0B0B">Renta variable</text>
+    <text x="290" y="168" text-anchor="middle" font-size="24" fill="#535353">Resultado no garantizado</text>
+    <rect x="165" y="200" width="250" height="70" rx="35" fill="#FFFFFF" stroke="#FF4201" stroke-width="3"/>
+    <text x="290" y="245" text-anchor="middle" font-size="28" font-weight="700" fill="#CC3400">Acciones</text>
+
+    <!-- Renta fija -->
+    <rect x="570" y="70" width="460" height="250" rx="20" fill="#FAFAFA" stroke="#E6E6E6" stroke-width="3"/>
+    <text x="800" y="130" text-anchor="middle" font-size="34" font-weight="700" fill="#0B0B0B">Renta fija</text>
+    <text x="800" y="168" text-anchor="middle" font-size="24" fill="#535353">Condiciones pactadas</text>
+    <text x="800" y="200" text-anchor="middle" font-size="24" fill="#535353">desde el inicio</text>
+
+    <!-- Derivados -->
+    <rect x="1080" y="70" width="460" height="250" rx="20" fill="#FAFAFA" stroke="#E6E6E6" stroke-width="3"/>
+    <text x="1310" y="130" text-anchor="middle" font-size="34" font-weight="700" fill="#0B0B0B">Derivados</text>
+    <text x="1310" y="168" text-anchor="middle" font-size="24" fill="#535353">Contratos sobre</text>
+    <text x="1310" y="200" text-anchor="middle" font-size="24" fill="#535353">otro activo</text>
+
+    <!-- Trazo: de Acciones a la bifurcación ganar/perder. Tronco al
+         centro del lienzo (800) y dos ramas a los centros exactos de las
+         tarjetas de abajo (300 y 1300 = x + width/2). -->
+    <path class="trazo" d="M 290 270 L 290 370 L 800 370 L 800 430" fill="none" stroke="#3D3D3D" stroke-width="3"/>
+    <path class="trazo" d="M 800 430 L 300 430 L 300 480" fill="none" stroke="#0E9753" stroke-width="3"/>
+    <path class="trazo" d="M 800 430 L 1300 430 L 1300 480" fill="none" stroke="#D92D20" stroke-width="3"/>
+
+    <!-- Puedes ganar -->
+    <g transform="translate(60 480)">
+      <rect width="480" height="260" rx="20" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="3"/>
+      <circle cx="55" cy="55" r="26" fill="#0E9753"/>
+      <path d="M 55 68 L 55 42 M 42 55 L 55 40 L 68 55" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="100" y="65" font-size="30" font-weight="700" fill="#0A7340">Puedes ganar</text>
+      <text x="40" y="130" font-size="26" fill="#0B0B0B">• Valorización del precio</text>
+      <text x="40" y="175" font-size="26" fill="#0B0B0B">• Dividendos repartidos</text>
+    </g>
+
+    <!-- Puedes perder -->
+    <g transform="translate(1060 480)">
+      <rect width="480" height="260" rx="20" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="3"/>
+      <circle cx="55" cy="55" r="26" fill="#D92D20"/>
+      <path d="M 55 42 L 55 68 M 42 55 L 55 70 L 68 55" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="100" y="65" font-size="30" font-weight="700" fill="#C42217">Puedes perder</text>
+      <text x="40" y="130" font-size="26" fill="#0B0B0B">• Si el precio baja</text>
+      <text x="40" y="175" font-size="26" fill="#0B0B0B">• Si no hay utilidades</text>
+      <text x="40" y="210" font-size="26" fill="#0B0B0B">  para repartir</text>
+    </g>
+  </g>
+</svg>

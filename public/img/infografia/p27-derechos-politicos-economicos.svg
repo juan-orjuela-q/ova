@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-hidden="true">
+  <title>Derechos políticos y económicos de una acción</title>
+  <!--
+    Placeholder de producción (D8, PLAN-REDISENO.md). Ver la nota de
+    paleta completa y la excepción a la regla dura 1 de CLAUDE.md en
+    p14-renta-variable.svg, mismo criterio en los cinco SVG de esta
+    capa. nuam orange 500 FF4201, nuam orange 700 CC3400, nuam grey 0
+    FFFFFF, nuam grey 50 FAFAFA, nuam grey 200 E6E6E6, nuam grey 600
+    535353, nuam grey 700 3D3D3D, nuam grey 950 0B0B0B.
+
+    Trazos de conexión con clase trazo: paths reales con stroke, listos
+    para stroke-dasharray y stroke-dashoffset en D9 (movimiento).
+  -->
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <g font-family="Arial, Helvetica, sans-serif">
+    <!-- Nodo central: la acción -->
+    <rect x="650" y="60" width="300" height="90" rx="45" fill="#FFFFFF" stroke="#FF4201" stroke-width="4"/>
+    <text x="800" y="115" text-anchor="middle" font-size="32" font-weight="700" fill="#CC3400">Una acción</text>
+
+    <!-- Trazo: tronco y bifurcación a los dos centros de tarjeta (430 y 1170) -->
+    <path class="trazo" d="M 800 150 L 800 230 L 430 230 L 430 300" fill="none" stroke="#3D3D3D" stroke-width="3"/>
+    <path class="trazo" d="M 800 230 L 1170 230 L 1170 300" fill="none" stroke="#3D3D3D" stroke-width="3"/>
+
+    <!-- Derechos políticos -->
+    <g transform="translate(120 300)">
+      <rect width="620" height="480" rx="20" fill="#FAFAFA" stroke="#E6E6E6" stroke-width="3"/>
+      <circle cx="80" cy="80" r="40" fill="#FF4201"/>
+      <rect x="60" y="60" width="40" height="40" rx="4" fill="none" stroke="#FFFFFF" stroke-width="5"/>
+      <path d="M 66 80 L 76 90 L 96 66" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="145" y="92" font-size="34" font-weight="700" fill="#0B0B0B">Derechos políticos</text>
+      <text x="60" y="180" font-size="28" fill="#3D3D3D">Participación y voto</text>
+      <text x="60" y="220" font-size="28" fill="#3D3D3D">en decisiones de la</text>
+      <text x="60" y="260" font-size="28" fill="#3D3D3D">empresa, cuando el tipo</text>
+      <text x="60" y="300" font-size="28" fill="#3D3D3D">de acción lo permite.</text>
+    </g>
+
+    <!-- Derechos económicos -->
+    <g transform="translate(860 300)">
+      <rect width="620" height="480" rx="20" fill="#FAFAFA" stroke="#E6E6E6" stroke-width="3"/>
+      <circle cx="80" cy="80" r="40" fill="#FF4201"/>
+      <circle cx="80" cy="80" r="22" fill="none" stroke="#FFFFFF" stroke-width="5"/>
+      <text x="80" y="90" text-anchor="middle" font-size="26" font-weight="700" fill="#FFFFFF">$</text>
+      <text x="145" y="92" font-size="34" font-weight="700" fill="#0B0B0B">Derechos económicos</text>
+      <text x="60" y="180" font-size="28" fill="#3D3D3D">Dividendos y beneficios</text>
+      <text x="60" y="220" font-size="28" fill="#3D3D3D">patrimoniales, cuando se</text>
+      <text x="60" y="260" font-size="28" fill="#3D3D3D">generan utilidades y la</text>
+      <text x="60" y="300" font-size="28" fill="#3D3D3D">empresa las aprueba.</text>
+    </g>
+  </g>
+</svg>
