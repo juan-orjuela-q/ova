@@ -259,6 +259,7 @@
     <a href="#movimiento">Movimiento</a>
     <a href="#motor">Motor</a>
     <a href="#chrome">Chrome</a>
+    <a href="#preferencias">Preferencias (D5)</a>
     <a href="#layouts">Layouts</a>
     <a href="#l01">L01</a>
     <a href="#l02">L02</a>
@@ -1269,6 +1270,61 @@
     </section>
 
     <!-- ============================================================ -->
+    <section id="preferencias" class="ks-seccion" aria-labelledby="preferencias-h">
+      <h2 id="preferencias-h">Preferencias del curso (D5)</h2>
+      <p class="ks-intro">
+        Cuatro controles reales, no un overlay comercial (sección 0.7 de
+        <code>PLAN-REDISENO.md</code>): tamaño de texto, movimiento reducido,
+        transcripción siempre visible y autolocución. Un solo componente,
+        <code>OVA.preferencias.crearPanel()</code>, montado dos veces abajo —
+        cambia una preferencia en cualquiera de los dos y el otro se
+        actualiza solo, porque los dos se suscriben al mismo estado en vez
+        de tener cada uno el suyo.
+      </p>
+      <p class="ks-intro">
+        Los tres primeros controles tienen efecto real en esta misma página
+        (los atributos van en <code>&lt;html&gt;</code>, no en un
+        contenedor local): tamaño de texto escala toda la tipografía
+        (tokens en <code>rem</code>), movimiento reducido colapsa las
+        duraciones igual que <code>prefers-reduced-motion</code> — pruébalo
+        junto al botón "Simular desbloqueo" de <a href="#componentes">Componentes</a> —,
+        y transcripción visible abre cualquier <code>&lt;details&gt;</code>
+        de transcripción que haya en pantalla (bajen a la demo de audio/video
+        de <a href="#componentes">Componentes</a> para verlo). Autolocución
+        solo guarda la preferencia aquí: el disparo real del audio al llegar
+        a una pantalla es D6, sobre <code>router.js</code>.
+      </p>
+      <div class="ks-layout-bloque">
+        <span class="ks-layout-bloque__etiqueta">Montaje 1 — popover de la barra superior</span>
+        <p class="ks-intro">
+          Mismo marcado que <code>index.html</code>: botón <code>tune</code> +
+          <code>OVA.preferencias.configurarPopover()</code>. No es un modal —
+          sin backdrop, sin trampa de foco—: se cierra con Escape o con un
+          clic fuera, nunca con Tab.
+        </p>
+        <div class="nav-barra">
+          <div class="nav-barra__preferencias">
+            <button id="ks-pref-abrir" class="boton-icono" type="button" aria-expanded="false" aria-controls="ks-pref-popover">
+              <span class="icono" aria-hidden="true">tune</span>
+              <span class="u-oculto-visualmente">Preferencias del curso</span>
+            </button>
+            <div id="ks-pref-popover" class="pref-panel pref-panel--popover" hidden></div>
+          </div>
+        </div>
+      </div>
+      <div class="ks-layout-bloque">
+        <span class="ks-layout-bloque__etiqueta">Montaje 2 — incrustado (D7, pantalla p01a)</span>
+        <p class="ks-intro">
+          Mismo componente, sin popover alrededor: así se ve dentro de p01a,
+          a tamaño completo.
+        </p>
+        <div class="ks-media-marco">
+          <div id="ks-pref-incrustado"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
     <section id="layouts" class="ks-seccion" aria-labelledby="layouts-h">
       <h2 id="layouts-h">Layouts L01–L13</h2>
       <p class="ks-intro">Numeración de BRIEF-DI.md, renumerada en C0 (4 sep) — ver PLAN-CONTENIDO.md §2.1. Relleno tomado del guion de la Unidad 1. Reflowean a una columna por defecto — ese es el estado de 320px, no un caso aparte. Redimensiona la ventana para ver los breakpoints.</p>
@@ -1576,9 +1632,27 @@
        patrón que I11 desde C4), así que hace falta cargarlo aquí aunque
        esta página no tenga router/progreso real. -->
   <script src="../src/js/state.js"></script>
+  <!-- preferencias.js (D5): tampoco depende de router.js — su estado vive
+       en el propio módulo, así que los dos montajes de abajo (popover y
+       embebido) son demos reales, no maquetas. Sin window.OVA_CONTENIDO en
+       esta página, cae al contenidoId por defecto ("ova") del propio
+       módulo. -->
+  <script src="../src/js/preferencias.js"></script>
   <script src="../src/js/media.js"></script>
   <script src="../src/js/quiz.js"></script>
   <script src="../src/js/charts.js"></script>
+  <script>
+    (function () {
+      var popoverBoton = document.getElementById('ks-pref-abrir');
+      var popoverContenedor = document.getElementById('ks-pref-popover');
+      if (popoverBoton && popoverContenedor) {
+        popoverContenedor.appendChild(OVA.preferencias.crearPanel());
+        OVA.preferencias.configurarPopover(popoverBoton, popoverContenedor);
+      }
+      var incrustado = document.getElementById('ks-pref-incrustado');
+      if (incrustado) incrustado.appendChild(OVA.preferencias.crearPanel());
+    })();
+  </script>
   <script>
     (function () {
       function montar(id, datos) {

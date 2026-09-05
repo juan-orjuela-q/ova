@@ -1244,6 +1244,36 @@
     if (reanudarBoton) reanudarBoton.addEventListener('click', reanudar);
   }
 
+  /* ---- Chrome: preferencias del curso (D5) --------------------------
+     El panel en sí (tamaño de texto, movimiento, transcripción,
+     autolocución) lo arma OVA.preferencias.crearPanel() — router.js solo
+     lo monta dentro del popover de la barra superior y lo cablea con
+     OVA.preferencias.configurarPopover(). La segunda aparición del mismo
+     panel, incrustada a tamaño completo en p01a, es D7 y no vive aquí. */
+  function configurarPreferencias() {
+    var boton = document.getElementById('pref-abrir');
+    var contenedor = document.getElementById('pref-popover');
+    if (!boton || !contenedor) return;
+    contenedor.appendChild(OVA.preferencias.crearPanel());
+    OVA.preferencias.configurarPopover(boton, contenedor);
+  }
+
+  // D5: "transcripcionVisible" abre el <details> de transcripción de la
+  // pantalla activa (video/avatar-con-audio, ver media.js) mientras la
+  // preferencia está encendida. Apagarla no fuerza el cierre — un
+  // estudiante que lo abrió a mano para revisarlo no debería verlo
+  // colapsarse solo porque apagó la preferencia en otra pantalla.
+  // Selector por sufijo de clase (no un id fijo) porque media-video y
+  // media-audio son familias de componentes distintas que comparten el
+  // mismo patrón de <details>, no un solo componente.
+  function aplicarTranscripcionVisible() {
+    if (!OVA.preferencias.obtener().transcripcionVisible) return;
+    var detalles = document.querySelectorAll('#app details[class$="__transcripcion"]');
+    Array.prototype.forEach.call(detalles, function (detalle) {
+      detalle.open = true;
+    });
+  }
+
   function navegarA(id, opciones) {
     opciones = opciones || {};
     var ok = OVA.state.ir(id);
@@ -1268,6 +1298,7 @@
     actualizarReanudar(inst);
     actualizarDrawer(inst);
     gestionarBotonPortada(pantalla);
+    aplicarTranscripcionVisible();
     document.title = pantalla.titulo + ' · ' + contenidoActual.titulo;
 
     // En la carga inicial no se roba el foco: el usuario todavía no
@@ -1323,7 +1354,12 @@
     construirDrawer(contenido);
     configurarDrawer();
     configurarBarraSuperior();
+    configurarPreferencias();
     configurarPantallaCompleta();
+    // Encender/apagar "mostrar siempre la transcripción" desde el panel
+    // debe verse en la pantalla activa sin esperar a la próxima
+    // navegación — no solo al montar una pantalla nueva.
+    OVA.preferencias.suscribir(aplicarTranscripcionVisible);
     window.addEventListener('hashchange', alCambiarHash);
     navegarA(OVA.state.actual().id, { esInicial: true });
   }

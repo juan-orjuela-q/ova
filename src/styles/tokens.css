@@ -149,3 +149,21 @@
     --stagger:    0ms;
   }
 }
+
+/* Override manual de movimiento reducido (D5, PLAN-REDISENO.md):
+   preferencias.js pone data-movimiento="reducido" en <html> cuando el
+   estudiante lo enciende desde el panel, sin que el sistema operativo
+   tenga prefers-reduced-motion activo. Es la única duplicación
+   aceptada de este bloque — mismos tokens, mismos valores, y queda
+   anotada como tal en vez de intentar una única regla combinada: no
+   hay forma de expresar "A o B" entre un media feature y un selector
+   de atributo dentro de un solo bloque de CSS. */
+:root[data-movimiento="reducido"] {
+  --dur-fast:   1ms;
+  --dur-base:   1ms;
+  --dur-slow:   1ms;
+  --dur-reveal: 1ms;
+  --shift-sm:   0px;
+  --shift-md:   0px;
+  --stagger:    0ms;
+}

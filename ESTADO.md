@@ -2899,7 +2899,8 @@ de C7, antes de cerrar C8/C9.
 - [x] **D2 · Barra superior inverse** — completada 5 sep. Detalle abajo.
 - [x] **D3 · Progreso en porcentaje** — completada 5 sep. Detalle abajo.
 - [x] **D4 · Padding lateral de escritorio** — completada 5 sep. Detalle abajo.
-- [ ] D5–D7, D9, D10 · pendientes.
+- [x] **D5 · Preferencias del curso** — completada 5 sep. Detalle abajo.
+- [ ] D6–D7, D9, D10 · pendientes.
 
 **5 sep — D8 cerrada: capa completa de assets dummy en rutas de
 producción exactas, más un hueco real del motor encontrado al mirar el
@@ -3394,3 +3395,166 @@ la kitchen sink ya muestra completos; el cierre de la tarea lo pide
 verificado en las pantallas reales (`src/index.html`), no en la
 kitchen sink, que además no navega por hash y no tiene forma de
 mostrar "antes/después" del breakpoint sin duplicar la demo de C2.
+
+**5 sep — D5 cerrada: preferencias del curso, módulo nuevo
+`src/js/preferencias.js`, con el cruce de tamaño de texto × marco fijo
+que el propio plan marcaba como "la parte delicada" resuelto y
+verificado, no solo razonado.**
+
+**Por qué es un módulo aparte y no algo colgado de `router.js`.** Las
+cuatro preferencias (tamaño de texto, movimiento reducido,
+transcripción visible, autolocución) tienen que verse iguales en dos
+sitios que no comparten dueño — el popover de la barra superior
+(`index.html`, chrome) y el panel incrustado de p01a (D7, contenido) —
+y sobrevivir a un recargue. `preferencias.js` es el único dueño del
+estado; `router.js` solo monta el popover y reacciona a un cambio
+(abrir la transcripción de la pantalla activa), igual que ya delega en
+`OVA.quiz`/`OVA.media`/`OVA.charts` para todo lo que no es chrome fijo.
+Se carga antes que `router.js` (índice de scripts, `index.html`) para
+que los atributos de `<html>` existan desde el primer render.
+
+**Qué se construyó:**
+
+- **`src/js/preferencias.js`** (nuevo) — estado único
+  `{tamanoTexto, movimientoReducido, transcripcionVisible, autolocucion}`,
+  persistido con `OVA.storage` bajo el mismo `contenidoId` que el
+  progreso (clave `"preferencias"`, un solo objeto — no cuatro claves
+  sueltas). `establecer(clave, valor)` valida contra el catálogo de
+  cuatro, persiste, aplica los atributos en `<html>` y notifica a los
+  suscriptores; `crearPanel()` arma el DOM del panel (radio de tamaño +
+  tres checkboxes, `fieldset`/`legend` reales) y se suscribe solo para
+  mantener sus propios controles sincronizados — cada llamada a
+  `crearPanel()` es un montaje independiente sobre el mismo estado, así
+  que dos montajes en la misma página quedan sincronizados sin que
+  ninguno sea dueño del dato (verificado con Playwright: cambiar el
+  tamaño en el montaje incrustado de la kitchen sink mueve el radio
+  correspondiente en el popover, sin recargar). `configurarPopover()`
+  es la única pieza específica del montaje de barra superior: no
+  modal, sin trampa de foco, Escape o clic fuera lo cierran (clic fuera
+  vía un listener de captura en `document` que se registra recién al
+  abrir, así que el clic que abre nunca se autocierra).
+- **Atributos en `<html>`, no estilos inline** (`data-texto="125"`,
+  `data-movimiento="reducido"`, `data-transcripcion="visible"`) —
+  `data-texto` siempre presente (tres valores posibles, no
+  presencia/ausencia); los otros dos solo existen cuando se apartan del
+  valor por defecto, mismo criterio que `hidden` en vez de una clase
+  siempre puesta.
+- **Tamaño de texto, la parte delicada que marcaba el plan.** Escalar
+  con `font-size` en `:root` (125%/150%) basta para toda la tipografía
+  porque los tokens son `rem` — sin tocar `tokens.css` peldaño por
+  peldaño. Lo que sí exigió cuidado es el hallazgo que ya anotaba
+  `PLAN-REDISENO.md` §D5 y que esta sesión confirmó en vez de asumir:
+  la unidad `em` de un *media query* se mide contra el tamaño de fuente
+  **inicial** del navegador, no contra el `font-size` que la propia
+  página le pone a `:root` — subir el root al 150% no corre ni un
+  píxel el punto de corte de `max-height: 36em` de la trampa 4 de
+  `PLAN-CONTENIDO.md` §4.3 (el desarme de emergencia del marco fijo).
+  Solución, tal como la dejaba escrita el plan: tres bloques
+  `@media (max-height: …)` hermanos en `base.css` — 36em / 45em / 54em
+  (36 × la misma escala 1/1.25/1.5) — cada uno gateado por
+  `:root[data-texto="…"]` en vez de una sola regla combinada, porque no
+  hay forma de expresar "media feature O selector de atributo" dentro
+  de un único bloque de CSS.
+- **Movimiento reducido, override manual.** `tokens.css` gana un bloque
+  `:root[data-movimiento="reducido"] { … }`, duplicado deliberado y
+  anotado del bloque `@media (prefers-reduced-motion: reduce)` que ya
+  existía (mismos valores, 1ms y no 0 — no rompe `animationend`): es la
+  única duplicación aceptada de ese bloque en todo el proyecto, y
+  `CLAUDE.md` ya la preveía en la sección de Movimiento.
+- **Transcripción visible, resuelta en `router.js`, no en
+  `preferencias.js`.** No hay forma de forzar con CSS puro el atributo
+  `open` de un `<details>` (no hay propiedad de CSS para eso), así que
+  el efecto vive donde ya vive todo lo demás que reacciona a cada
+  pantalla activa: `aplicarTranscripcionVisible()` en `router.js`
+  recorre `#app details[class$="__transcripcion"]` (sufijo de clase,
+  no un id fijo — `media-video__transcripcion` y
+  `media-audio__transcripcion` son dos familias distintas que
+  comparten el mismo patrón desde C3) y los abre si la preferencia
+  está encendida. Se llama al final de `navegarA()` (cada pantalla
+  nueva nace abierta si la preferencia está prendida) y está
+  suscrita a `OVA.preferencias` desde `init()` (encenderla sin navegar
+  abre de inmediato la transcripción de la pantalla activa). Apagar la
+  preferencia no fuerza el cierre — no hay razón para colapsar algo que
+  el estudiante pudo haber abierto a mano.
+- **Autolocución, solo el dato en esta tarea.** El checkbox y la
+  persistencia ya existen; el disparo real del audio al montar una
+  pantalla de avatar es D6, sobre `router.js`/`media.js` — no se tocó
+  nada de eso aquí a propósito, D5 solo deja la preferencia lista para
+  que D6 la lea.
+- **`index.html`**: botón `tune` (`#pref-abrir`) + contenedor del
+  popover (`#pref-popover`) dentro de `.nav-barra__preferencias`,
+  después del indicador de guardado y antes de pantalla completa;
+  hereda el tratamiento inverse de `.boton-icono` de D2 sin CSS nuevo
+  para el botón. `<script src="js/preferencias.js">` entre `a11y.js` y
+  `media.js`.
+- **CSS (`components.css`)**: `.pref-panel`/`__grupo`/`__opciones`/
+  `__opcion` (fieldset reseteado + `accent-color` en los inputs, mismo
+  criterio que `.quiz-opcion`); `.nav-barra__preferencias` (ancla de
+  posición) y `.pref-panel--popover` (flotante, `z-index: 202` — un
+  escalón por encima de `.nav-drawer--flotante`/`.modal__caja`, que ya
+  usan 201 contra el mismo `.backdrop`; el popover no tiene backdrop
+  propio, así que no compite con esos 200/201 en la práctica, pero si
+  llegara a solaparse gana el control que el estudiante acaba de
+  abrir). Sin `box-shadow`: el proyecto no usa esa propiedad en
+  ningún otro componente (grep confirmado antes de escribir código),
+  así que el panel se separa del fondo solo con borde, igual que el
+  drawer y el modal.
+
+**Verificado con Playwright (Python, Chromium), `src/index.html` y
+`dev/kitchen-sink.html` desde `file://`:**
+
+- Atributos iniciales correctos (`data-texto="100"`, sin
+  `data-movimiento` ni `data-transcripcion`); elegir 150% sube
+  `data-texto` y el `font-size` computado de `<html>` pasa a `24px`
+  (16 × 1.5); encender movimiento reducido manual mide
+  `--dur-slow: 1ms` computado, igual que bajo
+  `prefers-reduced-motion: reduce`.
+- Popover: `aria-expanded` alterna con clic y con teclado (Enter sobre
+  el botón enfocado); primer `Tab` dentro cae en el primer radio (sin
+  trampa de foco, a diferencia del drawer/modal); flechas mueven la
+  selección nativa del grupo de radios y disparan el cambio real;
+  Escape y un clic en una esquina real (no en el centro, que coincide
+  con el panel) cierran y devuelven el foco a `#pref-abrir` en los dos
+  casos.
+- Recargar la página conserva `tamanoTexto` y `movimientoReducido`
+  puestos antes de recargar.
+- En `p02` (motion + transcripción real, D8): el `<details>` nace
+  colapsado sin la preferencia; encenderla desde el popover lo abre en
+  la pantalla activa sin navegar; navegar a `p03` y volver a `p02` lo
+  deja abierto de nuevo — la suscripción de `router.js` sigue viva
+  pantalla tras pantalla.
+- Cero desbordamiento horizontal en `src/index.html` con el popover
+  **abierto**, cruzando (320/768/1280px) × (100/125/150% real vía
+  panel, no simulado) — nueve combinaciones — y también con un proxy
+  de zoom de texto 200% encima de esas tres escalas. Cero errores de
+  consola en toda la corrida.
+- `dev/kitchen-sink.html`: los dos montajes (popover e incrustado)
+  quedan sincronizados en ambas direcciones; el desbordamiento a 320px
+  y su crecimiento bajo zoom 200% son los mismos de siempre —
+  confirmado por elemento: sigue siendo `.dato-tabla` (T7), presente
+  también con el popover cerrado y sin abrir nunca. Los tres
+  `ERR_FILE_NOT_FOUND` de consola son la degradación deliberada de D8,
+  no nuevos.
+- Estructura accesible confirmada por atributo real: `aria-controls`
+  del botón coincide con el `id` del panel, dos `<fieldset>` con su
+  `<legend>`, seis `<label>` con su `<input>` anidado (asociación
+  nativa, sin `for`/`id` sueltos que puedan desincronizarse), el panel
+  sin `role` (no es un diálogo).
+
+**Cero hex nuevo, cero duración/curva nueva fuera de `tokens.css`**
+(`git diff` filtrado contra `#[0-9a-f]{3,8}` y contra literales de
+`ms`/`cubic-bezier` fuera de ese archivo, cero coincidencias en los
+cinco archivos tocados).
+
+**Kitchen sink.** Sección nueva "Preferencias del curso (D5)" después
+de "Chrome del OVA (T3)": los dos montajes reales lado a lado (popover
+sobre una `.nav-barra` de demo, panel incrustado dentro de
+`.ks-media-marco`), con la nota de qué efecto es visible ahí mismo
+(tamaño, movimiento, transcripción) y cuál es solo el dato a la espera
+de D6 (autolocución).
+
+**Pendiente para D7, no D5:** el segundo montaje incrustado de
+`crearPanel()` en `index.html` (dentro de la pantalla real p01a) no
+existe todavía — la pantalla misma es D7. Lo que sí queda listo es que
+sea una llamada más a `OVA.preferencias.crearPanel()`, sin plantilla ni
+lógica nueva que inventar cuando llegue esa tarea.

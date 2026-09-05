@@ -2251,3 +2251,84 @@ a.cap-tarjeta:hover {
   gap: var(--sp-1) var(--sp-4);
   color: var(--text-secondary);
 }
+
+/* ---- Panel de preferencias (D5, componentes) ----------------------------
+   Un solo componente (`OVA.preferencias.crearPanel()`), dos montajes:
+   incrustado tal cual (D7, pantalla p01a) o dentro de `.pref-panel--popover`
+   en la barra superior. Fieldset/legend reales, radio/checkbox nativos con
+   accent-color — mismo criterio que `.quiz-opcion` en quiz.js: la
+   operación por teclado la da el navegador, no un manejador propio. */
+.pref-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.pref-panel__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.pref-panel__grupo legend {
+  padding: 0;
+  font: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+}
+.pref-panel__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.pref-panel__opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-sm);
+  font: var(--text-body-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.pref-panel__opcion:hover {
+  background: var(--surface-subtle);
+}
+.pref-panel__opcion input {
+  accent-color: var(--nuam-orange-500);
+  flex-shrink: 0;
+  width: 1.15em;
+  height: 1.15em;
+}
+
+/* ---- Montaje de la barra superior: botón + popover (D5) -----------------
+   `.nav-barra__preferencias` es el ancla de posición (`position: relative`)
+   para que el popover cuelgue justo debajo del botón `tune` sin desplazar
+   al resto de la barra. No es un modal (drawer/modal en T3/T5 sí lo son a
+   propósito): sin backdrop, sin trampa de foco — OVA.preferencias.
+   configurarPopover() lo cierra con Escape o con un clic fuera. z-index 202,
+   un escalón por encima de `.nav-drawer--flotante`/`.modal__caja` (201):
+   ninguno de los dos convive con el popover abierto en la práctica, pero si
+   llegaran a solaparse, el control que el estudiante acaba de abrir es el
+   que debe quedar encima. */
+.nav-barra__preferencias {
+  position: relative;
+}
+.pref-panel--popover {
+  position: absolute;
+  top: 100%;
+  inset-inline-end: 0;
+  z-index: 202;
+  margin-block-start: var(--sp-2);
+  width: max-content;
+  max-width: min(20rem, 90vw);
+  padding: var(--sp-5);
+  background: var(--surface-default);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-lg);
+}

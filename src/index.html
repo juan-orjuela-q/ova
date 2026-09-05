@@ -90,6 +90,27 @@
       <span id="nav-guardado-texto">Guardado</span>
     </p>
 
+    <!-- Preferencias del curso (D5): popover, no modal — no atrapa foco,
+         se cierra con Escape o con un clic fuera (OVA.preferencias.
+         configurarPopover, cableado en router.js). El panel real
+         (tamaño de texto, movimiento, transcripción, autolocución) lo
+         arma OVA.preferencias.crearPanel() dentro de #pref-popover; el
+         mismo componente se vuelve a montar, incrustado y sin popover,
+         en la pantalla p01a (D7). -->
+    <div class="nav-barra__preferencias">
+      <button
+        id="pref-abrir"
+        class="boton-icono"
+        type="button"
+        aria-expanded="false"
+        aria-controls="pref-popover"
+      >
+        <span class="icono" aria-hidden="true">tune</span>
+        <span class="u-oculto-visualmente">Preferencias del curso</span>
+      </button>
+      <div id="pref-popover" class="pref-panel pref-panel--popover" hidden></div>
+    </div>
+
     <!-- Pantalla completa (C2), disponible en todo el recorrido salvo
          L01 (la portada esconde esta barra entera — regla dura 9 de
          CLAUDE.md, tiene su propio botón más abajo). Arranca `hidden`:
@@ -174,6 +195,7 @@
   <script src="js/scorm.js"></script>
   <script src="js/state.js"></script>
   <script src="js/a11y.js"></script>
+  <script src="js/preferencias.js"></script>
   <script src="js/media.js"></script>
   <script src="js/quiz.js"></script>
   <script src="js/charts.js"></script>
