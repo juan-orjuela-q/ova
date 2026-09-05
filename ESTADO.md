@@ -2898,7 +2898,8 @@ de C7, antes de cerrar C8/C9.
       5 sep. Detalle abajo.
 - [x] **D2 · Barra superior inverse** — completada 5 sep. Detalle abajo.
 - [x] **D3 · Progreso en porcentaje** — completada 5 sep. Detalle abajo.
-- [ ] D4–D7, D9, D10 · pendientes.
+- [x] **D4 · Padding lateral de escritorio** — completada 5 sep. Detalle abajo.
+- [ ] D5–D7, D9, D10 · pendientes.
 
 **5 sep — D8 cerrada: capa completa de assets dummy en rutas de
 producción exactas, más un hueco real del motor encontrado al mirar el
@@ -3344,3 +3345,52 @@ demo deliberada de degradación de avatar (D8), documentados ahí. Cero
 hex nuevo, cero duración/curva nueva fuera de `tokens.css` (no se tocó
 `components.css` ni `tokens.css` en esta tarea, solo `router.js`,
 `index.html` y `kitchen-sink.html`).
+
+**5 sep — D4 cerrada: padding lateral de escritorio, con las tres
+excepciones de la sección 0 del plan verificadas, no solo asumidas.**
+
+**Qué se tocó, solo `layouts.css`:**
+
+- **`@media (min-width: 48em) { .layout { padding-inline: var(--sp-10); } }`**
+  — exactamente el bloque que da `PLAN-REDISENO.md` §D4, insertado justo
+  después de la regla base `.layout` (24px → 40px de aire lateral desde
+  768px).
+- **L01 no necesitó exclusión explícita.** `.layout--l01` ya fija su
+  propio `padding` (shorthand físico, incondicional) más abajo en el
+  mismo archivo; por orden de cascada (misma especificidad, declaración
+  posterior gana) siempre pisa el `padding-inline` de la regla base,
+  con o sin el bloque nuevo de arriba. Confirmado con Playwright, no
+  solo razonado: sigue en 24px a 1280px.
+- **L12 y L13 sí necesitaron exclusión a mano.** A diferencia de L01,
+  estos dos layouts no fijan su propio padding — heredan el de `.layout`
+  tal cual porque su tratamiento de "a sangre" es solo de `background`
+  (ver los comentarios de C2 en sus propias secciones), así que sin
+  intervención habrían heredado el aumento. Se agregó
+  `@media (min-width: 48em) { .layout--l12 { padding-inline: var(--sp-6); } }`
+  (mismo bloque para `.layout--l13`) inmediatamente después de la
+  sección de cada uno, para que quede junto a la regla que describe.
+
+**Verificado con Playwright (Node, Chromium), `src/index.html` desde
+`file://`, recorriendo las 47 pantallas por hash:**
+
+- **1280px:** `padding-inline` computado de las 44 pantallas que no son
+  L01/L12/L13 es `40px` en las dos direcciones; las 3 que sí lo son
+  (`p01`/L01, `p03`/L12, `p36`+`p40`+`p44`/L13) se quedan en `24px`.
+  Cero desbordamiento horizontal (`scrollWidth === clientWidth`) en las
+  47. Cero errores de consola.
+- **320px:** cero pantallas con `scrollWidth > clientWidth` — el reflow
+  de C2/D1/D2/D3 sigue intacto, el cambio es solo de escritorio.
+- **1280px con `document.documentElement.style.fontSize = '200%'`**
+  (proxy de zoom de texto, mismo método que usaron D1/D2): cero
+  desbordamiento en las 47; muestreo de L01/L12/L13 confirma que se
+  mantienen en `24px` también bajo esa condición, no solo en el caso
+  base.
+- Cero hex nuevo, cero duración/curva nueva (el único archivo tocado es
+  `layouts.css` y el cambio es puramente de `padding-inline`).
+
+**No se tocó la kitchen sink.** D4 no agrega un componente ni un estado
+nuevo que documentar ahí — es un ajuste de espaciado sobre layouts que
+la kitchen sink ya muestra completos; el cierre de la tarea lo pide
+verificado en las pantallas reales (`src/index.html`), no en la
+kitchen sink, que además no navega por hash y no tiene forma de
+mostrar "antes/después" del breakpoint sin duplicar la demo de C2.

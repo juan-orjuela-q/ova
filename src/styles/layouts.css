@@ -65,6 +65,16 @@
   padding-inline: var(--sp-6);
 }
 
+/* D4 (PLAN-REDISENO.md): más aire lateral en escritorio. L01 ya se excluye
+   solo (su propio `padding` en .layout--l01 es incondicional y va después
+   en este archivo, así que siempre gana); L12 y L13 son superficies a
+   sangre y se excluyen a mano en sus propias secciones más abajo. */
+@media (min-width: 48em) {
+  .layout {
+    padding-inline: var(--sp-10);
+  }
+}
+
 .layout__cuerpo {
   display: flex;
   flex-direction: column;
@@ -610,6 +620,14 @@
   .layout--l12 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
 }
 
+/* D4: L12 es superficie a sangre — no hereda el padding lateral extra de
+   escritorio que sube .layout (ver arriba). */
+@media (min-width: 48em) {
+  .layout--l12 {
+    padding-inline: var(--sp-6);
+  }
+}
+
 /* ---- L13 · Corte oscuro, cierre o transición ------------------------------
    Antes de C0 era .layout--l06 ("cita o dato curioso"). C2 (4 sep) le
    agregó el tratamiento de superficie del brief: --surface-inverse a
@@ -635,6 +653,14 @@
 }
 .layout--l13 .layout__titulo {
   max-width: 42rem;
+}
+
+/* D4: L13 es superficie a sangre — no hereda el padding lateral extra de
+   escritorio que sube .layout (ver arriba). */
+@media (min-width: 48em) {
+  .layout--l13 {
+    padding-inline: var(--sp-6);
+  }
 }
 
 /* ---- Movimiento — entrada de contenido (T1.5, punto 2) -----------------
