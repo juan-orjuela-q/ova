@@ -10,193 +10,126 @@
    dentro de esta asignación — el motor (router.js) no sabe nada de
    este archivo más allá de leer `window.OVA_CONTENIDO`.
 
-   Pantallas de prueba, numeración post-C0 (4 sep) — la de BRIEF-DI.md,
-   ver CLAUDE.md regla dura 8 y PLAN-CONTENIDO.md §2.1/§2.2. Antes de C0
-   estas catorce pantallas usaban la numeración anterior del código;
-   C0 las renumeró junto con layouts.css/router.js/quiz.js, sin cambiar
-   contenido. Dos ajustes no fueron solo renombrar: s04 usaba el layout
-   de "término de glosario" (antes L11), que dejó de existir como layout
-   propio (ya está resuelto como componente de T5, `.termino-glosario` +
-   `.modal`, usable dentro de cualquier layout) — se movió a L04, el
-   mismo layout de texto plano que s01/s08/s10. s09 usaba el layout de
-   "proceso/línea de tiempo" (antes L09), que dejó de ser un layout
-   propio (ahora es `datos.tipo:'proceso'` dentro de L04) — se movió ahí
-   por el mismo motivo. La interacción de s07 pasó de I02 a I01 porque
-   el brief define I01 como opción única e I02 como verdadero/falso, al
-   revés de como T6 los había construido.
+   C7 (conversión del storyboard real) reemplaza por completo el
+   contenido de prueba de C0–C6 (s00–s26) por las 47 pantallas reales
+   de Jose (`disenoInstruccional/storyboard_data_v2.json`, v2 del
+   3 sep) — p01..p47, en el mismo orden del storyboard. El contenido de
+   prueba cumplió su función (ejercitar cada layout/interacción de
+   extremo a extremo antes de que existiera contenido real) y queda en
+   el historial de git, no en este archivo: mantenerlo en paralelo sería
+   contenido muerto, y la kitchen sink ya cubre cada pieza del motor por
+   separado sin depender de este archivo.
 
-   Relleno tomado del guion de «Introducción a la inversión en
-   acciones».
+   Generado con un script de conversión (no a mano): las partes
+   mecánicas del storyboard (parseo de los payloads en formato "A | B |
+   C" de I01/I02/I07/I08, el reformateo de los payloads JSON de
+   I09/I10/I11/I12/I13 a la forma exacta que documenta quiz.js) se
+   traducen sin intervención; las partes que el storyboard no fija de
+   forma estructurada (asignación de imagen de avatar por pantalla,
+   rutas de motion/infografía todavía sin producir, rangos de slider no
+   especificados por Jose, el empaquetado de cifra/retro de L08) son
+   decisiones de autoría de esta sesión, tomadas contra las reglas
+   fijadas en `PLAN-CONTENIDO.md` y documentadas en la lista de revisión
+   de `ESTADO.md` — no se inventó nada que no estuviera ya decidido en
+   una sesión anterior o anotado ahí como pendiente de producción.
 
-   T4 suma s05/s06 (L03, L02): las dos únicas pantallas con `media`,
-   para ejercitar el reproductor real de extremo a extremo (no solo
-   en la kitchen sink) — navegar hasta ahí en src/index.html reproduce
-   video con subtítulos VTT y transcripción descargable de verdad. El
-   video es el mismo relleno de stock que ya usaba L01 (public/videos/),
-   no el material real de Jose.
+   Mapa rápido de decisiones, detalle completo en ESTADO.md:
 
-   `media.vtt` lleva el TEXTO WebVTT completo, no una ruta de archivo:
-   media.js arma un <track> con un Blob a partir de ese texto. Un
-   <track src="archivo.vtt"> apuntando a un archivo real falla bajo
-   file:// en Chromium ("file:" URLs son cada una su propio origen
-   único, incluso entre archivos hermanos) — verificado con Playwright
-   al construir T4. Mismo motivo por el que este archivo entero es
-   .js y no .json + fetch.
+   - **Kicker**: `unidad_capsula` del storyboard con " / " → " · "
+     (p. ej. "Unidad 1 / Cápsula 2" → "Unidad 1 · Cápsula 2"), igual en
+     las 47 salvo p01 (la portada usa el antetítulo real de Jose,
+     "Introducción a la inversión en acciones", no una etiqueta de
+     unidad).
+   - **Cuerpo**: el campo `texto` del storyboard partido por línea.
+     L09 (ideas clave) le quita el "N. " inicial porque router.js ya
+     antepone su propio ícono de check por ítem — repetir el número
+     sería un segundo marcador para la misma idea.
+   - **Avatar** (14 pantallas: p01, p04, p10, p12, p16, p20, p26, p31,
+     p35, p36, p40, p43, p44, p47): `imagen` sale de la asignación de
+     plano/fondo de `PLAN-CONTENIDO.md` §5 (abierto/medio/primerplano ×
+     con o sin fondo), numerada secuencialmente dentro de cada grupo —
+     14 referencias contra ~12 imágenes reales que Juan produce; qué
+     archivo numerado reutiliza para cuáles pantallas es su decisión,
+     no una regla del motor. `transcripcion` es la `locucion` del
+     storyboard, con la marca de tiempo final ("[0:16]") quitada; sin
+     `audio` todavía (Juan las graba por separado, PLAN-CONTENIDO.md
+     §7) — degrada a imagen + transcripción directa, el placeholder de
+     producción que exige la regla dura 10 de CLAUDE.md, no un hueco.
+   - **Motion sin avatar** (p02, p17, p21, p23): `media.tipo:'video'`
+     apuntando a `public/videos/motion/pNN-slug.mp4`, todavía sin
+     producir a propósito (mismo criterio que las imágenes de avatar:
+     degrada limpio en vez de sustituirse por un video que no es el
+     que corresponde). Sin `vtt`: no hay dato real de sincronización
+     por escena para fabricar subtítulos con marcas de tiempo
+     honestas — `transcripcion` (la locución completa) es la
+     alternativa textual real, sin inventar cues.
+   - **Infografía** (p14, p27, p33, p41, p45 — las cinco cuyo layout,
+     L02/L03, exige `media`; p03/p11/p18/p29 usan L05/L12, que no
+     tienen ranura de media y no la necesitan): `media.tipo:'imagen'`
+     (catálogo nuevo de `media.js`, C7) apuntando a
+     `public/img/infografia/pNN-slug.svg`, todavía sin producir.
+     `alt: ''` a propósito: el texto real de la pantalla ya vive en
+     `cuerpo`, y no existe un diagrama que describir todavía —
+     inventar un texto alternativo para un diagrama que no existe
+     describiría algo que no está. Cuando Juan entregue el SVG real,
+     quien lo enganche le agrega el `alt` que describe esa estructura
+     visual concreta.
+   - **L05 con interacción incrustada** (p13, p28): el storyboard real
+     ubica I07/I08 en L05, no en L06 — resuelve la nota abierta que
+     dejó C5 en `PLAN-CONTENIDO.md`. `pantalla.interaccion` reemplaza
+     a `pantalla.tarjetas`; el `enunciado` de la interacción lleva el
+     `texto` completo del storyboard porque L05 con interacción no
+     rinde un `cuerpo` aparte.
+   - **L05 con nota** (p29): el storyboard trae un disclaimer de una
+     línea ("es un perfil orientativo, no regulatorio") que no es una
+     cuarta tarjeta comparable — `pantalla.nota`, capacidad nueva de
+     C7 en `PLANTILLAS.L05`.
+   - **L08 dinámico** (p10, p31, p43, p47): `resultado.variable` +
+     `resultado.reglas` sobre `aciertos_diagnostico` (p10, mecanismo de
+     C4), `perfil_riesgo` (p31/p47, categórico) y `resultado_boleta`
+     (p43, un objeto — usa `resultado.campo:'estado'`, capacidad nueva
+     de C7 en `obtenerResultado()`). Los títulos y el empaquetado de
+     cada regla en título+cuerpo son autoría de esta sesión sobre las
+     frases reales de Jose (mismo criterio editorial que `s17` ya
+     estableció en C4), no texto inventado.
+   - **Diagnóstico → aciertos_diagnostico** (p05–p09 escriben la
+     variable; p10 la lee): el storyboard no declara esta dependencia
+     en su campo `dependencias` (queda vacío en las cinco), pero
+     `PLAN-CONTENIDO.md` §3.1 la fija explícitamente ("P10 lee los
+     aciertos del diagnóstico de cinco preguntas P05–P09") y el propio
+     texto de p10 (umbrales 0–2/3–4/5) solo tiene sentido contra un
+     diagnóstico de cinco preguntas.
+   - **Intentos de las preguntas I01/I02** (p05–p09, p15, p19, p25,
+     p38): `2`, uniforme — el storyboard no fija un número; se adoptó
+     el mismo valor que ya usaban `s07`/`s16` en el contenido de
+     prueba, no una cifra nueva sin precedente.
+   - **I10 (p22, p24) e I11 (p42)**: entradas/salidas y sus `unidad`
+     con el criterio de `quiz.js` ("unidad" es sufijo con espacio
+     inicial: `" COP"`, `" %"`, `" acciones"`); `decimales` por salida
+     y los rangos de slider de precioActual/precioLimite/cantidad en
+     p42 (el storyboard de P42 no trae min/max/paso, solo el escenario)
+     son autoría de esta sesión, con el mismo criterio que ya usó C6
+     para poblar la kitchen sink: el valor inicial reproduce el
+     escenario/caso de prueba real de Jose (p42 arranca en el caso
+     "expuesta", el que enseña la diferencia entre mercado y límite).
+   - **I12 (p46)**: `categorias`/`reglas`/`aviso` son literalmente los
+     que C6 ya había validado a mano contra este mismo payload en
+     `s14`/`s26` del contenido de prueba — se reusan tal cual, no se
+     re-derivan.
+   - **P03** (L12): el storyboard trae una segunda línea de atribución
+     ("World Bank Global Findex 2025") que L12 no tiene dónde mostrar
+     (kicker/título/cuerpo, sin una ranura de fuente) — queda fuera por
+     ahora, anotado en la lista de revisión de ESTADO.md, no se
+     extendió el layout para un solo caso sin verificar antes con Jose
+     si la atribución debe ser visible o basta con la trazabilidad de
+     `Storyboard_Master_v2.md`.
+   - **P34** (L11): los cuatro `recursos` llevan `href:'#'` sin
+     archivo real detrás — C8 los engancha.
 
-   T6 suma s07 (L06): única pantalla con `interaccion`, para ejercitar
-   quiz.js de extremo a extremo en src/index.html (intentos, bloque de
-   retroalimentación, reporte a cmi.interactions) y no solo en la
-   kitchen sink. Usa I01 (opción única); el catálogo completo vive
-   documentado en el encabezado de quiz.js, con todos los tipos
-   representados en la kitchen sink.
-
-   T7 suma s08 (L04 + datos "variacion"), s09 (L04 + datos "proceso") y
-   s10 (L04 + datos "barras"), para ejercitar charts.js de extremo a
-   extremo en src/index.html. s08 y s09 retoman el mismo ejemplo de
-   Petrocaribe de s06 (compra a $1.000, sube a $1.500 ocho meses
-   después) para que la variación (+50 %) y el desglose en pasos sean
-   consistentes con lo que el estudiante ya vio en video — no un dato
-   nuevo sin conexión. El catálogo completo (cifra, tabla, variación,
-   línea, barras, distribución, proceso), con la forma exacta de
-   `pantalla.datos` por tipo, vive documentado en el encabezado de
-   charts.js; los siete están representados en la kitchen sink.
-
-   T8 suma s11 (L06 + interacción I10, calculadora paramétrica), para
-   ejercitar la primera interacción insignia de extremo a extremo en
-   src/index.html. Retoma la valorización de Petrocaribe de s08/s09
-   pero hacia adelante: en vez de recalcular lo ya ocurrido, el
-   estudiante ajusta el dividendo esperado y las tasas para estimar
-   cuánto debería valer la acción hoy (modelo de descuento de
-   dividendos). La forma exacta de `interaccion.datos` para I10 vive
-   documentada en el encabezado de quiz.js junto al resto del catálogo.
-
-   T8 suma también s12 (L06 + interacción I11, boleta de compra), la
-   segunda de las cuatro interacciones insignia. Retoma el mismo precio
-   de mercado primario de Petrocaribe ($1.000) para que el estudiante
-   decida entre una orden a mercado o una orden límite y explore cuándo
-   una orden límite se ejecuta y cuándo queda pendiente.
-
-   T8 cierra con s13 (L06 + interacción I09, línea de tiempo ordenable)
-   y s14 (L06 + interacción I12, distribución de capital) — la tercera
-   y cuarta de las cuatro interacciones insignia, con lo que T8 queda
-   completa. s13 retoma la cápsula 1 (los tres mercados de s01) con las
-   etapas de una operación repo, en un orden deliberadamente revuelto
-   para que el estudiante las reordene; el orden correcto vive en
-   `ordenCorrecto`, documentado junto al resto del catálogo I09–I12 en
-   el encabezado de quiz.js. s14 retoma esos mismos tres mercados
-   (renta variable, renta fija, derivados) como las categorías de un
-   portafolio que el estudiante arma repartiendo 100 % entre ellas —
-   reusa OVA.charts.crear({tipo:'distribucion'}) de T7 para la vista
-   viva en vez de un gráfico nuevo.
-
-   C1 (4 sep) suma las siete pantallas que exigían layout nuevo: s00
-   (L01, portada de unidad — se agrega al principio del arreglo, no al
-   final como el resto, porque es literalmente la portada; su id
-   "s00" no rompe nada, state.js/router.js navegan por posición en el
-   arreglo, no por el texto del id) y, al final, s15 (L05, tarjetas
-   comparativas — 3, para probar el rango 2–4 con un número que la
-   kitchen sink no cubre, que muestra 4), s16 (L07, pregunta), s17
-   (L08, resultado y retroalimentación — con datos estáticos por ahora;
-   C4 los hará dinámicos), s18 (L09, ideas clave sin media, el caso
-   nuevo que C1 le agregó al layout — la kitchen sink cubre el caso
-   con media), s19 (L11, recursos descargables) y s20 (L10, cierre de
-   unidad — al final de verdad, es el cierre).
-
-   C3 (4 sep) suma el tipo de media "avatar" (imagen fija + audio
-   opcional + subtítulos opcionales + transcripción obligatoria — ver
-   el catálogo completo en el encabezado de media.js). s21 (L02) y s22
-   (L03) lo ejercitan como cualquier otro layout con una sola zona de
-   media: uno con audio real (`public/audio/demo-avatar.mp3`, un tono
-   de prueba generado con ffmpeg, no locución de Jose) y otro sin — s22
-   es la pantalla que demuestra la degradación de la sección 3.2 de
-   PLAN-CONTENIDO.md, transcripción directa sin reproductor, viéndose
-   terminada.
-
-   s00 (L01, la portada) se quedó solo con su `media.tipo:"video"` de
-   siempre — pedido explícito del usuario, primero mantener el video en
-   loop en vez de la foto fija del avatar, y después que esta pantalla
-   en particular no lleva narración de avatar en absoluto. L01 sigue
-   aceptando un campo `avatar` independiente de `media` (mismo contrato
-   que `media.tipo:'avatar'` sin el "tipo"), que `PLANTILLAS.L01` monta
-   de verdad dentro de `.layout__panel` cuando la pantalla lo trae — ver
-   la nota completa junto a esa plantilla en router.js — pero ninguna
-   pantalla de este contenido de prueba lo ejercita hoy; queda cableado
-   para cuando una portada real sí lo necesite. Las imágenes de
-   `public/img/avatar/` (nomenclatura `avatar-{plano}-{fondo}-{n}.webp`,
-   acordada con Juan) todavía no existen — s21/s22 apuntan ahí de todos
-   modos, a propósito: el código tiene que degradar limpio a la
-   ausencia del archivo, no evitarla usando otra imagen que sí exista.
-
-   C4 (4 sep) conecta s17 (L08) a la variable de contenido
-   aciertos_diagnostico en vez de a cifra/retro estáticos: no agrega
-   pantallas nuevas, reusa s07 y s16 (las dos únicas preguntas I01 que
-   ya existían antes de s17 en el recorrido) agregándoles
-   interaccion.datos.variable. Responder las dos cambia de verdad lo
-   que muestra s17 (tres reglas por umbral -- 2/2, 1/2, 0/2 -- más el
-   par cifra/retro estático de "todavía no respondiste" para cuando la
-   variable no tiene valor todavía), y recargar a mitad del recorrido
-   conserva el conteo. s12 (I11, boleta de compra) también queda
-   conectado a resultado_boleta -- cada «Enviar boleta» fija la
-   variable con el resultado completo --, pero sin pantalla nueva que
-   la muestre: ninguna pantalla de prueba anterior a C7 necesita
-   leerla todavía (P43, que sí, es contenido real de Jose).
-   perfil_riesgo no tiene productor aquí: su interacción (I13, test de
-   perfil) es C5. El contrato completo de
-   resultado.variable/resultado.reglas y de
-   interaccion.datos.variable vive documentado en router.js
-   (obtenerResultado) y quiz.js respectivamente, no aquí.
-
-   C5 (4 sep) suma s23/s24/s25 (las tres L06, mismo layout que s07/s11-14/
-   s16 — cualquier interaccion.tipo pasa por la misma crearInteraccion()):
-   I07 (tarjetas volteables), I08 (comparador de dos columnas) e I13
-   (test de perfil), para ejercitar las tres de extremo a extremo en
-   src/index.html y no solo en la kitchen sink. Datos adaptados de los
-   payloads reales de Jose para P13/P28/P30
-   (disenoInstruccional/storyboard_data_v2.json) — mismos textos, forma
-   ajustada al contrato de quiz.js. s25 (I13) fija perfil_riesgo al
-   llegar a un resultado: es el productor que le faltaba a esa variable
-   desde que C4 la dejó preparada sin nadie que la escribiera. El
-   catálogo completo de las tres, con la forma exacta de
-   interaccion.datos por tipo, vive documentado en el encabezado de
-   quiz.js junto al resto.
-
-   Nota abierta para C7: el storyboard real de Jose ubica P13 y P28 en
-   layout L05 ("tarjetas comparativas") con su interacción I07/I08
-   adentro, no en L06 ("interacción a pantalla completa") como aquí —
-   L05 hoy no tiene ranura para interaccion (PLANTILLAS.L05 en
-   router.js solo monta tarjetas de solo lectura). Esta pantalla de
-   prueba usa L06 porque es la única plantilla que ya sabe montar
-   cualquier interaccion.tipo del catálogo; C7 decide si extiende L05
-   para admitir una interacción incrustada o si convierte esas
-   pantallas a L06/L07 contra el criterio real de layouts.css. No es
-   una discrepancia nueva de C5 — es el mismo tipo de desajuste
-   catálogo-contra-contenido que C0 ya resolvió una vez para L01–L13.
-
-   C6 (4 sep) reescribe s11–s14 con los payloads reales de Jose
-   (P22/P37/P42/P46 — P24 no tiene pantalla de prueba propia aquí, solo
-   en la kitchen sink, porque cada pantalla de este archivo es una
-   interacción y s11 ya cubre I10) en vez de los datos de relleno de
-   T8, y suma s26 (I12) después de s25. El catálogo completo, con el
-   contrato exacto de cada tipo ampliado, vive documentado en el
-   bloque "C6" del encabezado de quiz.js — resumen aquí:
-
-   - s11 (I10, valor_accion_dividendo): sin cambio de matemática, solo
-     `salida` → `salidas` (arreglo de un elemento) por el contrato
-     nuevo de I10.
-   - s12 (I11) pasa de "boleta de compra de Petrocaribe" a la boleta de
-     P42 completa (Banco del Sur, comprar/vender, saldo y títulos
-     disponibles, tres resultados) — sigue fijando resultado_boleta.
-   - s13 (I09) pasa de "ordenar las etapas de un repo" (la interacción
-     que C6 reemplazó, ver quiz.js) a "recorrer" los momentos de P37
-     tal cual los escribió Jose.
-   - s14 (I12) suma `reglas`/`aviso` (la matriz de retro de P46) a la
-     misma distribución de los tres mercados de s01, pero se queda
-     ANTES de s25 (I13) en el recorrido — a propósito: demuestra que
-     sin perfil_riesgo todavía el componente degrada a su comportamiento
-     de antes de C6 (solo valida la suma), el mismo criterio "sin dato
-     todavía" que L08/C4 ya establecieron. s26, después de s25, es la
-     que sí muestra la matriz viva contra el perfil que el estudiante
-     acaba de obtener.
+   Resto de las notas de arquitectura (JSONP en vez de .json, `media.vtt`
+   como texto WebVTT completo, etc.) no cambiaron de C0–C6 y no se
+   repiten aquí — ver el historial de este archivo en git si hace falta
+   ese detalle.
    ============================================================ */
 window.OVA_CONTENIDO = {
   "id": "u1-contexto-mercado",
@@ -204,227 +137,1077 @@ window.OVA_CONTENIDO = {
   "unidad": 1,
   "pantallas": [
     {
-      "id": "s00",
+      "id": "p01",
       "layout": "L01",
-      "titulo": "Contexto: el mercado, la bolsa y las acciones",
-      "kicker": "Unidad 1",
+      "titulo": "Unidad 1: Mercado, bolsa y acciones",
+      "kicker": "Introducción a la inversión en acciones",
       "cuerpo": [
-        "¿Quieres aprender los fundamentos de la inversión en acciones? Es muy probable que en algún momento hayas querido obtener rentabilidad por tu capital, pero la falta de experiencia no te ha dejado aventurarte en el mercado accionario."
+        "Aprende el contexto básico del mercado accionario, qué es una acción, cómo se generan valorización y dividendos, y qué perfil de riesgo debes reconocer antes de invertir."
       ],
+      "cta": "Comenzar",
       "media": {
         "tipo": "video",
         "src": "../public/videos/woman_Businesswoman_1920x1010.mp4"
       },
+      "avatar": {
+        "imagen": "../public/img/avatar/avatar-abierto-confondo-1.webp",
+        "transcripcion": "Te damos la bienvenida a la primera unidad. Antes de comprar una acción, necesitas entender el mercado en el que estás entrando, qué derechos obtienes y por qué toda inversión exige información, criterio y control del riesgo."
+      },
       "progreso": true
     },
     {
-      "id": "s01",
+      "id": "p02",
       "layout": "L04",
-      "titulo": "Los tres mercados de Bolsa de Valores de Colombia",
-      "kicker": "Unidad 1 · Cápsula 1",
+      "titulo": "Objetivos de aprendizaje",
+      "kicker": "Unidad 1 · Apertura",
       "cuerpo": [
-        "En Colombia el sistema financiero está compuesto por varios mercados. Uno de ellos es el mercado de capitales, donde se transan los títulos valor de las empresas que emiten activos como acciones, bonos y derivados.",
-        "Bolsa de Valores de Colombia administra estos activos por medio de tres mercados: renta variable, renta fija y derivados. El foco de este curso está en el mercado de renta variable, es decir, en la inversión en acciones."
+        "Al finalizar esta unidad podrás:",
+        "1. Diferenciar renta variable, renta fija y derivados.",
+        "2. Explicar qué es una acción y qué derechos puede otorgar.",
+        "3. Calcular valorización y dividendo por acción en casos sencillos.",
+        "4. Comparar acciones ordinarias y preferenciales.",
+        "5. Reconocer tu punto de partida frente al riesgo."
       ],
+      "media": {
+        "tipo": "video",
+        "src": "../public/videos/motion/p02-objetivos-aprendizaje.mp4",
+        "transcripcion": "En esta unidad construirás una base práctica. Primero ubicarás las acciones dentro del mercado de capitales. Luego aprenderás qué significa ser accionista, cómo se gana o se pierde dinero por precio y dividendos, y qué preguntas debes hacerte antes de invertir."
+      },
       "progreso": true
     },
     {
-      "id": "s02",
+      "id": "p03",
       "layout": "L12",
-      "titulo": "77 %",
-      "kicker": "Contexto",
+      "titulo": "Invertir empieza por cambiar la forma de ahorrar",
+      "kicker": "Unidad 1 · Apertura",
       "cuerpo": [
-        "de los colombianos ahorra guardando el efectivo en su casa, y solo el 9 % lo hace a través de la inversión en activos financieros, según el Banco de Desarrollo de América Latina."
+        "En 2024, solo 40% de los adultos en economías en desarrollo ahorró en una cuenta financiera."
       ],
       "progreso": true
     },
     {
-      "id": "s03",
-      "layout": "L13",
-      "titulo": "Invertir sin fronteras",
-      "kicker": "Dato",
-      "cuerpo": [
-        "A través del Mercado Global Colombiano (MGC), los inversionistas pueden comprar y vender valores extranjeros listados en mercados internacionales por medio de una sociedad comisionista de bolsa local."
-      ],
-      "progreso": true
-    },
-    {
-      "id": "s04",
-      "layout": "L04",
-      "titulo": "Acción",
-      "kicker": "Glosario",
-      "cuerpo": [
-        "Título valor participativo que representa un porcentaje mínimo de propiedad de una empresa. Su titular participa de la rentabilidad del negocio como dueño de una fracción de la compañía."
-      ],
-      "progreso": true
-    },
-    {
-      "id": "s05",
-      "layout": "L03",
-      "titulo": "¿Qué es una acción?",
-      "kicker": "Unidad 1 · Video",
-      "cuerpo": [
-        "Una acción es un título valor participativo que representa un porcentaje mínimo de propiedad de una empresa. Si adquieres una acción, es como si fueras dueño de una mínima parte de esa compañía."
-      ],
-      "media": {
-        "tipo": "video",
-        "src": "../public/videos/woman_Businesswoman_1920x1010.mp4",
-        "vtt": "WEBVTT\n\n00:00:00.000 --> 00:00:01.800\nBienvenida a la Academia Virtual nuam.\n\n00:00:01.800 --> 00:00:03.600\nEste es un video de relleno para probar\n\n00:00:03.600 --> 00:00:05.100\nsubtítulos y transcripción reales.",
-        "transcripcion": "Bienvenida a la Academia Virtual nuam.\nEste es un video de relleno para probar subtítulos y transcripción reales."
-      },
-      "progreso": true
-    },
-    {
-      "id": "s06",
+      "id": "p04",
       "layout": "L02",
-      "titulo": "Valorización de una acción",
-      "kicker": "Unidad 1 · Cápsula 2",
+      "titulo": "Antes de empezar: mide tu punto de partida",
+      "kicker": "Unidad 1 · Apertura",
       "cuerpo": [
-        "La empresa Petrocaribe vende cada acción a $1.000 en el mercado primario. Un inversionista compra 500 acciones y, ocho meses después, el precio sube a $1.500 en el mercado secundario."
+        "Responde cinco preguntas rápidas. No tienen nota; sirven para que identifiques qué conceptos ya conoces y cuáles debes reforzar durante la unidad."
       ],
       "media": {
-        "tipo": "video",
-        "src": "../public/videos/woman_Businesswoman_1920x1010.mp4",
-        "vtt": "WEBVTT\n\n00:00:00.000 --> 00:00:01.800\nBienvenida a la Academia Virtual nuam.\n\n00:00:01.800 --> 00:00:03.600\nEste es un video de relleno para probar\n\n00:00:03.600 --> 00:00:05.100\nsubtítulos y transcripción reales.",
-        "transcripcion": "Bienvenida a la Academia Virtual nuam.\nEste es un video de relleno para probar subtítulos y transcripción reales."
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-1.webp",
+        "transcripcion": "Antes de entrar al contenido, responde una prueba diagnóstica. No busca calificarte. Su propósito es mostrarte qué tan familiarizado estás con conceptos como acción, dividendo, renta variable y tipos de acciones."
       },
       "progreso": true
     },
     {
-      "id": "s07",
-      "layout": "L06",
-      "titulo": "Antes de seguir, ¿cuánto sabes?",
-      "kicker": "Evaluación rápida",
+      "id": "p05",
+      "layout": "L07",
+      "titulo": "Diagnóstico 1",
+      "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I01",
         "datos": {
-          "id": "u1-p1-mercado",
-          "enunciado": "¿Cuál de los siguientes mercados administra Bolsa de Valores de Colombia?",
+          "id": "u1-p05-diagnostico-1",
+          "enunciado": "Una acción es un:",
           "intentos": 2,
           "opciones": [
-            { "id": "a", "texto": "Renta variable" },
-            { "id": "b", "texto": "Criptomonedas" },
-            { "id": "c", "texto": "Bienes raíces" }
+            {
+              "id": "a",
+              "texto": "Título participativo"
+            },
+            {
+              "id": "b",
+              "texto": "Título de deuda"
+            },
+            {
+              "id": "c",
+              "texto": "Cuenta de ahorro"
+            }
           ],
           "correcta": "a",
           "retroalimentacion": {
-            "correcto": "Renta variable es el mercado de las acciones, el foco de este curso.",
-            "incorrecto": "BVC administra renta variable, renta fija y derivados — ninguno de esos es criptomonedas ni bienes raíces."
+            "correcto": "Muy bien. Una acción representa una participación en la propiedad de una empresa.",
+            "incorrecto": "Recuerda que una acción no promete un interés fijo; representa una parte de una empresa."
           },
-          "variable": { "nombre": "aciertos_diagnostico" }
+          "variable": {
+            "nombre": "aciertos_diagnostico"
+          }
         }
       },
       "progreso": true
     },
     {
-      "id": "s08",
-      "layout": "L04",
-      "titulo": "El resultado: una valorización del 50 %",
-      "kicker": "Unidad 1 · Resultado",
-      "cuerpo": [
-        "Retomando el ejemplo de Petrocaribe: el precio subió de $1.000 a $1.500 en ocho meses. Esa diferencia, expresada como variación, es la cifra que un inversionista revisa primero al evaluar una acción."
-      ],
-      "datos": {
-        "tipo": "variacion",
-        "valor": 50,
-        "unidad": " %",
-        "etiqueta": "valorización de la acción de Petrocaribe en ocho meses"
+      "id": "p06",
+      "layout": "L07",
+      "titulo": "Diagnóstico 2",
+      "kicker": "Unidad 1 · Apertura",
+      "interaccion": {
+        "tipo": "I02",
+        "datos": {
+          "id": "u1-p06-diagnostico-2",
+          "enunciado": "Una acción preferencial normalmente no otorga voto en asamblea.",
+          "intentos": 2,
+          "respuestaCorrecta": true,
+          "retroalimentacion": {
+            "correcto": "Correcto. La preferencial suele priorizar derechos económicos y no el voto.",
+            "incorrecto": "Recuerda: la preferencial suele sacrificar voto a cambio de preferencias económicas."
+          },
+          "variable": {
+            "nombre": "aciertos_diagnostico"
+          }
+        }
       },
       "progreso": true
     },
     {
-      "id": "s09",
-      "layout": "L04",
-      "titulo": "Cómo se calcula la valorización",
+      "id": "p07",
+      "layout": "L07",
+      "titulo": "Diagnóstico 3",
+      "kicker": "Unidad 1 · Apertura",
+      "interaccion": {
+        "tipo": "I01",
+        "datos": {
+          "id": "u1-p07-diagnostico-3",
+          "enunciado": "¿Cuál es la principal diferencia entre renta fija y renta variable?",
+          "intentos": 2,
+          "opciones": [
+            {
+              "id": "a",
+              "texto": "La renta fija siempre gana más"
+            },
+            {
+              "id": "b",
+              "texto": "En renta fija se conoce la rentabilidad pactada desde el inicio"
+            },
+            {
+              "id": "c",
+              "texto": "La renta variable no tiene riesgo"
+            }
+          ],
+          "correcta": "b",
+          "retroalimentacion": {
+            "correcto": "Excelente. En renta variable no sabes de antemano cuánto ganarás o perderás.",
+            "incorrecto": "La clave es la certeza inicial: renta fija pacta condiciones; renta variable depende del mercado."
+          },
+          "variable": {
+            "nombre": "aciertos_diagnostico"
+          }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p08",
+      "layout": "L07",
+      "titulo": "Diagnóstico 4",
+      "kicker": "Unidad 1 · Apertura",
+      "interaccion": {
+        "tipo": "I02",
+        "datos": {
+          "id": "u1-p08-diagnostico-4",
+          "enunciado": "Un dividendo permite recibir una porción de las utilidades distribuidas por la empresa.",
+          "intentos": 2,
+          "respuestaCorrecta": true,
+          "retroalimentacion": {
+            "correcto": "Muy bien. El dividendo proviene de utilidades distribuidas.",
+            "incorrecto": "Recuerda que el dividendo es un pago al accionista cuando la empresa decide repartir utilidades."
+          },
+          "variable": {
+            "nombre": "aciertos_diagnostico"
+          }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p09",
+      "layout": "L07",
+      "titulo": "Diagnóstico 5",
+      "kicker": "Unidad 1 · Apertura",
+      "interaccion": {
+        "tipo": "I01",
+        "datos": {
+          "id": "u1-p09-diagnostico-5",
+          "enunciado": "Para comprar acciones necesitas hacerlo mediante un intermediario o una plataforma autorizada.",
+          "intentos": 2,
+          "opciones": [
+            {
+              "id": "a",
+              "texto": "Verdadero"
+            },
+            {
+              "id": "b",
+              "texto": "Falso"
+            },
+            {
+              "id": "c",
+              "texto": "Solo si inviertes grandes montos"
+            }
+          ],
+          "correcta": "a",
+          "retroalimentacion": {
+            "correcto": "Correcto. Debes usar una entidad o plataforma autorizada.",
+            "incorrecto": "No se compra directamente “por fuera” del mercado; se usan intermediarios autorizados."
+          },
+          "variable": {
+            "nombre": "aciertos_diagnostico"
+          }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p10",
+      "layout": "L08",
+      "titulo": "Tu punto de partida",
+      "kicker": "Unidad 1 · Apertura",
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-2.webp",
+        "transcripcion": "Tu resultado no te encasilla. Solo te ayuda a estudiar mejor. Si algunas respuestas no fueron correctas, perfecto: esta unidad está diseñada para explicar los conceptos desde cero y llevarlos a ejemplos prácticos."
+      },
+      "resultado": {
+        "variable": "aciertos_diagnostico",
+        "reglas": [
+          {
+            "minimo": 5,
+            "cifra": {
+              "etiqueta": "respuestas correctas de 5"
+            },
+            "retro": {
+              "tipo": "brand",
+              "titulo": "Aprovecha para ordenar y aplicar",
+              "texto": "Aprovecha la unidad para ordenar y aplicar lo que ya sabes."
+            }
+          },
+          {
+            "minimo": 3,
+            "cifra": {
+              "etiqueta": "respuestas correctas de 5"
+            },
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Buena base inicial",
+              "texto": "Tienes una buena base inicial."
+            }
+          },
+          {
+            "minimo": 0,
+            "cifra": {
+              "etiqueta": "respuestas correctas de 5"
+            },
+            "retro": {
+              "tipo": "alerta",
+              "titulo": "Empieza con calma",
+              "texto": "Empieza con calma y toma nota de los conceptos base."
+            }
+          }
+        ],
+        "cifra": {
+          "valor": "—",
+          "etiqueta": "todavía no respondiste el diagnóstico"
+        },
+        "retro": {
+          "tipo": "nota",
+          "titulo": "Responde el diagnóstico",
+          "texto": "Vuelve atrás y responde las cinco preguntas del diagnóstico para ver tu resultado aquí."
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p11",
+      "layout": "L05",
+      "titulo": "Las cuatro cápsulas de la unidad",
+      "kicker": "Unidad 1 · Apertura",
+      "tarjetas": [
+        {
+          "titulo": "Cápsula 1",
+          "texto": "¿En qué mercado estás entrando?"
+        },
+        {
+          "titulo": "Cápsula 2",
+          "texto": "Qué es una acción"
+        },
+        {
+          "titulo": "Cápsula 3",
+          "texto": "Valorización y dividendo"
+        },
+        {
+          "titulo": "Cápsula 4",
+          "texto": "Ordinarias, preferenciales y tu perfil"
+        }
+      ],
+      "progreso": true
+    },
+    {
+      "id": "p12",
+      "layout": "L02",
+      "titulo": "Cápsula 1: ¿En qué mercado estás entrando?",
+      "kicker": "Unidad 1 · Cápsula 1",
+      "cuerpo": [
+        "Primero ubicaremos las acciones dentro del mercado de capitales y diferenciaremos tres grandes familias: renta variable, renta fija y derivados."
+      ],
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-medio-confondo-1.webp",
+        "transcripcion": "Antes de hablar de acciones, necesitas ver el mapa general. En el mercado de capitales se negocian instrumentos que conectan a quienes necesitan financiación con quienes buscan invertir. Las acciones hacen parte de la renta variable."
+      },
+      "progreso": true
+    },
+    {
+      "id": "p13",
+      "layout": "L05",
+      "titulo": "Tres familias del mercado",
+      "kicker": "Unidad 1 · Cápsula 1",
+      "interaccion": {
+        "tipo": "I07",
+        "datos": {
+          "id": "u1-p13-tres-familias",
+          "enunciado": "Renta variable: resultado no garantizado; depende del precio y dividendos.\nRenta fija: condiciones de pago pactadas desde el inicio.\nDerivados: contratos cuyo valor depende de otro activo.",
+          "tarjetas": [
+            {
+              "frente": "Renta variable",
+              "reverso": "Resultado no garantizado"
+            },
+            {
+              "frente": "Renta fija",
+              "reverso": "Pagos o condiciones pactadas"
+            },
+            {
+              "frente": "Derivados",
+              "reverso": "Contratos sobre otro activo"
+            }
+          ],
+          "retroalimentacion": "Bien. Las acciones pertenecen a renta variable porque su rentabilidad no se conoce al comprar."
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p14",
+      "layout": "L03",
+      "titulo": "Dónde encaja la inversión en acciones",
+      "kicker": "Unidad 1 · Cápsula 1",
+      "cuerpo": [
+        "Las acciones son el instrumento característico de la renta variable. Puedes ganar por valorización o dividendos, pero también puedes perder si el precio baja o si la empresa no distribuye utilidades."
+      ],
+      "media": {
+        "tipo": "imagen",
+        "src": "../public/img/infografia/p14-renta-variable.svg",
+        "alt": ""
+      },
+      "progreso": true
+    },
+    {
+      "id": "p15",
+      "layout": "L07",
+      "titulo": "Comprobación cápsula 1",
+      "kicker": "Unidad 1 · Cápsula 1",
+      "interaccion": {
+        "tipo": "I01",
+        "datos": {
+          "id": "u1-p15-comprobacion-capsula1",
+          "enunciado": "¿Por qué las acciones pertenecen a renta variable?",
+          "intentos": 2,
+          "opciones": [
+            {
+              "id": "a",
+              "texto": "Porque su precio y dividendos no están garantizados"
+            },
+            {
+              "id": "b",
+              "texto": "Porque siempre pagan interés fijo"
+            },
+            {
+              "id": "c",
+              "texto": "Porque solo se compran a corto plazo"
+            }
+          ],
+          "correcta": "a",
+          "retroalimentacion": {
+            "correcto": "Correcto. La rentabilidad de una acción se conoce realmente al vender y sumar dividendos recibidos.",
+            "incorrecto": "Recuerda: en acciones no hay interés fijo ni ganancia garantizada."
+          }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p16",
+      "layout": "L02",
+      "titulo": "Cápsula 2: Qué es una acción",
       "kicker": "Unidad 1 · Cápsula 2",
       "cuerpo": [
-        "El cálculo completo, paso a paso, sobre el mismo ejemplo."
+        "Ahora veremos por qué una acción te convierte en propietario de una fracción de una empresa y qué implica ser accionista."
       ],
-      "datos": {
-        "tipo": "proceso",
-        "pasos": [
-          {
-            "titulo": "Compra en el mercado primario",
-            "detalle": "Petrocaribe vende cada acción a $1.000; un inversionista compra 500."
-          },
-          {
-            "titulo": "Ocho meses después",
-            "detalle": "El precio sube a $1.500 en el mercado secundario."
-          },
-          {
-            "titulo": "Cálculo de la valorización",
-            "detalle": "La diferencia es $500: 500/1.000 = 50 % de valorización."
-          }
-        ]
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-medio-confondo-2.webp",
+        "transcripcion": "Una acción es un título participativo. Cuando compras una acción, compras una fracción muy pequeña de una empresa emisora. Esa participación puede darte derechos económicos y, según el tipo de acción, derechos políticos."
       },
       "progreso": true
     },
     {
-      "id": "s10",
-      "layout": "L04",
-      "titulo": "Renta variable frente a otros activos",
-      "kicker": "Unidad 1 · Comparación",
+      "id": "p17",
+      "layout": "L02",
+      "titulo": "Propiedad fraccionada",
+      "kicker": "Unidad 1 · Cápsula 2",
       "cuerpo": [
-        "Ningún mercado rinde igual todos los años, y ninguno está libre de riesgo. Esta es la rentabilidad anual promedio por tipo de activo administrado por BVC en el ejemplo de este curso."
+        "Ejemplo: si Andina Cementos emite 1.000.000 de acciones y tú compras 100, tienes una participación pequeña, pero real, en la compañía."
       ],
-      "datos": {
-        "tipo": "barras",
-        "titulo": "Rentabilidad anual promedio por tipo de activo",
-        "unidad": " %",
-        "puntos": [
-          { "etiqueta": "Renta variable", "valor": 12.4 },
-          { "etiqueta": "Renta fija", "valor": 6.1 },
-          { "etiqueta": "Derivados", "valor": -2.3 }
-        ]
+      "media": {
+        "tipo": "video",
+        "src": "../public/videos/motion/p17-propiedad-fraccionada.mp4",
+        "transcripcion": "Imagina que Andina Cementos está dividida en un millón de partes iguales llamadas acciones. Si compras cien, tu participación es pequeña, pero existe. Esa propiedad fraccionada es la base de los derechos del accionista."
       },
       "progreso": true
     },
     {
-      "id": "s11",
+      "id": "p18",
+      "layout": "L05",
+      "titulo": "Tres ventajas de ser accionista",
+      "kicker": "Unidad 1 · Cápsula 2",
+      "tarjetas": [
+        {
+          "titulo": "Valorización",
+          "texto": "Participar en valorizaciones si el precio sube."
+        },
+        {
+          "titulo": "Dividendos",
+          "texto": "Recibir dividendos cuando se reparten utilidades."
+        },
+        {
+          "titulo": "Derechos políticos",
+          "texto": "Acceder a derechos políticos en ciertos tipos de acciones."
+        }
+      ],
+      "progreso": true
+    },
+    {
+      "id": "p19",
+      "layout": "L07",
+      "titulo": "Comprobación cápsula 2",
+      "kicker": "Unidad 1 · Cápsula 2",
+      "interaccion": {
+        "tipo": "I02",
+        "datos": {
+          "id": "u1-p19-comprobacion-capsula2",
+          "enunciado": "Comprar una acción equivale a prestar dinero a una empresa con interés fijo.",
+          "intentos": 2,
+          "respuestaCorrecta": false,
+          "retroalimentacion": {
+            "correcto": "Correcto. La acción es participación, no deuda con interés fijo.",
+            "incorrecto": "Recuerda: una acción te vuelve accionista; un bono se parece más a un préstamo."
+          }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p20",
+      "layout": "L02",
+      "titulo": "Cápsula 3: Valorización y dividendo",
+      "kicker": "Unidad 1 · Cápsula 3",
+      "cuerpo": [
+        "Esta cápsula explica las dos fuentes básicas de retorno en acciones: vender a mayor precio y recibir parte de utilidades distribuidas."
+      ],
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-medio-confondo-3.webp",
+        "transcripcion": "Ahora entraremos a la pieza más práctica de la unidad. Aprenderás a calcular una valorización simple y un dividendo por acción. Estos cálculos no predicen el futuro, pero ayudan a entender de dónde viene la rentabilidad."
+      },
+      "progreso": true
+    },
+    {
+      "id": "p21",
+      "layout": "L02",
+      "titulo": "El caso Petrocaribe: de $1.000 a $1.500",
+      "kicker": "Unidad 1 · Cápsula 3",
+      "cuerpo": [
+        "Compras 500 acciones de Petrocaribe a $1.000 cada una. Ocho meses después, el precio sube a $1.500. La diferencia por acción es $500 y la valorización es 50%."
+      ],
+      "media": {
+        "tipo": "video",
+        "src": "../public/videos/motion/p21-caso-petrocaribe.mp4",
+        "transcripcion": "Supongamos que compras acciones de Petrocaribe a mil pesos cada una. Más adelante, el precio sube a mil quinientos. La diferencia es quinientos por acción. Al dividir quinientos entre mil, la valorización es cincuenta por ciento."
+      },
+      "progreso": true
+    },
+    {
+      "id": "p22",
       "layout": "L06",
-      "titulo": "Calcula el valor de una acción por su dividendo",
+      "titulo": "Calcula tú la valorización",
       "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {
         "tipo": "I10",
         "datos": {
-          "id": "u1-p2-valorizacion-dividendo",
-          "enunciado": "Ajusta el dividendo esperado del próximo año y las tasas para estimar cuánto debería valer hoy una acción de Petrocaribe, según el modelo de descuento de dividendos.",
-          "formula": "valor_accion_dividendo",
+          "id": "u1-p22-valorizacion",
+          "enunciado": "Mueve el precio de compra y el precio de venta para ver cómo cambia la valorización.",
+          "formula": "valorizacion",
           "entradas": [
-            { "id": "dividendo", "etiqueta": "Dividendo esperado (próximo año)", "unidad": " COP", "min": 20, "max": 200, "paso": 5, "valorInicial": 60 },
-            { "id": "tasaCrecimiento", "etiqueta": "Crecimiento esperado del dividendo", "unidad": " %", "min": 0, "max": 10, "paso": 0.5, "valorInicial": 4, "decimales": 1 },
-            { "id": "tasaDescuento", "etiqueta": "Tasa de descuento (rendimiento requerido)", "unidad": " %", "min": 1, "max": 20, "paso": 0.5, "valorInicial": 10, "decimales": 1 }
+            {
+              "id": "precio_compra",
+              "etiqueta": "Precio de compra",
+              "unidad": " COP",
+              "min": 1,
+              "max": 10000,
+              "paso": 10,
+              "valorInicial": 1000,
+              "decimales": 0
+            },
+            {
+              "id": "precio_venta",
+              "etiqueta": "Precio de venta",
+              "unidad": " COP",
+              "min": 1,
+              "max": 10000,
+              "paso": 10,
+              "valorInicial": 1500,
+              "decimales": 0
+            },
+            {
+              "id": "acciones",
+              "etiqueta": "Número de acciones",
+              "unidad": " acciones",
+              "min": 1,
+              "max": 10000,
+              "paso": 1,
+              "valorInicial": 500,
+              "decimales": 0
+            }
           ],
-          "salidas": [{ "id": "valor", "etiqueta": "Valor estimado de la acción", "unidad": " COP", "decimales": 0 }]
+          "salidas": [
+            {
+              "id": "monto_invertido",
+              "etiqueta": "Monto invertido",
+              "unidad": " COP",
+              "decimales": 0
+            },
+            {
+              "id": "diferencia_por_accion",
+              "etiqueta": "Diferencia por acción",
+              "unidad": " COP",
+              "decimales": 0
+            },
+            {
+              "id": "variacion_porcentual",
+              "etiqueta": "Variación porcentual",
+              "unidad": " %",
+              "decimales": 1
+            },
+            {
+              "id": "ganancia_perdida",
+              "etiqueta": "Ganancia/pérdida por precio",
+              "unidad": " COP",
+              "decimales": 0
+            },
+            {
+              "id": "monto_final_bruto",
+              "etiqueta": "Monto final bruto",
+              "unidad": " COP",
+              "decimales": 0
+            }
+          ],
+          "mensajes": {
+            "positivo": "La acción se valorizó en el periodo del ejercicio.",
+            "cero": "El precio no cambió; no hay ganancia ni pérdida por precio.",
+            "negativo": "La acción se desvalorizó; el resultado por precio es negativo."
+          }
         }
       },
       "progreso": true
     },
     {
-      "id": "s12",
+      "id": "p23",
+      "layout": "L02",
+      "titulo": "El dividendo: reparto de utilidades",
+      "kicker": "Unidad 1 · Cápsula 3",
+      "cuerpo": [
+        "Banco del Sur genera utilidades. La asamblea decide qué porcentaje se reparte. El dividendo por acción se calcula dividiendo el monto a repartir entre el número de acciones."
+      ],
+      "media": {
+        "tipo": "video",
+        "src": "../public/videos/motion/p23-dividendo-reparto.mp4",
+        "transcripcion": "El dividendo depende de utilidades y de la decisión de repartirlas. Si una empresa gana dinero, puede distribuir una parte entre sus accionistas. Pero también puede decidir repartir menos o no repartir, por ejemplo para fortalecer la operación."
+      },
+      "progreso": true
+    },
+    {
+      "id": "p24",
       "layout": "L06",
-      "titulo": "Simula tu primera orden",
-      "kicker": "Unidad 3 · Pieza insignia",
+      "titulo": "Calcula el dividendo por acción",
+      "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {
-        "tipo": "I11",
+        "tipo": "I10",
         "datos": {
-          "id": "u1-p42-boleta-orden",
-          "enunciado": "Completa la boleta y observa el resultado: ejecutada, expuesta o rechazada.",
-          "emisor": "Banco del Sur",
-          "escenario": { "saldo": 10000, "titulosDisponibles": 8 },
-          "precioActual": { "etiqueta": "Precio actual (mercado)", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 1200 },
-          "precioLimite": { "etiqueta": "Tu precio límite", "unidad": " COP", "min": 800, "max": 1800, "paso": 10, "valorInicial": 1100 },
-          "cantidad": { "etiqueta": "Cantidad", "unidad": " acciones", "min": 1, "max": 50, "paso": 1, "valorInicial": 5 },
-          "variable": { "nombre": "resultado_boleta" }
+          "id": "u1-p24-dividendo-por-accion",
+          "enunciado": "Ajusta utilidad neta, porcentaje a repartir y número de acciones. Observa el dividendo estimado por acción.",
+          "formula": "dividendo_por_accion",
+          "entradas": [
+            {
+              "id": "utilidad_neta",
+              "etiqueta": "Utilidad neta",
+              "unidad": " COP",
+              "min": 0,
+              "max": 1000000000,
+              "paso": 100000,
+              "valorInicial": 20000000,
+              "decimales": 0
+            },
+            {
+              "id": "porcentaje_repartir",
+              "etiqueta": "Porcentaje a repartir",
+              "unidad": " %",
+              "min": 0,
+              "max": 100,
+              "paso": 1,
+              "valorInicial": 50,
+              "decimales": 1
+            },
+            {
+              "id": "acciones_totales",
+              "etiqueta": "Acciones totales",
+              "unidad": " acciones",
+              "min": 1,
+              "max": 10000000,
+              "paso": 1,
+              "valorInicial": 1500,
+              "decimales": 0
+            },
+            {
+              "id": "acciones_estudiante",
+              "etiqueta": "Acciones que posees",
+              "unidad": " acciones",
+              "min": 0,
+              "max": 1000000,
+              "paso": 1,
+              "valorInicial": 100,
+              "decimales": 0
+            }
+          ],
+          "salidas": [
+            {
+              "id": "monto_a_repartir",
+              "etiqueta": "Monto a repartir",
+              "unidad": " COP",
+              "decimales": 0
+            },
+            {
+              "id": "dividendo_por_accion",
+              "etiqueta": "Dividendo por acción",
+              "unidad": " COP",
+              "decimales": 2
+            },
+            {
+              "id": "dividendo_estudiante",
+              "etiqueta": "Dividendo estimado del estudiante",
+              "unidad": " COP",
+              "decimales": 2
+            }
+          ],
+          "mensajes": {
+            "positivo": "El ejercicio genera dividendo estimado.",
+            "cero": "No hay dividendo si la utilidad o el porcentaje a repartir es cero.",
+            "negativo": "No aplica; los inputs válidos no deben producir dividendos negativos."
+          }
         }
       },
       "progreso": true
     },
     {
-      "id": "s13",
+      "id": "p25",
+      "layout": "L07",
+      "titulo": "Comprobación cápsula 3",
+      "kicker": "Unidad 1 · Cápsula 3",
+      "interaccion": {
+        "tipo": "I01",
+        "datos": {
+          "id": "u1-p25-comprobacion-capsula3",
+          "enunciado": "Andina Cementos reparte $12.000.000 entre 3.000 acciones. ¿Cuál es el dividendo por acción?",
+          "intentos": 2,
+          "opciones": [
+            {
+              "id": "a",
+              "texto": "$4.000"
+            },
+            {
+              "id": "b",
+              "texto": "$3.000"
+            },
+            {
+              "id": "c",
+              "texto": "$36.000"
+            },
+            {
+              "id": "d",
+              "texto": "$400"
+            }
+          ],
+          "correcta": "a",
+          "retroalimentacion": {
+            "correcto": "Correcto. $12.000.000 dividido entre 3.000 acciones da $4.000 por acción.",
+            "incorrecto": "Revisa la fórmula: monto a repartir / número de acciones = dividendo por acción."
+          }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p26",
+      "layout": "L02",
+      "titulo": "Cápsula 4: Tipos de acciones y perfil",
+      "kicker": "Unidad 1 · Cápsula 4",
+      "cuerpo": [
+        "Ahora conectaremos los derechos de las acciones con tu perfil de riesgo y tus objetivos de inversión."
+      ],
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-medio-confondo-4.webp",
+        "transcripcion": "No todas las acciones otorgan exactamente los mismos derechos. Además, no todos los inversionistas toleran el riesgo de la misma manera. Por eso, antes de invertir debes conocer el instrumento y conocerte como inversionista."
+      },
+      "progreso": true
+    },
+    {
+      "id": "p27",
+      "layout": "L03",
+      "titulo": "Derechos políticos y económicos",
+      "kicker": "Unidad 1 · Cápsula 4",
+      "cuerpo": [
+        "Derechos políticos: participación y voto cuando aplica.",
+        "Derechos económicos: dividendos y beneficios patrimoniales cuando se generan y aprueban."
+      ],
+      "media": {
+        "tipo": "imagen",
+        "src": "../public/img/infografia/p27-derechos-politicos-economicos.svg",
+        "alt": ""
+      },
+      "progreso": true
+    },
+    {
+      "id": "p28",
+      "layout": "L05",
+      "titulo": "Ordinarias frente a preferenciales",
+      "kicker": "Unidad 1 · Cápsula 4",
+      "interaccion": {
+        "tipo": "I08",
+        "datos": {
+          "id": "u1-p28-ordinarias-preferenciales",
+          "enunciado": "Ordinarias: suelen incluir voto y participación en dividendos.\nPreferenciales: suelen priorizar derechos económicos y limitar el voto.\nAmbas pueden comprarse y venderse en el mercado si están listadas.",
+          "columnas": [
+            "Acciones ordinarias",
+            "Acciones preferenciales"
+          ],
+          "filas": [
+            {
+              "etiqueta": "Voto",
+              "izquierda": "normalmente sí",
+              "derecha": "normalmente no"
+            },
+            {
+              "etiqueta": "Dividendos",
+              "izquierda": "proporcionales",
+              "derecha": "preferencia económica"
+            },
+            {
+              "etiqueta": "Prioridad en liquidación",
+              "izquierda": "menor",
+              "derecha": "mayor después de acreedores"
+            },
+            {
+              "etiqueta": "Enfoque",
+              "izquierda": "participación",
+              "derecha": "ingreso preferente"
+            }
+          ]
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p29",
+      "layout": "L05",
+      "titulo": "Los tres perfiles de riesgo",
+      "kicker": "Unidad 1 · Cápsula 4",
+      "tarjetas": [
+        {
+          "titulo": "Conservador",
+          "texto": "Prioriza preservar capital y liquidez."
+        },
+        {
+          "titulo": "Moderado",
+          "texto": "Acepta fluctuaciones razonables y diversifica."
+        },
+        {
+          "titulo": "Agresivo",
+          "texto": "Tolera mayor volatilidad por potencial de retorno."
+        }
+      ],
+      "nota": "Es un perfil orientativo, no regulatorio.",
+      "progreso": true
+    },
+    {
+      "id": "p30",
+      "layout": "L06",
+      "titulo": "¿Cuál es tu perfil?",
+      "kicker": "Unidad 1 · Cápsula 4",
+      "interaccion": {
+        "tipo": "I13",
+        "datos": {
+          "id": "u1-p30-perfil-riesgo",
+          "enunciado": "Responde cuatro preguntas. El resultado se usará luego para retroalimentar decisiones de portafolio.",
+          "preguntas": [
+            {
+              "enunciado": "Si tu inversión baja 10% en un mes, ¿qué harías?",
+              "opciones": [
+                {
+                  "texto": "Vender para evitar más pérdida",
+                  "puntos": 1
+                },
+                {
+                  "texto": "Revisar y esperar si el objetivo sigue vigente",
+                  "puntos": 2
+                },
+                {
+                  "texto": "Comprar más si el análisis lo justifica",
+                  "puntos": 3
+                }
+              ]
+            },
+            {
+              "enunciado": "¿Cuál es tu horizonte principal?",
+              "opciones": [
+                {
+                  "texto": "Menos de un año",
+                  "puntos": 1
+                },
+                {
+                  "texto": "Entre uno y tres años",
+                  "puntos": 2
+                },
+                {
+                  "texto": "Más de tres años",
+                  "puntos": 3
+                }
+              ]
+            },
+            {
+              "enunciado": "¿Qué tan importante es tener liquidez inmediata?",
+              "opciones": [
+                {
+                  "texto": "Muy importante",
+                  "puntos": 1
+                },
+                {
+                  "texto": "Medianamente importante",
+                  "puntos": 2
+                },
+                {
+                  "texto": "Poco importante para este capital",
+                  "puntos": 3
+                }
+              ]
+            },
+            {
+              "enunciado": "¿Qué prefieres al invertir?",
+              "opciones": [
+                {
+                  "texto": "Preservar capital",
+                  "puntos": 1
+                },
+                {
+                  "texto": "Equilibrar riesgo y retorno",
+                  "puntos": 2
+                },
+                {
+                  "texto": "Buscar mayor retorno aceptando volatilidad",
+                  "puntos": 3
+                }
+              ]
+            }
+          ],
+          "resultados": [
+            {
+              "minimo": 4,
+              "maximo": 6,
+              "categoria": "conservador",
+              "etiqueta": "Perfil conservador",
+              "texto": "Prioriza preservar capital y reducir pérdidas; debe cuidar concentración y liquidez."
+            },
+            {
+              "minimo": 7,
+              "maximo": 9,
+              "categoria": "moderado",
+              "etiqueta": "Perfil moderado",
+              "texto": "Acepta fluctuaciones razonables y busca equilibrio entre crecimiento y control de riesgo."
+            },
+            {
+              "minimo": 10,
+              "maximo": 12,
+              "categoria": "agresivo",
+              "etiqueta": "Perfil agresivo",
+              "texto": "Tolera mayor volatilidad por potencial de retorno, pero necesita análisis y límites de concentración."
+            }
+          ],
+          "variable": "perfil_riesgo",
+          "aviso": "Resultado orientativo y educativo; no reemplaza el perfilamiento formal de un intermediario."
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p31",
+      "layout": "L08",
+      "titulo": "Tu resultado",
+      "kicker": "Unidad 1 · Cápsula 4",
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-3.webp",
+        "transcripcion": "Tu resultado resume tu tolerancia inicial al riesgo. Úsalo como punto de partida, no como sentencia. En inversiones reales, tu perfil debe confirmarse con una entidad autorizada y actualizarse si cambian tus objetivos o circunstancias."
+      },
+      "resultado": {
+        "variable": "perfil_riesgo",
+        "reglas": [
+          {
+            "valor": "conservador",
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Perfil conservador",
+              "texto": "Prioriza estabilidad y liquidez. Este resultado es orientativo y no reemplaza asesoría profesional."
+            }
+          },
+          {
+            "valor": "moderado",
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Perfil moderado",
+              "texto": "Busca equilibrio entre riesgo y retorno. Este resultado es orientativo y no reemplaza asesoría profesional."
+            }
+          },
+          {
+            "valor": "agresivo",
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Perfil agresivo",
+              "texto": "Acepta volatilidad alta por mayor retorno potencial. Este resultado es orientativo y no reemplaza asesoría profesional."
+            }
+          }
+        ],
+        "retro": {
+          "tipo": "nota",
+          "titulo": "Responde el test de perfil",
+          "texto": "Vuelve a la pantalla anterior y responde el test de perfil de riesgo para ver tu resultado aquí."
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p32",
+      "layout": "L09",
+      "titulo": "Ideas clave de la unidad",
+      "kicker": "Unidad 1 · Cierre",
+      "cuerpo": [
+        "Las acciones pertenecen a la renta variable.",
+        "Una acción representa propiedad fraccionada.",
+        "El retorno puede venir de precio y dividendos.",
+        "Ordinarias y preferenciales otorgan derechos distintos.",
+        "Invertir exige objetivos, información y perfil de riesgo."
+      ],
+      "progreso": true
+    },
+    {
+      "id": "p33",
+      "layout": "L02",
+      "titulo": "Las tres bolsas de nuam",
+      "kicker": "Unidad 1 · Cierre",
+      "cuerpo": [
+        "Colombia: Bolsa de Valores de Colombia | Supervisor: SFC | Depósito: Deceval.",
+        "Perú: Bolsa de Valores de Lima | Supervisor: SMV | Depósito: CAVALI.",
+        "Chile: Bolsa de Santiago | Supervisor: CMF | Depósito: DCV."
+      ],
+      "media": {
+        "tipo": "imagen",
+        "src": "../public/img/infografia/p33-tres-bolsas-nuam.svg",
+        "alt": ""
+      },
+      "progreso": true
+    },
+    {
+      "id": "p34",
+      "layout": "L11",
+      "titulo": "Recursos para llevarte",
+      "kicker": "Unidad 1 · Cierre",
+      "cuerpo": [
+        "Además del contenido de la unidad, tendrás cuatro herramientas para usar después."
+      ],
+      "recursos": [
+        {
+          "titulo": "Calculadora de valorización y dividendos",
+          "meta": "Practicar fórmulas.",
+          "href": "#",
+          "icono": "calculate"
+        },
+        {
+          "titulo": "Checklist antes de tu primera orden",
+          "meta": "Evitar omisiones.",
+          "href": "#",
+          "icono": "checklist"
+        },
+        {
+          "titulo": "Hoja de perfil y objetivos",
+          "meta": "Ordenar decisiones.",
+          "href": "#",
+          "icono": "description"
+        },
+        {
+          "titulo": "Glosario de los tres mercados",
+          "meta": "Entender términos por país.",
+          "href": "#",
+          "icono": "menu_book"
+        }
+      ],
+      "progreso": true
+    },
+    {
+      "id": "p35",
+      "layout": "L10",
+      "titulo": "Qué sigue después de esta unidad",
+      "kicker": "Unidad 1 · Cierre",
+      "cuerpo": [
+        "En la siguiente unidad profundizarás en conceptos del mercado bursátil: mercado primario y secundario, operaciones de contado, repos, transferencia temporal de valores y actores del ecosistema."
+      ],
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-4.webp",
+        "transcripcion": "Ya tienes la base. En adelante podrás estudiar cómo se ejecutan operaciones, quiénes participan en el mercado y qué debes verificar antes de enviar una orden. El siguiente paso es pasar del concepto a la operación."
+      },
+      "logro": {
+        "titulo": "¡Completaste la Unidad 1!",
+        "texto": "Contexto sobre el mercado, la bolsa y las acciones."
+      },
+      "progreso": true
+    },
+    {
+      "id": "p36",
+      "layout": "L13",
+      "titulo": "Vista previa Unidad 2: Anatomía de un Repo",
+      "kicker": "Unidad 2 · Pieza insignia Repo",
+      "cuerpo": [
+        "Objetivo: convertir una explicación densa en una línea de tiempo recorrible de tres momentos: inicio, plazo y regreso."
+      ],
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-abierto-confondo-2.webp",
+        "transcripcion": "Esta pieza funciona como una vista previa de la unidad dos. Un repo puede entenderse como una venta de acciones con pacto de recompra. La interacción mostrará qué cambia de manos al inicio, durante el plazo y al cierre."
+      },
+      "progreso": true
+    },
+    {
+      "id": "p37",
       "layout": "L06",
       "titulo": "Repo paso a paso",
-      "kicker": "Unidad 2 · Pieza insignia",
+      "kicker": "Unidad 2 · Pieza insignia Repo",
       "interaccion": {
         "tipo": "I09",
         "datos": {
@@ -441,13 +1224,13 @@ window.OVA_CONTENIDO = {
             {
               "titulo": "Durante el plazo",
               "descripcion": "Las acciones quedan inmovilizadas bajo condiciones pactadas.",
-              "cambia": "no hay nueva entrega; se mantiene la obligación de regreso",
-              "resultado": "Las partes esperan el vencimiento."
+              "cambia": "no hay nueva entrega; se mantiene obligación de regreso",
+              "resultado": "Las partes esperan vencimiento."
             },
             {
               "titulo": "Operación de regreso",
-              "descripcion": "A recompra y B recibe dinero más el rendimiento pactado.",
-              "cambia": "acciones vuelven a A; dinero + rendimiento va a B",
+              "descripcion": "A recompra y B recibe dinero más rendimiento pactado.",
+              "cambia": "acciones vuelven a A; dinero+rendimento va a B",
               "resultado": "La operación se cierra."
             }
           ],
@@ -458,306 +1241,294 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
-      "id": "s14",
-      "layout": "L06",
-      "titulo": "Distribuye $10.000",
-      "kicker": "Unidad 5 · Pieza insignia",
-      "interaccion": {
-        "tipo": "I12",
-        "datos": {
-          "id": "u1-p46-portafolio-s14",
-          "enunciado": "Asigna porcentajes a Petrocaribe, Andina Cementos y Banco del Sur. La suma debe ser 100 %.",
-          "categorias": [
-            { "id": "petrocaribe", "etiqueta": "Petrocaribe", "riesgo": "alto", "valorInicial": 40 },
-            { "id": "andinaCementos", "etiqueta": "Andina Cementos", "riesgo": "medio", "valorInicial": 45 },
-            { "id": "bancoDelSur", "etiqueta": "Banco del Sur", "riesgo": "medio-bajo", "valorInicial": 15 }
-          ],
-          "reglas": [
-            { "perfil": "conservador", "condiciones": [{ "emisor": "petrocaribe", "operador": ">", "valor": 40 }],
-              "retro": "La distribución luce agresiva para un perfil conservador; revisa concentración y pérdida tolerable." },
-            { "perfil": "conservador", "condiciones": [{ "emisor": "bancoDelSur", "operador": ">=", "valor": 50 }, { "tipo": "ningunoSupera", "valor": 60 }],
-              "retro": "La distribución es más coherente con preservación relativa, aunque sigue expuesta a renta variable." },
-            { "perfil": "moderado", "condiciones": [{ "tipo": "ningunoSupera", "valor": 60 }],
-              "retro": "La distribución muestra diversificación básica compatible con un perfil moderado." },
-            { "perfil": "moderado", "condiciones": [{ "tipo": "algunoSupera", "valor": 60 }],
-              "retro": "Revisa concentración; un perfil moderado suele buscar equilibrio." },
-            { "perfil": "agresivo", "condiciones": [{ "emisor": "petrocaribe", "operador": "entre", "min": 30, "max": 60 }],
-              "retro": "La exposición a riesgo alto puede ser coherente, siempre que haya análisis y límites." },
-            { "perfil": "agresivo", "condiciones": [{ "emisor": "petrocaribe", "operador": ">", "valor": 60 }],
-              "retro": "Alta concentración: incluso un perfil agresivo debería justificar y monitorear ese riesgo." }
-          ],
-          "aviso": "No constituye recomendación de inversión."
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "s15",
-      "layout": "L05",
-      "titulo": "¿Qué tan dispuesto estás a asumir riesgo?",
-      "kicker": "Perfil de riesgo",
-      "tarjetas": [
-        { "titulo": "Conservador", "texto": "Prioriza preservar el capital y tolera variaciones mínimas en el corto plazo." },
-        { "titulo": "Moderado", "texto": "Busca equilibrio entre crecimiento y estabilidad, con variaciones moderadas." },
-        { "titulo": "Agresivo", "texto": "Prioriza el crecimiento y tolera variaciones altas a cambio de mayor rentabilidad esperada." }
-      ],
-      "progreso": true
-    },
-    {
-      "id": "s16",
+      "id": "p38",
       "layout": "L07",
-      "titulo": "¿Qué diferencia al mercado primario del secundario?",
-      "kicker": "Cápsula 1",
+      "titulo": "Comprobación Repo",
+      "kicker": "Unidad 2 · Pieza insignia Repo",
       "interaccion": {
-        "tipo": "I01",
+        "tipo": "I02",
         "datos": {
-          "id": "u1-p6-mercado-primario-secundario",
-          "enunciado": "Un inversionista compra acciones directamente de la empresa emisora, en su primera emisión. ¿En qué mercado ocurre esa compra?",
+          "id": "u1-p38-comprobacion-repo",
+          "enunciado": "En un repo, las acciones se entregan con un pacto de recompra futura.",
           "intentos": 2,
-          "opciones": [
-            { "id": "a", "texto": "Mercado primario" },
-            { "id": "b", "texto": "Mercado secundario" },
-            { "id": "c", "texto": "Mercado de derivados" }
-          ],
-          "correcta": "a",
+          "respuestaCorrecta": true,
           "retroalimentacion": {
-            "correcto": "El mercado primario es donde la empresa emite y vende acciones por primera vez, directamente a los inversionistas.",
-            "incorrecto": "El mercado primario es donde la empresa emite y vende acciones por primera vez; el secundario es donde esas acciones se negocian después, entre inversionistas."
-          },
-          "variable": { "nombre": "aciertos_diagnostico" }
+            "correcto": "Correcto. El pacto de recompra diferencia el repo de una venta definitiva.",
+            "incorrecto": "Revisa la secuencia: entrega inicial y recompra pactada al regreso."
+          }
         }
       },
       "progreso": true
     },
     {
-      "id": "s17",
-      "layout": "L08",
-      "titulo": "Así te fue en la evaluación rápida",
-      "kicker": "Resultado",
+      "id": "p39",
+      "layout": "L09",
+      "titulo": "Cierre pieza Repo",
+      "kicker": "Unidad 2 · Pieza insignia Repo",
       "cuerpo": [
-        "Este es un resumen de tus respuestas en la evaluación de esta cápsula."
+        "El repo busca liquidez.",
+        "Las acciones sirven como activo de respaldo.",
+        "Hay operación inicial y de regreso.",
+        "El precio de regreso incorpora el rendimiento acordado."
       ],
+      "progreso": true
+    },
+    {
+      "id": "p40",
+      "layout": "L13",
+      "titulo": "Vista previa Unidad 3: Tu primera orden",
+      "kicker": "Unidad 3 · Pieza insignia Orden",
+      "cuerpo": [
+        "Objetivo: practicar la diferencia entre orden a mercado y orden límite antes de enviar una instrucción real."
+      ],
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-abierto-confondo-3.webp",
+        "transcripcion": "La tercera unidad debe llevar al estudiante de la teoría a la acción. Esta vista previa propone una boleta simulada para entender qué ocurre cuando eliges precio de mercado o precio límite."
+      },
+      "progreso": true
+    },
+    {
+      "id": "p41",
+      "layout": "L03",
+      "titulo": "Mercado vs límite",
+      "kicker": "Unidad 3 · Pieza insignia Orden",
+      "cuerpo": [
+        "Orden a mercado: busca ejecución rápida al mejor precio disponible.",
+        "Orden límite: fija el precio máximo de compra o mínimo de venta; puede no ejecutarse."
+      ],
+      "media": {
+        "tipo": "imagen",
+        "src": "../public/img/infografia/p41-mercado-vs-limite.svg",
+        "alt": ""
+      },
+      "progreso": true
+    },
+    {
+      "id": "p42",
+      "layout": "L06",
+      "titulo": "Simula tu primera orden",
+      "kicker": "Unidad 3 · Pieza insignia Orden",
+      "interaccion": {
+        "tipo": "I11",
+        "datos": {
+          "id": "u1-p42-boleta-orden",
+          "enunciado": "Completa la boleta y observa el resultado: ejecutada o expuesta.",
+          "emisor": "Banco del Sur",
+          "escenario": {
+            "saldo": 10000,
+            "titulosDisponibles": 8
+          },
+          "precioActual": {
+            "etiqueta": "Precio actual (mercado)",
+            "unidad": " COP",
+            "min": 800,
+            "max": 1800,
+            "paso": 10,
+            "valorInicial": 1200
+          },
+          "precioLimite": {
+            "etiqueta": "Tu precio límite",
+            "unidad": " COP",
+            "min": 800,
+            "max": 1800,
+            "paso": 10,
+            "valorInicial": 1100
+          },
+          "cantidad": {
+            "etiqueta": "Cantidad",
+            "unidad": " acciones",
+            "min": 1,
+            "max": 50,
+            "paso": 1,
+            "valorInicial": 5
+          },
+          "variable": {
+            "nombre": "resultado_boleta"
+          }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p43",
+      "layout": "L08",
+      "titulo": "Resultado de la orden",
+      "kicker": "Unidad 3 · Pieza insignia Orden",
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-5.webp",
+        "transcripcion": "El resultado de una orden depende de sus condiciones. Lo importante es revisar cantidad, precio, vigencia, costos y saldo antes de confirmar. En la vida real, una orden confirmada tiene trazabilidad."
+      },
       "resultado": {
-        "variable": "aciertos_diagnostico",
+        "variable": "resultado_boleta",
+        "campo": "estado",
         "reglas": [
           {
-            "minimo": 2,
-            "cifra": { "etiqueta": "respuestas correctas de 2", "porcentaje": 100 },
-            "retro": {
-              "tipo": "brand",
-              "titulo": "Buen dominio del contenido",
-              "texto": "Identificas con claridad los conceptos básicos del mercado de acciones. Sigue reforzando con la práctica de las siguientes cápsulas."
-            }
-          },
-          {
-            "minimo": 1,
-            "cifra": { "etiqueta": "respuestas correctas de 2", "porcentaje": 50 },
+            "valor": "ejecutada",
             "retro": {
               "tipo": "nota",
-              "titulo": "Vas por buen camino",
-              "texto": "Acertaste una de las dos preguntas. Repasa el contenido de la cápsula antes de seguir."
+              "titulo": "Ejecutada",
+              "texto": "tu instrucción encontró condiciones de mercado."
             }
           },
           {
-            "minimo": 0,
-            "cifra": { "etiqueta": "respuestas correctas de 2", "porcentaje": 0 },
+            "valor": "expuesta",
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Expuesta",
+              "texto": "queda vigente hasta que el precio llegue o venza."
+            }
+          },
+          {
+            "valor": "rechazada",
             "retro": {
               "tipo": "alerta",
-              "titulo": "Repasa antes de continuar",
-              "texto": "No acertaste ninguna de las dos preguntas. Vuelve a repasar el contenido de la cápsula 1 antes de seguir."
+              "titulo": "Rechazada",
+              "texto": "faltan datos o no hay saldo/títulos suficientes."
             }
           }
         ],
-        "cifra": { "valor": "—", "etiqueta": "todavía no respondiste las preguntas de esta cápsula" },
         "retro": {
           "tipo": "nota",
-          "titulo": "Responde las preguntas anteriores",
-          "texto": "Vuelve atrás y responde las dos preguntas de esta cápsula para ver tu resultado aquí."
+          "titulo": "Envía tu boleta",
+          "texto": "Vuelve a la pantalla anterior y envía tu boleta para ver el resultado aquí."
         }
       },
       "progreso": true
     },
     {
-      "id": "s18",
-      "layout": "L09",
-      "titulo": "Lo esencial de esta cápsula",
-      "kicker": "Ideas clave",
+      "id": "p44",
+      "layout": "L13",
+      "titulo": "Vista previa Unidad 5: Arma tu portafolio",
+      "kicker": "Unidad 5 · Pieza insignia Portafolio",
       "cuerpo": [
-        "Una acción es un título de propiedad, no de deuda.",
-        "Su rentabilidad no se conoce de forma anticipada.",
-        "El precio se mueve según la oferta y la demanda en el mercado secundario."
-      ],
-      "progreso": true
-    },
-    {
-      "id": "s19",
-      "layout": "L11",
-      "titulo": "Plantilla: mi perfil de riesgo",
-      "kicker": "Recurso descargable",
-      "cuerpo": [
-        "Un formato práctico para identificar si tu perfil de inversión es conservador, moderado o agresivo antes de tomar una decisión."
-      ],
-      "recursos": [
-        { "titulo": "Plantilla: mi perfil de riesgo", "meta": "PDF · 180 KB", "href": "#", "icono": "description" }
-      ],
-      "progreso": true
-    },
-    {
-      "id": "s21",
-      "layout": "L02",
-      "titulo": "Antes de seguir, un mensaje del equipo docente",
-      "kicker": "Unidad 1 · Avatar",
-      "cuerpo": [
-        "El avatar es imagen fija más audio, nunca video (regla dura 10 de CLAUDE.md): esta pantalla ejercita el reproductor real, con controles, subtítulos y transcripción."
+        "Objetivo: repartir capital entre tres emisores ficticios y recibir retroalimentación según el perfil obtenido en P30."
       ],
       "media": {
         "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-medio-confondo-2.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "vtt": "WEBVTT\n\n00:00:00.000 --> 00:00:02.500\nBienvenida a la Academia Virtual nuam.\n\n00:00:02.500 --> 00:00:06.000\nEste es un tono de prueba para ejercitar el reproductor de avatar de C3.",
-        "transcripcion": "Bienvenida a la Academia Virtual nuam.\nEste es un tono de prueba para ejercitar el reproductor de avatar de C3, no la locución real de Jose."
+        "imagen": "../public/img/avatar/avatar-abierto-confondo-4.webp",
+        "transcripcion": "La quinta unidad debe cerrar con práctica. Esta pieza permite repartir capital entre tres emisores ficticios. La retroalimentación usará el perfil obtenido antes para sugerir si la distribución es coherente con tu tolerancia al riesgo."
       },
       "progreso": true
     },
     {
-      "id": "s22",
+      "id": "p45",
       "layout": "L03",
-      "titulo": "Todavía sin locución grabada",
-      "kicker": "Unidad 1 · Avatar sin audio",
+      "titulo": "Tres emisores ficticios",
+      "kicker": "Unidad 5 · Pieza insignia Portafolio",
       "cuerpo": [
-        "Esta pantalla no trae \"audio\" en su media — el caso real mientras Juan graba las locuciones (PLAN-CONTENIDO.md §3.2). Degrada a imagen más transcripción directa, sin reproductor: tiene que verse terminada, no rota."
+        "Petrocaribe: alto riesgo, sensible a precios de energía.",
+        "Andina Cementos: riesgo medio, ligado a infraestructura y construcción.",
+        "Banco del Sur: riesgo medio-bajo, negocio financiero diversificado."
       ],
       "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-1.webp",
-        "transcripcion": "Esta es la locución completa de la pantalla, escrita por Jose, mostrada directamente porque el audio todavía no existe. Cuando Juan lo grabe, esta misma transcripción pasa a vivir dentro de un reproductor real, sin que el contenido cambie."
+        "tipo": "imagen",
+        "src": "../public/img/infografia/p45-tres-emisores.svg",
+        "alt": ""
       },
       "progreso": true
     },
     {
-      "id": "s23",
+      "id": "p46",
       "layout": "L06",
-      "titulo": "Tres familias del mercado",
-      "kicker": "Unidad 1 · Cápsula 1",
-      "interaccion": {
-        "tipo": "I07",
-        "datos": {
-          "id": "u1-p6-tres-familias",
-          "enunciado": "Toca cada tarjeta para ver a qué familia del mercado pertenece.",
-          "tarjetas": [
-            { "frente": "Renta variable", "reverso": "Resultado no garantizado: depende del precio y de los dividendos." },
-            { "frente": "Renta fija", "reverso": "Condiciones de pago pactadas desde el inicio." },
-            { "frente": "Derivados", "reverso": "Contratos cuyo valor depende de otro activo." }
-          ],
-          "retroalimentacion": "Bien. Las acciones pertenecen a renta variable porque su rentabilidad no se conoce al comprar."
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "s24",
-      "layout": "L06",
-      "titulo": "Ordinarias frente a preferenciales",
-      "kicker": "Unidad 1 · Cápsula 4",
-      "interaccion": {
-        "tipo": "I08",
-        "datos": {
-          "id": "u1-p7-ordinarias-preferenciales",
-          "enunciado": "Compara las acciones ordinarias con las preferenciales, fila por fila.",
-          "columnas": ["Acciones ordinarias", "Acciones preferenciales"],
-          "filas": [
-            { "etiqueta": "Voto", "izquierda": "Normalmente sí", "derecha": "Normalmente no" },
-            { "etiqueta": "Dividendos", "izquierda": "Proporcionales", "derecha": "Preferencia económica" },
-            { "etiqueta": "Prioridad en liquidación", "izquierda": "Menor", "derecha": "Mayor, después de acreedores" },
-            { "etiqueta": "Enfoque", "izquierda": "Participación", "derecha": "Ingreso preferente" }
-          ]
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "s25",
-      "layout": "L06",
-      "titulo": "¿Cuál es tu perfil?",
-      "kicker": "Unidad 1 · Cápsula 4",
-      "interaccion": {
-        "tipo": "I13",
-        "datos": {
-          "id": "u1-p8-perfil-riesgo",
-          "enunciado": "Responde estas cuatro preguntas para conocer tu perfil de riesgo orientativo.",
-          "preguntas": [
-            {
-              "enunciado": "Si tu inversión baja 10 % en un mes, ¿qué harías?",
-              "opciones": [
-                { "texto": "Vender para evitar más pérdida", "puntos": 1 },
-                { "texto": "Revisar y esperar si el objetivo sigue vigente", "puntos": 2 },
-                { "texto": "Comprar más si el análisis lo justifica", "puntos": 3 }
-              ]
-            },
-            {
-              "enunciado": "¿Cuál es tu horizonte principal?",
-              "opciones": [
-                { "texto": "Menos de un año", "puntos": 1 },
-                { "texto": "Entre uno y tres años", "puntos": 2 },
-                { "texto": "Más de tres años", "puntos": 3 }
-              ]
-            },
-            {
-              "enunciado": "¿Qué tan importante es tener liquidez inmediata?",
-              "opciones": [
-                { "texto": "Muy importante", "puntos": 1 },
-                { "texto": "Medianamente importante", "puntos": 2 },
-                { "texto": "Poco importante para este capital", "puntos": 3 }
-              ]
-            },
-            {
-              "enunciado": "¿Qué prefieres al invertir?",
-              "opciones": [
-                { "texto": "Preservar capital", "puntos": 1 },
-                { "texto": "Equilibrar riesgo y retorno", "puntos": 2 },
-                { "texto": "Buscar mayor retorno aceptando volatilidad", "puntos": 3 }
-              ]
-            }
-          ],
-          "resultados": [
-            { "minimo": 4, "maximo": 6, "categoria": "conservador", "etiqueta": "Perfil conservador", "texto": "Prioriza preservar capital y reducir pérdidas; debe cuidar concentración y liquidez." },
-            { "minimo": 7, "maximo": 9, "categoria": "moderado", "etiqueta": "Perfil moderado", "texto": "Acepta fluctuaciones razonables y busca equilibrio entre crecimiento y control de riesgo." },
-            { "minimo": 10, "maximo": 12, "categoria": "agresivo", "etiqueta": "Perfil agresivo", "texto": "Tolera mayor volatilidad por potencial de retorno, pero necesita análisis y límites de concentración." }
-          ],
-          "variable": "perfil_riesgo",
-          "aviso": "Resultado orientativo y educativo; no reemplaza el perfilamiento formal de un intermediario."
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "s26",
-      "layout": "L06",
-      "titulo": "Retroalimentación de tu portafolio",
-      "kicker": "Unidad 5 · Pieza insignia",
+      "titulo": "Distribuye $10.000",
+      "kicker": "Unidad 5 · Pieza insignia Portafolio",
       "interaccion": {
         "tipo": "I12",
         "datos": {
-          "id": "u1-p46-portafolio-s26",
-          "enunciado": "Reparte $10.000 entre Petrocaribe, Andina Cementos y Banco del Sur. La retroalimentación usa el perfil que obtuviste en la pantalla anterior.",
+          "id": "u1-p46-portafolio",
+          "enunciado": "Asigna porcentajes a Petrocaribe, Andina Cementos y Banco del Sur. La suma debe ser 100%.",
           "categorias": [
-            { "id": "petrocaribe", "etiqueta": "Petrocaribe", "riesgo": "alto", "valorInicial": 34 },
-            { "id": "andinaCementos", "etiqueta": "Andina Cementos", "riesgo": "medio", "valorInicial": 33 },
-            { "id": "bancoDelSur", "etiqueta": "Banco del Sur", "riesgo": "medio-bajo", "valorInicial": 33 }
+            {
+              "id": "petrocaribe",
+              "etiqueta": "Petrocaribe",
+              "riesgo": "alto",
+              "valorInicial": 34
+            },
+            {
+              "id": "andinaCementos",
+              "etiqueta": "Andina Cementos",
+              "riesgo": "medio",
+              "valorInicial": 33
+            },
+            {
+              "id": "bancoDelSur",
+              "etiqueta": "Banco del Sur",
+              "riesgo": "medio-bajo",
+              "valorInicial": 33
+            }
           ],
           "reglas": [
-            { "perfil": "conservador", "condiciones": [{ "emisor": "petrocaribe", "operador": ">", "valor": 40 }],
-              "retro": "La distribución luce agresiva para un perfil conservador; revisa concentración y pérdida tolerable." },
-            { "perfil": "conservador", "condiciones": [{ "emisor": "bancoDelSur", "operador": ">=", "valor": 50 }, { "tipo": "ningunoSupera", "valor": 60 }],
-              "retro": "La distribución es más coherente con preservación relativa, aunque sigue expuesta a renta variable." },
-            { "perfil": "moderado", "condiciones": [{ "tipo": "ningunoSupera", "valor": 60 }],
-              "retro": "La distribución muestra diversificación básica compatible con un perfil moderado." },
-            { "perfil": "moderado", "condiciones": [{ "tipo": "algunoSupera", "valor": 60 }],
-              "retro": "Revisa concentración; un perfil moderado suele buscar equilibrio." },
-            { "perfil": "agresivo", "condiciones": [{ "emisor": "petrocaribe", "operador": "entre", "min": 30, "max": 60 }],
-              "retro": "La exposición a riesgo alto puede ser coherente, siempre que haya análisis y límites." },
-            { "perfil": "agresivo", "condiciones": [{ "emisor": "petrocaribe", "operador": ">", "valor": 60 }],
-              "retro": "Alta concentración: incluso un perfil agresivo debería justificar y monitorear ese riesgo." }
+            {
+              "perfil": "conservador",
+              "condiciones": [
+                {
+                  "emisor": "petrocaribe",
+                  "operador": ">",
+                  "valor": 40
+                }
+              ],
+              "retro": "La distribución luce agresiva para un perfil conservador; revisa concentración y pérdida tolerable."
+            },
+            {
+              "perfil": "conservador",
+              "condiciones": [
+                {
+                  "emisor": "bancoDelSur",
+                  "operador": ">=",
+                  "valor": 50
+                },
+                {
+                  "tipo": "ningunoSupera",
+                  "valor": 60
+                }
+              ],
+              "retro": "La distribución es más coherente con preservación relativa, aunque sigue expuesta a renta variable."
+            },
+            {
+              "perfil": "moderado",
+              "condiciones": [
+                {
+                  "tipo": "ningunoSupera",
+                  "valor": 60
+                }
+              ],
+              "retro": "La distribución muestra diversificación básica compatible con un perfil moderado."
+            },
+            {
+              "perfil": "moderado",
+              "condiciones": [
+                {
+                  "tipo": "algunoSupera",
+                  "valor": 60
+                }
+              ],
+              "retro": "Revisa concentración; un perfil moderado suele buscar equilibrio."
+            },
+            {
+              "perfil": "agresivo",
+              "condiciones": [
+                {
+                  "emisor": "petrocaribe",
+                  "operador": "entre",
+                  "min": 30,
+                  "max": 60
+                }
+              ],
+              "retro": "La exposición a riesgo alto puede ser coherente, siempre que haya análisis y límites."
+            },
+            {
+              "perfil": "agresivo",
+              "condiciones": [
+                {
+                  "emisor": "petrocaribe",
+                  "operador": ">",
+                  "valor": 60
+                }
+              ],
+              "retro": "Alta concentración: incluso un perfil agresivo debería justificar y monitorear ese riesgo."
+            }
           ],
           "aviso": "No constituye recomendación de inversión."
         }
@@ -765,16 +1536,48 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
-      "id": "s20",
-      "layout": "L10",
-      "titulo": "Ya conoces el contexto del mercado",
-      "kicker": "Fin de la unidad 1",
-      "cuerpo": [
-        "Identificaste los tres mercados de Bolsa de Valores de Colombia, qué es una acción y la diferencia entre acciones ordinarias y preferenciales."
-      ],
-      "logro": {
-        "titulo": "¡Completaste la Unidad 1!",
-        "texto": "Contexto sobre el mercado, la bolsa y las acciones."
+      "id": "p47",
+      "layout": "L08",
+      "titulo": "Retro de portafolio",
+      "kicker": "Unidad 5 · Pieza insignia Portafolio",
+      "media": {
+        "tipo": "avatar",
+        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-6.webp",
+        "transcripcion": "La retroalimentación del portafolio debe educar, no recomendar. El estudiante aprende a revisar coherencia entre perfil y asignación. En inversiones reales se requiere información adicional, costos, horizonte, asesoría y reglas aplicables."
+      },
+      "resultado": {
+        "variable": "perfil_riesgo",
+        "reglas": [
+          {
+            "valor": "conservador",
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Perfil conservador",
+              "texto": "Cuida concentración y liquidez. Ninguna retroalimentación equivale a una recomendación de inversión."
+            }
+          },
+          {
+            "valor": "moderado",
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Perfil moderado",
+              "texto": "Busca equilibrio y diversificación. Ninguna retroalimentación equivale a una recomendación de inversión."
+            }
+          },
+          {
+            "valor": "agresivo",
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Perfil agresivo",
+              "texto": "Tolera más volatilidad, pero no ignora concentración. Ninguna retroalimentación equivale a una recomendación de inversión."
+            }
+          }
+        ],
+        "retro": {
+          "tipo": "nota",
+          "titulo": "Arma tu portafolio",
+          "texto": "Vuelve a la pantalla anterior y reparte tu capital para ver la retroalimentación aquí."
+        }
       },
       "progreso": true
     }

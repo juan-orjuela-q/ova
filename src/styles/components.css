@@ -869,6 +869,36 @@
   color: var(--nuam-orange-300);
 }
 
+/* ---- Imagen fija / marcador de media (C7) --------------------------------
+   .media-imagen es el tipo "imagen" del catálogo de media.js (infografías
+   y motion sin avatar). .media-marcador es la caja compartida por dos
+   casos: la imagen todavía sin producir (esta) y el <video> de T4 cuando
+   su fuente falla (motion todavía sin producir) — mismo lenguaje visual
+   que .layout__figura de L11 (--surface-subtle + --text-tertiary, el par
+   que la auditoría axe-core de T9 ya validó ahí), para no inventar un
+   tercer tratamiento de "recurso pendiente" en el proyecto. */
+.media-imagen__elemento {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.media-marcador {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  background: var(--surface-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.media-marcador .icono {
+  font-size: 2rem;
+  color: var(--text-tertiary);
+}
+
 /* ---- Línea de tiempo conectada (T1.5, componentes) --------------------
    Vertical por ahora: la variante horizontal (para el diagrama de
    proceso dentro de L04 en desktop — antes de C0 ese diagrama tenía su
