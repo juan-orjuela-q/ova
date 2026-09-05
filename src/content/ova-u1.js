@@ -147,7 +147,7 @@ window.OVA_CONTENIDO = {
       "cta": "Comenzar",
       "media": {
         "tipo": "video",
-        "src": "../public/videos/woman_Businesswoman_1920x1010.mp4"
+        "src": "../public/videos/vid0_introduccion-claudia-mirando-a-camara.mp4"
       },
       "avatar": {
         "imagen": "../public/img/avatar/avatar-abierto-confondo-1.webp",
