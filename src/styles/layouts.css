@@ -309,16 +309,18 @@
    Cuerpo con ancho de lectura acotado, sin centrar. Para explicación
    densa — salvo que la pantalla traiga `datos` (T7): ahí sí hay apoyo
    visual, acotado al mismo ancho de lectura que el cuerpo (no es un
-   layout de gráfico a ancho completo). El brief pide además imagen de
-   apoyo opcional (`media`); antes de C0 era .layout--l02 y no admitía
-   `media` — sigue sin admitirla, queda pendiente para C1 (ver
-   PLAN-CONTENIDO.md §2.1, fila L04). El diagrama de proceso/línea de
+   layout de gráfico a ancho completo). El diagrama de proceso/línea de
    tiempo (antes su propio layout L09) vive aquí como `datos.tipo:
-   'proceso'` — ver components.css, .linea-tiempo--horizontal. ------- */
+   'proceso'` — ver components.css, .linea-tiempo--horizontal.
+   D8: `media` opcional, mismo ancho de lectura que `datos` — brecha real
+   del motor encontrada al mirar P02 (motion con transcripción, la única
+   pantalla real que usa L04 con media): el brief ya la pedía y C1 nunca
+   cerró esta ranura (router.js sí la monta ahora). ------------------- */
 .layout--l04 .layout__cuerpo {
   max-width: 38rem;
 }
-.layout--l04 .layout__datos {
+.layout--l04 .layout__datos,
+.layout--l04 .layout__media {
   max-width: 42rem;
 }
 

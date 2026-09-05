@@ -603,6 +603,11 @@
     // proceso, que exigía datos siempre) — s01 sigue siendo puro texto
     // sin él, s08/s09/s10 lo agregan (s09 con datos.tipo:'proceso').
     if (pantalla.datos) raiz.appendChild(crearDatos(pantalla.datos));
+    // D8: "media" opcional — P02 (real, motion con transcripción) es la
+    // única pantalla real que usa L04 con imagen/video de apoyo; el
+    // brief ya lo pedía (ver la nota en layouts.css) pero C1 nunca cerró
+    // esta ranura. Mismo patrón opcional que L08/L09/L10/L13.
+    if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
     return { raiz: raiz, titulo: titulo };
   };
 

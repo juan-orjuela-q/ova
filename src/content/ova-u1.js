@@ -151,6 +151,7 @@ window.OVA_CONTENIDO = {
       },
       "avatar": {
         "imagen": "../public/img/avatar/avatar-abierto-confondo-1.webp",
+        "audio": "../public/audio/demo-avatar.mp3",
         "transcripcion": "Te damos la bienvenida a la primera unidad. Antes de comprar una acción, necesitas entender el mercado en el que estás entrando, qué derechos obtienes y por qué toda inversión exige información, criterio y control del riesgo."
       },
       "progreso": true
@@ -196,6 +197,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-1.webp",
+        "audio": "../public/audio/loc1_objetivos.mp3",
         "transcripcion": "Antes de entrar al contenido, responde una prueba diagnóstica. No busca calificarte. Su propósito es mostrarte qué tan familiarizado estás con conceptos como acción, dividendo, renta variable y tipos de acciones."
       },
       "progreso": true
@@ -365,6 +367,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-2.webp",
+        "audio": "../public/audio/demo-avatar.mp3",
         "transcripcion": "Tu resultado no te encasilla. Solo te ayuda a estudiar mejor. Si algunas respuestas no fueron correctas, perfecto: esta unidad está diseñada para explicar los conceptos desde cero y llevarlos a ejemplos prácticos."
       },
       "resultado": {
@@ -452,6 +455,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-medio-confondo-1.webp",
+        "audio": "../public/audio/loc1_objetivos.mp3",
         "transcripcion": "Antes de hablar de acciones, necesitas ver el mapa general. En el mercado de capitales se negocian instrumentos que conectan a quienes necesitan financiación con quienes buscan invertir. Las acciones hacen parte de la renta variable."
       },
       "progreso": true
@@ -545,6 +549,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-medio-confondo-2.webp",
+        "audio": "../public/audio/demo-avatar.mp3",
         "transcripcion": "Una acción es un título participativo. Cuando compras una acción, compras una fracción muy pequeña de una empresa emisora. Esa participación puede darte derechos económicos y, según el tipo de acción, derechos políticos."
       },
       "progreso": true
@@ -616,6 +621,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-medio-confondo-3.webp",
+        "audio": "../public/audio/loc1_objetivos.mp3",
         "transcripcion": "Ahora entraremos a la pieza más práctica de la unidad. Aprenderás a calcular una valorización simple y un dividendo por acción. Estos cálculos no predicen el futuro, pero ayudan a entender de dónde viene la rentabilidad."
       },
       "progreso": true
@@ -865,6 +871,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-medio-confondo-4.webp",
+        "audio": "../public/audio/demo-avatar.mp3",
         "transcripcion": "No todas las acciones otorgan exactamente los mismos derechos. Además, no todos los inversionistas toleran el riesgo de la misma manera. Por eso, antes de invertir debes conocer el instrumento y conocerte como inversionista."
       },
       "progreso": true
@@ -1064,6 +1071,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-3.webp",
+        "audio": "../public/audio/loc1_objetivos.mp3",
         "transcripcion": "Tu resultado resume tu tolerancia inicial al riesgo. Úsalo como punto de partida, no como sentencia. En inversiones reales, tu perfil debe confirmarse con una entidad autorizada y actualizarse si cambian tus objetivos o circunstancias."
       },
       "resultado": {
@@ -1180,6 +1188,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-4.webp",
+        "audio": "../public/audio/demo-avatar.mp3",
         "transcripcion": "Ya tienes la base. En adelante podrás estudiar cómo se ejecutan operaciones, quiénes participan en el mercado y qué debes verificar antes de enviar una orden. El siguiente paso es pasar del concepto a la operación."
       },
       "logro": {
@@ -1199,6 +1208,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-abierto-confondo-2.webp",
+        "audio": "../public/audio/loc1_objetivos.mp3",
         "transcripcion": "Esta pieza funciona como una vista previa de la unidad dos. Un repo puede entenderse como una venta de acciones con pacto de recompra. La interacción mostrará qué cambia de manos al inicio, durante el plazo y al cierre."
       },
       "progreso": true
@@ -1284,6 +1294,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-abierto-confondo-3.webp",
+        "audio": "../public/audio/demo-avatar.mp3",
         "transcripcion": "La tercera unidad debe llevar al estudiante de la teoría a la acción. Esta vista previa propone una boleta simulada para entender qué ocurre cuando eliges precio de mercado o precio límite."
       },
       "progreso": true
@@ -1358,6 +1369,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-5.webp",
+        "audio": "../public/audio/loc1_objetivos.mp3",
         "transcripcion": "El resultado de una orden depende de sus condiciones. Lo importante es revisar cantidad, precio, vigencia, costos y saldo antes de confirmar. En la vida real, una orden confirmada tiene trazabilidad."
       },
       "resultado": {
@@ -1408,6 +1420,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-abierto-confondo-4.webp",
+        "audio": "../public/audio/demo-avatar.mp3",
         "transcripcion": "La quinta unidad debe cerrar con práctica. Esta pieza permite repartir capital entre tres emisores ficticios. La retroalimentación usará el perfil obtenido antes para sugerir si la distribución es coherente con tu tolerancia al riesgo."
       },
       "progreso": true
@@ -1543,6 +1556,7 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-6.webp",
+        "audio": "../public/audio/loc1_objetivos.mp3",
         "transcripcion": "La retroalimentación del portafolio debe educar, no recomendar. El estudiante aprende a revisar coherencia entre perfil y asignación. En inversiones reales se requiere información adicional, costos, horizonte, asesoría y reglas aplicables."
       },
       "resultado": {
