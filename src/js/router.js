@@ -932,15 +932,29 @@
     var barra = document.getElementById('nav-progreso');
     var relleno = document.getElementById('nav-progreso-relleno');
     var texto = document.getElementById('nav-progreso-texto');
-    var completadas = inst.visitadas.length;
-    var fraccion = inst.total ? completadas / inst.total : 0;
+    // D3: el % se calcula sobre las pantallas que cuentan para el curso
+    // (progreso !== false), no sobre inst.total — eso deja fuera del
+    // denominador p01a/p01b (D7): leer el tutorial no es avanzar en el curso.
+    var pantallasProgreso = contenidoActual.pantallas.filter(function (pantalla) {
+      return pantalla.progreso !== false;
+    });
+    var total = pantallasProgreso.length;
+    var completadas = pantallasProgreso.filter(function (pantalla) {
+      return inst.visitadas.indexOf(pantalla.id) !== -1;
+    }).length;
+    var fraccion = total ? completadas / total : 0;
+    var porcentaje = Math.round(fraccion * 100);
     if (barra) {
-      barra.setAttribute('aria-valuemax', String(inst.total));
-      barra.setAttribute('aria-valuenow', String(completadas));
-      barra.setAttribute('aria-valuetext', completadas + ' de ' + inst.total + ' pantallas');
+      barra.setAttribute('aria-valuemin', '0');
+      barra.setAttribute('aria-valuemax', '100');
+      barra.setAttribute('aria-valuenow', String(porcentaje));
+      barra.setAttribute(
+        'aria-valuetext',
+        porcentaje + ' % completado — ' + completadas + ' de ' + total + ' pantallas'
+      );
     }
     if (relleno) relleno.style.transform = 'scaleX(' + fraccion + ')';
-    if (texto) texto.textContent = completadas + ' / ' + inst.total + ' pantallas';
+    if (texto) texto.textContent = porcentaje + ' % completado';
   }
 
   function actualizarGuardado() {

@@ -2897,7 +2897,8 @@ de C7, antes de cerrar C8/C9.
 - [x] **D1 · Jerarquía como dato: Unidad › Cápsula › Tema** — completada
       5 sep. Detalle abajo.
 - [x] **D2 · Barra superior inverse** — completada 5 sep. Detalle abajo.
-- [ ] D3–D7, D9, D10 · pendientes.
+- [x] **D3 · Progreso en porcentaje** — completada 5 sep. Detalle abajo.
+- [ ] D4–D7, D9, D10 · pendientes.
 
 **5 sep — D8 cerrada: capa completa de assets dummy en rutas de
 producción exactas, más un hueco real del motor encontrado al mirar el
@@ -3290,3 +3291,56 @@ de T3.
 `aria-label` sigue siendo "Progreso de la unidad" — D2 es solo el
 repintado de la barra, D3 es quien cambia ese texto a porcentaje y
 recalcula el denominador.
+
+**5 sep — D3 cerrada: progreso en porcentaje, denominador sobre
+`progreso !== false`.**
+
+**Qué se tocó:**
+
+- **`router.js`, `actualizarProgreso(inst)`.** Antes calculaba la
+  fracción sobre `inst.visitadas.length / inst.total` (todas las
+  pantallas del contenido, sin filtro). Ahora filtra
+  `contenidoActual.pantallas` por `progreso !== false` para sacar el
+  denominador (`total`) y cuenta cuántas de esas están en
+  `inst.visitadas` para el numerador (`completadas`) — activa el campo
+  muerto del contrato que documenta la sección 0 del plan. Con las 47
+  pantallas actuales (ninguna trae todavía `progreso: false`, eso
+  llega con p01a/p01b en D7) el filtro no cambia el total, pero la
+  arquitectura ya está lista para cuando sí lo haga.
+- **`aria-valuemin="0"`/`aria-valuemax="100"`/`aria-valuenow`** con el
+  porcentaje redondeado (`Math.round`), y
+  `aria-valuetext="N % completado — X de Y pantallas"` — el número
+  solo tiene sentido con la cuenta detrás, tal como pide el cierre del
+  plan. El texto visible (`#nav-progreso-texto`) pasa de "X / Y
+  pantallas" a "N % completado". La etiqueta oculta visualmente
+  (`#nav-progreso-etiqueta`, `index.html`) pasa de "Progreso de la
+  unidad" a "Progreso del curso".
+- **El relleno sigue animado con `transform: scaleX()`** sobre la
+  fracción real (no el entero redondeado), sin tocar `--dur-slow` ni
+  la mecánica de D2 — el plan pedía explícitamente no tocar esto.
+- **`#nav-paso` (barra inferior, "Pantalla N de M") no se tocó** — es
+  la cuenta fina que el propio plan pide conservar aparte del
+  porcentaje.
+- **Kitchen sink**: la demo estática de "Barra superior" (bloque T3/D1/
+  D2) se actualizó al mismo patrón — `aria-valuemax="100"`,
+  `aria-valuenow="38"`, texto visible "38 % completado", más un
+  párrafo nuevo documentando la decisión de D3 junto al que ya
+  explicaba por qué la barra no es un `<progress>` nativo.
+
+**Verificado con Playwright (Python, Chromium), `src/index.html` desde
+`file://`, localStorage limpio:** arranque en s01 (portada L01, sin
+barra); clic en "Comenzar" monta s02 con la barra ya en
+`{min:0, max:100, now:4, text:"4 % completado — 2 de 47 pantallas"}`
+(2 de 47 = 4.25%, redondea a 4); "Siguiente" dos veces más sube a 6 %
+(3/47) y 9 % (4/47), moviendo `aria-valuenow`, `aria-valuetext`, el
+texto visible y el `scaleX()` del relleno juntos en cada navegación;
+cero errores de consola en toda la corrida. `dev/kitchen-sink.html` a
+320px: el overflow horizontal que reporta Playwright (`scrollWidth`
+398 vs `clientWidth` 320) es preexistente y ajeno a esta tarea —
+confirmado elemento por elemento: el desborde es de
+`.media-audio`/`.media-audio__controles` (T4), no de
+`.nav-barra__progreso`; los tres `ERR_FILE_NOT_FOUND` de consola son la
+demo deliberada de degradación de avatar (D8), documentados ahí. Cero
+hex nuevo, cero duración/curva nueva fuera de `tokens.css` (no se tocó
+`components.css` ni `tokens.css` en esta tarea, solo `router.js`,
+`index.html` y `kitchen-sink.html`).

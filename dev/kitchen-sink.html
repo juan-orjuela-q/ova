@@ -579,8 +579,8 @@
               </ol>
             </nav>
             <div class="nav-barra__progreso">
-              <span>5 / 13 pantallas</span>
-              <div class="barra-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="13" aria-valuenow="5" aria-label="Progreso de la unidad (ejemplo)">
+              <span>38 % completado</span>
+              <div class="barra-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="38" aria-label="Progreso del curso (ejemplo) — 38 % completado, 5 de 13 pantallas">
                 <span class="barra-progreso__relleno" style="transform: scaleX(0.38);"></span>
               </div>
             </div>
@@ -1256,6 +1256,15 @@
         <code>div</code> con <code>role="progressbar"</code> en su lugar,
         con el mismo nivel de accesibilidad y el avance real animado por
         <code>transform: scaleX()</code>.
+      </p>
+      <p class="ks-intro">
+        D3: el texto y el <code>aria-valuenow</code> pasaron de la cuenta
+        cruda ("N de M pantallas") al porcentaje, calculado sobre las
+        pantallas con <code>progreso !== false</code> — no sobre el total de
+        la unidad, para dejar fuera del denominador las pantallas de
+        accesibilidad/tutorial de D7. La cuenta fina ("Pantalla N de M") no
+        desaparece: sigue viviendo en <code>#nav-paso</code>, en la barra
+        inferior.
       </p>
     </section>
 
