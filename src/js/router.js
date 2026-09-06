@@ -146,6 +146,23 @@
     return contenedor;
   }
 
+  // D7: extensión mínima del contrato — "componente" monta una pieza de
+  // chrome fija en el mismo hueco visual que "interaccion" (.layout__interaccion),
+  // pero no es una pregunta (I01–I14 siguen siendo el único catálogo de
+  // interacción real): CLAUDE.md define "interaccion" como una pregunta
+  // por pantalla, y el panel de preferencias incrustado de p01a no lo es.
+  // Catálogo de un solo valor por ahora — cualquier otro cae por el mismo
+  // fallo ruidoso que un layout o un tipo de media inventado.
+  function crearComponente(nombre) {
+    if (nombre !== 'preferencias') {
+      throw new Error('El componente "' + nombre + '" no existe en el catálogo (solo "preferencias").');
+    }
+    var contenedor = document.createElement('div');
+    contenedor.className = 'layout__interaccion';
+    contenedor.appendChild(OVA.preferencias.crearPanel());
+    return contenedor;
+  }
+
   // T7: única entrada de layout que renderiza pantalla.datos. Delega en
   // OVA.charts.crear, que falla ruidoso si datos.tipo no existe en el
   // catálogo de charts.js — mismo criterio que crearMedia con media.tipo
@@ -195,6 +212,33 @@
       li.appendChild(icono);
       var span = document.createElement('span');
       span.textContent = texto;
+      li.appendChild(span);
+      ul.appendChild(li);
+    });
+    return ul;
+  }
+
+  // D7: alternativa a crearListaIdeas para p01b (tutorial de la barra).
+  // Misma estructura de <ul>/<li> — así hereda el CSS de lista de L09 sin
+  // declarar nada nuevo — pero cada ítem trae su propio ícono real en vez
+  // del check fijo: p01b describe controles concretos del chrome (menú,
+  // ubicación, progreso, pantalla completa, autolocución, anterior,
+  // siguiente), no afirmaciones que compartan un solo símbolo de
+  // cumplimiento. layouts.css distingue el color del ícono con el
+  // modificador `--controles` (neutro, no el verde de check).
+  function crearListaControles(controles) {
+    var ul = document.createElement('ul');
+    ul.className = 'layout__cuerpo layout__cuerpo--controles';
+    (controles || []).forEach(function (control) {
+      var li = document.createElement('li');
+      li.className = 'tipo-cuerpo';
+      var icono = document.createElement('span');
+      icono.className = 'icono';
+      icono.setAttribute('aria-hidden', 'true');
+      icono.textContent = control.icono;
+      li.appendChild(icono);
+      var span = document.createElement('span');
+      span.textContent = control.texto;
       li.appendChild(span);
       ul.appendChild(li);
     });
@@ -710,13 +754,34 @@
   // a diferencia de crearMedia() en L02/L03, aquí solo se agrega si
   // pantalla.media existe, mismo criterio que "datos" en L04. El
   // cuerpo se arma como lista real (crearListaIdeas), no párrafos.
+  //
+  // D7: tres ranuras nuevas, pensadas para p01a/p01b (accesibilidad y
+  // tutorial) y no para contenido de unidad — las 47 pantallas del
+  // storyboard siguen usando solo "cuerpo"/"media":
+  // - "controles" es alternativa a "cuerpo" (mutuamente excluyentes,
+  //   mismo criterio que tarjetas/interaccion en L05): p01b describe
+  //   controles reales del chrome, cada uno con su propio ícono, así
+  //   que usa crearListaControles() en vez del check fijo de
+  //   crearListaIdeas().
+  // - "componente" monta crearComponente() en el mismo hueco de
+  //   .layout__interaccion que ya usan L05/L06/L07/L10/L11 — p01a lo usa
+  //   para incrustar el panel de preferencias completo.
+  // - "nota" reusa crearNotaTarjetas() de L05: la misma idea (una línea
+  //   secundaria de cierre) sirve tal cual aquí, sin inventar una
+  //   tercera función para lo mismo.
   PLANTILLAS.L09 = function (pantalla) {
     var raiz = crearRaiz('l09');
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
-    raiz.appendChild(crearListaIdeas(pantalla.cuerpo, 'tipo-cuerpo'));
+    if (pantalla.controles) {
+      raiz.appendChild(crearListaControles(pantalla.controles));
+    } else {
+      raiz.appendChild(crearListaIdeas(pantalla.cuerpo, 'tipo-cuerpo'));
+    }
     if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
+    if (pantalla.componente) raiz.appendChild(crearComponente(pantalla.componente));
+    if (pantalla.nota) raiz.appendChild(crearNotaTarjetas(pantalla.nota));
     return { raiz: raiz, titulo: titulo };
   };
 

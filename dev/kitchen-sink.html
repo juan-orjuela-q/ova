@@ -1552,6 +1552,40 @@
           </div>
         </div>
         <p class="ks-intro">El brief pide media opcional; C1 (4 sep) lo resolvió con <code>:has()</code> en layouts.css — sin <code>.layout__media</code> en el DOM, la grilla de dos columnas de arriba no aplica y el bloque cae a una columna de ancho de lectura. Mismo ejemplo que <code>s18</code> en <code>content/ova-u1.js</code>.</p>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · "controles" (D7, pantalla p01b — tutorial de la barra)</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l09">
+            <span class="layout__kicker tipo-etiqueta">Antes de empezar</span>
+            <h2 class="layout__titulo tipo-h2">Cómo se recorre este curso</h2>
+            <ul class="layout__cuerpo layout__cuerpo--controles">
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">menu</span><span>Índice: abre la lista completa de pantallas de la unidad.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">location_on</span><span>Tu ubicación: siempre ves en qué cápsula y tema estás.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">cloud_done</span><span>Progreso: el curso se guarda solo y muestra cuánto llevas avanzado.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">fullscreen</span><span>Pantalla completa: para ver el curso sin distracciones.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">record_voice_over</span><span>Autolocución: actívala para que el audio de cada pantalla empiece solo.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">arrow_back</span><span>Anterior: vuelve a la pantalla que acabas de ver.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">arrow_forward</span><span>Siguiente: avanza a la siguiente pantalla del curso.</span></li>
+            </ul>
+          </div>
+        </div>
+        <p class="ks-intro"><code>crearListaControles()</code> — alternativa a <code>crearListaIdeas()</code>, mutuamente excluyente con "cuerpo" (mismo criterio que tarjetas/interaccion en L05): cada ítem trae el ícono real del control, no el check de cumplimiento fijo de la lista de ideas — por eso el color del ícono cae al neutro <code>--text-tertiary</code> en vez del verde de arriba (ver <code>.layout__cuerpo--controles</code> en layouts.css). Mismo ejemplo que <code>p01b</code> en <code>content/ova-u1.js</code>; recorrido real (con foco y anuncio de pantalla) en <a href="../src/index.html">src/index.html</a>.</p>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · "componente" y "nota" (D7, pantalla p01a — accesibilidad)</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l09">
+            <span class="layout__kicker tipo-etiqueta">Antes de empezar</span>
+            <h2 class="layout__titulo tipo-h2">Un curso que funciona para ti</h2>
+            <ul class="layout__cuerpo">
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Cada pantalla con locución muestra su transcripción completa, tenga o no audio.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Puedes recorrer el curso completo con el teclado, con el foco siempre visible.</span></li>
+              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>El texto se puede ampliar hasta el doble de su tamaño sin romper ningún control.</span></li>
+            </ul>
+            <div class="layout__interaccion" id="l09-p01a-pref"></div>
+            <p class="layout__nota tipo-caption">Puedes volver a cambiar estas preferencias cuando quieras desde el botón de ajustes de la barra superior.</p>
+          </div>
+        </div>
+        <p class="ks-intro"><code>crearComponente('preferencias')</code> monta el mismo <code>OVA.preferencias.crearPanel()</code> de la sección <a href="#preferencias">Preferencias del curso (D5)</a> — no un tercer componente, la misma pieza incrustada en el mismo hueco de <code>.layout__interaccion</code> que ya usan L05/L06/L07/L10/L11. Cambiar una preferencia aquí queda sincronizado con los otros dos montajes de esta página. "nota" reusa <code>crearNotaTarjetas()</code> de L05. Mismo ejemplo que <code>p01a</code> en <code>content/ova-u1.js</code> — las dos pantallas nuevas llevan <code>progreso:false</code>: recorrerlas no mueve el porcentaje del curso.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l10">
@@ -1683,6 +1717,12 @@
       }
       var incrustado = document.getElementById('ks-pref-incrustado');
       if (incrustado) incrustado.appendChild(OVA.preferencias.crearPanel());
+
+      // D7: tercer montaje del mismo panel, dentro del ejemplo de L09
+      // "componente" (p01a) más abajo en la sección de Layouts — mismo
+      // estado único, sincronizado con los dos de arriba.
+      var incrustadoP01a = document.getElementById('l09-p01a-pref');
+      if (incrustadoP01a) incrustadoP01a.appendChild(OVA.preferencias.crearPanel());
 
       // D6: mismo patrón que configurarAutolocucion() en router.js —
       // ícono, aria-pressed y etiqueta se actualizan juntos desde la

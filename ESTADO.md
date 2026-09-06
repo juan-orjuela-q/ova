@@ -3659,3 +3659,127 @@ real. La demo de avatar de "Componentes" gana un botón ("Simular
 llegada a esta pantalla") que ejercita `OVA.media.reproducirEn()` en
 sí misma, que no depende de router/hash y sí puede vivir aquí sin
 falsear nada.
+
+**6 sep — D7 cerrada: dos pantallas nuevas (p01a accesibilidad, p01b
+tutorial), montadas sobre L09 con tres ranuras de contrato agregadas
+en vez de un layout dedicado — extensión mínima, tal como pedía el
+plan, verificada con Playwright en `src/index.html` y
+`dev/kitchen-sink.html`.**
+
+**Por qué L09 y no un layout nuevo.** p01a necesita un título, una
+lista de afirmaciones llanas y —debajo— el panel de preferencias
+completo con una frase de cierre; p01b necesita un título y una lista
+de siete controles, cada uno con su propio ícono. Las dos son, en
+forma, la misma "ideas clave" que ya resuelve `PLANTILLAS.L09`
+(`crearListaIdeas`) — no hacía falta un catorceavo layout para dos
+pantallas que no forman parte de ninguna cápsula. Se extendió el
+contrato de L09 con tres campos opcionales, todos mutuamente
+compatibles con lo que ya usaba L09 (`cuerpo`/`media`) y sin tocar
+ninguna de las 47 pantallas reales del storyboard:
+
+- **`controles`** (alternativa a `cuerpo`, igual que `tarjetas`/
+  `interaccion` en L05 son mutuamente excluyentes): un arreglo de
+  `{icono, texto}`. `crearListaControles()` (router.js) es casi un
+  calco de `crearListaIdeas()` —mismo `<ul class="layout__cuerpo">`,
+  mismo `<li>` con ícono `aria-hidden` + texto— pero el ícono lo trae
+  cada ítem en vez de ser un `check_circle` fijo: p01b describe
+  controles reales del chrome (menú, ubicación, progreso, pantalla
+  completa, autolocución, anterior, siguiente), no una lista de
+  afirmaciones que comparten un solo símbolo de cumplimiento. El verde
+  de `check_circle` no tiene sentido ahí, así que el `<ul>` se marca
+  además con `layout__cuerpo--controles` y layouts.css le pone el
+  color de ícono neutro que ya usaba `.nav-drawer__item .icono`
+  (`--text-tertiary`) en vez de `--nuam-green-500`.
+- **`componente`** (catálogo de un solo valor por ahora,
+  `"preferencias"`): monta `OVA.preferencias.crearPanel()` — el mismo
+  componente de D5, sin plantilla nueva que inventar — dentro del
+  mismo `.layout__interaccion` que ya usan L05/L06/L07/L10/L11.
+  `crearComponente()` (router.js) sigue el mismo criterio de
+  `crearMedia`/`crearInteraccion`/`crearDatos`: falla ruidoso si el
+  valor no está en el catálogo. No se llamó "interaccion" a propósito
+  — CLAUDE.md define `interaccion` como una pregunta por pantalla
+  (catálogo I01–I14) y el panel de preferencias no lo es.
+- **`nota`**: reusa `crearNotaTarjetas()` de L05 tal cual (misma idea,
+  una línea secundaria después del contenido principal) — se agregó
+  `.layout--l09 .layout__nota { color: var(--text-secondary) }` en
+  layouts.css, mismo tratamiento que ya tenía L05.
+
+Orden dentro de `PLANTILLAS.L09`: kicker → título → controles/cuerpo →
+media (si existe) → componente (si existe) → nota (si existe). p01a
+usa cuerpo + componente + nota; p01b usa solo controles. Las tres
+ranuras son opcionales y ninguna pantalla real del storyboard las usa
+— C1–C7 siguen intactas.
+
+**Contenido (`content/ova-u1.js`).** `p01a` y `p01b` se insertaron
+entre `p01` y `p02`, con `unidad: "Unidad 1"` y `capsula: null` (mismo
+patrón que Apertura/Cierre) y **`progreso: false` en las dos** — D3 ya
+filtra el denominador del porcentaje por ese campo, así que no hizo
+falta tocar `router.js` para que recorrerlas no mueva el número.
+`p01a` trae seis afirmaciones llanas (transcripción, teclado,
+contraste, reflow, zoom de texto, movimiento reducido),
+`componente: "preferencias"` y la frase de cierre exacta que pidió
+Juan. `p01b` trae los siete controles del plan (índice, ubicación,
+progreso con guardado automático, pantalla completa, autolocución,
+anterior, siguiente) con el ícono real de cada uno tomado de
+`index.html` — con una excepción documentada aquí: la miga de pan
+(`nav-migas`) no tiene ícono propio en la barra real, así que "tu
+ubicación en el curso" usa `location_on` (un ícono nuevo en el
+proyecto, sin catálogo que lo restrinja — Material Symbols ya se usa
+por nombre libre en todo el código) en vez de inventar uno que no
+existe en ningún control real. "Progreso con guardado automático" es
+un solo ítem del tutorial (no dos) y usa `cloud_done`, el ícono real
+del indicador de guardado (`#nav-guardado-icono`) — el plan agrupa
+esas dos cosas en un mismo control.
+
+**Verificado con Playwright (Python, Chromium), `src/index.html` y
+`dev/kitchen-sink.html` desde `file://`:**
+
+- Desde `p01` (portada, L01), el CTA "Comenzar" lleva a `p01a`; "Siguiente"
+  de ahí lleva a `p01b` y luego a `p02` — el orden P01→p01a→p01b→P02 que
+  pedía el plan, sin renumerar nada.
+- `p01a`: 6 ítems de lista con `check_circle`, el panel de preferencias
+  embebido de verdad (`.layout__interaccion .pref-panel`, no una
+  maqueta) y la nota de cierre con el texto exacto. Cambiar el tamaño de
+  texto a 150% **desde este panel embebido** mueve `data-texto` en
+  `<html>` igual que el popover de la barra (mismo estado único de D5,
+  un montaje más). Tab desde el título entra al panel: el grupo de
+  radios de tamaño se navega con flechas (nativo) y un solo Tab lo saca
+  al primer checkbox — nunca queda nada inalcanzable ni hace falta un
+  manejador de teclado propio.
+- `p01b`: 7 controles listados en el orden del plan, con los iconos
+  exactos (`menu`, `location_on`, `cloud_done`, `fullscreen`,
+  `record_voice_over`, `arrow_back`, `arrow_forward`) y color de ícono
+  `rgb(114, 114, 114)` (`--text-tertiary` computado, confirmado
+  distinto del verde de `check_circle` que sigue usando la lista de
+  ideas normal).
+- **Progreso, el punto que más podía romperse:** `aria-valuenow` se
+  queda en el mismo número (`2`, con solo `p01` visitada) al recorrer
+  `p01a` y `p01b`, y solo sube (`4`, `aria-valuetext` "2 de 47
+  pantallas") al llegar a `p02` — confirma que D3 ya dejaba esto listo
+  sin tocar `actualizarProgreso()`. El drawer sí lista `p01a`/`p01b`
+  como completadas (ícono `check_circle`, estado de visita real) — es
+  un concepto distinto del porcentaje del curso, y las dos cosas no
+  tenían por qué coincidir.
+- 320px de ancho en `p01a` y `p01b`: `scrollWidth − clientWidth === 0`
+  en las dos, sin desbordamiento nuevo.
+- `dev/kitchen-sink.html`: sección "Layouts L01–L13" → bloque L09 gana
+  dos ejemplos nuevos (controles de p01b, componente/nota de p01a) con
+  el panel de preferencias embebido real como tercer montaje de
+  `OVA.preferencias.crearPanel()` — cambiar el tamaño de texto ahí
+  mueve el radio correspondiente en el popover de la sección
+  "Preferencias del curso (D5)" sin recargar, confirmando que los tres
+  montajes (popover, incrustado de D5, incrustado de este ejemplo)
+  siguen siendo un solo estado. Cero errores de consola nuevos en
+  ninguna de las dos páginas — los tres `ERR_FILE_NOT_FOUND` que sigue
+  reportando `kitchen-sink.html` son la misma degradación deliberada de
+  D8 de siempre.
+
+**Cero hex nuevo, cero duración/curva nueva fuera de `tokens.css`**
+(`git diff` filtrado contra `#[0-9a-f]{3,8}` y contra literales de
+`ms`/`cubic-bezier` en los cuatro archivos tocados, cero coincidencias).
+
+**Pendiente para D9, no D7:** las dos pantallas nuevas no llevan
+todavía ningún `data-anim` propio más allá de la entrada escalonada
+genérica que ya heredan `.layout__kicker/titulo/cuerpo/interaccion`
+(ítem 2 del inventario de movimiento) — no había nada específico de
+D7 que animar aparte de eso.

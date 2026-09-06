@@ -519,6 +519,19 @@
   color: var(--nuam-green-500);
   margin-block-start: 0.2em;
 }
+/* D7 (p01b, tutorial de la barra): crearListaControles() reusa la misma
+   lista pero con el ícono real de cada control, no un check de
+   cumplimiento — el verde de arriba no aplica aquí, cae al color de
+   ícono neutro que ya usa .nav-drawer__item .icono. */
+.layout--l09 .layout__cuerpo--controles li .icono {
+  color: var(--text-tertiary);
+}
+/* D7 (p01a, cierre): mismo tratamiento que .layout--l05 .layout__nota —
+   una línea secundaria después del contenido principal, no un párrafo
+   más del mismo peso. */
+.layout--l09 .layout__nota {
+  color: var(--text-secondary);
+}
 
 /* ---- L10 · Cierre de unidad y siguiente paso ------------------------------
    Igual arreglo que L01, más una interacción centrada (insignia).

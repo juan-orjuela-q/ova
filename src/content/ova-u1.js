@@ -159,6 +159,43 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
+      "id": "p01a",
+      "layout": "L09",
+      "titulo": "Un curso que funciona para ti",
+      "unidad": "Unidad 1",
+      "capsula": null,
+      "kicker": "Antes de empezar",
+      "cuerpo": [
+        "Cada pantalla con locución muestra su transcripción completa, tenga o no audio.",
+        "El contraste de colores está verificado en todo el curso, incluidos los estados de las evaluaciones.",
+        "Puedes recorrer el curso completo con el teclado, con el foco siempre visible.",
+        "El diseño se ajusta a pantallas angostas sin perder contenido ni obligarte a hacer scroll lateral.",
+        "El texto se puede ampliar hasta el doble de su tamaño sin romper ningún control.",
+        "Si el movimiento te resulta incómodo, puedes reducirlo sin perder ninguna información."
+      ],
+      "componente": "preferencias",
+      "nota": "Puedes volver a cambiar estas preferencias cuando quieras desde el botón de ajustes de la barra superior.",
+      "progreso": false
+    },
+    {
+      "id": "p01b",
+      "layout": "L09",
+      "titulo": "Cómo se recorre este curso",
+      "unidad": "Unidad 1",
+      "capsula": null,
+      "kicker": "Antes de empezar",
+      "controles": [
+        { "icono": "menu", "texto": "Índice: abre la lista completa de pantallas de la unidad." },
+        { "icono": "location_on", "texto": "Tu ubicación: siempre ves en qué cápsula y tema estás." },
+        { "icono": "cloud_done", "texto": "Progreso: el curso se guarda solo y muestra cuánto llevas avanzado." },
+        { "icono": "fullscreen", "texto": "Pantalla completa: para ver el curso sin distracciones." },
+        { "icono": "record_voice_over", "texto": "Autolocución: actívala para que el audio de cada pantalla empiece solo." },
+        { "icono": "arrow_back", "texto": "Anterior: vuelve a la pantalla que acabas de ver." },
+        { "icono": "arrow_forward", "texto": "Siguiente: avanza a la siguiente pantalla del curso." }
+      ],
+      "progreso": false
+    },
+    {
       "id": "p02",
       "layout": "L04",
       "titulo": "Objetivos de aprendizaje",
