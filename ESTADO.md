@@ -2900,7 +2900,8 @@ de C7, antes de cerrar C8/C9.
 - [x] **D3 · Progreso en porcentaje** — completada 5 sep. Detalle abajo.
 - [x] **D4 · Padding lateral de escritorio** — completada 5 sep. Detalle abajo.
 - [x] **D5 · Preferencias del curso** — completada 5 sep. Detalle abajo.
-- [ ] D6–D7, D9, D10 · pendientes.
+- [x] **D6 · Autolocución** — completada 6 sep. Detalle abajo.
+- [ ] D7, D9, D10 · pendientes.
 
 **5 sep — D8 cerrada: capa completa de assets dummy en rutas de
 producción exactas, más un hueco real del motor encontrado al mirar el
@@ -3558,3 +3559,103 @@ de D6 (autolocución).
 existe todavía — la pantalla misma es D7. Lo que sí queda listo es que
 sea una llamada más a `OVA.preferencias.crearPanel()`, sin plantilla ni
 lógica nueva que inventar cuando llegue esa tarea.
+
+**6 sep — D6 cerrada: autolocución, solo audio, con las cuatro
+precauciones del plan verificadas de punta a punta con Playwright, no
+solo razonadas.**
+
+**Qué se construyó:**
+
+- **`OVA.media.reproducirEn(raiz)`**, nueva en `media.js` — busca el
+  primer `<audio>` dentro de una raíz ya montada y llama a `.play()`.
+  No cambia la firma de `crear()`: es una función aparte, porque
+  `crear()` sigue devolviendo la raíz del reproductor sin saber nada de
+  cuándo autorreproducir. La promesa de `play()` se captura con
+  `.catch(function () {})` — un rechazo (autoplay bloqueado sin gesto
+  previo, verificado real en la carga inicial: la primera pantalla de
+  avatar nunca reproduce sola) no revienta en consola ni fuerza ningún
+  estado del reproductor: como el ícono de play/pausa solo lo cambian
+  los listeners de `play`/`pause` que ya existían en `crearAvatar()`
+  (T4/C3, sin tocar), un `play()` rechazado nunca los dispara y el
+  botón se queda diciendo "Reproducir", listo para pulsarse a mano —
+  exactamente lo que pide el punto 1 del cierre del plan, "nunca un
+  reproductor en un estado mentiroso".
+- **`router.js`, `aplicarAutolocucion(pantalla, resultado)`**, llamada
+  al final de `navegarA()` junto a `aplicarTranscripcionVisible()`. Dos
+  formas de traer avatar con audio en el contrato — `pantalla.avatar`
+  (solo L01, portada) y `pantalla.media.tipo === 'avatar'` (las otras
+  13 pantallas reales, vía `crearMedia()`) — así que
+  `tieneAvatarConAudio()` comprueba las dos en vez de asumir una sola
+  forma; sin eso, la portada (`s01`/L01) nunca habría autorreproducido
+  nada. No se llama a `.focus()` en ningún punto nuevo (el foco lo
+  sigue moviendo `enfocarEncabezado()`, ya existente, un poco más
+  abajo en la misma función) y no se agrega ningún `aria-live` nuevo —
+  el anuncio de cambio de pantalla que ya dispara `navegarA()` es el
+  único, tal como pide el punto 3 del cierre.
+- **Botón dedicado en la barra superior** (`#nav-autolocucion`,
+  `index.html`), no solo el checkbox del panel de preferencias:
+  `record_voice_over`/`voice_over_off` + `aria-pressed`, misma clave
+  que D5 — `router.js` (`configurarAutolocucion`/
+  `actualizarBotonAutolocucion`) se suscribe a `OVA.preferencias` con
+  el mismo patrón que ya sincroniza los dos montajes de
+  `crearPanel()`, así que el botón de la barra y el checkbox del panel
+  quedan sincronizados en las dos direcciones sin que ninguno sea
+  dueño del dato. Sin CSS nuevo: `.nav-barra .boton-icono` (D2) ya
+  cubre ícono blanco/hover gris 800 para cualquier `.boton-icono`
+  dentro de `.nav-barra`, y `.nav-barra` ya es `flex` con `gap` — el
+  botón nuevo cae en el flujo sin declarar una regla propia.
+- **Nace apagado**, heredado de D5 (`DEFECTOS.autolocucion: false`) —
+  no fue necesario tocar `preferencias.js`: la preferencia y su
+  persistencia ya existían completas, D6 solo le agrega el efecto real
+  y el botón dedicado.
+
+**Verificado con Playwright (Python, Chromium), `src/index.html` y
+`dev/kitchen-sink.html` desde `file://`:**
+
+- Estado inicial del botón: `aria-pressed="false"`, ícono
+  `voice_over_off`. Un clic real (gesto de usuario, no `.click()`
+  disparado sin interacción previa) lo pasa a `aria-pressed="true"`,
+  ícono `record_voice_over`, etiqueta "Desactivar autolocución"; el
+  checkbox "Autolocución" del popover de preferencias queda marcado a
+  la vez, sin recargar ni navegar.
+- **Encadenamiento real, no solo el dato:** con la portada (`s01`)
+  montada, un clic en el botón de autolocución (gesto de usuario) y
+  luego "Siguiente" hasta `p04` (primera pantalla real con `<audio>`
+  fuera de la portada) deja ese `<audio>` con `paused === false` y
+  `currentTime === 0` justo después de montar — la locución arrancó
+  sola. Apagar la preferencia y seguir avanzando hasta `p10` (otra
+  pantalla de avatar con audio) confirma `paused === true`: sin la
+  preferencia, nada se reproduce solo. Cero errores de consola en toda
+  la corrida, incluida la ventana de autoplay bloqueado de la carga
+  inicial.
+- Teclado: `Tab` alcanza `#nav-autolocucion` con foco visible, `Enter`
+  lo activa igual que un clic (`aria-pressed` pasa a `true`).
+  320px de ancho con el botón visible en pantalla: `scrollWidth ===
+  clientWidth` (320px), sin desbordamiento nuevo.
+- `dev/kitchen-sink.html`: el botón `#ks-autolocucion` (junto al `tune`
+  del popover de preferencias) reproduce la misma sincronía bidireccional
+  que en `src/index.html` — confirmada contra el checkbox del montaje
+  incrustado, no solo el del popover. El botón de demo nuevo ("Simular
+  llegada a esta pantalla") llama a `OVA.media.reproducirEn()` sobre el
+  reproductor de avatar real de la sección "Componentes" y dejó su
+  `<audio>` en `paused === false`. Los tres `ERR_FILE_NOT_FOUND` que
+  sigue reportando la consola son la degradación deliberada de D8
+  (imagen de avatar todavía inexistente a propósito), no nuevos —
+  ningún otro error apareció.
+
+**Cero hex nuevo, cero CSS nuevo.** Los cuatro archivos tocados
+(`media.js`, `router.js`, `index.html`, `kitchen-sink.html`) no tocan
+`components.css` ni `tokens.css` — el botón nuevo reutiliza
+`.boton-icono` y el scoping de `.nav-barra` que ya dejó D2, sin
+declarar una sola regla de CSS.
+
+**Kitchen sink.** La sección "Preferencias del curso (D5)" gana el
+botón `#ks-autolocucion` junto al popover, con un párrafo que explica
+la sincronía y remite el encadenamiento real (que sí depende de
+navegar entre pantallas) a `src/index.html` — mismo criterio que
+"Motor"/"Chrome del OVA" en T2/T3: lo que no depende del router se
+demuestra vivo aquí, lo que sí depende de él se prueba en la pantalla
+real. La demo de avatar de "Componentes" gana un botón ("Simular
+llegada a esta pantalla") que ejercita `OVA.media.reproducirEn()` en
+sí misma, que no depende de router/hash y sí puede vivir aquí sin
+falsear nada.

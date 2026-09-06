@@ -1031,6 +1031,36 @@
     });
   }
 
+  /* ---- Chrome: botón de autolocución (D6) --------------------------
+     Botón dedicado en la barra superior, misma clave que el checkbox
+     del panel de preferencias (D5): los dos reflejan el mismo estado
+     porque los dos reaccionan a OVA.preferencias.suscribir(), igual
+     que los dos montajes de crearPanel() ya quedan sincronizados entre
+     sí. Nace apagado (preferencias.js) — decisión de conformidad, no de
+     gusto: con el toggle apagado por defecto no hay reproducción
+     automática involuntaria y WCAG 1.4.2 no se activa en la primera
+     carga. */
+  function actualizarBotonAutolocucion(snapshot) {
+    var boton = document.getElementById('nav-autolocucion');
+    if (!boton) return;
+    var activo = snapshot.autolocucion;
+    boton.setAttribute('aria-pressed', String(activo));
+    var icono = boton.querySelector('.icono');
+    if (icono) icono.textContent = activo ? 'record_voice_over' : 'voice_over_off';
+    var etiqueta = boton.querySelector('.u-oculto-visualmente');
+    if (etiqueta) etiqueta.textContent = activo ? 'Desactivar autolocución' : 'Activar autolocución';
+  }
+
+  function configurarAutolocucion() {
+    var boton = document.getElementById('nav-autolocucion');
+    if (!boton) return;
+    boton.addEventListener('click', function () {
+      OVA.preferencias.establecer('autolocucion', !OVA.preferencias.obtener().autolocucion);
+    });
+    actualizarBotonAutolocucion(OVA.preferencias.obtener());
+    OVA.preferencias.suscribir(actualizarBotonAutolocucion);
+  }
+
   function configurarPantallaCompleta() {
     pantallaCompletaDisponible = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
     if (!pantallaCompletaDisponible) return;
@@ -1274,6 +1304,27 @@
     });
   }
 
+  // D6: autolocución. Dos formas de traer un avatar con audio en el
+  // contrato — `pantalla.avatar` (solo L01, portada) y
+  // `pantalla.media.tipo === 'avatar'` (el resto, vía crearMedia) — así
+  // que se comprueban las dos en vez de asumir una sola forma.
+  function tieneAvatarConAudio(pantalla) {
+    if (pantalla.avatar && pantalla.avatar.audio) return true;
+    return !!(pantalla.media && pantalla.media.tipo === 'avatar' && pantalla.media.audio);
+  }
+
+  // Se llama al final de navegarA(), después de que la pantalla ya está
+  // en el DOM. Nunca roba foco (no se llama a .focus() aquí — el foco lo
+  // sigue moviendo enfocarEncabezado() más abajo) ni anuncia por
+  // aria-live (el aviso de cambio de pantalla que ya dispara navegarA()
+  // es suficiente) — ver PLAN-REDISENO.md §D6.
+  function aplicarAutolocucion(pantalla, resultado) {
+    if (!OVA.preferencias.obtener().autolocucion) return;
+    if (!resultado || !resultado.raiz) return;
+    if (!tieneAvatarConAudio(pantalla)) return;
+    OVA.media.reproducirEn(resultado.raiz);
+  }
+
   function navegarA(id, opciones) {
     opciones = opciones || {};
     var ok = OVA.state.ir(id);
@@ -1299,6 +1350,7 @@
     actualizarDrawer(inst);
     gestionarBotonPortada(pantalla);
     aplicarTranscripcionVisible();
+    aplicarAutolocucion(pantalla, resultado);
     document.title = pantalla.titulo + ' · ' + contenidoActual.titulo;
 
     // En la carga inicial no se roba el foco: el usuario todavía no
@@ -1355,6 +1407,7 @@
     configurarDrawer();
     configurarBarraSuperior();
     configurarPreferencias();
+    configurarAutolocucion();
     configurarPantallaCompleta();
     // Encender/apagar "mostrar siempre la transcripción" desde el panel
     // debe verse en la pantalla activa sin esperar a la próxima

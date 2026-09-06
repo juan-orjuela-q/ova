@@ -600,6 +600,27 @@
     instancias = [];
   }
 
+  // D6: autolocución. router.js la llama al terminar de montar una
+  // pantalla nueva cuando la preferencia está encendida y la pantalla
+  // trae un avatar con audio real — busca el <audio> dentro de la raíz
+  // recién montada y lo reproduce, sin cambiar la firma de crear(). Solo
+  // audio, nunca video (regla dura 10 de CLAUDE.md: el avatar es imagen
+  // fija + audio). La promesa de play() puede rechazarse — la política
+  // de autoplay del navegador bloquea audio con sonido sin gesto previo
+  // del usuario — y ese rechazo no debe reventar en consola ni forzar
+  // el reproductor a un estado mentiroso: se captura en silencio y el
+  // botón de play queda como estaba (los listeners de "play"/"pause" ya
+  // existentes son los únicos que le cambian el ícono, así que un play()
+  // rechazado nunca los dispara y el botón sigue diciendo "Reproducir",
+  // listo para pulsarse a mano).
+  function reproducirEn(raiz) {
+    if (!raiz) return;
+    var audio = raiz.querySelector('audio');
+    if (!audio) return;
+    var promesa = audio.play();
+    if (promesa && promesa.catch) promesa.catch(function () {});
+  }
+
   window.OVA = window.OVA || {};
-  window.OVA.media = { crear: crear, limpiarInstancias: limpiarInstancias };
+  window.OVA.media = { crear: crear, limpiarInstancias: limpiarInstancias, reproducirEn: reproducirEn };
 })();

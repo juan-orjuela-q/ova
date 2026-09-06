@@ -672,6 +672,17 @@
           <div id="c-media-avatar-a"></div>
           <div id="c-media-avatar-b"></div>
         </div>
+        <p class="ks-intro">
+          <strong>Autolocución (D6):</strong> <code>OVA.media.reproducirEn(raiz)</code>
+          busca el <code>&lt;audio&gt;</code> dentro de una raíz ya montada y
+          lo reproduce — es lo mismo que hace <code>router.js</code> al
+          terminar de montar una pantalla nueva cuando la preferencia está
+          encendida. El botón de abajo la llama sobre el reproductor de la
+          izquierda.
+        </p>
+        <button id="c-media-autolocucion-demo" class="boton boton--outline" type="button">
+          Simular llegada a esta pantalla (reproducirEn)
+        </button>
       </div>
 
       <div class="ks-layout-bloque" id="c-media-video">
@@ -1291,8 +1302,18 @@
         y transcripción visible abre cualquier <code>&lt;details&gt;</code>
         de transcripción que haya en pantalla (bajen a la demo de audio/video
         de <a href="#componentes">Componentes</a> para verlo). Autolocución
-        solo guarda la preferencia aquí: el disparo real del audio al llegar
-        a una pantalla es D6, sobre <code>router.js</code>.
+        (D6) tiene además su propio botón dedicado en la barra —
+        <code>record_voice_over</code>/<code>voice_over_off</code>, con
+        <code>aria-pressed</code> — sincronizado con el checkbox de abajo por
+        la misma suscripción: los dos reflejan un solo estado. El
+        encadenamiento real (avanzar de pantalla en pantalla con el toggle
+        encendido reproduce la locución de cada una) depende del router, así
+        que se verifica de punta a punta en
+        <a href="../src/index.html">src/index.html</a>, no aquí — la demo de
+        abajo, junto al reproductor de avatar de
+        <a href="#componentes">Componentes</a>, sí puede probar en vivo la
+        función <code>OVA.media.reproducirEn()</code> en sí misma, porque no
+        depende de navegar entre pantallas.
       </p>
       <div class="ks-layout-bloque">
         <span class="ks-layout-bloque__etiqueta">Montaje 1 — popover de la barra superior</span>
@@ -1310,7 +1331,18 @@
             </button>
             <div id="ks-pref-popover" class="pref-panel pref-panel--popover" hidden></div>
           </div>
+          <button id="ks-autolocucion" class="boton-icono" type="button" aria-pressed="false">
+            <span class="icono" aria-hidden="true">voice_over_off</span>
+            <span class="u-oculto-visualmente">Activar autolocución</span>
+          </button>
         </div>
+        <p class="ks-intro">
+          El botón de autolocución (D6, junto al de <code>tune</code> de
+          arriba) alterna la misma preferencia que el checkbox "Autolocución"
+          del panel de abajo — cámbialo en cualquiera de los dos y el ícono,
+          el <code>aria-pressed</code> y la etiqueta cambian juntos en ambos
+          lados.
+        </p>
       </div>
       <div class="ks-layout-bloque">
         <span class="ks-layout-bloque__etiqueta">Montaje 2 — incrustado (D7, pantalla p01a)</span>
@@ -1651,6 +1683,28 @@
       }
       var incrustado = document.getElementById('ks-pref-incrustado');
       if (incrustado) incrustado.appendChild(OVA.preferencias.crearPanel());
+
+      // D6: mismo patrón que configurarAutolocucion() en router.js —
+      // ícono, aria-pressed y etiqueta se actualizan juntos desde la
+      // suscripción, así que este botón y el checkbox "Autolocución" del
+      // panel de arriba quedan sincronizados sin que ninguno sea dueño
+      // del dato.
+      var autolocucionBoton = document.getElementById('ks-autolocucion');
+      if (autolocucionBoton) {
+        var actualizarAutolocucionDemo = function (snapshot) {
+          var activo = snapshot.autolocucion;
+          autolocucionBoton.setAttribute('aria-pressed', String(activo));
+          autolocucionBoton.querySelector('.icono').textContent =
+            activo ? 'record_voice_over' : 'voice_over_off';
+          autolocucionBoton.querySelector('.u-oculto-visualmente').textContent =
+            activo ? 'Desactivar autolocución' : 'Activar autolocución';
+        };
+        autolocucionBoton.addEventListener('click', function () {
+          OVA.preferencias.establecer('autolocucion', !OVA.preferencias.obtener().autolocucion);
+        });
+        actualizarAutolocucionDemo(OVA.preferencias.obtener());
+        OVA.preferencias.suscribir(actualizarAutolocucionDemo);
+      }
     })();
   </script>
   <script>
@@ -1723,6 +1777,18 @@
         vtt: VTT_AVATAR_DEMO,
         transcripcion: TRANSCRIPCION_AVATAR_DEMO
       });
+      // D6: OVA.media.reproducirEn() en vivo — busca el <audio> dentro de
+      // la raíz ya montada y lo reproduce, igual que router.js al llegar
+      // a una pantalla nueva con la preferencia encendida.
+      (function () {
+        var boton = document.getElementById('c-media-autolocucion-demo');
+        var raiz = document.getElementById('c-media-avatar-a');
+        if (boton && raiz) {
+          boton.addEventListener('click', function () {
+            OVA.media.reproducirEn(raiz);
+          });
+        }
+      })();
       // Sin audio a propósito: demuestra la degradación a imagen +
       // transcripción directa de la sección 3.2 de PLAN-CONTENIDO.md.
       montar('c-media-avatar-b', {

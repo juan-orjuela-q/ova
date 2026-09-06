@@ -111,6 +111,16 @@
       <div id="pref-popover" class="pref-panel pref-panel--popover" hidden></div>
     </div>
 
+    <!-- Autolocución (D6): botón dedicado, misma clave que el checkbox
+         del panel de preferencias de arriba — router.js
+         (configurarAutolocucion) los mantiene sincronizados. Nace
+         apagado: sin gesto previo del usuario el audio nunca se
+         reproduce solo (WCAG 1.4.2). -->
+    <button id="nav-autolocucion" class="boton-icono" type="button" aria-pressed="false">
+      <span class="icono" aria-hidden="true">voice_over_off</span>
+      <span class="u-oculto-visualmente">Activar autolocución</span>
+    </button>
+
     <!-- Pantalla completa (C2), disponible en todo el recorrido salvo
          L01 (la portada esconde esta barra entera — regla dura 9 de
          CLAUDE.md, tiene su propio botón más abajo). Arranca `hidden`:
