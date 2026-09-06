@@ -1673,25 +1673,31 @@
         </div>
         <p class="ks-intro">El brief pide media opcional; C1 (4 sep) lo resolvió con <code>:has()</code> en layouts.css — sin <code>.layout__media</code> en el DOM, la grilla de dos columnas de arriba no aplica y el bloque cae a una columna de ancho de lectura. Mismo ejemplo que <code>s18</code> en <code>content/ova-u1.js</code>.</p>
 
-        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · "controles" (D7, pantalla p01b — tutorial de la barra)</span>
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · "controles" (AJUSTES.md tanda 6, pantalla p01b — tutorial de la barra)</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l09">
             <span class="layout__kicker tipo-etiqueta">Antes de empezar</span>
             <div class="layout__texto">
               <h2 class="layout__titulo tipo-h2">Cómo se recorre este curso</h2>
-              <ul class="layout__cuerpo layout__cuerpo--controles">
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">menu</span><span>Índice: abre la lista completa de pantallas de la unidad.</span></li>
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">location_on</span><span>Tu ubicación: siempre ves en qué cápsula y tema estás.</span></li>
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">cloud_done</span><span>Progreso: el curso se guarda solo y muestra cuánto llevas avanzado.</span></li>
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">fullscreen</span><span>Pantalla completa: para ver el curso sin distracciones.</span></li>
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">record_voice_over</span><span>Autolocución: actívala para que el audio de cada pantalla empiece solo.</span></li>
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">arrow_back</span><span>Anterior: vuelve a la pantalla que acabas de ver.</span></li>
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">arrow_forward</span><span>Siguiente: avanza a la siguiente pantalla del curso.</span></li>
-              </ul>
+              <div class="layout__cuerpo--controles">
+                <ul class="layout__controles-columna">
+                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-1-menu.svg" alt="" /><span class="tipo-cuerpo">Índice: abre la lista completa de pantallas de la unidad.</span></li>
+                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-2-ubicacion.svg" alt="" /><span class="tipo-cuerpo">Tu ubicación: siempre ves en qué cápsula y tema estás.</span></li>
+                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-3-indicador-progreso.svg" alt="" /><span class="tipo-cuerpo">Progreso: muestra en porcentaje cuánto llevas avanzado en el curso.</span></li>
+                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-4-reanudar.svg" alt="" /><span class="tipo-cuerpo">Reanudar: te lleva directo a la última pantalla que viste.</span></li>
+                </ul>
+                <ul class="layout__controles-columna">
+                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-5-boton-accesibilidad.svg" alt="" /><span class="tipo-cuerpo">Accesibilidad: abre las preferencias de texto, movimiento y transcripción.</span></li>
+                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-6-boton-locucion.svg" alt="" /><span class="tipo-cuerpo">Autolocución: actívala para que el audio de cada pantalla empiece solo.</span></li>
+                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-7-boton-fullscreen.svg" alt="" /><span class="tipo-cuerpo">Pantalla completa: para ver el curso sin distracciones.</span></li>
+                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-8-anterior.svg" alt="" /><span class="tipo-cuerpo">Anterior: vuelve a la pantalla que acabas de ver.</span></li>
+                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-9-siguiente.svg" alt="" /><span class="tipo-cuerpo">Siguiente: avanza a la siguiente pantalla del curso.</span></li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-        <p class="ks-intro"><code>crearListaControles()</code> — alternativa a <code>crearListaIdeas()</code>, mutuamente excluyente con "cuerpo" (mismo criterio que tarjetas/interaccion en L05): cada ítem trae el ícono real del control, no el check de cumplimiento fijo de la lista de ideas — por eso el color del ícono cae al neutro <code>--text-tertiary</code> en vez del verde de arriba (ver <code>.layout__cuerpo--controles</code> en layouts.css). Mismo ejemplo que <code>p01b</code> en <code>content/ova-u1.js</code>; recorrido real (con foco y anuncio de pantalla) en <a href="../src/index.html">src/index.html</a>.</p>
+        <p class="ks-intro"><code>crearListaControles()</code> — alternativa a <code>crearListaIdeas()</code>, mutuamente excluyente con "cuerpo" (mismo criterio que tarjetas/interaccion en L05): cada ítem trae una miniatura real del control (<code>public/img/icons/muestra-navegacion-*.svg</code>, sobre ref-ajustes/tanda-6), no el ícono de Material Symbols que usaba antes ni el check de cumplimiento de la lista de ideas. Dos columnas repartidas por mitad (<code>crearColumnaControles()</code>, floor a la primera): en mobile se apilan una tras otra, que es el mismo orden de lectura. Mismo ejemplo que <code>p01b</code> en <code>content/ova-u1.js</code>; recorrido real (con foco y anuncio de pantalla) en <a href="../src/index.html">src/index.html</a>.</p>
 
         <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · variante "tarjetas" (AJUSTES.md tanda 5, pantalla p01a — accesibilidad)</span>
         <div class="ks-layout-marco">

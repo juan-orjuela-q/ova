@@ -237,31 +237,47 @@
     return ul;
   }
 
-  // D7: alternativa a crearListaIdeas para p01b (tutorial de la barra).
-  // Misma estructura de <ul>/<li> — así hereda el CSS de lista de L09 sin
-  // declarar nada nuevo — pero cada ítem trae su propio ícono real en vez
-  // del check fijo: p01b describe controles concretos del chrome (menú,
-  // ubicación, progreso, pantalla completa, autolocución, anterior,
-  // siguiente), no afirmaciones que compartan un solo símbolo de
-  // cumplimiento. layouts.css distingue el color del ícono con el
-  // modificador `--controles` (neutro, no el verde de check).
-  function crearListaControles(controles) {
+  // D7, rehecha en AJUSTES.md tanda 6: alternativa a crearListaIdeas para
+  // p01b (tutorial de la barra). Antes cada ítem llevaba un ícono de
+  // Material Symbols (glifo genérico); tanda 6 lo reemplaza por una
+  // miniatura real del control (public/img/icons/muestra-navegacion-*.svg
+  // — captura fiel del componente tal como se ve en la barra, no un
+  // símbolo abstracto), sobre la referencia de ref-ajustes/tanda-6. La
+  // imagen es decorativa (alt vacío): el texto de al lado ya describe el
+  // control, la miniatura solo lo ilustra, mismo criterio que el ícono
+  // aria-hidden que reemplaza. Dos columnas (crearColumnaControles),
+  // partidas por mitad — floor a la primera, el resto a la segunda: con 9
+  // controles da 4/5, igual que la referencia, y no depende de codificar
+  // "los primeros cuatro" a mano si el contenido cambia. En mobile las dos
+  // listas se apilan (.layout__cuerpo--controles en columna): como cada
+  // una ya está en el orden real de lectura, apilarlas no reordena nada.
+  function crearColumnaControles(controles) {
     var ul = document.createElement('ul');
-    ul.className = 'layout__cuerpo layout__cuerpo--controles';
-    (controles || []).forEach(function (control) {
+    ul.className = 'layout__controles-columna';
+    controles.forEach(function (control) {
       var li = document.createElement('li');
-      li.className = 'tipo-cuerpo';
-      var icono = document.createElement('span');
-      icono.className = 'icono';
-      icono.setAttribute('aria-hidden', 'true');
-      icono.textContent = control.icono;
-      li.appendChild(icono);
-      var span = document.createElement('span');
-      span.textContent = control.texto;
-      li.appendChild(span);
+      li.className = 'layout__controles-item';
+      var img = document.createElement('img');
+      img.className = 'layout__controles-imagen';
+      img.src = control.imagen;
+      img.alt = '';
+      li.appendChild(img);
+      var texto = document.createElement('span');
+      texto.className = 'tipo-cuerpo';
+      texto.textContent = control.texto;
+      li.appendChild(texto);
       ul.appendChild(li);
     });
     return ul;
+  }
+  function crearListaControles(controles) {
+    controles = controles || [];
+    var mitad = Math.floor(controles.length / 2);
+    var contenedor = document.createElement('div');
+    contenedor.className = 'layout__cuerpo--controles';
+    contenedor.appendChild(crearColumnaControles(controles.slice(0, mitad)));
+    contenedor.appendChild(crearColumnaControles(controles.slice(mitad)));
+    return contenedor;
   }
 
   // AJUSTES.md, tanda 5 (ítem 13): variante de L09 para p01a (resumen de
@@ -822,9 +838,9 @@
   // storyboard siguen usando solo "cuerpo"/"media":
   // - "controles" es alternativa a "cuerpo" (mutuamente excluyentes,
   //   mismo criterio que tarjetas/interaccion en L05): p01b describe
-  //   controles reales del chrome, cada uno con su propio ícono, así
-  //   que usa crearListaControles() en vez del check fijo de
-  //   crearListaIdeas().
+  //   controles reales del chrome, cada uno con su propia miniatura
+  //   (AJUSTES.md tanda 6), así que usa crearListaControles() en vez
+  //   del check fijo de crearListaIdeas().
   // - "componente" monta crearComponente() en el mismo hueco de
   //   .layout__interaccion que ya usan L05/L06/L07/L10/L11. Ninguna
   //   pantalla real lo pide desde AJUSTES.md tanda 5 (ítem 14: el panel

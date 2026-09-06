@@ -620,12 +620,16 @@
        a su tamaño de contenido. Con pantallas cortas (p01b/p32, sin
        media) eso infla la fila del kicker a ~160px y la de
        .layout__texto a ~496px: un "gap" visible de 166px entre kicker
-       y título aunque el CSS diga 24px. align-content:start deja las
-       filas a su alto real. No es un bug nuevo de esta tarea (ya
-       existía con tres filas separadas), solo se volvió más visible al
-       quedar un solo hueco donde antes el mismo sobrante se repartía
-       entre dos. */
-    align-content: start;
+       y título aunque el CSS diga 24px.
+       Ajuste posterior (centrado vertical general, todo el catálogo
+       salvo L01): "start" resolvía el gap pero dejaba el bloque pegado
+       arriba del contenedor en vez de centrado como el resto de
+       layouts en flex (.layout ya centra con justify-content:center;
+       un grid necesita su propio align-content porque ese eje no lo
+       hereda). "center" agrupa las filas auto a su alto real (mismo
+       arreglo que "start" para el bug de arriba) y además las centra
+       como bloque en el alto sobrante. */
+    align-content: center;
     grid-template-areas:
       "kicker kicker"
       "texto media";
@@ -680,12 +684,66 @@
   color: var(--nuam-green-500);
   margin-block-start: 0.2em;
 }
-/* D7 (p01b, tutorial de la barra): crearListaControles() reusa la misma
-   lista pero con el ícono real de cada control, no un check de
-   cumplimiento — el verde de arriba no aplica aquí, cae al color de
-   ícono neutro que ya usa .nav-drawer__item .icono. */
-.layout--l09 .layout__cuerpo--controles li .icono {
-  color: var(--text-tertiary);
+/* AJUSTES.md tanda 6 (p01b, tutorial de la barra): crearListaControles()
+   ya no reusa el <ul>/<li class="icono"> de arriba — cada control es una
+   miniatura real (<img>, public/img/icons/muestra-navegacion-*.svg) más
+   texto, repartidos en dos columnas para calcar ref-ajustes/tanda-6. El
+   contenedor no lleva la clase .layout__cuerpo (evita el max-width:42rem
+   que .layout--l09 le fija a esa clase en el caso sin media, dos filas
+   más abajo): esta grilla necesita todo el ancho disponible. */
+.layout__cuerpo--controles {
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 48em) {
+  .layout__cuerpo--controles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--sp-10);
+    align-items: start;
+  }
+}
+.layout__controles-columna {
+  list-style: none;
+  padding-inline-start: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  /* Pisa el gap:var(--sp-2) que base.css pone en todo ul/ol: aquí el
+     espacio entre filas ya lo da el padding-block de cada
+     .layout__controles-item, un segundo gap encima duplicaría el aire. */
+  gap: 0;
+}
+.layout__controles-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding-block: var(--sp-4);
+  border-block-end: 1px solid var(--border-default);
+}
+.layout__controles-columna li:last-child {
+  border-block-end: none;
+}
+/* 72px de alto (4.5rem) — el tamaño nativo del SVG (viewBox de 72px en
+   los nueve archivos), no un valor de la escala --sp-*: es el tamaño de
+   origen del asset, no un ritmo de espaciado. Ancho fijo (18.5rem, mayor
+   que la miniatura más ancha a ese alto — "indicador-progreso", 290px —
+   con un poco de aire) para que el texto de todas las filas arranque en
+   la misma x, igual que la referencia; object-fit:contain conserva la
+   proporción de cada SVG (mismo alto de origen, distinto ancho según el
+   control) sin recortarla ni deformarla dentro de esa caja.
+   min-width:0 es imprescindible, no cosmético: un <img> con alto fijo y
+   ancho automático usa su ancho intrínseco (228/290px en "ubicación" y
+   "progreso") como mínimo automático de flex-shrink, así que sin esto
+   flex-shrink:1 no alcanza a encogerlo por debajo de ese ancho — a
+   320px el texto quedaba empujado fuera de pantalla (regla dura 7),
+   hallazgo real de Playwright/CDP al subir el alto de 40 a 72px. */
+.layout__controles-imagen {
+  flex: 0 1 18.5rem;
+  min-width: 0;
+  height: 4.5rem;
+  object-fit: contain;
+  object-position: left center;
 }
 /* D7 (p01a, cierre): mismo tratamiento que .layout--l05 .layout__nota —
    una línea secundaria después del contenido principal, no un párrafo
@@ -833,8 +891,12 @@
     align-items: center;
     /* Ajustes tanda 4: mismo bug de align-content:normal que L09 (ver su
        nota) — dos filas auto en un contenedor de alto fijo se inflan
-       para llenar el sobrante si no se fija align-content:start. */
-    align-content: start;
+       para llenar el sobrante si no se fija align-content.
+       Ajuste posterior (centrado vertical general, todo el catálogo
+       salvo L01): "center" en vez de "start", mismo motivo que L09 —
+       agrupa las filas a su alto real y además las centra como bloque
+       en el sobrante, en vez de dejarlas pegadas arriba. */
+    align-content: center;
     grid-template-areas:
       "figura texto"
       "interaccion interaccion";
@@ -872,6 +934,14 @@
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
+    /* Ajuste (centrado vertical general, todo el catálogo salvo L01):
+       mismo bug de align-content:normal→stretch que L09/L11 (ver sus
+       notas) — sin esto, las dos filas ("kicker kicker" / "titulo
+       cuerpo") se separan para llenar el alto sobrante del contenedor
+       en vez de agruparse centradas. No se había notado antes porque
+       nadie lo había puesto contra Playwright a este tamaño de
+       contenido corto. */
+    align-content: center;
     grid-template-areas:
       "kicker kicker"
       "titulo cuerpo";

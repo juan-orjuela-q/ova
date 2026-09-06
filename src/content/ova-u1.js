@@ -209,13 +209,15 @@ window.OVA_CONTENIDO = {
       "capsula": null,
       "kicker": "Antes de empezar",
       "controles": [
-        { "icono": "menu", "texto": "Índice: abre la lista completa de pantallas de la unidad." },
-        { "icono": "location_on", "texto": "Tu ubicación: siempre ves en qué cápsula y tema estás." },
-        { "icono": "cloud_done", "texto": "Progreso: el curso se guarda solo y muestra cuánto llevas avanzado." },
-        { "icono": "fullscreen", "texto": "Pantalla completa: para ver el curso sin distracciones." },
-        { "icono": "record_voice_over", "texto": "Autolocución: actívala para que el audio de cada pantalla empiece solo." },
-        { "icono": "arrow_back", "texto": "Anterior: vuelve a la pantalla que acabas de ver." },
-        { "icono": "arrow_forward", "texto": "Siguiente: avanza a la siguiente pantalla del curso." }
+        { "imagen": "../public/img/icons/muestra-navegacion-1-menu.svg", "texto": "Índice: abre la lista completa de pantallas de la unidad." },
+        { "imagen": "../public/img/icons/muestra-navegacion-2-ubicacion.svg", "texto": "Tu ubicación: siempre ves en qué cápsula y tema estás." },
+        { "imagen": "../public/img/icons/muestra-navegacion-3-indicador-progreso.svg", "texto": "Progreso: muestra en porcentaje cuánto llevas avanzado en el curso." },
+        { "imagen": "../public/img/icons/muestra-navegacion-4-reanudar.svg", "texto": "Reanudar: te lleva directo a la última pantalla que viste." },
+        { "imagen": "../public/img/icons/muestra-navegacion-5-boton-accesibilidad.svg", "texto": "Accesibilidad: abre las preferencias de texto, movimiento y transcripción." },
+        { "imagen": "../public/img/icons/muestra-navegacion-6-boton-locucion.svg", "texto": "Autolocución: actívala para que el audio de cada pantalla empiece solo." },
+        { "imagen": "../public/img/icons/muestra-navegacion-7-boton-fullscreen.svg", "texto": "Pantalla completa: para ver el curso sin distracciones." },
+        { "imagen": "../public/img/icons/muestra-navegacion-8-anterior.svg", "texto": "Anterior: vuelve a la pantalla que acabas de ver." },
+        { "imagen": "../public/img/icons/muestra-navegacion-9-siguiente.svg", "texto": "Siguiente: avanza a la siguiente pantalla del curso." }
       ],
       "progreso": false
     },
