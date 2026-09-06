@@ -81,6 +81,7 @@
   /* ---- Radios ---------------------------------------------------- */
   --r-sm: 8px;
   --r-md: 12px;
+  --r-avatar: 16px; /* ajustes tanda 7: figuras de avatar-sm/avatar-lg de .media-avatar */
   --r-lg: 20px;
   --r-xl: 48px; /* ajustes tanda 3: esquina diagonal del componente "retrato" */
   --r-pill: 999px;
@@ -88,6 +89,12 @@
   /* ---- Espaciado (base 4) ---------------------------------------- */
   --sp-1:4px;  --sp-2:8px;   --sp-3:12px;  --sp-4:16px;  --sp-5:20px;
   --sp-6:24px; --sp-8:32px;  --sp-10:40px; --sp-12:48px; --sp-16:64px;
+
+  /* ---- Sombras ----------------------------------------------------
+     Único valor del proyecto por ahora: la tarjeta de audio (ajustes
+     tanda 7). Se tokeniza igual que radios/duraciones para no repetir
+     el rgba() suelto si otro componente la necesita más adelante. */
+  --shadow-card: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
 
   /* ---- Foco (no negociable) -------------------------------------- */
   --focus-ring: 3px solid var(--nuam-orange-500);

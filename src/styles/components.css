@@ -931,6 +931,9 @@
   border-radius: var(--r-lg);
   background: var(--surface-subtle);
   max-width: 26rem;
+  /* Ajustes tanda 7: sombra en las cuatro variantes (con o sin figura de
+     avatar) — es un tratamiento de la carta, no de una variante puntual. */
+  box-shadow: var(--shadow-card);
 }
 .media-audio__avatar {
   width: 3rem;
@@ -1051,6 +1054,92 @@
 }
 .media-audio__transcripcion-descarga:active {
   color: var(--nuam-orange-700);
+}
+
+/* ---- Figura de avatar sobre la carta (ajustes tanda 7) -----------------
+   Tres de las cuatro variantes del reproductor de avatar/audio
+   (avatar-sm/avatar-md/avatar-lg) reemplazan el círculo chico de
+   .media-audio__avatar por una foto grande superpuesta a la carta. La
+   variante "sin avatar" no usa nada de este bloque: es .media-audio tal
+   cual, solo con la sombra de arriba.
+
+   .media-avatar es el envoltorio nuevo (no es descendiente de
+   .media-audio en el árbol de clases BEM, es su padre) porque el efecto
+   "detrás de la carta" de avatar-md/avatar-lg necesita que la carta
+   pinte DESPUÉS de la figura en el orden de apilamiento del navegador:
+   un hijo con z-index negativo DENTRO de .media-audio se seguiría viendo
+   encima del propio fondo de .media-audio (el fondo de un contenedor con
+   position:relative pinta antes que cualquier hijo, incluidos los de
+   z-index negativo). Con la figura como hermana anterior y la carta sin
+   position (in-flow), la carta pinta encima de la figura sola con
+   z-index negativo, sin tocar el fondo de .media-audio. avatar-sm no
+   necesita z-index (queda al frente por defecto, un elemento posicionado
+   siempre pinta encima de uno sin posicionar).
+
+   .media-audio pierde su max-width propio dentro de .media-avatar y pasa
+   a llenar el ancho del envoltorio: así la figura, posicionada contra
+   los bordes de .media-avatar, siempre coincide con los bordes reales de
+   la carta en vez de con un contenedor más ancho. */
+.media-avatar {
+  position: relative;
+  max-width: 26rem;
+}
+.media-avatar .media-audio {
+  max-width: none;
+  width: 100%;
+}
+.media-avatar__figura {
+  position: absolute;
+  overflow: hidden;
+  background: var(--surface-muted);
+}
+.media-avatar__figura img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* avatar-sm: 120×120, centrada, se mete 24px en la carta (sobresale los
+   96px restantes por encima) — esquina inferior-izquierda recta a
+   propósito, el resto a 16px. */
+.media-avatar--sm .media-avatar__figura {
+  width: 120px;
+  height: 120px;
+  top: -96px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: var(--r-avatar) var(--r-avatar) var(--r-avatar) 0;
+}
+
+/* avatar-md: círculo 240×240 arriba a la derecha — 48px de la carta a la
+   derecha, 164px por encima del borde superior (se mete 76px). Va detrás
+   de la carta: ver la nota del bloque de arriba. */
+.media-avatar--md .media-avatar__figura {
+  width: 240px;
+  height: 240px;
+  top: -164px;
+  right: 48px;
+  border-radius: var(--r-pill);
+  z-index: -1;
+}
+/* La esquina que la figura atraviesa no puede quedar redondeada — el
+   radio dejaría un triángulo de fondo asomando detrás del círculo. */
+.media-avatar--md .media-audio {
+  border-top-right-radius: 0;
+}
+
+/* avatar-lg: cuadrado 480×480, misma lógica de desfase que avatar-md
+   (48px a la derecha, 432px por encima → se mete 48px en la carta). */
+.media-avatar--lg .media-avatar__figura {
+  width: 480px;
+  height: 480px;
+  top: -432px;
+  right: 48px;
+  border-radius: var(--r-avatar);
+  z-index: -1;
+}
+.media-avatar--lg .media-audio {
+  border-top-right-radius: 0;
 }
 
 /* ---- Reproductor de video (T4) -----------------------------------------

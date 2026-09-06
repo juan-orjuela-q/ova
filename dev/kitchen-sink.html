@@ -231,6 +231,16 @@
       max-width: 26rem;
       width: 100%;
     }
+    /* Ajustes tanda 7: avatar-md/avatar-lg sobresalen por encima de la
+       carta (164px/432px) — la figura es position:absolute, así que ese
+       espacio no lo reserva el flujo normal. En una pantalla real hay
+       aire de sobra alrededor (.layout__panel, .layout__media); aquí las
+       muestras van una tras otra sin ese aire propio, así que sin este
+       padding las figuras se montan encima del párrafo anterior. Es
+       solo del andamiaje de esta página, no del componente. */
+    .ks-muestras--avatar-figuras {
+      padding-top: 28rem; /* > 432px de avatar-lg + margen */
+    }
     /* Ajustes tanda 3: tarjetas angostas para el catálogo de "retrato"
        — mismo criterio que .ks-media-marco (el componente no trae
        max-width propio, lo acota quien lo monta), solo que más angosto
@@ -655,7 +665,7 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-media-audio">
-        <span class="ks-layout-bloque__etiqueta">Reproductor de avatar/audio (C3, cableado real)</span>
+        <span class="ks-layout-bloque__etiqueta">Reproductor de avatar/audio (C3, cableado real) — 4 variantes (ajustes tanda 7)</span>
         <p class="ks-intro">
           T1.5 la dejó como maqueta con play/pausa como dos instancias
           estáticas; C3 la cablea de verdad sobre <code>OVA.media.crear({tipo:
@@ -686,6 +696,25 @@
         <button id="c-media-autolocucion-demo" class="boton boton--outline" type="button">
           Simular llegada a esta pantalla (reproducirEn)
         </button>
+        <p class="ks-intro">
+          <strong>Variantes de figura (ajustes tanda 7).</strong> La sombra
+          (<code>--shadow-card</code>) es de la carta, en las cuatro
+          variantes — ya está en las dos instancias de arriba (variante "sin
+          avatar": nada más cambia). <code>datos.variante</code>
+          ("sm"/"md"/"lg") reemplaza el círculo chico por una foto grande
+          superpuesta a la carta (<code>.media-avatar</code>, ver
+          components.css): avatar-sm se mete 24px en la carta, centrada, con
+          la esquina inferior-izquierda recta; avatar-md y avatar-lg van
+          arriba a la derecha (48px del borde derecho) y detrás de la carta
+          —por eso la esquina superior-derecha de la carta queda recta en
+          esas dos, sin radio propio que le asome un triángulo de fondo
+          detrás de la figura.
+        </p>
+        <div class="ks-layout-marco ks-muestras ks-muestras--avatar-figuras">
+          <div id="c-media-avatar-sm"></div>
+          <div id="c-media-avatar-md"></div>
+          <div id="c-media-avatar-lg"></div>
+        </div>
       </div>
 
       <div class="ks-layout-bloque" id="c-media-video">
@@ -2026,6 +2055,33 @@
         tipo: 'avatar',
         imagen: IMAGEN_AVATAR_DEMO,
         transcripcion: TRANSCRIPCION_AVATAR_DEMO
+      });
+
+      // Ajustes tanda 7: las tres variantes de figura, con una foto real
+      // (a diferencia de a/b arriba, que a propósito apuntan a un
+      // archivo inexistente) para poder verificar tamaño/recorte/
+      // posición con Playwright, no solo el color de fondo del vacío.
+      var IMAGEN_AVATAR_FIGURA_DEMO = '../public/img/avatar/avatar-medio-confondo-1.webp';
+      montar('c-media-avatar-sm', {
+        tipo: 'avatar',
+        imagen: IMAGEN_AVATAR_FIGURA_DEMO,
+        audio: AUDIO_DEMO,
+        transcripcion: TRANSCRIPCION_AVATAR_DEMO,
+        variante: 'sm'
+      });
+      montar('c-media-avatar-md', {
+        tipo: 'avatar',
+        imagen: IMAGEN_AVATAR_FIGURA_DEMO,
+        audio: AUDIO_DEMO,
+        transcripcion: TRANSCRIPCION_AVATAR_DEMO,
+        variante: 'md'
+      });
+      montar('c-media-avatar-lg', {
+        tipo: 'avatar',
+        imagen: IMAGEN_AVATAR_FIGURA_DEMO,
+        audio: AUDIO_DEMO,
+        transcripcion: TRANSCRIPCION_AVATAR_DEMO,
+        variante: 'lg'
       });
 
       // C7: ranura de avatar nueva en L08/L10/L13 — mismo tono de

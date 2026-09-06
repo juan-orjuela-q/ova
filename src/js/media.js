@@ -33,13 +33,13 @@
 
    - **"video"** (T4): `{ tipo, src, poster?, vtt?, transcripcion? }`.
      Sin cambios en esta sesión.
-   - **"avatar"** (C3): `{ tipo, imagen, audio?, vtt?, transcripcion }`.
-     Imagen fija (regla dura 10 de CLAUDE.md: "el avatar es imagen fija
-     + audio, no video") más pista de audio opcional, subtítulos
-     opcionales (solo tienen sentido si hay audio) y transcripción
-     **obligatoria** — es la que carga la locución completa de Jose
-     cuando el audio todavía no existe, así que sin ella no hay nada
-     real que mostrar. Con audio: reproductor real (play, scrubber,
+   - **"avatar"** (C3): `{ tipo, imagen, audio?, vtt?, transcripcion,
+     variante? }`. Imagen fija (regla dura 10 de CLAUDE.md: "el avatar es
+     imagen fija + audio, no video") más pista de audio opcional,
+     subtítulos opcionales (solo tienen sentido si hay audio) y
+     transcripción **obligatoria** — es la que carga la locución completa
+     de Jose cuando el audio todavía no existe, así que sin ella no hay
+     nada real que mostrar. Con audio: reproductor real (play, scrubber,
      tiempo, CC si hay `vtt`) más la transcripción en un `<details>`
      colapsado — mismo patrón que el video. **Sin audio: no se
      construye ningún control** (ni un botón de play que no reproduce
@@ -50,6 +50,14 @@
      Ninguna de las dos rutas es un estado roto — la sección 3.2 de
      `PLAN-CONTENIDO.md` lo pide explícito: "esa degradación es el
      placeholder, no una pantalla rota".
+
+     `variante` (ajustes tanda 7, opcional) elige el tratamiento de la
+     foto: sin ella, la carta se queda con el círculo chico de siempre
+     (`.media-audio__avatar`, 3rem inline). `"sm"`/`"md"`/`"lg"`
+     reemplazan ese círculo por una figura grande superpuesta a la carta
+     (`.media-avatar`, ver components.css) — cualquier otro valor se
+     ignora y cae al círculo chico, no es un error: es la variante por
+     defecto, no una combinación fuera de catálogo.
 
    - **"imagen"** (C7): `{ tipo, src, alt? }`. Infografías y motion sin
      avatar (P14/P17/P21/P23/P27/P33/P41/P45 del storyboard real): una
@@ -423,6 +431,41 @@
   // obligatorios (sin imagen no hay avatar; sin transcripción no hay
   // nada real que mostrar en ninguna de las dos rutas); `audio`/`vtt`
   // son opcionales y `vtt` solo tiene sentido si hay `audio`.
+  var VARIANTES_FIGURA_AVATAR = ['sm', 'md', 'lg'];
+
+  // Ajustes tanda 7: crea la <img> con la misma degradación de siempre
+  // (sin archivo, se quita la <img> y queda el fondo --surface-muted del
+  // envoltorio en vez de un ícono de imagen rota) — compartida entre el
+  // círculo chico de .media-audio__avatar y la figura grande de
+  // .media-avatar__figura, las dos apuntan a la misma datos.imagen.
+  function crearImagenAvatar(src) {
+    var imagen = document.createElement('img');
+    imagen.src = src;
+    imagen.alt = '';
+    imagen.addEventListener('error', function () {
+      if (imagen.parentNode) imagen.parentNode.removeChild(imagen);
+    });
+    return imagen;
+  }
+
+  // Ajustes tanda 7: con variante "sm"/"md"/"lg", .media-audio deja de
+  // ser la raíz que se monta — la envuelve .media-avatar (ver la nota
+  // de apilamiento en components.css) para que la figura pueda quedar
+  // detrás de la carta en avatar-md/avatar-lg. Sin variante, la carta
+  // sigue siendo la raíz de siempre, sin envoltorio nuevo.
+  function envolverConFigura(raiz, datos) {
+    if (VARIANTES_FIGURA_AVATAR.indexOf(datos.variante) === -1) return raiz;
+    var envoltura = document.createElement('div');
+    envoltura.className = 'media-avatar media-avatar--' + datos.variante;
+    var figura = document.createElement('div');
+    figura.className = 'media-avatar__figura';
+    figura.setAttribute('aria-hidden', 'true');
+    figura.appendChild(crearImagenAvatar(datos.imagen));
+    envoltura.appendChild(figura);
+    envoltura.appendChild(raiz);
+    return envoltura;
+  }
+
   function crearAvatar(datos) {
     if (!datos.imagen) {
       console.error('[OVA] OVA.media.crear: media "avatar" necesita "imagen".');
@@ -437,25 +480,21 @@
       return null;
     }
 
+    var tieneFigura = VARIANTES_FIGURA_AVATAR.indexOf(datos.variante) !== -1;
+
     var raiz = document.createElement('div');
     raiz.className = 'media-audio' + (datos.audio ? '' : ' media-audio--sin-audio');
 
-    var avatarEnvoltura = document.createElement('div');
-    avatarEnvoltura.className = 'media-audio__avatar';
-    avatarEnvoltura.setAttribute('aria-hidden', 'true');
-    var imagen = document.createElement('img');
-    imagen.src = datos.imagen;
-    imagen.alt = '';
-    // Las imágenes de public/img/avatar/ todavía no existen — Juan las
-    // produce en paralelo (PLAN-CONTENIDO.md §5). Sin archivo, quitar
-    // la <img> deja el círculo en su --surface-muted de fondo (ya
-    // definido más abajo en components.css), que se lee como el
-    // placeholder de un avatar, no como un ícono de imagen rota.
-    imagen.addEventListener('error', function () {
-      if (imagen.parentNode) imagen.parentNode.removeChild(imagen);
-    });
-    avatarEnvoltura.appendChild(imagen);
-    raiz.appendChild(avatarEnvoltura);
+    if (!tieneFigura) {
+      // Sin variante: el círculo chico de siempre, inline en la carta —
+      // avatar-sm/md/lg lo reemplazan por la figura grande de
+      // envolverConFigura(), las dos rutas no conviven a la vez.
+      var avatarEnvoltura = document.createElement('div');
+      avatarEnvoltura.className = 'media-audio__avatar';
+      avatarEnvoltura.setAttribute('aria-hidden', 'true');
+      avatarEnvoltura.appendChild(crearImagenAvatar(datos.imagen));
+      raiz.appendChild(avatarEnvoltura);
+    }
 
     if (!datos.audio) {
       // Sin audio: ningún control (mismo criterio que el CC omitido en
@@ -463,7 +502,7 @@
       // transcripción directa, no colapsada: es el placeholder de
       // producción, no un estado roto (PLAN-CONTENIDO.md §3.2).
       raiz.appendChild(crearTranscripcionVisible(datos.transcripcion, 'media-audio'));
-      return raiz;
+      return envolverConFigura(raiz, datos);
     }
 
     var audio = document.createElement('audio');
@@ -595,7 +634,7 @@
     }
 
     instancias.push(audio);
-    return raiz;
+    return envolverConFigura(raiz, datos);
   }
 
   // Ajustes tanda 3: catálogo de forma válida por variante de "retrato"

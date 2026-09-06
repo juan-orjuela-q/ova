@@ -750,3 +750,121 @@ vertical (`top + height/2`) de cada columna contra la otra difiere en
 real, no aproximado. Sin scroll horizontal a 320px, sin overflow nuevo
 en la kitchen sink, cero errores de consola nuevos. Cero hex nuevo (un
 solo valor de alineación, sin tocar `tokens.css`).
+
+---
+
+## 13 · Reproductor de avatar/audio: sombra y tres variantes de figura — tanda 7, cerrado 6 sep
+
+**Pedido.** Mejorar `.media-audio` (el reproductor de avatar/audio de C3):
+(1) sombra en la carta, en las cuatro variantes; (2) tres variantes nuevas
+de figura que reemplazan el círculo chico de siempre por una foto grande
+superpuesta a la carta — `avatar-sm`, `avatar-md`, `avatar-lg` —, con
+geometría exacta dictada por Juan (tamaño y desfase en px contra los
+bordes de la carta) y una cuarta variante "sin avatar" que es la carta de
+siempre, solo con la sombra nueva.
+
+**Geometría, tal cual la dictó Juan (verificada con Playwright, no
+asumida):**
+
+- **avatar-sm** — figura 120×120, centrada horizontalmente, se mete 24px
+  en la carta (sobresale los 96px restantes por encima). Radio 16px en
+  las tres esquinas salvo la inferior-izquierda, recta.
+- **avatar-md** — círculo 240×240, arriba a la derecha: 48px de desfase
+  contra el borde derecho de la carta, 164px contra el borde superior (se
+  mete 76px). Va **detrás** de la carta.
+- **avatar-lg** — cuadrado 480×480 (Juan lo aclaró en dos pasos: primero
+  dio el desfase superior, 432px; al preguntar si ese número era el
+  tamaño completo o solo el desfase, confirmó 480×480 con 48px de
+  traslape — 480 − 48 = 432, el número ya dado), mismo desfase derecho de
+  48px que avatar-md. Radio 16px en las cuatro esquinas — a diferencia de
+  avatar-sm, sin excepción. También detrás de la carta.
+- En **avatar-md y avatar-lg, la esquina superior-derecha de la carta va
+  recta** (sin radio): con radio, la figura circular/cuadrada que la
+  atraviesa dejaría asomar un triángulo del fondo detrás de ella.
+
+**Decisión de arquitectura: `.media-avatar` es un envoltorio nuevo, padre
+de `.media-audio`, no un hijo suyo.** El efecto "detrás de la carta" de
+avatar-md/avatar-lg necesita que la carta pinte *después* que la figura en
+el orden de apilamiento. Un hijo con `z-index` negativo dentro de
+`.media-audio` no sirve: el fondo de un contenedor con `position:relative`
+pinta antes que cualquiera de sus hijos, incluidos los de z-index
+negativo — la figura seguiría viéndose encima del propio fondo de la
+carta. Con la figura como hermana *anterior* de la carta (ambas dentro de
+`.media-avatar`, que sí es `position:relative`) y la carta sin `position`
+propio (in-flow), la carta pinta encima de la figura con z-index negativo
+sin que su propio fondo entre en el problema. avatar-sm no necesita
+z-index: un elemento posicionado ya pinta encima de uno sin posicionar por
+defecto, y ahí la figura va al frente, no detrás.
+
+`.media-audio` pierde su `max-width` propio dentro de `.media-avatar`
+(pasa a `width:100%`, y el `max-width:26rem` se mueve al envoltorio): así
+la figura, posicionada contra los bordes de `.media-avatar`, siempre
+coincide con los bordes reales de la carta en vez de con un contenedor
+más ancho.
+
+**`media.js` (`crearAvatar`):** nuevo campo opcional `datos.variante`
+("sm"/"md"/"lg"). Sin él, la carta se queda exactamente como estaba antes
+de esta tarea — el círculo chico de `.media-audio__avatar` inline, sin
+tocar — más la sombra nueva: es la lectura literal de "para la variante
+sin avatar, simplemente se le va a agregar la sombra". Con variante, el
+círculo chico no se construye (las dos rutas no conviven) y
+`envolverConFigura()` arma `.media-avatar` con la figura grande y mete
+adentro la carta ya armada; se llama en los dos puntos de retorno de
+`crearAvatar` (la rama sin audio y la rama con audio) para que las cuatro
+combinaciones de variante × con/sin audio funcionen igual. Ningún
+contenido real de `content/ova-u1.js` fija `variante` todavía — mismo
+criterio que el componente "retrato" del ítem 8: el catálogo queda listo
+y verificado en la kitchen sink, pendiente de que una pantalla real lo
+pida.
+
+**`tokens.css`:** `--shadow-card` (el `box-shadow` exacto que dio Juan,
+tokenizado igual que radios/duraciones para no repetir el `rgba()` suelto)
+y `--r-avatar: 16px` (no encaja en la escala sm/md/lg/xl existente —
+queda entre md=12 y lg=20 — así que es un token nuevo e independiente,
+documentado, en vez de forzarlo dentro de la escala).
+
+**Hallazgo verificado, no corregido — sin impacto en la regla dura 7.**
+avatar-lg (480px) es más ancho que `.media-avatar` en viewports angostos,
+así que a 320px su borde izquierdo cae en X negativo (fuera de pantalla).
+Medido con Playwright de forma aislada (el demo de avatar-lg solo, sin
+nada más en `<body>`): `scrollWidth` se queda en 320px igual que
+`clientWidth` — un elemento hijo con posición negativa no extiende el
+scroll horizontal de una página LTR, así que esto **no** viola la regla
+dura 7 ("sin scroll horizontal a 320px"), verificado empíricamente y no
+solo asumido. Sí significa que la foto se recorta invisible por la
+izquierda a ese ancho — sin especificación de Juan sobre el comportamiento
+en mobile, no se inventó ningún tratamiento responsive por decisión propia
+(mismo criterio que el resto del proyecto: estas decisiones se confirman
+con Juan, no se resuelven a ciegas). Queda anotado para cuando haya una
+pantalla real con avatar-lg y aparezca el caso de verdad.
+
+**Kitchen sink:** sección "Reproductor de avatar/audio" ampliada con tres
+instancias reales (`avatar-sm`/`avatar-md`/`avatar-lg`, con una foto real
+de `public/img/avatar/` en vez del placeholder inexistente que usan las
+dos instancias viejas, para poder verificar tamaño/recorte/posición con
+Playwright y no solo el color de fondo del vacío) y texto explicando la
+sombra y las tres variantes. Nueva clase de andamiaje
+`.ks-muestras--avatar-figuras` (solo en esta página): sin ella, la figura
+de avatar-lg (sobresale 432px sobre la carta, espacio que
+`position:absolute` no reserva en el flujo) se montaba encima del párrafo
+anterior porque las muestras van una tras otra sin el aire propio de una
+pantalla real — bug de espaciado de la kitchen sink, no del componente,
+arreglado con `padding-top` en el contenedor de las tres muestras nuevas.
+
+**Verificado con Playwright, `dev/kitchen-sink.html` y `src/index.html`
+por `file://`:** geometría exacta de las tres variantes contra los números
+de Juan, medida con `getBoundingClientRect`/`getComputedStyle` (no
+asumida): avatar-sm 96px sobre la carta + 24px de traslape + radio
+`16px 16px 16px 0px` + centrada; avatar-md 164px sobre + 48px del borde
+derecho + `border-radius:999px` + `z-index:-1` + esquina de la carta en
+`20px 0px 20px 20px`; avatar-lg 432px sobre + 48px del borde derecho +
+480×480 + radio `16px` uniforme + `z-index:-1` + misma esquina recta de
+la carta. Los tres botones de play y el `<summary>` de transcripción
+siguen totalmente clicables (`elementFromPoint` en su centro devuelve el
+control mismo, no la figura) y el orden de Tab no cambia ni la figura
+entra en él (es `aria-hidden`, sin nada focalizable). Pantalla real `p04`
+(avatar sin variante): sombra aplicada, círculo chico intacto, sin figura
+grande, cero errores de consola — sin regresión sobre las trece pantallas
+reales que ya usan `tipo:"avatar"`. Cero hex nuevo en los cuatro archivos
+tocados (`tokens.css`, `components.css`, `media.js`,
+`dev/kitchen-sink.html`).
