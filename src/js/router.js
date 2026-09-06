@@ -933,10 +933,12 @@
   function actualizarNavInferior(inst) {
     var botonAnterior = document.getElementById('nav-anterior');
     var botonSiguiente = document.getElementById('nav-siguiente');
-    var paso = document.getElementById('nav-paso');
+    var pasoCompleto = document.getElementById('nav-paso-completo');
+    var pasoCorto = document.getElementById('nav-paso-corto');
     if (botonAnterior) botonAnterior.disabled = inst.esPrimera;
     if (botonSiguiente) botonSiguiente.disabled = inst.esUltima;
-    if (paso) paso.textContent = 'Pantalla ' + (inst.indice + 1) + ' de ' + inst.total;
+    if (pasoCompleto) pasoCompleto.textContent = 'Pantalla ' + (inst.indice + 1) + ' de ' + inst.total;
+    if (pasoCorto) pasoCorto.textContent = (inst.indice + 1) + '/' + inst.total;
   }
 
   /* ---- Chrome: migas de pan / jerarquía (D1) ----------------------
@@ -963,34 +965,12 @@
     var unidad = document.getElementById('nav-migas-unidad');
     var capsula = document.getElementById('nav-migas-capsula');
     var capsulaTexto = document.getElementById('nav-migas-capsula-texto');
-    var tema = document.getElementById('nav-migas-tema');
-    var temaTexto = document.getElementById('nav-migas-tema-texto');
-    var temaSeparador = document.getElementById('nav-migas-tema-separador');
+    var titulo = document.getElementById('nav-migas-titulo');
 
     if (unidad) unidad.textContent = pantalla.unidad || '';
     if (capsulaTexto) capsulaTexto.textContent = pantalla.capsula || '';
-    if (temaTexto) temaTexto.textContent = pantalla.titulo;
-
-    var esPrimeraDeCapsula = !!pantalla.capsula &&
-      tituloSinPrefijo(pantalla.titulo) === pantalla.capsula;
-
-    if (capsula) {
-      capsula.hidden = !pantalla.capsula;
-      if (esPrimeraDeCapsula) {
-        capsula.setAttribute('aria-current', 'page');
-      } else {
-        capsula.removeAttribute('aria-current');
-      }
-    }
-    if (tema) {
-      tema.hidden = esPrimeraDeCapsula;
-      if (esPrimeraDeCapsula) {
-        tema.removeAttribute('aria-current');
-      } else {
-        tema.setAttribute('aria-current', 'page');
-      }
-    }
-    if (temaSeparador) temaSeparador.hidden = !pantalla.capsula || esPrimeraDeCapsula;
+    if (capsula) capsula.hidden = !pantalla.capsula;
+    if (titulo) titulo.textContent = tituloSinPrefijo(pantalla.titulo);
   }
 
   function actualizarProgreso(inst) {
@@ -1020,18 +1000,6 @@
     }
     if (relleno) relleno.style.transform = 'scaleX(' + fraccion + ')';
     if (texto) texto.textContent = porcentaje + ' % completado';
-  }
-
-  function actualizarGuardado() {
-    var icono = document.getElementById('nav-guardado-icono');
-    var texto = document.getElementById('nav-guardado-texto');
-    // El color nunca es el único código de un estado (regla dura de
-    // CLAUDE.md): el ícono y el texto cambian juntos según si
-    // localStorage de verdad está disponible, no solo si state.js
-    // *intentó* guardar.
-    var ok = OVA.storage.disponible();
-    if (icono) icono.textContent = ok ? 'cloud_done' : 'cloud_off';
-    if (texto) texto.textContent = ok ? 'Guardado' : 'No se pudo guardar en este dispositivo';
   }
 
   /* ---- Chrome: marco fijo — barras ocultas en la portada (C2) --------
@@ -1093,6 +1061,14 @@
       if (icono) icono.textContent = activo ? 'fullscreen_exit' : 'fullscreen';
       var etiqueta = boton.querySelector('.u-oculto-visualmente');
       if (etiqueta) etiqueta.textContent = activo ? 'Salir de pantalla completa' : 'Pantalla completa';
+      // Solo #nav-pantalla-completa declara aria-pressed en index.html
+      // (botón de preferencia real, con el punto naranja de
+      // .boton-icono--relleno); #nav-portada-completa no lo trae y este
+      // setAttribute no se lo agrega — sigue siendo un botón de acción
+      // simple, no un toggle con estado.
+      if (boton.hasAttribute('aria-pressed')) {
+        boton.setAttribute('aria-pressed', String(activo));
+      }
     });
   }
 
@@ -1176,7 +1152,14 @@
   function actualizarReanudar(inst) {
     var boton = document.getElementById('nav-reanudar');
     if (!boton) return;
-    boton.hidden = inst.masAvanzada <= inst.indice;
+    var mostrar = inst.masAvanzada > inst.indice;
+    boton.hidden = !mostrar;
+    // En mobile (components.css) reanudar y el progreso comparten el
+    // mismo espacio y no caben los dos — esta clase es la que le dice al
+    // CSS cuál de los dos ocultar. En desktop hay espacio de sobra y los
+    // dos se muestran juntos, sin que esta clase cambie nada ahí.
+    var barra = document.querySelector('.nav-barra');
+    if (barra) barra.classList.toggle('nav-barra--reanudando', mostrar);
   }
 
   function reanudar() {
@@ -1410,7 +1393,6 @@
     actualizarNavInferior(inst);
     actualizarMigas(pantalla);
     actualizarProgreso(inst);
-    actualizarGuardado();
     actualizarReanudar(inst);
     actualizarDrawer(inst);
     gestionarBotonPortada(pantalla);

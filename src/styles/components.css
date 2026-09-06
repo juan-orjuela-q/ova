@@ -171,17 +171,32 @@
    valor que --text-on-inverse-2): sigue siendo un borde discreto, no
    blanco puro como `.boton--blanco`, pero cumple contraste de verdad.
    El hover reutiliza el mismo gris 800 que el resto de los controles
-   de esta barra (`.boton-icono` más abajo), no un relleno claro. */
+   de esta barra (`.boton-icono` más abajo), no un relleno claro.
+
+   Tamaño (tanda 2 de AJUSTES.md): alto fijo de 48px en vez del
+   padding-block en em de `.boton` — con `box-sizing:border-box`
+   (base.css) el alto ya incluye borde y padding, así que no hace falta
+   compensar el borde de 1.5px a mano como sí hace `.boton--outline` a
+   secas. El label sigue siendo el mismo `font`/`letter-spacing` de
+   `.boton` (500 16px, tracking 2%) — ya coincide con lo pedido, no se
+   repite aquí. Solo el ícono crece a 24px. */
 .boton--outline.boton--inverse {
   color: var(--text-on-inverse);
   border-color: var(--nuam-grey-400);
   background: transparent;
+  height: var(--sp-12);
+  padding-block: 0;
+  padding-inline: var(--sp-4);
+  gap: var(--sp-2);
 }
 .boton--outline.boton--inverse:hover {
   background: var(--nuam-grey-800);
 }
 .boton--outline.boton--inverse:active {
   background: var(--nuam-grey-700);
+}
+.boton--outline.boton--inverse .boton__icono {
+  font-size: 1.5rem;
 }
 
 /* ---- Icono genérico (T1.5, componentes) -------------------------------
@@ -323,111 +338,45 @@
   color: var(--text-secondary);
 }
 
-/* ---- Migas de pan (T1.5 maqueta → D1: jerarquía Unidad › Cápsula ›
-   Tema real) -------------------------------------------------------------
-   Un único <ol> semántico de 2 o 3 ítems; visualmente dos líneas.
-   `.nav-migas__unidad` fuerza el salto de línea con flex-basis:100%
-   sobre el <ol> en flex-wrap (ya declarado abajo) — cápsula y tema
-   quedan en la segunda línea sin necesitar un contenedor aparte. Sin
-   <a>: ningún nivel tiene pantalla de destino propia dentro de la OVA
-   (index.html, nota junto al marcado). La cápsula trunca con elipsis
-   sobre su span de texto (no sobre el <li> completo, que también
-   contiene el separador — el ellipsis de CSS no reparte bien el corte
-   entre varias cajas hijas); el tema nunca se trunca
-   (flex-shrink:0). */
+/* ---- Migas de pan (T1.5 maqueta → D1 jerarquía → restilo tanda 2 de
+   AJUSTES.md, sobre referencia de Figma) ---------------------------------
+   Dos líneas de texto plano, no un <ol> de ítems: arriba el eyebrow
+   "Unidad › Cápsula" en una sola pieza (PT Serif 700 12px — a propósito
+   distinto de `.eyebrow`/`--text-label`, que es Figtree; es un diseño
+   nuevo, no una reutilización), abajo el nombre de la pantalla actual
+   siempre visible (Figtree 700 20px = `--text-h4`, con el tracking de
+   4% que pide el Figma). Sin <a>: ningún nivel tiene pantalla de
+   destino propia dentro de la OVA (index.html, nota junto al marcado).
+   El separador "›" sigue en su propio <span aria-hidden="true"> — igual
+   que antes de este restilo — porque un lector de pantalla no siempre
+   ignora contenido decorativo así nomás. Los dos párrafos truncan con
+   elipsis en vez de partirse en dos líneas: a 320px es preferible
+   perder la cola del texto a que la barra crezca de alto. */
 .nav-migas {
   flex: 1 1 auto;
   min-width: 0;
-}
-.nav-migas ol {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: baseline;
-  column-gap: var(--sp-3);
-  row-gap: var(--sp-1);
-  list-style: none;
-  padding-inline-start: 0;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.nav-migas__eyebrow,
+.nav-migas__titulo {
   margin: 0;
-}
-.nav-migas__unidad {
-  flex-basis: 100%;
-}
-.nav-migas__capsula,
-.nav-migas__tema {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-2);
-}
-.nav-migas__capsula {
-  min-width: 0;
-  font: var(--text-body-sm);
-  color: var(--text-secondary);
-}
-.nav-migas__capsula .nav-migas__texto {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.nav-migas__tema {
-  /* Nunca trunca con elipsis (a diferencia de la cápsula): en vez de
-     flex-shrink:0 rígido —que a 320px + zoom de texto 200% se negaba a
-     encoger y desbordaba horizontalmente, verificado con Playwright—
-     min-width:0 deja que el texto envuelva a una segunda línea cuando
-     de verdad no cabe. En anchos normales sigue viéndose en una sola
-     línea, sin diferencia visual. */
-  min-width: 0;
-  font: var(--text-h5);
-  color: var(--text-primary);
-}
-/* Cuando la excepción de "primera pantalla de cápsula" (router.js) deja
-   la cápsula como ítem actual, hereda el mismo peso que el tema en vez
-   de quedarse con el tratamiento secundario de arriba. */
-.nav-migas [aria-current="page"] {
-  font: var(--text-h5);
-  color: var(--text-primary);
-}
-.nav-migas__separador {
-  color: var(--text-tertiary);
-}
-
-/* D2: la barra superior pasó a --surface-inverse; `.nav-migas` en
-   cambio sigue siendo el mismo componente que la kitchen sink muestra
-   suelto sobre superficie clara (sección "Migas de pan", fuera de
-   `.nav-barra`) para documentar sus tres estados — por eso el
-   repintado va scoped a `.nav-barra .nav-migas`, no a las clases base:
-   cambiar el color base habría dejado esa demo ilegible. --text-on-
-   inverse-2 (gris 400) para lo secundario (unidad, cápsula, separador)
-   y --text-on-inverse (blanco) para lo que ya era texto primario
-   (tema, o la cápsula cuando hace de ítem actual). */
-.nav-barra .nav-migas__unidad {
+.nav-migas__eyebrow {
+  font: 700 0.75rem/1.3 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   color: var(--text-on-inverse-2);
 }
-.nav-barra .nav-migas__capsula {
-  color: var(--text-on-inverse-2);
-}
-.nav-barra .nav-migas__tema {
+.nav-migas__titulo {
+  font: var(--text-h4);
+  letter-spacing: 0.04em;
   color: var(--text-on-inverse);
-}
-.nav-barra .nav-migas [aria-current="page"] {
-  color: var(--text-on-inverse);
-}
-.nav-barra .nav-migas__separador {
-  color: var(--text-on-inverse-2);
-}
-
-/* Por debajo de 40em la miga colapsa a una sola cosa por línea: la
-   unidad arriba (ya es su propia línea) y el tema justo debajo, sin la
-   cápsula —sigue disponible en el drawer— ni un separador colgado sin
-   nada antes. */
-@media (max-width: 39.999em) {
-  .nav-migas__capsula {
-    display: none;
-  }
-  .nav-migas__tema .nav-migas__separador {
-    display: none;
-  }
 }
 
 /* ---- Botón de solo ícono (T3, componentes) -----------------------------
@@ -453,6 +402,19 @@
 }
 .boton-icono .icono {
   font-size: 1.25rem;
+}
+
+/* Variante grande (tanda 2 de AJUSTES.md, sobre Figma): 48px, la usan
+   los cuatro controles de la barra superior (menú, preferencias,
+   autolocución, pantalla completa). Modificador de tamaño puro, sin
+   color propio — por eso vive junto a la base en vez de con las
+   variantes de color de más abajo. */
+.boton-icono--grande {
+  width: var(--sp-12);
+  height: var(--sp-12);
+}
+.boton-icono--grande .icono {
+  font-size: 1.5rem;
 }
 
 /* ---- Botón de pantalla completa de la portada (C2, componentes) --------
@@ -494,16 +456,19 @@
    nunca `width`. El track era --surface-subtle-2 (gris 100) porque
    CLAUDE.md prohíbe naranja de relleno del gris 200 al 600; D2 pasó la
    barra superior —único lugar donde vive este componente— a
-   --surface-inverse, así que el track pasa a gris 800: naranja 500
-   sobre gris 800 mide 3.9:1, cumple el 3:1 de componente no textual
-   (el relleno sigue siendo naranja 500, sin cambio). */
+   --surface-inverse con track gris 800 (naranja 500 sobre gris 800:
+   3.9:1). Tanda 2 de AJUSTES.md aclaró el track a gris 700 (más
+   presente contra el negro de la barra): naranja 500 sobre gris 700
+   mide 3.12:1, sigue cumpliendo el 3:1 de componente no textual, un
+   poco más ajustado que antes — no bajar más ese gris sin volver a
+   medir. El relleno sigue siendo naranja 500, sin cambio. */
 .barra-progreso {
   position: relative;
   width: 8rem;
   max-width: 30vw;
   height: 6px;
   border-radius: var(--r-pill);
-  background: var(--nuam-grey-800);
+  background: var(--nuam-grey-700);
   overflow: hidden;
 }
 .barra-progreso__relleno {
@@ -517,11 +482,14 @@
   transition: transform var(--dur-slow) var(--ease-out);
 }
 
-/* ---- Barra superior (T3, componentes; inverse desde D2) ----------------
-   Landmark <header> (banner) cableado por router.js: título, botón del
-   drawer, progreso, reanudar y guardado. --nav-reanudar se oculta con
-   `hidden`, no con una clase de visibilidad, para salir también del
-   orden de tabulación cuando no aplica.
+/* ---- Barra superior (T3, componentes; inverse desde D2; reestructurada
+   en tanda 2 de AJUSTES.md sobre referencia de Figma) ---------------------
+   Landmark <header> (banner) cableado por router.js: menú, migas,
+   progreso+reanudar, preferencias, autolocución, pantalla completa.
+   --nav-reanudar se oculta con `hidden`, no con una clase de
+   visibilidad, para salir también del orden de tabulación cuando no
+   aplica. El indicador de guardado se quitó en esta misma tanda —no
+   aportaba nada al estudiante— junto con `.nav-barra__guardado`.
 
    D2 pasó el fondo a --surface-inverse para separar "dónde estoy"
    (arriba, negro) de "cómo avanzo" (abajo, la barra inferior sigue
@@ -530,7 +498,17 @@
    gris 200 sobre gris 950 no aporta nada, --border-inverse (gris 700)
    es el token que CLAUDE.md reserva exactamente para esto. El anillo
    de foco no cambia: naranja 500 sobre gris 950 mide 5.65:1, ya
-   cumplía antes de este cambio. */
+   cumplía antes de este cambio.
+
+   `.nav-barra__utilidades` agrupa todo lo que no es menú/migas en un
+   solo ítem de flex para que `.nav-migas` (flex:1 1 auto) lo empuje
+   entero al borde derecho, igual que hacía cada hijo suelto antes de
+   esta tanda. Adentro, dos grupos (`__progreso-grupo` y `__iconos`) en
+   vez de ítems sueltos: en mobile (media query más abajo) cada grupo
+   necesita moverse y alinearse como una sola unidad, no como ítems
+   repartidos uno por uno. En desktop no cambia nada visualmente: el
+   orden de origen ya era progreso/reanudar antes que preferencias/
+   autolocución/pantalla completa. */
 .nav-barra {
   display: flex;
   align-items: center;
@@ -547,17 +525,25 @@
      completa junto a #app en base.css. */
   min-inline-size: 0;
 }
+.nav-barra__utilidades {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.nav-barra__progreso-grupo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.nav-barra__iconos {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
 .nav-barra__progreso {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  color: var(--text-on-inverse-2);
-  font: var(--text-caption);
-}
-.nav-barra__guardado {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
   color: var(--text-on-inverse-2);
   font: var(--text-caption);
 }
@@ -567,7 +553,9 @@
    video la usan así) — scoped a `.nav-barra` para no repintar esos
    otros usos. Icono blanco, hover gris 800 (mismo par que el track de
    la barra de progreso de aquí arriba y que `.boton--outline.boton--
-   inverse`, no un color nuevo). */
+   inverse`, no un color nuevo). El botón de menú y los tres de
+   preferencias/autolocución/pantalla completa pisan este hover con sus
+   propias variantes de color, más abajo. */
 .nav-barra .boton-icono {
   color: var(--text-on-inverse);
 }
@@ -578,7 +566,140 @@
   background: var(--nuam-grey-700);
 }
 
-/* ---- Barra inferior (T2, cableada; T3 no la reescribe) ----------------- */
+/* Botón de menú (tanda 2 de AJUSTES.md): relleno de marca, no el gris
+   inverse de arriba. Blanco sobre naranja 500 mide 3.48:1 —no cumple
+   4.5:1 de texto normal, pero este ícono no es texto: WCAG 1.4.11
+   (objeto gráfico esencial) solo exige 3:1, mismo criterio que ya usa
+   `--text-on-brand-display` para las variantes grandes del botón
+   naranja. */
+.boton-icono--menu {
+  background: var(--surface-brand);
+  color: var(--text-on-brand-display);
+}
+.boton-icono--menu:hover {
+  background: var(--nuam-orange-600);
+}
+.boton-icono--menu:active {
+  background: var(--nuam-orange-700);
+}
+
+/* Botones de preferencias/autolocución/pantalla completa (tanda 2):
+   relleno gris 700 en reposo, ícono blanco siempre —incluido en hover,
+   a propósito, el ícono no cambia de color—. El hover aclara el
+   relleno a gris 500 y agrega un anillo del mismo gris separado del
+   borde del botón por un hueco: dos box-shadow apilados en vez de
+   `outline`, porque `outline` es el que exige la regla dura de foco
+   visible (`:focus-visible` en base.css) y no se puede pisar aquí sin
+   arriesgar que un hover y un foco por teclado coincidan y se anulen.
+   El primer shadow (radio menor) pinta el hueco del color de fondo de
+   la barra —por eso se ve como una separación "en negro", en realidad
+   es --surface-inverse—; el segundo, detrás, es el anillo visible. */
+.boton-icono--relleno {
+  position: relative;
+  background: var(--nuam-grey-700);
+}
+.boton-icono--relleno:hover {
+  background: var(--nuam-grey-500);
+  box-shadow: 0 0 0 3px var(--surface-inverse), 0 0 0 5px var(--nuam-grey-500);
+}
+.boton-icono--relleno:active {
+  background: var(--nuam-grey-600);
+}
+/* Punto de "activado" (tanda 2; tamaño doblado en tanda 3 de AJUSTES.md
+   para que se note más): refuerzo visual además del ícono y del texto
+   accesible que ya cambian con el estado real (aria-pressed) — nunca el
+   único código del estado, regla dura 3 de CLAUDE.md. Ícono blanco por
+   encima del punto en la esquina, así que el punto lleva su propio borde
+   del color de fondo de la barra para no fundirse con el relleno gris
+   del botón. */
+.boton-icono--relleno[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: var(--sp-4);
+  height: var(--sp-4);
+  border-radius: var(--r-pill);
+  background: var(--nuam-orange-500);
+  border: 2px solid var(--surface-inverse);
+}
+
+/* Mobile (tanda 2 de AJUSTES.md): la barra pasa a grid de dos filas —
+   arriba menú+migas a todo el ancho, abajo las utilidades separadas
+   por una línea blanca de 1px. El marcado no cambia entre anchos, solo
+   la disposición. `.nav-barra__utilidades::before` dibuja la línea a
+   sangre respecto al padding-inline de `.nav-barra` (no se toca ese
+   padding, se compensa con márgenes negativos) en vez de ponerla en
+   `.nav-barra` mismo, porque ahí arriba (fila menú+migas) no hay
+   ninguna línea que mostrar.
+   `.nav-barra__iconos` y `.nav-barra__progreso-grupo` intercambian su
+   posición visual con `order` sin tocar el orden real del DOM —el
+   progreso/reanudar siguen antes que los tres íconos en el marcado y
+   en el tabulador, igual que en desktop. `.nav-barra__progreso-grupo`
+   se empuja al borde derecho con `margin-inline-start:auto` (no
+   `justify-content:space-between` en el contenedor) a propósito: con
+   margin auto, si el contenido no alcanza a entrar en una sola línea
+   —320px real, no el ancho del mockup de Figma— `.nav-barra__utilidades`
+   puede envolver (`flex-wrap`) y el grupo de progreso sigue
+   empujándose a la derecha en su propia línea en vez de quedar pegado
+   a la izquierda; con `space-between` puro, un ítem solo en una línea
+   envuelta cae a la izquierda igual que el otro, y los dos se verían
+   pegados al mismo borde. Cuando reanudar está visible
+   (`.nav-barra--reanudando`, router.js) el progreso se oculta aquí —no
+   caben los dos—; en desktop, sin este media query, siguen mostrándose
+   juntos como pide el Figma. */
+@media (max-width: 39.999em) {
+  .nav-barra {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "menu  migas"
+      "info  info";
+    row-gap: var(--sp-3);
+  }
+  .nav-barra .boton-icono--menu {
+    grid-area: menu;
+  }
+  .nav-barra .nav-migas {
+    grid-area: migas;
+  }
+  .nav-barra__utilidades {
+    grid-area: info;
+    position: relative;
+    flex-wrap: wrap;
+    row-gap: var(--sp-2);
+    padding-block-start: var(--sp-3);
+  }
+  .nav-barra__utilidades::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: calc(-1 * var(--sp-4));
+    right: calc(-1 * var(--sp-4));
+    border-block-start: 1px solid var(--nuam-grey-0);
+  }
+  .nav-barra__iconos {
+    order: 1;
+  }
+  .nav-barra__progreso-grupo {
+    order: 2;
+    margin-inline-start: auto;
+  }
+  .nav-barra--reanudando .nav-barra__progreso {
+    display: none;
+  }
+  /* Tanda 3: el label ("X % completado") pasa a encima de la barra en vez
+     de al lado — ahorra ancho horizontal, que es lo que falta en mobile
+     (por eso esta regla vive en este media query y no en la base). */
+  .nav-barra__progreso {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-1);
+  }
+}
+
+/* ---- Barra inferior (T2, cableada; T3 no la reescribe; una sola línea
+   forzada en mobile desde tanda 3 de AJUSTES.md) ------------------------- */
 .nav-inferior {
   display: flex;
   align-items: center;
@@ -596,6 +717,36 @@
 .nav-inferior__paso {
   color: var(--text-tertiary);
   font: var(--text-caption);
+  white-space: nowrap;
+}
+/* "X/Y" es el texto corto de mobile (media query más abajo); en desktop
+   se queda oculto y se ve la frase completa. display:none ya lo saca del
+   árbol de accesibilidad — no hace falta aria-hidden aparte. */
+.nav-inferior__paso-corto {
+  display: none;
+}
+
+/* Mobile (tanda 3 de AJUSTES.md, mismo corte que el resto de la barra):
+   "Anterior" + paso + "Siguiente" tienen que caber en una sola línea a
+   320px real. El contenido de los botones (ícono + texto) no se toca —
+   solo se les recorta el padding lateral—, y el paso cambia a su versión
+   corta "X/Y" (la completa la sigue teniendo un lector de pantalla vía
+   OVA.a11y.anunciar() en cada navegación, no depende de este texto). */
+@media (max-width: 39.999em) {
+  .nav-inferior {
+    flex-wrap: nowrap;
+    gap: var(--sp-2);
+    padding-inline: var(--sp-3);
+  }
+  .nav-inferior .boton {
+    padding-inline: var(--sp-3);
+  }
+  .nav-inferior__paso-completo {
+    display: none;
+  }
+  .nav-inferior__paso-corto {
+    display: inline;
+  }
 }
 
 /* ---- Drawer de índice (T3, componentes) --------------------------------
@@ -632,6 +783,18 @@
   border-inline-end: none;
   overflow-y: auto;
 }
+/* Tanda 3: un poco más ancho en escritorio, donde sobra espacio — mismo
+   corte de 48em que ya usa tokens.css para subir la escala tipográfica de
+   escritorio. Sube tanto la base (`.nav-drawer`, que también es la caja
+   estática de la kitchen sink) como la real flotante. */
+@media (min-width: 48em) {
+  .nav-drawer {
+    max-width: 26rem;
+  }
+  .nav-drawer--flotante {
+    max-width: min(26rem, 100vw);
+  }
+}
 
 /* ---- Fondo de superposición (T3, atómo transversal) --------------------
    Sin prefijo de familia: nació con el drawer (`.drawer-backdrop`) pero el
@@ -653,11 +816,21 @@
   gap: var(--sp-3);
   margin-block-end: var(--sp-2);
 }
+/* Nombre del curso (tanda 2 de AJUSTES.md): PT Serif en altas y bajas —
+   antes era la misma etiqueta uppercase que los subtítulos de abajo, sin
+   jerarquía propia—, gris 950 (el más oscuro, no --text-tertiary). Tanda 3
+   subió el tamaño de 18px a 20px — quedaba chico para ser el nombre del
+   curso completo, un peldaño arriba de los subtítulos de abajo. */
 .nav-drawer__titulo {
-  font: var(--text-label);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-tertiary);
+  font: 700 1.25rem/1.3 var(--font-display);
+  color: var(--text-primary);
+}
+/* Botón de cerrar (tanda 2): nudge puramente visual hacia arriba y a la
+   derecha respecto a su posición en el flex de la cabecera — transform,
+   no top/left (regla dura de movimiento de CLAUDE.md), y no afecta el
+   flujo ni el tamaño de la caja de foco. */
+.nav-drawer__cerrar {
+  transform: translate(var(--sp-1), calc(-1 * var(--sp-1)));
 }
 .nav-drawer__lista {
   display: flex;
@@ -672,22 +845,39 @@
    pantalla salta de grupo en grupo por encabezado. Sin <h4> cuando
    `capsula` es null (Apertura/Cierre) — no hay nombre que anunciar, esas
    pantallas quedan directo bajo el <h3> de la unidad. */
+/* Subtítulo de unidad (tanda 2): PT Serif como el título de arriba —
+   mantiene mayúsculas/tracking como marca de "encabezado de grupo", a
+   diferencia del título del curso, que sí pasó a altas y bajas — y sube
+   a gris 950 junto con el resto de los subtítulos. */
 .nav-drawer__grupo-unidad {
-  font: var(--text-label);
+  font: 700 0.875rem/1.3 var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-tertiary);
-  margin-block: var(--sp-4) 0;
+  color: var(--text-primary);
+  /* Tanda 3 de AJUSTES.md: el margen de abajo (antes 0) subió a --sp-3 —
+     `#drawer-lista` es un <nav> de flujo normal, no un flex con gap, así
+     que el único aire entre el encabezado y su <ul> es este margen; el de
+     arriba (separación contra el grupo anterior) no se tocó. */
+  margin-block: var(--sp-4) var(--sp-3);
 }
 .nav-drawer__grupo-unidad:first-child {
   margin-block-start: 0;
 }
+/* Subtítulo de cápsula (tanda 2): se queda en Figtree —un nivel más de
+   jerarquía no necesita otro cambio de familia—, pero sube a gris 950
+   igual que el resto de los subtítulos; antes era --text-secondary.
+   Margen de abajo (tanda 3): mismo criterio que la unidad, de arriba. */
 .nav-drawer__grupo-capsula {
   font: var(--text-body-sm);
   font-weight: 600;
-  color: var(--text-secondary);
-  margin-block: var(--sp-2) 0;
+  color: var(--text-primary);
+  margin-block: var(--sp-2) var(--sp-3);
 }
+/* Ítems de pantalla (tanda 2): bajan a --text-secondary (gris 600, 7.7:1
+   sobre --surface-default) para que se sientan un peldaño por debajo de
+   los subtítulos de arriba, que ahora son gris 950 — antes los dos
+   niveles compartían el mismo --text-primary y no había jerarquía de
+   color entre "grupo" e "ítem". */
 .nav-drawer__item {
   display: flex;
   align-items: center;
@@ -696,7 +886,7 @@
   padding-inline: var(--sp-2);
   border-radius: var(--r-sm);
   font: var(--text-body-sm);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   text-decoration: none;
   transition: background var(--dur-fast) var(--ease-out);
 }

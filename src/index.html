@@ -31,13 +31,17 @@
        llena en cada cambio de pantalla (nunca en la carga inicial). -->
   <div id="anuncios" class="u-oculto-visualmente" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- Barra superior (T3, landmark banner): título de la pantalla
-       activa, botón del drawer, progreso, reanudar y guardado. Todo
-       el contenido de texto lo llena router.js en cada navegación. -->
+  <!-- Barra superior (T3, landmark banner; restilo tanda 2 de AJUSTES.md
+       sobre referencia de Figma). Título de la pantalla activa, botón
+       del drawer, progreso, reanudar y utilidades. Todo el contenido de
+       texto lo llena router.js en cada navegación. En mobile (≤39.999em,
+       ver components.css) pasa a grid de dos filas: menú+migas arriba,
+       utilidades abajo separadas por una línea — la reestructuración
+       vive entera en CSS, el marcado es el mismo en los dos anchos. -->
   <header class="nav-barra">
     <button
       id="drawer-abrir"
-      class="boton-icono"
+      class="boton-icono boton-icono--grande boton-icono--menu"
       type="button"
       aria-expanded="false"
       aria-controls="drawer"
@@ -46,91 +50,96 @@
       <span class="u-oculto-visualmente">Abrir índice de la unidad</span>
     </button>
 
-    <!-- Migas de pan / jerarquía (D1): Unidad › Cápsula › Tema. Sin
-         <a>: ningún nivel tiene pantalla de destino propia dentro de
-         la OVA, ese índice navegable es el drawer. router.js
-         (actualizarMigas) llena texto y alterna hidden/aria-current
-         en cada navegación — ver la nota completa ahí. -->
+    <!-- Migas de pan / jerarquía (D1, restilo tanda 2): eyebrow con
+         Unidad › Cápsula en una sola línea (PT Serif 700 12px, gris
+         sobre inverse) y debajo el nombre de la pantalla actual, siempre
+         visible, sin la alternancia vieja "cápsula como ítem actual vs.
+         tema" — cuando la pantalla es la primera de su cápsula,
+         tituloSinPrefijo(pantalla.titulo) ya coincide con el nombre de
+         cápsula, así que sigue leyéndose bien sin lógica especial.
+         Sigue sin <a>: ningún nivel tiene pantalla de destino propia
+         dentro de la OVA, ese índice navegable es el drawer. -->
     <nav id="nav-migas" class="nav-migas" aria-label="Ubicación">
-      <ol>
-        <li id="nav-migas-unidad" class="nav-migas__unidad eyebrow eyebrow--subtle"></li>
-        <li id="nav-migas-capsula" class="nav-migas__capsula" hidden>
-          <span class="nav-migas__separador" aria-hidden="true">›</span>
-          <span id="nav-migas-capsula-texto" class="nav-migas__texto"></span>
-        </li>
-        <li id="nav-migas-tema" class="nav-migas__tema" aria-current="page">
-          <span id="nav-migas-tema-separador" class="nav-migas__separador" aria-hidden="true" hidden>›</span>
-          <span id="nav-migas-tema-texto"></span>
-        </li>
-      </ol>
+      <p class="nav-migas__eyebrow">
+        <span id="nav-migas-unidad"></span>
+        <span id="nav-migas-capsula" hidden><span aria-hidden="true"> › </span><span id="nav-migas-capsula-texto"></span></span>
+      </p>
+      <p id="nav-migas-titulo" class="nav-migas__titulo"></p>
     </nav>
 
-    <div class="nav-barra__progreso">
-      <span id="nav-progreso-texto"></span>
-      <div
-        id="nav-progreso"
-        class="barra-progreso"
-        role="progressbar"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        aria-valuenow="0"
-        aria-labelledby="nav-progreso-etiqueta"
-      >
-        <span id="nav-progreso-etiqueta" class="u-oculto-visualmente">Progreso del curso</span>
-        <span id="nav-progreso-relleno" class="barra-progreso__relleno"></span>
+    <div class="nav-barra__utilidades">
+      <div class="nav-barra__progreso-grupo">
+        <div class="nav-barra__progreso">
+          <span id="nav-progreso-texto"></span>
+          <div
+            id="nav-progreso"
+            class="barra-progreso"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            aria-labelledby="nav-progreso-etiqueta"
+          >
+            <span id="nav-progreso-etiqueta" class="u-oculto-visualmente">Progreso del curso</span>
+            <span id="nav-progreso-relleno" class="barra-progreso__relleno"></span>
+          </div>
+        </div>
+
+        <button id="nav-reanudar" class="boton boton--outline boton--inverse" type="button" hidden>
+          <span class="boton__icono" aria-hidden="true">play_circle</span> Reanudar
+        </button>
+      </div>
+
+      <div class="nav-barra__iconos">
+        <!-- Preferencias del curso (D5): popover, no modal — no atrapa foco,
+             se cierra con Escape o con un clic fuera (OVA.preferencias.
+             configurarPopover, cableado en router.js). El panel real
+             (tamaño de texto, movimiento, transcripción, autolocución) lo
+             arma OVA.preferencias.crearPanel() dentro de #pref-popover; el
+             mismo componente se vuelve a montar, incrustado y sin popover,
+             en la pantalla p01a (D7). -->
+        <div class="nav-barra__preferencias">
+          <button
+            id="pref-abrir"
+            class="boton-icono boton-icono--grande boton-icono--relleno"
+            type="button"
+            aria-expanded="false"
+            aria-controls="pref-popover"
+          >
+            <span class="icono" aria-hidden="true">accessibility_new</span>
+            <span class="u-oculto-visualmente">Preferencias del curso</span>
+          </button>
+          <div id="pref-popover" class="pref-panel pref-panel--popover" hidden></div>
+        </div>
+
+        <!-- Autolocución (D6): botón dedicado, misma clave que el checkbox
+             del panel de preferencias de arriba — router.js
+             (configurarAutolocucion) los mantiene sincronizados. Nace
+             apagado: sin gesto previo del usuario el audio nunca se
+             reproduce solo (WCAG 1.4.2). El punto naranja de
+             .boton-icono--relleno[aria-pressed="true"] es un refuerzo
+             visual adicional al ícono y al texto accesible, nunca el
+             único código del estado (regla dura 3 de CLAUDE.md). -->
+        <button id="nav-autolocucion" class="boton-icono boton-icono--grande boton-icono--relleno" type="button" aria-pressed="false">
+          <span class="icono" aria-hidden="true">voice_over_off</span>
+          <span class="u-oculto-visualmente">Activar autolocución</span>
+        </button>
+
+        <!-- Pantalla completa (C2), disponible en todo el recorrido salvo
+             L01 (la portada esconde esta barra entera — regla dura 9 de
+             CLAUDE.md, tiene su propio botón más abajo). Arranca `hidden`:
+             router.js solo lo revela si document.fullscreenEnabled es
+             true, nunca deja un botón que no hace nada (misma trampa 2 de
+             PLAN-CONTENIDO.md §4.3 que ya resolvió media.js en T4).
+             aria-pressed refleja el estado real de pantalla completa
+             (tanda 2): mismo punto naranja que autolocución mientras está
+             activa. -->
+        <button id="nav-pantalla-completa" class="boton-icono boton-icono--grande boton-icono--relleno" type="button" hidden aria-pressed="false">
+          <span class="icono" aria-hidden="true">fullscreen</span>
+          <span class="u-oculto-visualmente">Pantalla completa</span>
+        </button>
       </div>
     </div>
-
-    <button id="nav-reanudar" class="boton boton--outline boton--inverse" type="button" hidden>
-      <span class="boton__icono" aria-hidden="true">play_circle</span> Reanudar
-    </button>
-
-    <p id="nav-guardado" class="nav-barra__guardado">
-      <span id="nav-guardado-icono" class="icono" aria-hidden="true">cloud_done</span>
-      <span id="nav-guardado-texto">Guardado</span>
-    </p>
-
-    <!-- Preferencias del curso (D5): popover, no modal — no atrapa foco,
-         se cierra con Escape o con un clic fuera (OVA.preferencias.
-         configurarPopover, cableado en router.js). El panel real
-         (tamaño de texto, movimiento, transcripción, autolocución) lo
-         arma OVA.preferencias.crearPanel() dentro de #pref-popover; el
-         mismo componente se vuelve a montar, incrustado y sin popover,
-         en la pantalla p01a (D7). -->
-    <div class="nav-barra__preferencias">
-      <button
-        id="pref-abrir"
-        class="boton-icono"
-        type="button"
-        aria-expanded="false"
-        aria-controls="pref-popover"
-      >
-        <span class="icono" aria-hidden="true">tune</span>
-        <span class="u-oculto-visualmente">Preferencias del curso</span>
-      </button>
-      <div id="pref-popover" class="pref-panel pref-panel--popover" hidden></div>
-    </div>
-
-    <!-- Autolocución (D6): botón dedicado, misma clave que el checkbox
-         del panel de preferencias de arriba — router.js
-         (configurarAutolocucion) los mantiene sincronizados. Nace
-         apagado: sin gesto previo del usuario el audio nunca se
-         reproduce solo (WCAG 1.4.2). -->
-    <button id="nav-autolocucion" class="boton-icono" type="button" aria-pressed="false">
-      <span class="icono" aria-hidden="true">voice_over_off</span>
-      <span class="u-oculto-visualmente">Activar autolocución</span>
-    </button>
-
-    <!-- Pantalla completa (C2), disponible en todo el recorrido salvo
-         L01 (la portada esconde esta barra entera — regla dura 9 de
-         CLAUDE.md, tiene su propio botón más abajo). Arranca `hidden`:
-         router.js solo lo revela si document.fullscreenEnabled es
-         true, nunca deja un botón que no hace nada (misma trampa 2 de
-         PLAN-CONTENIDO.md §4.3 que ya resolvió media.js en T4). -->
-    <button id="nav-pantalla-completa" class="boton-icono" type="button" hidden>
-      <span class="icono" aria-hidden="true">fullscreen</span>
-      <span class="u-oculto-visualmente">Pantalla completa</span>
-    </button>
   </header>
 
   <!-- El router (T2) monta aquí la pantalla activa. tabindex="0" (C2,
@@ -158,12 +167,23 @@
     <span class="u-oculto-visualmente">Pantalla completa</span>
   </button>
 
-  <!-- Barra inferior (T2, cableada; T3 no la toca). -->
+  <!-- Barra inferior (T2, cableada; T3 no la toca; una sola línea forzada
+       en mobile desde tanda 3 de AJUSTES.md). #nav-paso lleva dos versiones
+       del mismo texto en vez de una sola: "-completo" ("Pantalla X de Y")
+       para desktop, "-corto" ("X/Y") para mobile, donde no entran los tres
+       elementos en una sola línea con la frase completa. components.css
+       alterna cuál de las dos se ve por media query — la oculta con
+       display:none, que ya la saca del árbol de accesibilidad, así que no
+       hace falta ningún aria-hidden manual ni duplicar el anuncio que ya
+       da OVA.a11y.anunciar() en cada navegación. -->
   <footer class="nav-inferior">
     <button id="nav-anterior" class="boton boton--outline" type="button">
       <span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior
     </button>
-    <span id="nav-paso" class="nav-inferior__paso"></span>
+    <span id="nav-paso" class="nav-inferior__paso">
+      <span id="nav-paso-completo" class="nav-inferior__paso-completo"></span>
+      <span id="nav-paso-corto" class="nav-inferior__paso-corto"></span>
+    </span>
     <button id="nav-siguiente" class="boton" type="button">
       Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span>
     </button>
@@ -187,7 +207,7 @@
   >
     <div class="nav-drawer__cabecera">
       <p id="drawer-titulo" class="nav-drawer__titulo"></p>
-      <button id="drawer-cerrar" class="boton-icono" type="button">
+      <button id="drawer-cerrar" class="boton-icono nav-drawer__cerrar" type="button">
         <span class="icono" aria-hidden="true">close</span>
         <span class="u-oculto-visualmente">Cerrar índice</span>
       </button>

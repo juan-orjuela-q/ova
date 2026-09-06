@@ -495,66 +495,49 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-migas">
-        <span class="ks-layout-bloque__etiqueta">Migas de pan — Unidad › Cápsula › Tema (D1)</span>
+        <span class="ks-layout-bloque__etiqueta">Migas de pan — Unidad › Cápsula (eyebrow) + pantalla actual (restilo tanda 2, sobre Figma)</span>
         <p class="ks-intro">
-          Un <code>&lt;ol&gt;</code> semántico de 2 o 3 ítems, nunca enlaces: ningún nivel tiene pantalla de destino propia dentro de la OVA, ese índice es el drawer. <code>router.js</code> (<code>actualizarMigas</code>) llena texto y alterna <code>hidden</code>/<code>aria-current</code>; aquí van los tres estados fijos a mano para poder revisarlos sin navegar.
+          Dos párrafos, no un <code>&lt;ol&gt;</code> de ítems: arriba el eyebrow "Unidad › Cápsula" en una sola línea (PT Serif 700 12px, gris sobre inverse — a propósito distinto de <code>.eyebrow</code>, que es Figtree), abajo el nombre de la pantalla actual, siempre visible (Figtree 700 20px, tracking 4%). <code>router.js</code> (<code>actualizarMigas</code>) llena texto y alterna <code>hidden</code> en el ítem de cápsula; aquí van los estados fijos a mano para revisarlos sin navegar. Vive siempre sobre <code>--surface-inverse</code> —a diferencia de la versión pre-tanda-2, ya no se documenta una variante sobre superficie clara aparte, porque el componente ya no se usa fuera de <code>.nav-barra</code>.
         </p>
-        <p class="ks-intro"><strong>Con cápsula</strong> — cápsula (secundaria, trunca con elipsis) y tema (actual, en negrita) en la segunda línea.</p>
-        <div class="ks-layout-marco ks-ancho-marco">
+        <p class="ks-intro"><strong>Con cápsula</strong> — unidad y cápsula juntas en el eyebrow, separadas por «›».</p>
+        <div class="ks-layout-marco ks-ancho-marco" style="background: var(--surface-inverse); padding: var(--sp-4);">
           <nav class="nav-migas" aria-label="Ubicación (ejemplo con cápsula)">
-            <ol>
-              <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
-              <li class="nav-migas__capsula">
-                <span class="nav-migas__separador" aria-hidden="true">›</span>
-                <span class="nav-migas__texto">Qué es una acción</span>
-              </li>
-              <li class="nav-migas__tema" aria-current="page">
-                <span class="nav-migas__separador" aria-hidden="true">›</span>
-                <span>Tres ventajas de ser accionista</span>
-              </li>
-            </ol>
+            <p class="nav-migas__eyebrow">
+              <span>Unidad 1</span>
+              <span><span aria-hidden="true"> › </span><span>Qué es una acción</span></span>
+            </p>
+            <p class="nav-migas__titulo">Tres ventajas de ser accionista</p>
           </nav>
         </div>
-        <p class="ks-intro"><strong>Sin cápsula</strong> — Apertura/Cierre de unidad: <code>capsula</code> es <code>null</code>, el ítem de cápsula no existe y el tema no lleva separador colgado.</p>
-        <div class="ks-layout-marco ks-ancho-marco">
+        <p class="ks-intro"><strong>Sin cápsula</strong> — Apertura/Cierre de unidad: <code>capsula</code> es <code>null</code>, el eyebrow muestra solo la unidad.</p>
+        <div class="ks-layout-marco ks-ancho-marco" style="background: var(--surface-inverse); padding: var(--sp-4);">
           <nav class="nav-migas" aria-label="Ubicación (ejemplo sin cápsula)">
-            <ol>
-              <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
-              <li class="nav-migas__tema" aria-current="page">
-                <span>Ideas clave de la unidad</span>
-              </li>
-            </ol>
+            <p class="nav-migas__eyebrow"><span>Unidad 1</span></p>
+            <p class="nav-migas__titulo">Ideas clave de la unidad</p>
           </nav>
         </div>
-        <p class="ks-intro"><strong>Truncado, más la excepción de primera pantalla</strong> — a la izquierda, un nombre de cápsula largo que corta con elipsis a 320px sin tocar el tema; a la derecha, la primera pantalla de una cápsula muestra solo la cápsula (mismo texto que el título sería ruido repetido).</p>
-        <div class="ks-layout-marco" style="display: flex; flex-wrap: wrap; gap: var(--sp-6);">
+        <p class="ks-intro"><strong>Truncado</strong> — a la izquierda, una cápsula con nombre largo que corta el eyebrow con elipsis a 320px; a la derecha, la primera pantalla de una cápsula: el título de abajo ya coincide con el nombre de cápsula del eyebrow, sin lógica especial para evitar el eco — simplemente es lo que dice <code>pantalla.titulo</code>.</p>
+        <div class="ks-layout-marco" style="display: flex; flex-wrap: wrap; gap: var(--sp-6); background: var(--surface-inverse); padding: var(--sp-4);">
           <nav class="nav-migas" style="max-width: 220px;" aria-label="Ubicación (ejemplo truncado)">
-            <ol>
-              <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
-              <li class="nav-migas__capsula">
-                <span class="nav-migas__separador" aria-hidden="true">›</span>
-                <span class="nav-migas__texto">Tipos de acciones y perfil de riesgo del inversionista</span>
-              </li>
-              <li class="nav-migas__tema" aria-current="page">
-                <span class="nav-migas__separador" aria-hidden="true">›</span>
-                <span>¿Cuál es tu perfil?</span>
-              </li>
-            </ol>
+            <p class="nav-migas__eyebrow">
+              <span>Unidad 1</span>
+              <span><span aria-hidden="true"> › </span><span>Tipos de acciones y perfil de riesgo del inversionista</span></span>
+            </p>
+            <p class="nav-migas__titulo">¿Cuál es tu perfil?</p>
           </nav>
           <nav class="nav-migas" style="max-width: 220px;" aria-label="Ubicación (ejemplo primera pantalla de cápsula)">
-            <ol>
-              <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
-              <li class="nav-migas__capsula" aria-current="page">
-                <span class="nav-migas__separador" aria-hidden="true">›</span>
-                <span class="nav-migas__texto">¿En qué mercado estás entrando?</span>
-              </li>
-            </ol>
+            <p class="nav-migas__eyebrow">
+              <span>Unidad 1</span>
+              <span><span aria-hidden="true"> › </span><span>¿En qué mercado estás entrando?</span></span>
+            </p>
+            <p class="nav-migas__titulo">¿En qué mercado estás entrando?</p>
           </nav>
         </div>
       </div>
 
       <div class="ks-layout-bloque" id="c-boton-icono">
         <span class="ks-layout-bloque__etiqueta">Botón de solo ícono</span>
+        <p class="ks-intro">Base de 40px sobre superficie clara. Las variantes de 48px (<code>--grande</code>) y de color (<code>--menu</code>, <code>--relleno</code>) son específicas de la barra superior — se documentan ahí abajo, sobre <code>--surface-inverse</code>, que es donde de verdad se usan.</p>
         <div class="ks-layout-marco" style="display: flex; gap: var(--sp-4);">
           <button class="boton-icono" type="button" aria-label="Ejemplo: abrir índice"><span class="icono" aria-hidden="true">menu</span></button>
           <button class="boton-icono" type="button" aria-label="Ejemplo: cerrar"><span class="icono" aria-hidden="true">close</span></button>
@@ -562,56 +545,66 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-nav-barra">
-        <span class="ks-layout-bloque__etiqueta">Barra superior — cableada en T3, inverse desde D2</span>
+        <span class="ks-layout-bloque__etiqueta">Barra superior — cableada en T3, inverse desde D2, reestructurada en tanda 2 (AJUSTES.md) sobre referencia de Figma</span>
         <div class="ks-layout-marco">
           <header class="nav-barra">
-            <button class="boton-icono" type="button" aria-expanded="false"><span class="icono" aria-hidden="true">menu</span><span class="u-oculto-visualmente">Abrir índice de la unidad</span></button>
+            <button class="boton-icono boton-icono--grande boton-icono--menu" type="button" aria-expanded="false"><span class="icono" aria-hidden="true">menu</span><span class="u-oculto-visualmente">Abrir índice de la unidad</span></button>
             <nav class="nav-migas" aria-label="Ubicación (ejemplo)">
-              <ol>
-                <li class="nav-migas__unidad eyebrow eyebrow--subtle">Unidad 1</li>
-                <li class="nav-migas__capsula">
-                  <span class="nav-migas__separador" aria-hidden="true">›</span>
-                  <span class="nav-migas__texto">Qué es una acción</span>
-                </li>
-                <li class="nav-migas__tema" aria-current="page">
-                  <span class="nav-migas__separador" aria-hidden="true">›</span>
-                  <span>Tres ventajas de ser accionista</span>
-                </li>
-              </ol>
+              <p class="nav-migas__eyebrow">
+                <span>Unidad 1</span>
+                <span><span aria-hidden="true"> › </span><span>Qué es una acción</span></span>
+              </p>
+              <p class="nav-migas__titulo">Tres ventajas de ser accionista</p>
             </nav>
-            <div class="nav-barra__progreso">
-              <span>38 % completado</span>
-              <div class="barra-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="38" aria-label="Progreso del curso (ejemplo) — 38 % completado, 5 de 13 pantallas">
-                <span class="barra-progreso__relleno" style="transform: scaleX(0.38);"></span>
+            <div class="nav-barra__utilidades">
+              <div class="nav-barra__progreso-grupo">
+                <div class="nav-barra__progreso">
+                  <span>38 % completado</span>
+                  <div class="barra-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="38" aria-label="Progreso del curso (ejemplo) — 38 % completado, 5 de 13 pantallas">
+                    <span class="barra-progreso__relleno" style="transform: scaleX(0.38);"></span>
+                  </div>
+                </div>
+                <button class="boton boton--outline boton--inverse" type="button">
+                  <span class="boton__icono" aria-hidden="true">play_circle</span> Reanudar
+                </button>
+              </div>
+              <div class="nav-barra__iconos">
+                <button class="boton-icono boton-icono--grande boton-icono--relleno" type="button" aria-expanded="false"><span class="icono" aria-hidden="true">accessibility_new</span><span class="u-oculto-visualmente">Preferencias del curso</span></button>
+                <button class="boton-icono boton-icono--grande boton-icono--relleno" type="button" aria-pressed="true"><span class="icono" aria-hidden="true">record_voice_over</span><span class="u-oculto-visualmente">Desactivar autolocución</span></button>
+                <button class="boton-icono boton-icono--grande boton-icono--relleno" type="button" aria-pressed="false"><span class="icono" aria-hidden="true">fullscreen</span><span class="u-oculto-visualmente">Pantalla completa</span></button>
               </div>
             </div>
-            <button class="boton boton--outline boton--inverse" type="button">
-              <span class="boton__icono" aria-hidden="true">play_circle</span> Reanudar
-            </button>
-            <p class="nav-barra__guardado"><span class="icono" aria-hidden="true">cloud_done</span> Guardado</p>
-            <button class="boton-icono" type="button"><span class="icono" aria-hidden="true">fullscreen</span><span class="u-oculto-visualmente">Pantalla completa</span></button>
           </header>
         </div>
         <p class="ks-intro">
-          El título plano de T3 (<code>.nav-barra__titulo</code>) se reemplazó en D1 por la miga de pan real (<code>.nav-migas</code>, sección propia arriba con sus tres estados) — mismo componente, no una versión aparte para la barra. La sección de migas de arriba se queda sobre superficie clara a propósito: es donde se documentan sus tres estados, y solo la instancia real dentro de <code>.nav-barra</code> pasa a los tonos de superficie inversa de D2 (scoped, ver el comentario junto a <code>.nav-migas__separador</code> en <code>components.css</code>).
+          El título plano de T3 se reemplazó en D1 por la miga de pan real y en tanda 2 por el eyebrow+título de arriba (<code>.nav-migas</code>, sección propia con sus estados) — mismo componente, no una versión aparte para la barra.
         </p>
         <p class="ks-intro">
-          D2 pasó la barra a <code>--surface-inverse</code>. El track de la barra de progreso pasó de <code>--surface-subtle-2</code> (gris 100) a gris 800 —naranja 500 sobre gris 800 mide 3.9:1, cumple el 3:1 de componente no textual—, el relleno sigue siendo naranja 500 y sigue animando con <code>transform: scaleX()</code> en <code>--dur-slow</code> (ítem 4 del inventario de movimiento), nunca <code>width</code>. El porcentaje del texto (D3, todavía pendiente) no es parte de esta tarea.
+          D2 pasó la barra a <code>--surface-inverse</code>; tanda 2 aclaró el track de la barra de progreso a gris 700 (antes gris 800) para que se note más contra el negro — naranja 500 sobre gris 700 mide 3.12:1, sigue cumpliendo el 3:1 de componente no textual. El relleno sigue siendo naranja 500 y sigue animando con <code>transform: scaleX()</code> en <code>--dur-slow</code> (ítem 4 del inventario de movimiento), nunca <code>width</code>.
         </p>
         <p class="ks-intro">
-          El botón de reanudar usa la variante nueva <code>.boton--outline.boton--inverse</code> (borde <code>--border-inverse</code>, etiqueta blanca) en vez de <code>.boton--outline</code> a secas —ese outline por defecto es borde y texto negro, invisible sobre esta barra—. En <code>index.html</code> solo aparece cuando hay una pantalla más avanzada que la actual (depende de <code>state.js</code>); se prueba de verdad en <a href="../src/index.html">src/index.html</a> volviendo con el drawer a una pantalla ya vista.
+          El botón de reanudar (<code>.boton--outline.boton--inverse</code>) ahora tiene alto fijo de 48px, padding lateral de 16px, gap de 8px e ícono de 24px (tanda 2) — la etiqueta sigue siendo la misma tipografía de <code>.boton</code> (500 16px, tracking 2%), ya coincidía con lo pedido. En <code>index.html</code> solo aparece cuando hay una pantalla más avanzada que la actual (depende de <code>state.js</code>); se prueba de verdad en <a href="../src/index.html">src/index.html</a> volviendo con el drawer a una pantalla ya vista.
         </p>
         <p class="ks-intro">
-          El indicador de guardado también cambia de ícono y texto —nunca solo de color— si <code>localStorage</code> no está disponible: <code>cloud_off</code> / «No se pudo guardar en este dispositivo». Su color y el de la unidad en la miga pasan a <code>--text-on-inverse-2</code> (gris 400, texto informativo válido sobre inverse).
+          Los tres botones de la derecha (preferencias, autolocución, pantalla completa) comparten la variante <code>.boton-icono--relleno</code>: 48px, gris 700 en reposo, gris 500 + anillo separado en hover (dos <code>box-shadow</code>, no <code>outline</code> — ese lo reserva <code>:focus-visible</code>, regla dura de foco de CLAUDE.md). El punto naranja de la esquina (autolocución, arriba) solo aparece con <code>aria-pressed="true"</code> — es un refuerzo visual, el ícono y el texto accesible ya cambian con el estado real, nunca el punto es el único código (regla dura 3). El indicador de guardado se quitó en esta misma tanda: no aportaba nada al estudiante.
+        </p>
+        <p class="ks-intro">
+          Por debajo de 640px (<code>max-width:39.999em</code>) esta misma barra pasa a grid de dos filas: menú+migas arriba, utilidades abajo separadas por una línea blanca de 1px, con los íconos a la izquierda y progreso/reanudar a la derecha (<code>order</code> en CSS, el marcado no cambia). Se prueba de verdad en <a href="../src/index.html">src/index.html</a> con la ventana angosta — la kitchen sink no reproduce ese ancho aquí para no romper el layout de esta página de referencia.
         </p>
       </div>
 
       <div class="ks-layout-bloque" id="c-nav-inferior">
-        <span class="ks-layout-bloque__etiqueta">Barra inferior (T2, cableada)</span>
+        <span class="ks-layout-bloque__etiqueta">Barra inferior (T2, cableada; una sola línea en mobile desde tanda 3)</span>
+        <p class="ks-intro">
+          <code>#nav-paso</code> lleva dos versiones del mismo texto: <code>.nav-inferior__paso-completo</code> ("Pantalla X de Y", visible en desktop) y <code>.nav-inferior__paso-corto</code> ("X/Y", visible por debajo de 640px) — <code>display:none</code> alterna cuál se ve y de paso saca la otra del árbol de accesibilidad. Por debajo de 640px la barra también recorta el padding lateral de los botones y fuerza <code>flex-wrap:nowrap</code> para que los tres elementos quepan en una sola línea a 320px real.
+        </p>
         <div class="ks-layout-marco">
           <footer class="nav-inferior">
             <button class="boton boton--outline" type="button"><span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior</button>
-            <span class="nav-inferior__paso">Pantalla 5 de 13</span>
+            <span class="nav-inferior__paso">
+              <span class="nav-inferior__paso-completo">Pantalla 5 de 13</span>
+              <span class="nav-inferior__paso-corto">5/13</span>
+            </span>
             <button class="boton" type="button">Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
           </footer>
         </div>
@@ -625,8 +618,8 @@
         <div class="ks-layout-marco">
           <div class="nav-drawer" style="position: static; max-width: none;">
             <div class="nav-drawer__cabecera">
-              <p class="nav-drawer__titulo">Unidad 1</p>
-              <button class="boton-icono" type="button"><span class="icono" aria-hidden="true">close</span><span class="u-oculto-visualmente">Cerrar índice</span></button>
+              <p class="nav-drawer__titulo">Contexto sobre el mercado, la bolsa y las acciones</p>
+              <button class="boton-icono nav-drawer__cerrar" type="button"><span class="icono" aria-hidden="true">close</span><span class="u-oculto-visualmente">Cerrar índice</span></button>
             </div>
             <nav aria-label="Pantallas de la unidad (ejemplo)">
               <h3 class="nav-drawer__grupo-unidad">Unidad 1</h3>
@@ -1318,30 +1311,32 @@
       <div class="ks-layout-bloque">
         <span class="ks-layout-bloque__etiqueta">Montaje 1 — popover de la barra superior</span>
         <p class="ks-intro">
-          Mismo marcado que <code>index.html</code>: botón <code>tune</code> +
+          Mismo marcado que <code>index.html</code> (ícono <code>accessibility_new</code>
+          desde tanda 2, antes <code>tune</code>) +
           <code>OVA.preferencias.configurarPopover()</code>. No es un modal —
           sin backdrop, sin trampa de foco—: se cierra con Escape o con un
           clic fuera, nunca con Tab.
         </p>
         <div class="nav-barra">
           <div class="nav-barra__preferencias">
-            <button id="ks-pref-abrir" class="boton-icono" type="button" aria-expanded="false" aria-controls="ks-pref-popover">
-              <span class="icono" aria-hidden="true">tune</span>
+            <button id="ks-pref-abrir" class="boton-icono boton-icono--grande boton-icono--relleno" type="button" aria-expanded="false" aria-controls="ks-pref-popover">
+              <span class="icono" aria-hidden="true">accessibility_new</span>
               <span class="u-oculto-visualmente">Preferencias del curso</span>
             </button>
             <div id="ks-pref-popover" class="pref-panel pref-panel--popover" hidden></div>
           </div>
-          <button id="ks-autolocucion" class="boton-icono" type="button" aria-pressed="false">
+          <button id="ks-autolocucion" class="boton-icono boton-icono--grande boton-icono--relleno" type="button" aria-pressed="false">
             <span class="icono" aria-hidden="true">voice_over_off</span>
             <span class="u-oculto-visualmente">Activar autolocución</span>
           </button>
         </div>
         <p class="ks-intro">
-          El botón de autolocución (D6, junto al de <code>tune</code> de
+          El botón de autolocución (D6, junto al de preferencias de
           arriba) alterna la misma preferencia que el checkbox "Autolocución"
           del panel de abajo — cámbialo en cualquiera de los dos y el ícono,
           el <code>aria-pressed</code> y la etiqueta cambian juntos en ambos
-          lados.
+          lados; con <code>aria-pressed="true"</code> también aparece el punto
+          naranja de <code>.boton-icono--relleno</code> (tanda 2).
         </p>
       </div>
       <div class="ks-layout-bloque">
