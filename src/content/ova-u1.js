@@ -125,6 +125,13 @@
      `Storyboard_Master_v2.md`.
    - **P34** (L11): los cuatro `recursos` llevan `href:'#'` sin
      archivo real detrás — C8 los engancha.
+   - **`p01-bienvenida`** (ajustes tanda 4, 6 sep): pantalla nueva de
+     Juan, no del storyboard de Jose — va entre p01 (portada) y p01a
+     (accesibilidad). L03 con `media.tipo:'retrato'` en vez de
+     video/avatar dispara la variante `.layout--l03--retrato`
+     (retícula de 12 columnas, ver layouts.css) en vez del 50/50
+     normal de L03; `progreso:false` porque es arranque, igual que
+     p01a/p01b.
 
    Resto de las notas de arquitectura (JSONP en vez de .json, `media.vtt`
    como texto WebVTT completo, etc.) no cambiaron de C0–C6 y no se
@@ -152,6 +159,26 @@ window.OVA_CONTENIDO = {
         "src": "../public/videos/vid0_introduccion-claudia-mirando-a-camara.mp4"
       },
       "progreso": true
+    },
+    {
+      "id": "p01-bienvenida",
+      "layout": "L03",
+      "titulo": "Te damos la bienvenida",
+      "unidad": "Unidad 1",
+      "capsula": null,
+      "kicker": "Antes de empezar",
+      "cuerpo": [
+        "¡Hola, soy Claudia!",
+        "Y seré tu guía en esta primera unidad donde aprenderás a entender el mercado en el que estás entrando, qué derechos obtienes y por qué toda inversión exige información, criterio y control del riesgo.",
+        "Pero antes que nada ve al siguiente contenido para que sepas cómo usar este curso y sacarle el máximo provecho."
+      ],
+      "media": {
+        "tipo": "retrato",
+        "src": "../public/img/avatar/avatar-sin-fondo-plano-primer-saluda.png",
+        "variante": "mascara",
+        "forma": "diagonal"
+      },
+      "progreso": false
     },
     {
       "id": "p01a",

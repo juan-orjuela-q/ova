@@ -1428,7 +1428,7 @@
     <!-- ============================================================ -->
     <section id="layouts" class="ks-seccion" aria-labelledby="layouts-h">
       <h2 id="layouts-h">Layouts L01–L13</h2>
-      <p class="ks-intro">Numeración de BRIEF-DI.md, renumerada en C0 (4 sep) — ver PLAN-CONTENIDO.md §2.1. Relleno tomado del guion de la Unidad 1. Reflowean a una columna por defecto — ese es el estado de 320px, no un caso aparte. Redimensiona la ventana para ver los breakpoints.</p>
+      <p class="ks-intro">Numeración de BRIEF-DI.md, renumerada en C0 (4 sep) — ver PLAN-CONTENIDO.md §2.1. Relleno tomado del guion de la Unidad 1. Reflowean a una columna por defecto — ese es el estado de 320px, no un caso aparte. Redimensiona la ventana para ver los breakpoints. Ajustes tanda 4: kicker+título+cuerpo (o su equivalente de lectura) van dentro de un <code>.layout__texto</code> con gap de 16px, más chico que el gap de 24px que separa ese bloque de media/datos/interacción — así el kicker no queda tan lejos de su título. No está en L01 (portada, bespoke), L05/L06/L07 (nunca tienen "cuerpo", tarjetas/interacción ocupan su lugar) ni L12 (título y cuerpo van lado a lado a propósito, agruparlos los apilaría).</p>
 
       <div class="ks-layout-bloque" id="l01">
         <span class="ks-layout-bloque__etiqueta">L01 · Portada de unidad</span>
@@ -1464,10 +1464,12 @@
         <span class="ks-layout-bloque__etiqueta">L02 · Media protagonista + texto debajo</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l02">
-            <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cápsula 2</span>
-            <h2 class="layout__titulo tipo-h2">Valorización de una acción</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">La empresa Petrocaribe vende cada acción a $1.000 en el mercado primario. Un inversionista compra 500 acciones y, ocho meses después, el precio sube a $1.500 en el mercado secundario.</p>
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cápsula 2</span>
+              <h2 class="layout__titulo tipo-h2">Valorización de una acción</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">La empresa Petrocaribe vende cada acción a $1.000 en el mercado primario. Un inversionista compra 500 acciones y, ocho meses después, el precio sube a $1.500 en el mercado secundario.</p>
+              </div>
             </div>
             <div class="layout__media" id="l02-media"></div>
           </div>
@@ -1478,25 +1480,46 @@
         <span class="ks-layout-bloque__etiqueta">L03 · Media a un lado, texto al otro</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l03">
-            <span class="layout__kicker tipo-etiqueta">Unidad 1 · Video</span>
-            <h2 class="layout__titulo tipo-h2">¿Qué es una acción?</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">Una acción es un título valor participativo que representa un porcentaje mínimo de propiedad de una empresa. Si adquieres una acción, es como si fueras dueño de una mínima parte de esa compañía.</p>
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Unidad 1 · Video</span>
+              <h2 class="layout__titulo tipo-h2">¿Qué es una acción?</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">Una acción es un título valor participativo que representa un porcentaje mínimo de propiedad de una empresa. Si adquieres una acción, es como si fueras dueño de una mínima parte de esa compañía.</p>
+              </div>
             </div>
             <div class="layout__media" id="l03-media"></div>
           </div>
         </div>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L03 · variante de bienvenida (ajustes tanda 4) — retícula de 12 columnas con retrato</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l03 layout--l03--retrato">
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Antes de empezar</span>
+              <h2 class="layout__titulo tipo-h2">Te damos la bienvenida</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">¡Hola, soy Claudia!</p>
+                <p class="tipo-cuerpo">Y seré tu guía en esta primera unidad donde aprenderás a entender el mercado en el que estás entrando, qué derechos obtienes y por qué toda inversión exige información, criterio y control del riesgo.</p>
+                <p class="tipo-cuerpo">Pero antes que nada ve al siguiente contenido para que sepas cómo usar este curso y sacarle el máximo provecho.</p>
+              </div>
+            </div>
+            <div class="layout__media" id="l03-retrato-media"></div>
+          </div>
+        </div>
+        <p class="ks-intro"><code>router.js</code> agrega <code>.layout--l03--retrato</code> solo cuando <code>media.tipo</code> es <code>"retrato"</code> — el mismo ejemplo real que <code>p01-bienvenida</code> en <code>content/ova-u1.js</code>, recorrible en <a href="../src/index.html">src/index.html</a>. Primera línea de <code>cuerpo</code> en negrita (CSS, <code>:first-child</code>) porque es la presentación, no un campo distinto.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l04">
         <span class="ks-layout-bloque__etiqueta">L04 · Lectura larga con imagen de apoyo</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l04">
-            <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cápsula 1</span>
-            <h2 class="layout__titulo tipo-h2">Los tres mercados de Bolsa de Valores de Colombia</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">En Colombia el sistema financiero está compuesto por varios mercados. Uno de ellos es el mercado de capitales, donde se transan los títulos valor de las empresas que emiten activos como acciones, bonos y derivados.</p>
-              <p class="tipo-cuerpo">Bolsa de Valores de Colombia administra estos activos por medio de tres mercados: renta variable, renta fija y derivados. El foco de este curso está en el mercado de renta variable, es decir, en la inversión en acciones.</p>
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cápsula 1</span>
+              <h2 class="layout__titulo tipo-h2">Los tres mercados de Bolsa de Valores de Colombia</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">En Colombia el sistema financiero está compuesto por varios mercados. Uno de ellos es el mercado de capitales, donde se transan los títulos valor de las empresas que emiten activos como acciones, bonos y derivados.</p>
+                <p class="tipo-cuerpo">Bolsa de Valores de Colombia administra estos activos por medio de tres mercados: renta variable, renta fija y derivados. El foco de este curso está en el mercado de renta variable, es decir, en la inversión en acciones.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -1571,10 +1594,12 @@
         <span class="ks-layout-bloque__etiqueta">L08 · Resultado y retroalimentación (C1, cableado real) — layout nuevo de verdad</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l08">
-            <span class="layout__kicker tipo-etiqueta">Resultado</span>
-            <h2 class="layout__titulo tipo-h2">Así te fue en la evaluación rápida</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">Este es un resumen de tus respuestas en la evaluación de esta cápsula.</p>
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Resultado</span>
+              <h2 class="layout__titulo tipo-h2">Así te fue en la evaluación rápida</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">Este es un resumen de tus respuestas en la evaluación de esta cápsula.</p>
+              </div>
             </div>
             <div class="layout__media" id="l08-media"></div>
             <div class="layout__datos" id="l08-cifra"></div>
@@ -1597,12 +1622,14 @@
         <div class="ks-layout-marco">
           <div class="layout layout--l09">
             <span class="layout__kicker tipo-etiqueta">Unidad 1</span>
-            <h2 class="layout__titulo tipo-h2">Tres mercados, un solo sistema</h2>
-            <ul class="layout__cuerpo">
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Renta variable — la rentabilidad no se conoce de forma anticipada.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Renta fija — la rentabilidad se conoce desde el inicio de la negociación.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Derivados — contratos entre dos partes para comprar o vender un activo en el futuro.</span></li>
-            </ul>
+            <div class="layout__texto">
+              <h2 class="layout__titulo tipo-h2">Tres mercados, un solo sistema</h2>
+              <ul class="layout__cuerpo">
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Renta variable — la rentabilidad no se conoce de forma anticipada.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Renta fija — la rentabilidad se conoce desde el inicio de la negociación.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Derivados — contratos entre dos partes para comprar o vender un activo en el futuro.</span></li>
+              </ul>
+            </div>
             <div class="layout__media ks-marcador">Infografía · Los tres mercados<br />(marcador — producción audiovisual)</div>
           </div>
         </div>
@@ -1612,12 +1639,14 @@
         <div class="ks-layout-marco">
           <div class="layout layout--l09">
             <span class="layout__kicker tipo-etiqueta">Ideas clave</span>
-            <h2 class="layout__titulo tipo-h2">Lo esencial de esta cápsula</h2>
-            <ul class="layout__cuerpo">
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Una acción es un título de propiedad, no de deuda.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Su rentabilidad no se conoce de forma anticipada.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>El precio se mueve según la oferta y la demanda en el mercado secundario.</span></li>
-            </ul>
+            <div class="layout__texto">
+              <h2 class="layout__titulo tipo-h2">Lo esencial de esta cápsula</h2>
+              <ul class="layout__cuerpo">
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Una acción es un título de propiedad, no de deuda.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Su rentabilidad no se conoce de forma anticipada.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>El precio se mueve según la oferta y la demanda en el mercado secundario.</span></li>
+              </ul>
+            </div>
           </div>
         </div>
         <p class="ks-intro">El brief pide media opcional; C1 (4 sep) lo resolvió con <code>:has()</code> en layouts.css — sin <code>.layout__media</code> en el DOM, la grilla de dos columnas de arriba no aplica y el bloque cae a una columna de ancho de lectura. Mismo ejemplo que <code>s18</code> en <code>content/ova-u1.js</code>.</p>
@@ -1626,16 +1655,18 @@
         <div class="ks-layout-marco">
           <div class="layout layout--l09">
             <span class="layout__kicker tipo-etiqueta">Antes de empezar</span>
-            <h2 class="layout__titulo tipo-h2">Cómo se recorre este curso</h2>
-            <ul class="layout__cuerpo layout__cuerpo--controles">
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">menu</span><span>Índice: abre la lista completa de pantallas de la unidad.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">location_on</span><span>Tu ubicación: siempre ves en qué cápsula y tema estás.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">cloud_done</span><span>Progreso: el curso se guarda solo y muestra cuánto llevas avanzado.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">fullscreen</span><span>Pantalla completa: para ver el curso sin distracciones.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">record_voice_over</span><span>Autolocución: actívala para que el audio de cada pantalla empiece solo.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">arrow_back</span><span>Anterior: vuelve a la pantalla que acabas de ver.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">arrow_forward</span><span>Siguiente: avanza a la siguiente pantalla del curso.</span></li>
-            </ul>
+            <div class="layout__texto">
+              <h2 class="layout__titulo tipo-h2">Cómo se recorre este curso</h2>
+              <ul class="layout__cuerpo layout__cuerpo--controles">
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">menu</span><span>Índice: abre la lista completa de pantallas de la unidad.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">location_on</span><span>Tu ubicación: siempre ves en qué cápsula y tema estás.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">cloud_done</span><span>Progreso: el curso se guarda solo y muestra cuánto llevas avanzado.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">fullscreen</span><span>Pantalla completa: para ver el curso sin distracciones.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">record_voice_over</span><span>Autolocución: actívala para que el audio de cada pantalla empiece solo.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">arrow_back</span><span>Anterior: vuelve a la pantalla que acabas de ver.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">arrow_forward</span><span>Siguiente: avanza a la siguiente pantalla del curso.</span></li>
+              </ul>
+            </div>
           </div>
         </div>
         <p class="ks-intro"><code>crearListaControles()</code> — alternativa a <code>crearListaIdeas()</code>, mutuamente excluyente con "cuerpo" (mismo criterio que tarjetas/interaccion en L05): cada ítem trae el ícono real del control, no el check de cumplimiento fijo de la lista de ideas — por eso el color del ícono cae al neutro <code>--text-tertiary</code> en vez del verde de arriba (ver <code>.layout__cuerpo--controles</code> en layouts.css). Mismo ejemplo que <code>p01b</code> en <code>content/ova-u1.js</code>; recorrido real (con foco y anuncio de pantalla) en <a href="../src/index.html">src/index.html</a>.</p>
@@ -1644,12 +1675,14 @@
         <div class="ks-layout-marco">
           <div class="layout layout--l09">
             <span class="layout__kicker tipo-etiqueta">Antes de empezar</span>
-            <h2 class="layout__titulo tipo-h2">Un curso que funciona para ti</h2>
-            <ul class="layout__cuerpo">
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Cada pantalla con locución muestra su transcripción completa, tenga o no audio.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Puedes recorrer el curso completo con el teclado, con el foco siempre visible.</span></li>
-              <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>El texto se puede ampliar hasta el doble de su tamaño sin romper ningún control.</span></li>
-            </ul>
+            <div class="layout__texto">
+              <h2 class="layout__titulo tipo-h2">Un curso que funciona para ti</h2>
+              <ul class="layout__cuerpo">
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Cada pantalla con locución muestra su transcripción completa, tenga o no audio.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Puedes recorrer el curso completo con el teclado, con el foco siempre visible.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>El texto se puede ampliar hasta el doble de su tamaño sin romper ningún control.</span></li>
+              </ul>
+            </div>
             <div class="layout__interaccion" id="l09-p01a-pref"></div>
             <p class="layout__nota tipo-caption">Puedes volver a cambiar estas preferencias cuando quieras desde el botón de ajustes de la barra superior.</p>
           </div>
@@ -1661,10 +1694,12 @@
         <span class="ks-layout-bloque__etiqueta">L10 · Cierre de unidad y siguiente paso (C1, cableado real por <code>PLANTILLAS.L10</code>)</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l10">
-            <span class="layout__kicker tipo-etiqueta">Fin de la unidad 1</span>
-            <h2 class="layout__titulo tipo-display-2">Ya conoces el contexto del mercado</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo-lg">Identificaste los tres mercados de Bolsa de Valores de Colombia, qué es una acción y la diferencia entre acciones ordinarias y preferenciales.</p>
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Fin de la unidad 1</span>
+              <h2 class="layout__titulo tipo-display-2">Ya conoces el contexto del mercado</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo-lg">Identificaste los tres mercados de Bolsa de Valores de Colombia, qué es una acción y la diferencia entre acciones ordinarias y preferenciales.</p>
+              </div>
             </div>
             <div class="layout__media" id="l10-media"></div>
             <div class="layout__interaccion">
@@ -1689,10 +1724,12 @@
         <div class="ks-layout-marco">
           <div class="layout layout--l11">
             <div class="layout__figura" aria-hidden="true"><span class="icono">folder_open</span></div>
-            <span class="layout__kicker tipo-etiqueta">Recursos descargables</span>
-            <h2 class="layout__titulo tipo-h2">Materiales de esta cápsula</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">Dos formatos para practicar lo visto: identifica tu perfil de riesgo y repasa los términos clave.</p>
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Recursos descargables</span>
+              <h2 class="layout__titulo tipo-h2">Materiales de esta cápsula</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">Dos formatos para practicar lo visto: identifica tu perfil de riesgo y repasa los términos clave.</p>
+              </div>
             </div>
             <div class="layout__interaccion">
               <a class="tarjeta-recurso" href="#l11">
@@ -1735,10 +1772,12 @@
         <span class="ks-layout-bloque__etiqueta">L13 · Corte oscuro, cierre o transición</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l13">
-            <span class="layout__kicker tipo-etiqueta">Dato</span>
-            <h2 class="layout__titulo tipo-h3">Invertir sin fronteras</h2>
-            <div class="layout__cuerpo">
-              <p class="tipo-cuerpo">A través del Mercado Global Colombiano (MGC), los inversionistas pueden comprar y vender valores extranjeros listados en mercados internacionales por medio de una sociedad comisionista de bolsa local.</p>
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Dato</span>
+              <h2 class="layout__titulo tipo-h3">Invertir sin fronteras</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">A través del Mercado Global Colombiano (MGC), los inversionistas pueden comprar y vender valores extranjeros listados en mercados internacionales por medio de una sociedad comisionista de bolsa local.</p>
+              </div>
             </div>
             <div class="layout__media" id="l13-media"></div>
           </div>
@@ -1862,6 +1901,15 @@
         src: VIDEO_DEMO,
         vtt: VTT_DEMO,
         transcripcion: TRANSCRIPCION_DEMO
+      });
+      // Ajustes tanda 4: mismo archivo que RETRATO_MASCARA_DEMO más abajo
+      // (declarada después en este mismo script) — inline aquí en vez de
+      // reordenar el archivo para una sola referencia.
+      montar('l03-retrato-media', {
+        tipo: 'retrato',
+        src: '../public/img/avatar/avatar-sin-fondo-plano-primer-saluda.png',
+        variante: 'mascara',
+        forma: 'diagonal'
       });
 
       // C3: avatar/audio, mismo criterio que el video de arriba — imagen

@@ -517,3 +517,236 @@ usarse, pero ninguna pantalla real lo pide todavía.
   avatar/imagen) — no hay caso real que lo ejercite todavía porque las
   fotos de `public/img/avatar/` ya existen; se agrega si aparece un caso
   real que lo necesite.
+
+---
+
+## 9 · Pantalla nueva "Te damos la bienvenida" — tanda 4, cerrado 6 sep
+
+**Pedido.** Pantalla nueva justo después de la portada (no viene del
+storyboard de Jose): avatar en máscara a la izquierda, texto de bienvenida
+a la derecha, sobre la retícula exacta de `ref-ajustes/tanda-4/
+referencia-tanda-4.png` (12 columnas, margen 40px, medianil 40px, imagen y
+texto de 5 columnas cada uno).
+
+**Dos decisiones de alcance, confirmadas con Juan antes de tocar código**
+(mismo criterio que el ítem 4): el catálogo L01–L13 está cerrado contra
+`BRIEF-DI.md` (regla dura 8) y esta pantalla no viene de ahí, así que había
+que decidir cómo encajarla. Juan eligió **no** abrir un layout nuevo (L14)
+ni construir una retícula de 12 columnas reusable: la pantalla es una
+**variante de L03** ("media a un lado, texto al otro"), y la retícula vive
+solo dentro de esa variante — L02–L13 no se tocan.
+
+**Qué se hizo:**
+
+- `router.js` (`PLANTILLAS.L03`): agrega la clase `.layout--l03--retrato`
+  solo cuando `pantalla.media.tipo === 'retrato'` — no es un campo nuevo
+  del contrato, se deriva del mismo `media.tipo` que ya decide qué
+  construye `OVA.media.crear()`. Las 4 pantallas reales que usan L03 con
+  video/avatar no cambian: siguen con el 50/50 de siempre.
+- `layouts.css`: dentro del mismo `@media (min-width: 48em)` de L03,
+  `.layout--l03--retrato` redefine `grid-template-columns` a
+  `repeat(12, 1fr)` con `column-gap: var(--sp-10)` (40px — el mismo token
+  que ya usan margen/medianil de otros componentes, no un valor nuevo) y
+  reubica los `grid-template-areas`: retrato en columnas 1–5, texto en
+  6–10, columnas 11–12 sin usar a propósito (el margen derecho extra que
+  trae la referencia de Juan). Un solo gutter de 40px entre los dos
+  bloques — no una columna vacía de por medio. Regla aparte,
+  `.layout--l03--retrato .layout__cuerpo p:first-child { font-weight:
+  700 }` para "¡Hola, soy Claudia!": sigue siendo el mismo campo `cuerpo`
+  de siempre, no un componente de texto distinto.
+- `content/ova-u1.js`: pantalla nueva `p01-bienvenida` (L03), entre `p01`
+  (portada) y `p01a` (accesibilidad) — kicker "Antes de empezar" igual
+  que sus vecinas, `progreso: false` (es arranque, no cuenta avance,
+  mismo criterio que p01a/p01b). `media` usa el catálogo "retrato" del
+  ítem 8 (`variante: 'mascara'`, `forma: 'diagonal'`, `fondo` sin
+  especificar — cae al naranja por defecto, que es el que pide la
+  referencia) con la foto real que ya usa la kitchen sink desde el ítem 8
+  (`avatar-sin-fondo-plano-primer-saluda.png`). Texto de cuerpo tomado
+  literal de la referencia.
+- `dev/kitchen-sink.html`: segundo ejemplo dentro del bloque L03 (mismo
+  patrón que el par de ejemplos de L05) con la variante montada de
+  verdad vía `OVA.media.crear()`.
+
+**Verificado con Playwright, `src/index.html` (navegando a
+`#p01-bienvenida`) y `dev/kitchen-sink.html`, por `file://`:** a 1280px,
+`getComputedStyle` confirma `grid-template-columns` en 12 pistas de
+63.33px con `column-gap: 40px`; la imagen ocupa de x=40 (el margen del
+`.layout`) a x=516.66 (5 columnas + 4 medianiles internos, la matemática
+esperada de un elemento que abarca varias pistas de grid); el texto
+empieza en x=556.66 (un solo medianil de 40px después) y termina en
+x=1033.33, dejando el resto del viewport libre a la derecha — la misma
+retícula que describió Juan, confirmada con `getBoundingClientRect`, no
+asumida. Primer párrafo en `font-weight: 700`, los otros dos en el peso
+normal. La foto carga (`naturalWidth: 1254`, sin roturas) con la clase
+`imagen imagen--mascara imagen--diagonal imagen--fondo-naranja`. A 320px,
+`.layout--l03` cae a `display: flex` (apilado, sin la retícula de
+escritorio) y `scrollWidth === clientWidth` (sin scroll horizontal); zoom
+de texto al 200% tampoco desborda. Foco visible verificado sobre
+"Siguiente". Cero errores de consola nuevos en ambas páginas (los tres
+`ERR_FILE_NOT_FOUND` de la kitchen sink son los placeholders preexistentes
+ya documentados en el ítem 1). Cero hex nuevo — el único valor de
+espaciado es `var(--sp-10)`, que ya existía en `tokens.css`.
+
+**Pendiente, fuera de alcance de este ítem.** El componente "retrato" (y
+por lo tanto esta pantalla) no tiene locución propia — es una foto
+estática con texto, sin audio ni transcripción de narración, tal como se
+ve en la referencia. Si más adelante Juan quiere que Claudia narre esta
+pantalla en voz, hay que decidir aparte cómo encaja el audio con este
+componente (el ítem 8 ya dejó anotado que reemplazar `crearAvatar()` por
+"retrato" es una tarea propia, todavía no hecha).
+
+---
+
+## 10 · Gap entre kicker/título/cuerpo — tanda 4, cerrado 6 sep
+
+**Pedido.** Al recorrer `p01-bienvenida`, Juan notó demasiado aire entre
+"Antes de empezar" (kicker), "Te damos la bienvenida" (título) y "¡Hola,
+soy Claudia!" (primera línea de cuerpo) — y que era un patrón general de
+"cuando hay bloques de texto", no solo de esa pantalla. Pidió un sistema
+que agrupe esos elementos con su propio gap (sugirió 16px).
+
+**Por qué era el gap y no un ajuste puntual.** Antes de esta tarea,
+kicker/título/cuerpo eran tres hermanos sueltos de `.layout` (flex
+column) y heredaban su `gap: var(--sp-6)` (24px) — el mismo valor que
+separa el bloque de texto completo de media/datos/interacción. Ese 24px
+tiene sentido para diferenciar zonas de la pantalla, no para separar un
+kicker de su título. `CLAUDE.md` prohíbe márgenes por elemento para
+separar hermanos ("nada de márgenes por elemento para separar
+hermanos"), así que la única forma correcta de darle a ese trío un gap
+distinto es agruparlo en su propio contenedor con su propio `gap` — no
+había atajo de una sola línea de CSS.
+
+**Alcance, decidido antes de tocar código.** Se aplica solo donde
+kicker+título+cuerpo (o su equivalente de lectura — lista, texto
+condicional) son hermanos apilados de verdad: L02, L03 (+variante
+retrato del ítem 9), L04, L08, L09, L10, L11, L13. Quedan fuera:
+
+- **L01** (portada) — ya tiene su propio arreglo de panel, no pasa por
+  el gap genérico de `.layout`.
+- **L05/L06/L07** — nunca tienen `cuerpo` (tarjetas/interacción ocupan
+  su lugar); agrupar kicker+título solos no era lo que Juan señaló.
+- **L12** — título y cuerpo van lado a lado a propósito (el número
+  grande junto a su explicación en la misma fila del grid, no
+  apilados). Agruparlos los habría apilado, rompiendo esa disposición.
+
+**Qué se hizo:**
+
+- `layouts.css`: `.layout__texto` nuevo — `display:flex;
+  flex-direction:column; gap:var(--sp-4)` (16px, el mismo valor que ya
+  usa `.layout__cuerpo` entre sus propios párrafos — un solo ritmo de
+  aire en todo el bloque de lectura, no dos). `min-width:0` para que un
+  párrafo largo no fuerce el ancho del hijo de grid/flex que lo
+  contiene.
+- `router.js`: helper nuevo `envolverTexto(elementos)` — arma el
+  `<div class="layout__texto">` y filtra los elementos ausentes
+  (kicker opcional, cuerpo condicional en L08). Cada `PLANTILLAS.LXX`
+  tocada arma sus nodos igual que antes y los pasa por
+  `envolverTexto()` en vez de hacer tres `appendChild` sueltos. **L09
+  es un caso aparte a propósito:** el kicker se queda *fuera* del
+  contenedor — en L09 ocupa su propia fila a todo el ancho por encima
+  de las dos columnas (lista + media), no el primer renglón de un
+  bloque apilado como en el resto; solo título+lista comparten
+  `.layout__texto` ahí.
+- `layouts.css`, L03/L03--retrato/L09/L11 (los cuatro layouts con grid
+  real): `grid-template-areas` pasó de tres áreas (`kicker`/`titulo`/
+  `cuerpo`) a una sola (`texto`) — `grid-area` solo puede ir en hijos
+  directos del contenedor de grid, y ahora kicker+título+cuerpo son
+  nietos, no hijos. Esto simplificó los templates (menos filas), no los
+  complicó.
+- **Bug real encontrado por Playwright al verificar el gap, no
+  hipotético — arreglado en el mismo commit.** Al consolidar las filas
+  de L09/L11, el gap entre kicker y `.layout__texto` en pantallas
+  cortas (`p01b`, `p32` — sin media, sin componente) medía 166px en vez
+  de 24px. Causa: `align-content` por defecto es `normal`, que en un
+  grid de filas `auto` dentro de un contenedor de alto fijo
+  (`.layout` mide `min-block-size:100%` de `#app`) se comporta como
+  `stretch` — reparte el alto sobrante del contenedor entre las filas
+  `auto` en vez de dejarlas a su tamaño de contenido real. No es un bug
+  de esta tarea (ya existía con tres filas separadas en vez de una),
+  solo se volvió visible al concentrarse en un solo hueco en vez de
+  repartirse entre dos. Arreglado con `align-content: start` en
+  `.layout--l09` y `.layout--l11`. L03 no lo necesitaba: su variante de
+  este ítem quedó en una sola fila de grid, sin gap entre filas que
+  inflar.
+- `dev/kitchen-sink.html`: los ocho bloques de layout tocados (más las
+  cuatro variantes de L09) llevan ahora el mismo `<div class=
+  "layout__texto">` a mano, para que la kitchen sink siga siendo un
+  espejo real del DOM que arma `router.js` — sin esto, sus ejemplos
+  estáticos de L03/L09/L11 se habrían roto en el grid (ningún elemento
+  suelto tiene ya `grid-area` propio en esos tres).
+
+**Verificado con Playwright, `src/index.html` (once pantallas reales:
+`p01-bienvenida`, `p01a`, `p01b`, `p02`, `p04`, `p10`, `p14`, `p32`,
+`p34`, `p35`, `p36` — cubren los ocho layouts tocados y los cuatro casos
+de L09) y `dev/kitchen-sink.html`, por `file://`:** `getBoundingClientRect`
+mide 16px entre kicker→título y título→cuerpo en las ocho pantallas
+donde van agrupados; en las tres de L09 con kicker separado, kicker→
+`.layout__texto` mide los 24px de siempre y título→lista (dentro del
+contenedor) mide 16px. El gap hacia media/datos/interacción, donde
+existe, se mantiene en 24px sin cambios en las once. Cero scroll
+horizontal a 320px ni con zoom de texto al 200% en `p01-bienvenida`,
+`p32` y `p34`. Cero errores de consola nuevos en ninguna de las dos
+páginas (los tres `ERR_FILE_NOT_FOUND` de la kitchen sink son los
+placeholders preexistentes ya documentados en el ítem 1). Cero hex
+nuevo — el único valor de espaciado nuevo es `var(--sp-4)`, que ya
+existía en `tokens.css`.
+
+**Hallazgo aparte, no corregido — fuera de alcance de este ítem.** L12
+usa `align-items:center` sobre el mismo patrón de filas `auto` que
+causó el bug de arriba en L09/L11 — no se verificó si también sufre el
+mismo inflado de `align-content:normal`, porque L12 no se tocó hoy (su
+título y cuerpo van lado a lado a propósito, ver arriba). Queda
+anotado por si Juan lo nota al revisar esa pantalla.
+
+---
+
+## 11 · Corrección: retícula de `p01-bienvenida` recostada a la izquierda — cerrado 6 sep
+
+**Pedido.** La retícula de 12 columnas del ítem 9 (imagen + texto, 5
+columnas cada una) quedaba pegada al margen izquierdo, con las dos
+columnas libres juntas a la derecha. Tenía que quedar centrada: 1
+columna de margen, 5 de retrato, 5 de texto, 1 columna de margen —
+simétrico a los dos lados.
+
+**Qué se hizo, en `layouts.css`:** `grid-template-areas` de
+`.layout--l03--retrato` pasó de `"media×5 texto×5 . ."` (las dos
+columnas sin usar juntas al final) a `". media×5 texto×5 ."` (una sin
+usar antes del retrato, otra después del texto). Un solo carácter de
+diferencia en el patrón, mismo mecanismo de siempre.
+
+**Verificado con Playwright, `src/index.html` (`#p01-bienvenida`) por
+`file://`:** margen izquierdo y derecho miden 143.33px y 143.34px
+(prácticamente idénticos, la diferencia es redondeo de subpíxel);
+retrato y texto miden 476.67px y 476.66px cada uno (los mismos 5
+columnas de antes, sin cambio de ancho); el medianil entre ambos sigue
+en 40px. Sin scroll horizontal a 320px; sin overflow nuevo en la
+kitchen sink; cero errores de consola nuevos.
+
+---
+
+## 12 · Centrado vertical entre columnas enfrentadas — cerrado 6 sep
+
+**Pedido.** Regla general: siempre que un bloque tenga dos columnas
+enfrentadas (media/texto en L03, figura/texto en L11, texto/media en
+L09), sus ítems deben quedar centrados verticalmente entre sí, no
+alineados arriba.
+
+**Qué se hizo, en `layouts.css`:** los tres grids de dos columnas que
+`align-items: start` dejaba pegados arriba —`.layout--l03` (cubre
+también la variante `--retrato` del ítem 9, que no fija su propio
+`align-items`), `.layout--l09` y `.layout--l11`— pasan a `align-items:
+center`. `.layout--l12` ya usaba `center` desde C2 (4 sep, cifra grande
+junto a su explicación) — queda como estaba, ya cumplía la regla antes
+de que se pidiera. En L09 y L11 el cambio solo se nota en la fila de
+dos columnas: la otra fila (kicker a todo el ancho en L09;
+interacción/recursos a todo el ancho en L11) es un solo ítem por fila,
+centrarlo o no da igual.
+
+**Verificado con Playwright, `src/index.html` (`p01-bienvenida`, `p14`
+—L03—, `p34` —L11—) y `dev/kitchen-sink.html` (L09 con media, el único
+caso real con `.layout__media` para probar) por `file://`:** el centro
+vertical (`top + height/2`) de cada columna contra la otra difiere en
+0.01px o menos (redondeo de subpíxel) en los cuatro casos — centrado
+real, no aproximado. Sin scroll horizontal a 320px, sin overflow nuevo
+en la kitchen sink, cero errores de consola nuevos. Cero hex nuevo (un
+solo valor de alineación, sin tocar `tokens.css`).

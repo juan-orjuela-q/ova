@@ -114,6 +114,21 @@
     return div;
   }
 
+  // Ajustes tanda 4: agrupa kicker+título+cuerpo (u otra lectura
+  // principal — lista, texto de resultado) en un solo .layout__texto
+  // con su propio gap más chico (layouts.css) en vez de dejarlos como
+  // hermanos sueltos de .layout, que los separaba con el mismo gap
+  // pensado para diferenciar zonas completas (texto vs. media/datos/
+  // interaccion). Elementos ausentes (kicker opcional, cuerpo condicional
+  // en L08) se filtran solos. No todas las plantillas la usan igual —
+  // ver la nota junto a .layout__texto en layouts.css.
+  function envolverTexto(elementos) {
+    var div = document.createElement('div');
+    div.className = 'layout__texto';
+    elementos.forEach(function (el) { if (el) div.appendChild(el); });
+    return div;
+  }
+
   // T4: única entrada de layout que renderiza pantalla.media. Solo
   // sabe construir video (OVA.media.crear falla ruidoso para
   // cualquier otro tipo.tipo); si la pantalla no trae media en
@@ -617,21 +632,29 @@
     // en L11 — es la jerarquía visual la que decide el orden en pantalla,
     // no el orden del documento).
     var raiz = crearRaiz('l02');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    raiz.appendChild(titulo);
-    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    var cuerpo = crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo');
+    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo]));
     raiz.appendChild(crearMedia(pantalla.media));
     return { raiz: raiz, titulo: titulo };
   };
 
   // Sin cambio de número en C0.
+  // Ajustes tanda 4: variante de bienvenida (retícula de 12 columnas,
+  // ver layouts.css) cuando la pantalla trae un retrato en vez de
+  // video/avatar — no es un layout nuevo ni un campo nuevo de
+  // contenido, se deriva del mismo media.tipo que ya decide qué
+  // construye OVA.media.crear().
   PLANTILLAS.L03 = function (pantalla) {
     var raiz = crearRaiz('l03');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    if (pantalla.media && pantalla.media.tipo === 'retrato') {
+      raiz.classList.add('layout--l03--retrato');
+    }
+    var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    raiz.appendChild(titulo);
-    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    var cuerpo = crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo');
+    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo]));
     raiz.appendChild(crearMedia(pantalla.media));
     return { raiz: raiz, titulo: titulo };
   };
@@ -639,10 +662,10 @@
   // Antes de C0 esta era PLANTILLAS.L02 ("texto a una columna").
   PLANTILLAS.L04 = function (pantalla) {
     var raiz = crearRaiz('l04');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    raiz.appendChild(titulo);
-    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    var cuerpo = crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo');
+    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo]));
     // T7: "datos" es opcional en L04 (a diferencia del extinto layout de
     // proceso, que exigía datos siempre) — s01 sigue siendo puro texto
     // sin él, s08/s09/s10 lo agregan (s09 con datos.tipo:'proceso').
@@ -716,10 +739,10 @@
   PLANTILLAS.L08 = function (pantalla) {
     var resultado = obtenerResultado(pantalla);
     var raiz = crearRaiz('l08');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    raiz.appendChild(titulo);
-    if (pantalla.cuerpo) raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    var cuerpo = pantalla.cuerpo ? crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo') : null;
+    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo]));
     // C7: avatar opcional — P10/P31/P43/P47, las cuatro pantallas reales
     // de L08, traen narración de avatar (recurso "avatar" en el
     // storyboard); antes de C7 este layout no tenía ninguna ranura de
@@ -773,12 +796,13 @@
     var raiz = crearRaiz('l09');
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    raiz.appendChild(titulo);
-    if (pantalla.controles) {
-      raiz.appendChild(crearListaControles(pantalla.controles));
-    } else {
-      raiz.appendChild(crearListaIdeas(pantalla.cuerpo, 'tipo-cuerpo'));
-    }
+    var lista = pantalla.controles
+      ? crearListaControles(pantalla.controles)
+      : crearListaIdeas(pantalla.cuerpo, 'tipo-cuerpo');
+    // Kicker fuera de .layout__texto a propósito (ver la nota en
+    // layouts.css): en L09 ocupa su propia fila a todo el ancho, no es
+    // el primer renglón de un bloque de lectura apilado.
+    raiz.appendChild(envolverTexto([titulo, lista]));
     if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
     if (pantalla.componente) raiz.appendChild(crearComponente(pantalla.componente));
     if (pantalla.nota) raiz.appendChild(crearNotaTarjetas(pantalla.nota));
@@ -798,10 +822,10 @@
   // Antes de C0 esta era PLANTILLAS.L06 ("cita o dato curioso").
   PLANTILLAS.L13 = function (pantalla) {
     var raiz = crearRaiz('l13');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h3');
-    raiz.appendChild(titulo);
-    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    var cuerpo = crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo');
+    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo]));
     // C7: avatar opcional — P36/P40/P44, las tres vistas previas de
     // pieza insignia, traen narración de avatar; mismo patrón opcional
     // que L08/L09/L10.
@@ -819,10 +843,10 @@
       throw new Error('Esta pantalla no trae "logro" (título del aviso de logro) y su layout lo necesita.');
     }
     var raiz = crearRaiz('l10');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
     var titulo = crearTitulo(pantalla.titulo, 'tipo-display-2');
-    raiz.appendChild(titulo);
-    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo-lg'));
+    var cuerpo = crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo-lg');
+    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo]));
     // C7: avatar opcional — P35 (cierre real de la Unidad 1) trae
     // narración de avatar; mismo patrón opcional que L08/L09.
     if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
@@ -851,10 +875,10 @@
     figura.appendChild(iconoFigura);
     raiz.appendChild(figura);
 
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+    var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    raiz.appendChild(titulo);
-    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo'));
+    var cuerpo = crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo');
+    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo]));
 
     var interaccion = document.createElement('div');
     interaccion.className = 'layout__interaccion';

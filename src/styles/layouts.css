@@ -16,10 +16,11 @@
    retroalimentación) eran casillas nuevas del brief sin CSS — C1
    (4 sep) les agregó el suyo.
 
-   Bloque .layout, elementos reutilizables (.layout__kicker,
-   .layout__titulo, .layout__cuerpo, .layout__media, .layout__figura,
-   .layout__interaccion, .layout__datos), modificadores de arreglo
-   .layout--l01..l13.
+   Bloque .layout, elementos reutilizables (.layout__texto —
+   agrupa kicker+título+cuerpo, ajustes tanda 4, ver su nota más abajo—,
+   .layout__kicker, .layout__titulo, .layout__cuerpo, .layout__media,
+   .layout__figura, .layout__interaccion, .layout__datos), modificadores
+   de arreglo .layout--l01..l13.
 
    Mobile-first con flex, no grid, en la base: .layout es
    `display:flex; flex-direction:column`, así que a 320px los
@@ -80,6 +81,29 @@
   flex-direction: column;
   gap: var(--sp-4);
   max-width: 42rem;
+}
+
+/* Ajustes tanda 4: agrupa kicker+título+cuerpo (el "bloque de lectura"
+   de una pantalla) en un solo contenedor con su propio gap — antes eran
+   tres hermanos sueltos de .layout y heredaban el gap de --sp-6 (24px)
+   pensado para separar zonas completas (texto vs. media/datos/
+   interaccion), no para separar un kicker de su título. --sp-4 (16px)
+   es el mismo valor que ya usa .layout__cuerpo arriba entre sus propios
+   párrafos — el bloque de lectura completo queda con un solo ritmo de
+   aire, no dos.
+   router.js (envolverTexto()) es quien decide qué entra en este
+   contenedor por pantalla — no todos los layouts lo usan igual: L05/L06/
+   L07 no tienen "cuerpo" nunca (tarjetas/interacción ocupan su lugar) y
+   L12 pone título y cuerpo lado a lado a propósito (el número grande
+   junto a su explicación, no apilados) — agruparlos ahí rompería esa
+   disposición, así que ninguno de los tres pasa por este contenedor.
+   min-width:0 evita que un párrafo largo sin espacios fuerce el ancho
+   del hijo de grid/flex que lo contiene (L03/L09/L11 en escritorio). */
+.layout__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
 }
 
 /* T7: elemento reutilizable nuevo, mismo criterio que .layout__media
@@ -349,21 +373,50 @@
 }
 
 /* ---- L03 · Media a un lado, texto al otro (50/50) -----------------------
-   Cápsula con video de apoyo junto al texto. Sin cambio de C0. -------- */
+   Cápsula con video de apoyo junto al texto. Sin cambio de C0. Ajustes
+   tanda 4: kicker/título/cuerpo comparten un solo `grid-area` ("texto",
+   el .layout__texto que arma router.js) en vez de tres separadas — el
+   grid ya no necesita tres filas para apilarlos, uno solo alcanza y
+   .layout__texto los apila por dentro con su propio gap. --------- */
 @media (min-width: 48em) {
   .layout--l03 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    align-items: start;
-    grid-template-areas:
-      "kicker media"
-      "titulo media"
-      "cuerpo media";
+    /* Ajustes tanda 4: dos columnas enfrentadas del mismo bloque se
+       centran entre sí verticalmente (mismo criterio ya usado en L12) —
+       ni media ni texto quedan pegados arriba cuando el otro es más
+       alto. */
+    align-items: center;
+    grid-template-areas: "texto media";
   }
-  .layout--l03 .layout__kicker { grid-area: kicker; }
-  .layout--l03 .layout__titulo { grid-area: titulo; }
-  .layout--l03 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
+  .layout--l03 .layout__texto { grid-area: texto; }
+  .layout--l03 .layout__cuerpo { max-width: none; }
   .layout--l03 .layout__media { grid-area: media; }
+
+  /* Ajustes tanda 4: variante de bienvenida sobre retrícula de 12
+     columnas (margen y medianil = --sp-10, 40px — ya existían en
+     tokens.css, no son un valor nuevo). router.js agrega esta clase
+     solo cuando media.tipo es "retrato": el 50/50 de arriba sigue
+     siendo el comportamiento por defecto de L03 para las 4 pantallas
+     reales del storyboard que usan video/avatar, así que esta variante
+     no las toca. Corrección sobre el primer intento (dejaba las dos
+     columnas recostadas a la izquierda, con las dos columnas libres
+     juntas a la derecha): el grupo va centrado — 1 columna de margen +
+     5 de retrato + 5 de texto + 1 columna de margen, simétrico a los
+     dos lados. */
+  .layout--l03--retrato {
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--sp-10);
+    grid-template-areas:
+      ". media media media media media texto texto texto texto texto .";
+  }
+  /* "¡Hola, soy Claudia!" es la primera línea de cuerpo — lleva más
+     peso que las dos de abajo porque es la presentación, no porque
+     sea un componente de texto distinto (sigue siendo <p class=
+     "tipo-cuerpo">, un solo campo `cuerpo` en el contrato). */
+  .layout--l03--retrato .layout__cuerpo p:first-child {
+    font-weight: 700;
+  }
 }
 
 /* ---- L04 · Lectura larga con imagen de apoyo ----------------------------
@@ -554,22 +607,42 @@
   .layout--l09 {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    align-items: start;
+    /* Ajustes tanda 4: texto y media, las dos columnas enfrentadas de la
+       fila de abajo, se centran entre sí (mismo criterio que L03/L11) —
+       no afecta a la fila del kicker, que es un solo ítem a todo el
+       ancho. */
+    align-items: center;
+    /* Ajustes tanda 4, bug real encontrado con Playwright al verificar
+       el gap nuevo: align-content por defecto es "normal", que en un
+       grid con filas auto y contenedor de alto fijo (.layout mide
+       min-block-size:100% de #app) se comporta como "stretch" y
+       reparte el alto sobrante entre las filas auto en vez de dejarlas
+       a su tamaño de contenido. Con pantallas cortas (p01b/p32, sin
+       media) eso infla la fila del kicker a ~160px y la de
+       .layout__texto a ~496px: un "gap" visible de 166px entre kicker
+       y título aunque el CSS diga 24px. align-content:start deja las
+       filas a su alto real. No es un bug nuevo de esta tarea (ya
+       existía con tres filas separadas), solo se volvió más visible al
+       quedar un solo hueco donde antes el mismo sobrante se repartía
+       entre dos. */
+    align-content: start;
     grid-template-areas:
       "kicker kicker"
-      "titulo media"
-      "cuerpo media";
+      "texto media";
   }
+  /* Ajustes tanda 4: título+cuerpo comparten .layout__texto (área
+     "texto") — kicker se queda fuera del contenedor a propósito, sigue
+     siendo la única fila a todo el ancho, no el primer elemento de un
+     bloque de lectura apilado como en L03/L10/L11/L13. */
   .layout--l09 .layout__kicker { grid-area: kicker; }
-  .layout--l09 .layout__titulo { grid-area: titulo; }
-  .layout--l09 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
+  .layout--l09 .layout__texto { grid-area: texto; }
+  .layout--l09 .layout__cuerpo { max-width: none; }
   .layout--l09 .layout__media { grid-area: media; }
   .layout--l09:not(:has(.layout__media)) {
     grid-template-columns: 1fr;
     grid-template-areas:
       "kicker"
-      "titulo"
-      "cuerpo";
+      "texto";
   }
   /* AJUSTES.md #2: el 42rem vivía en la raíz; se mueve a los tres hijos
      visibles de este caso (sin margin-inline:auto — este layout no se
@@ -679,17 +752,22 @@
   .layout--l11 {
     display: grid;
     grid-template-columns: auto 1fr;
-    align-items: start;
+    /* Ajustes tanda 4: figura y texto, las dos columnas enfrentadas de
+       la primera fila, se centran entre sí (mismo criterio que L03/L09)
+       — no afecta a la fila de interacción, que es un solo ítem a todo
+       el ancho. */
+    align-items: center;
+    /* Ajustes tanda 4: mismo bug de align-content:normal que L09 (ver su
+       nota) — dos filas auto en un contenedor de alto fijo se inflan
+       para llenar el sobrante si no se fija align-content:start. */
+    align-content: start;
     grid-template-areas:
-      "figura kicker"
-      "figura titulo"
-      "figura cuerpo"
+      "figura texto"
       "interaccion interaccion";
   }
   .layout--l11 .layout__figura { grid-area: figura; }
-  .layout--l11 .layout__kicker { grid-area: kicker; }
-  .layout--l11 .layout__titulo { grid-area: titulo; }
-  .layout--l11 .layout__cuerpo { grid-area: cuerpo; max-width: none; }
+  .layout--l11 .layout__texto { grid-area: texto; }
+  .layout--l11 .layout__cuerpo { max-width: none; }
   .layout--l11 .layout__interaccion { grid-area: interaccion; }
 }
 
