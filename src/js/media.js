@@ -73,6 +73,25 @@
      mismo `.media-marcador` y oculta los controles — no tiene sentido
      dejar play/scrubber operables sobre un video que no existe.
 
+   - **"retrato"** (ajustes, tanda 3): `{ tipo, src, alt?, variante,
+     forma, fondo? }`. Foto de persona con tratamiento decorativo — hoy
+     un tipo de media independiente, pensado para más adelante
+     reemplazar `crearAvatar()`; ver el bloque `.imagen` de
+     components.css para el CSS. `variante` es `"marco"` (foto opaca,
+     con su propio fondo, solo recortada) o `"mascara"` (foto SIN fondo
+     — usar los archivos `*sin-fondo*` de `public/img/avatar/`, con aire
+     arriba y a los lados a propósito — sobre un `::after` que cubre el
+     50% inferior). `forma` depende de la variante: `"marco"` acepta
+     `"circulo"` (1:1) o `"diagonal"`; `"mascara"` acepta `"diagonal"` o
+     `"semicirculo"`. `fondo` solo aplica a `"mascara"`:
+     `{ tipo: "color", valor: "naranja"|"gris-oscuro"|"gris" }` o
+     `{ tipo: "imagen", src? }` — los 5 fondos dedicados de Juan todavía
+     no existen, así que sin `src` cae a un placeholder fijo
+     (`public/img/backgrounds/background-1.webp`); por defecto (sin
+     `fondo` en absoluto) es `{ tipo: "color", valor: "naranja" }`.
+     Cualquier combinación fuera de este catálogo falla ruidoso en
+     consola, igual que el resto de esta función.
+
    Cualquier otro valor de `tipo` falla ruidoso en consola (mismo
    patrón que un layout desconocido en router.js) en vez de mostrar una
    caja vacía.
@@ -579,6 +598,89 @@
     return raiz;
   }
 
+  // Ajustes tanda 3: catálogo de forma válida por variante de "retrato"
+  // — ver la nota completa en el encabezado del archivo.
+  var RETRATO_FORMAS = {
+    marco: ['circulo', 'diagonal'],
+    mascara: ['diagonal', 'semicirculo']
+  };
+  var RETRATO_FONDOS_COLOR = ['naranja', 'gris-oscuro', 'gris'];
+
+  function crearRetrato(datos) {
+    if (!datos.src) {
+      console.error('[OVA] OVA.media.crear: media "retrato" necesita "src".');
+      return null;
+    }
+    var formasValidas = RETRATO_FORMAS[datos.variante];
+    if (!formasValidas) {
+      console.error(
+        '[OVA] OVA.media.crear: "variante" de retrato "' + datos.variante +
+        '" no válida ("marco"/"mascara").'
+      );
+      return null;
+    }
+    if (formasValidas.indexOf(datos.forma) === -1) {
+      console.error(
+        '[OVA] OVA.media.crear: "forma" de retrato "' + datos.forma +
+        '" no válida para variante "' + datos.variante + '" (' + formasValidas.join('/') + ').'
+      );
+      return null;
+    }
+
+    var raiz = document.createElement('div');
+    raiz.className = 'imagen imagen--' + datos.variante + ' imagen--' + datos.forma;
+
+    if (datos.variante === 'mascara') {
+      var fondo = datos.fondo || { tipo: 'color', valor: 'naranja' };
+      if (fondo.tipo === 'color') {
+        if (RETRATO_FONDOS_COLOR.indexOf(fondo.valor) === -1) {
+          console.error(
+            '[OVA] OVA.media.crear: "fondo.valor" de retrato "' + fondo.valor +
+            '" no válido (' + RETRATO_FONDOS_COLOR.join('/') + ').'
+          );
+          return null;
+        }
+        raiz.className += ' imagen--fondo-' + fondo.valor;
+      } else if (fondo.tipo === 'imagen') {
+        raiz.className += ' imagen--fondo-imagen';
+        // Los 5 fondos dedicados todavía no existen (ver encabezado):
+        // sin fondo.src, la clase cae al placeholder fijo de
+        // components.css sin que este código tenga que saber cuál es.
+        // Resuelto a absoluta antes de meterlo en la variable: un url()
+        // dentro de un custom property fijado por JS se resuelve contra
+        // la hoja de estilos donde se CONSUME la variable (components.css,
+        // en src/styles/), no contra el documento — la misma trampa de
+        // rutas que ya documenta el bloque de fondos de layouts.css.
+        // Absoluta de por medio, no importa cuál de las dos bases gane.
+        if (fondo.src) {
+          raiz.style.setProperty('--imagen-fondo-src', 'url("' + new URL(fondo.src, document.baseURI).href + '")');
+        }
+      } else {
+        console.error(
+          '[OVA] OVA.media.crear: "fondo.tipo" de retrato "' + fondo.tipo +
+          '" no válido ("color"/"imagen").'
+        );
+        return null;
+      }
+    }
+
+    var imagen = document.createElement('img');
+    imagen.className = 'imagen__foto';
+    imagen.src = datos.src;
+    imagen.alt = datos.alt || '';
+    // Mismo criterio de degradación que crearAvatar/crearImagen: sin
+    // archivo, quitar la <img> en vez de dejar un ícono de imagen rota.
+    // Sin la foto no queda nada dentro de .imagen — a diferencia del
+    // avatar (círculo con fondo) o "imagen" (marcador con ícono), este
+    // componente todavía no tiene su propio estado vacío porque los
+    // archivos reales de Juan (public/img/avatar/*) ya existen hoy.
+    imagen.addEventListener('error', function () {
+      if (imagen.parentNode) imagen.parentNode.removeChild(imagen);
+    });
+    raiz.appendChild(imagen);
+    return raiz;
+  }
+
   function crear(datos) {
     if (!datos) {
       console.error('[OVA] OVA.media.crear: falta "datos".');
@@ -587,9 +689,10 @@
     if (datos.tipo === 'video') return crearVideo(datos);
     if (datos.tipo === 'avatar') return crearAvatar(datos);
     if (datos.tipo === 'imagen') return crearImagen(datos);
+    if (datos.tipo === 'retrato') return crearRetrato(datos);
     console.error(
       '[OVA] OVA.media.crear: tipo de media "' + datos.tipo + '" no soportado ' +
-      '(el catálogo es "video"/"avatar"/"imagen" — ver el encabezado de este archivo).'
+      '(el catálogo es "video"/"avatar"/"imagen"/"retrato" — ver el encabezado de este archivo).'
     );
     return null;
   }

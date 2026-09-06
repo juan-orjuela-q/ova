@@ -414,3 +414,106 @@ de rects). A 1280px, revertido: `.nav-barra__progreso` vuelve a `row`,
 `#nav-paso-completo` visible con "Pantalla 15 de 49" y `#nav-paso-corto`
 oculto — desktop no cambió. Cero errores de consola. Kitchen sink
 actualizada con el marcado nuevo de `#nav-paso` en la misma tarea.
+
+---
+
+## 8 · Componente "retrato" (imagen con máscara o marco) — cerrado 6 sep
+
+**Pedido.** Componente nuevo de imagen para dar dinamismo al proyecto, con
+dos familias, según las referencias de `ref-ajustes/tanda-3/`: **máscara**
+(foto de persona sin fondo, con un `::after` detrás que cubre el 50%
+inferior del alto — plano de color o, más adelante, otra imagen) y **marco**
+(foto con su propio fondo, solo recortada). Dos formas compartidas: círculo
+(exclusiva de marco, 1:1) y "diagonal" (esquina superior-izquierda e
+inferior-derecha redondeadas, ~48px — el resto de las combinaciones se
+resolvió con Juan antes de tocar código, igual que el ítem 4:
+
+- **Alcance:** componente independiente por ahora — no toca `crearAvatar()`
+  ni `media-audio`, aunque está pensado para reemplazarlo más adelante.
+- **Contrato:** cuarto tipo del catálogo de `media.js` (junto a
+  video/avatar/imagen), no un campo nuevo en `pantalla`: `pantalla.media =
+  { tipo:'retrato', src, alt?, variante, forma, fondo? }`. Reutiliza
+  `crearMedia()`/`OVA.media.crear()`, que ya está cableado en los 13
+  layouts — cero cambios en `router.js`.
+- **Fondo "otra imagen":** asset dedicado (los 5 fondos reales de Juan
+  todavía no existen) — mientras tanto cae a un placeholder fijo
+  (`public/img/backgrounds/background-1.webp`, reutilizado del ajuste #1).
+  Si el contenido ya trae su propio `fondo.src`, se respeta.
+- **Nomenclatura:** familia `.imagen-` en `components.css`.
+
+**Qué se hizo:**
+
+- `tokens.css`: nuevo `--r-xl: 48px` junto a `--r-sm/md/lg` (el radio
+  diagonal, para no escribir 48px suelto — regla dura 1 es de hex, pero el
+  criterio de "todo sale de un token" ya era el patrón de este archivo).
+- `media.js`: `crearRetrato(datos)` + registro en `crear()`. Valida
+  `src` (obligatorio), `variante` (`"marco"`/`"mascara"`) y `forma` según
+  la variante (`RETRATO_FORMAS`: marco → circulo/diagonal, mascara →
+  diagonal/semicirculo) y `fondo.tipo`/`fondo.valor` cuando aplica —
+  cualquier combinación fuera de catálogo hace `console.error` + `null`,
+  mismo patrón que el resto del archivo (y `crearMedia()` ya convierte ese
+  `null` en el `Error` visible que exige el contrato de contenido).
+  Degrada igual que avatar/imagen: si la foto no carga, se quita la
+  `<img>` (sin marcador propio todavía — a diferencia de avatar/imagen,
+  las fotos reales de Juan en `public/img/avatar/` ya existen hoy, así que
+  no hay caso real que ejercite esa ruta).
+- `components.css`: bloque `.imagen` nuevo. `.imagen--mascara` usa
+  `isolation: isolate` + `::after` con `z-index:-1` y la foto con
+  `z-index:1` — el truco estándar para que un pseudo-elemento pinte detrás
+  de un hermano sin escaparse del stacking context del componente (nada de
+  esto toca el `z-index` de chrome/modal). "diagonal" comparte
+  `border-radius: var(--r-xl) 0 var(--r-xl) 0` entre máscara y marco;
+  "semicírculo" usa `border-radius: 0 0 50% 50% / 0 0 100% 100%` (radio
+  vertical al 100% de su propio alto, no una esquina redondeada normal);
+  "círculo" en marco usa `--r-pill` sobre `aspect-ratio:1/1`. Los tres
+  fondos planos van directo a tokens existentes (`--surface-brand`,
+  `--surface-inverse`, `--nuam-grey-500` — este último referenciado
+  directo, patrón ya usado en el foco doble de `components.css`).
+- **Trampa encontrada y corregida:** un `url()` fijado por JS dentro de
+  una variable CSS (`--imagen-fondo-src`) se resuelve contra la hoja de
+  estilos donde se *consume* la variable (`components.css`, en
+  `src/styles/`), no contra el documento — un `fondo.src` de contenido
+  como `'../public/…'` (relativo al documento, mismo criterio que el resto
+  del contrato) resolvía mal (`src/public/…`, 404). Arreglo: `crearRetrato`
+  lo pasa por `new URL(fondo.src, document.baseURI).href` antes de meterlo
+  en la variable, para que la ruta ya llegue absoluta y no dependa de cuál
+  hoja de estilos gane la resolución.
+- `dev/kitchen-sink.html`: sección nueva con las 10 combinaciones válidas
+  (marco×{círculo, diagonal}; máscara×{diagonal, semicírculo}×{naranja,
+  gris oscuro, gris, fondo imagen} — la última con `fondo.src` propio para
+  probar el arreglo de arriba, el resto con el placeholder). Fotos reales
+  de Juan: `avatar-abierto-confondo-1.webp` (marco, con fondo) y
+  `avatar-sin-fondo-plano-primer-saluda.png` (máscara, sin fondo, el
+  archivo que ya trae el aire arriba/lados que pide este componente).
+
+**Verificado con Playwright, `dev/kitchen-sink.html` por `file://`:** las
+10 combinaciones muestran la clase, `border-radius`, `background`/
+`background-image` y `z-index` esperados por `getComputedStyle` (máscara:
+`::after` en `height:50%`, `z-index:-1`, foto en `z-index:1`); las cuatro
+combinaciones inválidas probadas a mano (`marco`+`semicirculo`,
+`mascara`+`circulo`, sin `src`, `fondo.valor` fuera de catálogo) devuelven
+`null` con su `console.error` — nunca una caja rota o a medias. Cero
+overflow horizontal del bloque nuevo a 320px (`#c-imagen` mide
+`scrollWidth === clientWidth` y ningún descendiente sobresale de 320px) —
+el overflow global que sigue midiendo la página a ese ancho es el mismo
+hallazgo ya documentado y fuera de alcance del ítem 2
+(`.media-audio__controles`/`.dato-tabla`/botón de demo). Cero errores de
+consola nuevos (los `ERR_FILE_NOT_FOUND` que quedan son los tres
+placeholders preexistentes ya documentados en el ajuste 1). Capturas a
+1280px y 320px confirmando visualmente el parecido con las tres
+referencias de `ref-ajustes/tanda-3/`. No se tocó `router.js`, `state.js`
+ni el contenido real de `content/ova-u1.js` — el catálogo queda listo para
+usarse, pero ninguna pantalla real lo pide todavía.
+
+**Pendiente, fuera de alcance de este ítem:**
+
+- Los 5 fondos dedicados para `fondo.tipo:'imagen'` — hoy cae al
+  placeholder de `public/img/backgrounds/`. Cuando Juan los entregue, se
+  agregan a `content/ova-u1.js` vía `fondo.src`; no hace falta tocar
+  `media.js` ni `components.css`.
+- El reemplazo de `crearAvatar()`/`media-audio` por este componente —
+  decisión explícita de Juan de dejarlo para una tarea aparte.
+- Ningún estado de "foto sin cargar" propio (marcador con ícono, como
+  avatar/imagen) — no hay caso real que lo ejercite todavía porque las
+  fotos de `public/img/avatar/` ya existen; se agrega si aparece un caso
+  real que lo necesite.

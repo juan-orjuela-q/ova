@@ -231,6 +231,16 @@
       max-width: 26rem;
       width: 100%;
     }
+    /* Ajustes tanda 3: tarjetas angostas para el catálogo de "retrato"
+       — mismo criterio que .ks-media-marco (el componente no trae
+       max-width propio, lo acota quien lo monta), solo que más angosto
+       porque son retratos, no ilustraciones 16:9. */
+    .ks-retrato-muestra {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      width: 11rem;
+    }
   </style>
 </head>
 <body>
@@ -714,6 +724,70 @@
         <div class="ks-layout-marco ks-muestras">
           <div class="ks-media-marco" id="c-media-imagen-a"></div>
           <div class="ks-media-marco" id="c-media-imagen-b"></div>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-imagen">
+        <span class="ks-layout-bloque__etiqueta">Retrato con máscara o marco (ajustes, tanda 3) — cableado real</span>
+        <p class="ks-intro">
+          Cuarto tipo del catálogo de <code>media.js</code>: una foto de
+          persona con tratamiento decorativo, hoy independiente de
+          <code>crearAvatar()</code> pero pensada para más adelante
+          reemplazarlo. <strong>Marco</strong> recorta una foto opaca (con su
+          propio fondo) solo con <code>border-radius</code>: círculo (1:1) o
+          esquina diagonal (<code>--r-xl</code>, superior-izquierda e
+          inferior-derecha). <strong>Máscara</strong> usa una foto SIN
+          fondo — los archivos <code>*sin-fondo*</code> de
+          <code>public/img/avatar/</code>, con aire arriba y a los lados a
+          propósito — sobre un <code>::after</code> que solo cubre el 50%
+          inferior del alto: detrás de la cabeza queda la superficie de la
+          pantalla, detrás del torso el color o imagen de fondo. Las dos
+          últimas de cada fila ("fondo imagen") caen al placeholder fijo de
+          <code>components.css</code> — los 5 fondos dedicados de Juan
+          todavía no existen; la última de todas pasa su propio
+          <code>fondo.src</code> para probar que sí lo sobrescribe.
+        </p>
+        <div class="ks-layout-marco ks-muestras">
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-marco-circulo"></div>
+            <span class="tipo-caption">marco · círculo</span>
+          </div>
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-marco-diagonal"></div>
+            <span class="tipo-caption">marco · diagonal</span>
+          </div>
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-mascara-diagonal-naranja"></div>
+            <span class="tipo-caption">máscara · diagonal · naranja</span>
+          </div>
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-mascara-diagonal-gris-oscuro"></div>
+            <span class="tipo-caption">máscara · diagonal · gris oscuro</span>
+          </div>
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-mascara-diagonal-gris"></div>
+            <span class="tipo-caption">máscara · diagonal · gris</span>
+          </div>
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-mascara-diagonal-fondo-imagen"></div>
+            <span class="tipo-caption">máscara · diagonal · fondo imagen (placeholder)</span>
+          </div>
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-mascara-semicirculo-naranja"></div>
+            <span class="tipo-caption">máscara · semicírculo · naranja</span>
+          </div>
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-mascara-semicirculo-gris-oscuro"></div>
+            <span class="tipo-caption">máscara · semicírculo · gris oscuro</span>
+          </div>
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-mascara-semicirculo-gris"></div>
+            <span class="tipo-caption">máscara · semicírculo · gris</span>
+          </div>
+          <div class="ks-retrato-muestra">
+            <div id="c-imagen-mascara-semicirculo-fondo-imagen"></div>
+            <span class="tipo-caption">máscara · semicírculo · fondo imagen (src propio)</span>
+          </div>
         </div>
       </div>
 
@@ -1856,6 +1930,53 @@
         alt: ''
       });
       montar('c-media-imagen-b', { tipo: 'video', src: '../public/videos/motion/demo-inexistente.mp4' });
+
+      // Ajustes tanda 3: catálogo completo de "retrato" — dos fuentes
+      // reales de Juan, una opaca para "marco" y una sin fondo (con aire
+      // arriba y a los lados) para "mascara".
+      var RETRATO_MARCO_DEMO = '../public/img/avatar/avatar-abierto-confondo-1.webp';
+      var RETRATO_MASCARA_DEMO = '../public/img/avatar/avatar-sin-fondo-plano-primer-saluda.png';
+
+      montar('c-imagen-marco-circulo', { tipo: 'retrato', src: RETRATO_MARCO_DEMO, variante: 'marco', forma: 'circulo' });
+      montar('c-imagen-marco-diagonal', { tipo: 'retrato', src: RETRATO_MARCO_DEMO, variante: 'marco', forma: 'diagonal' });
+
+      montar('c-imagen-mascara-diagonal-naranja', {
+        tipo: 'retrato', src: RETRATO_MASCARA_DEMO, variante: 'mascara', forma: 'diagonal',
+        fondo: { tipo: 'color', valor: 'naranja' }
+      });
+      montar('c-imagen-mascara-diagonal-gris-oscuro', {
+        tipo: 'retrato', src: RETRATO_MASCARA_DEMO, variante: 'mascara', forma: 'diagonal',
+        fondo: { tipo: 'color', valor: 'gris-oscuro' }
+      });
+      montar('c-imagen-mascara-diagonal-gris', {
+        tipo: 'retrato', src: RETRATO_MASCARA_DEMO, variante: 'mascara', forma: 'diagonal',
+        fondo: { tipo: 'color', valor: 'gris' }
+      });
+      // Sin fondo.src a propósito: demuestra la caída al placeholder
+      // fijo de components.css mientras los 5 fondos dedicados no existen.
+      montar('c-imagen-mascara-diagonal-fondo-imagen', {
+        tipo: 'retrato', src: RETRATO_MASCARA_DEMO, variante: 'mascara', forma: 'diagonal',
+        fondo: { tipo: 'imagen' }
+      });
+
+      montar('c-imagen-mascara-semicirculo-naranja', {
+        tipo: 'retrato', src: RETRATO_MASCARA_DEMO, variante: 'mascara', forma: 'semicirculo',
+        fondo: { tipo: 'color', valor: 'naranja' }
+      });
+      montar('c-imagen-mascara-semicirculo-gris-oscuro', {
+        tipo: 'retrato', src: RETRATO_MASCARA_DEMO, variante: 'mascara', forma: 'semicirculo',
+        fondo: { tipo: 'color', valor: 'gris-oscuro' }
+      });
+      montar('c-imagen-mascara-semicirculo-gris', {
+        tipo: 'retrato', src: RETRATO_MASCARA_DEMO, variante: 'mascara', forma: 'semicirculo',
+        fondo: { tipo: 'color', valor: 'gris' }
+      });
+      // Con fondo.src explícito: prueba que media.js lo respeta en vez
+      // de forzar siempre el placeholder.
+      montar('c-imagen-mascara-semicirculo-fondo-imagen', {
+        tipo: 'retrato', src: RETRATO_MASCARA_DEMO, variante: 'mascara', forma: 'semicirculo',
+        fondo: { tipo: 'imagen', src: '../public/img/backgrounds/background-3.webp' }
+      });
     })();
   </script>
 

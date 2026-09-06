@@ -1234,6 +1234,83 @@
   color: var(--text-tertiary);
 }
 
+/* ---- Retrato con máscara o marco (ajustes, tanda 3) --------------------
+   .imagen es el tipo "retrato" del catálogo de media.js — hoy es un
+   componente independiente, pensado para más adelante reemplazar a
+   .media-audio__avatar (crearAvatar). Dos variantes:
+   - "marco": foto opaca (con su propio fondo), solo recortada con
+     border-radius — sin ::after. "circulo" pide 1:1 + object-fit:cover;
+     "diagonal" (compartida con máscara) redondea solo la esquina
+     superior-izquierda e inferior-derecha, --r-xl.
+   - "mascara": foto SIN fondo (public/img/avatar/*sin-fondo*, con aire
+     arriba y a los lados a propósito — así el ::after no tapa nada del
+     recorte real) sobre un ::after que solo cubre el 50% inferior del
+     alto: detrás de la cabeza queda la superficie de la pantalla; detrás
+     del torso, el color o imagen de fondo. El ::after lleva z-index
+     negativo y el contenedor `isolation: isolate` para quedar en su
+     propio stacking context — sin esto, un z-index negativo se escapa
+     por debajo de superficies ajenas (chrome, modal) en vez de quedar
+     detrás solo de su propia foto.
+   Formas exclusivas: "circulo" solo en marco, "semicirculo" solo en
+   máscara — media.js valida la combinación antes de construir el nodo. */
+.imagen {
+  position: relative;
+}
+.imagen__foto {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.imagen--marco.imagen--circulo .imagen__foto {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--r-pill);
+}
+.imagen--marco.imagen--diagonal .imagen__foto {
+  border-radius: var(--r-xl) 0 var(--r-xl) 0;
+}
+.imagen--mascara {
+  isolation: isolate;
+}
+.imagen--mascara .imagen__foto {
+  position: relative;
+  z-index: 1;
+}
+.imagen--mascara::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-inline: 0;
+  bottom: 0;
+  height: 50%;
+}
+.imagen--mascara.imagen--diagonal::after {
+  border-radius: var(--r-xl) 0 var(--r-xl) 0;
+}
+.imagen--mascara.imagen--semicirculo::after {
+  /* Media vertical al 100% de su propio alto: la curva ocupa todo el
+     bloque en vez de solo una esquina — el "domo" que pide la referencia,
+     no cuatro esquinas redondeadas por separado. */
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+}
+.imagen--fondo-naranja::after {
+  background: var(--surface-brand);
+}
+.imagen--fondo-gris-oscuro::after {
+  background: var(--surface-inverse);
+}
+.imagen--fondo-gris::after {
+  background: var(--nuam-grey-500);
+}
+/* Placeholder fijo hasta que Juan entregue los 5 fondos dedicados
+   (ajustes tanda 3) — --imagen-fondo-src lo sobrescribe media.js si la
+   pantalla ya trae su propio fondo.src. */
+.imagen--fondo-imagen::after {
+  background-image: var(--imagen-fondo-src, url("../../public/img/backgrounds/background-1.webp"));
+  background-size: cover;
+  background-position: center center;
+}
+
 /* ---- Línea de tiempo conectada (T1.5, componentes) --------------------
    Vertical por ahora: la variante horizontal (para el diagrama de
    proceso dentro de L04 en desktop — antes de C0 ese diagrama tenía su

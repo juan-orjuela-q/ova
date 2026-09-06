@@ -82,6 +82,7 @@
   --r-sm: 8px;
   --r-md: 12px;
   --r-lg: 20px;
+  --r-xl: 48px; /* ajustes tanda 3: esquina diagonal del componente "retrato" */
   --r-pill: 999px;
 
   /* ---- Espaciado (base 4) ---------------------------------------- */
