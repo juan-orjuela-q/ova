@@ -694,6 +694,80 @@
   color: var(--text-secondary);
 }
 
+/* ---- L09 · variante "tarjetas" (AJUSTES.md, tanda 5, ítem 13) -------------
+   p01a resume accesibilidad como encabezado centrado (ícono + kicker +
+   título, sin cuerpo propio) más una grilla de tarjetas con ícono. No es un
+   layout nuevo (regla dura 8): variante activada por router.js solo cuando
+   pantalla.tarjetas existe, mismo patrón que .layout--l03--retrato.
+
+   Pensada en una retícula de 12 columnas (mismo mecanismo que la de
+   p01-bienvenida, AJUSTES.md #9/#11): el encabezado ocupa 8 de 12
+   (centrado — ajuste tanda 5, ítem 15: el encabezado se veía angosto dentro
+   del mismo ancho máximo que la grilla, Juan pidió pasarlo de 6 a 8
+   columnas solo en este componente, sin tocar la proporción de la grilla
+   de tarjetas) y cada tarjeta 4 de 12 (tres por fila) — ambos bloques
+   comparten el mismo ancho máximo para que seis columnas de la grilla
+   sigan alineando con el ancho del encabezado. En mobile (sin la media)
+   los dos caen a una sola columna: fila (ícono + texto) y tarjetas
+   apiladas, mismo separador de --sp-10 en los dos casos, sin retícula que
+   activar. */
+.layout--l09--tarjetas {
+  gap: var(--sp-10);
+}
+.layout--l09__encabezado-interior {
+  display: flex;
+  /* Ajuste tanda 5 (ítem 15): el ícono va justificado arriba contra el
+     kicker, no centrado contra todo el bloque de texto — con la
+     descripción de tres líneas debajo del título, centrar el ícono lo
+     dejaba flotando a media altura en vez de alineado con el encabezado. */
+  align-items: flex-start;
+  gap: var(--sp-6);
+  text-align: start;
+}
+.layout__icono-grande {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--sp-16);
+  height: var(--sp-16);
+  border-radius: var(--r-pill);
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+}
+.layout__icono-grande .icono {
+  font-size: 2rem;
+}
+.layout--l09__grilla {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+  width: 100%;
+}
+@media (min-width: 48em) {
+  .layout--l09__encabezado {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--sp-10);
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+  }
+  .layout--l09__encabezado-interior {
+    grid-column: 3 / span 8;
+  }
+  .layout--l09__grilla {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--sp-10);
+    max-width: 72rem;
+    margin-inline: auto;
+  }
+  .tarjeta-icono {
+    grid-column: span 4;
+  }
+}
+
 /* ---- L10 · Cierre de unidad y siguiente paso ------------------------------
    Igual arreglo que L01, más una interacción centrada (insignia).
    Antes de C0 era .layout--l13. "Siguiente paso" del nombre del brief

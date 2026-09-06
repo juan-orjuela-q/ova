@@ -1627,6 +1627,43 @@ button.chip[aria-pressed="true"] {
   color: var(--text-tertiary);
 }
 
+/* ---- Tarjeta con ícono (AJUSTES.md, tanda 5, ítem 13) -------------------
+   Grilla de accesibilidad de p01a (layouts.css, .layout--l09--tarjetas):
+   franja superior a sangre + texto con relleno debajo. No compone con el
+   átomo `.tarjeta` (padding uniforme, sin franja a sangre) — mismo criterio
+   que `.tarjeta-recurso`, familia propia en vez de forzar un modificador
+   sobre una forma que no encaja. overflow:hidden recorta la franja a las
+   esquinas redondeadas del contenedor. */
+.tarjeta-icono {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+}
+/* Gris 300 referenciado directo, no vía superficie semántica: la escala de
+   superficies (grey-0/50/100/200/950) no tiene un peldaño en este tono.
+   Mismo patrón ya usado en el fondo gris del componente "retrato"
+   (AJUSTES.md #8). Sirve para dar contraste a los íconos de fondo blanco de
+   public/img/icons/ (regla dura 3 no aplica: la franja es decorativa, el
+   texto de la tarjeta es quien lleva el significado). */
+.tarjeta-icono__franja {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--sp-6);
+  background: var(--nuam-grey-300);
+}
+.tarjeta-icono__imagen {
+  height: var(--sp-16);
+  width: auto;
+}
+.tarjeta-icono__texto {
+  padding: var(--sp-6);
+  color: var(--text-secondary);
+}
+
 /* ---- Insignia (T5, componentes) -----------------------------------------
    Dos estados: bloqueada (gris, candado) y desbloqueada (relleno naranja
    permitido — es ícono/fill decorativo grande, no texto chico). El
@@ -2520,10 +2557,11 @@ a.cap-tarjeta:hover {
 }
 
 /* ---- Panel de preferencias (D5, componentes) ----------------------------
-   Un solo componente (`OVA.preferencias.crearPanel()`), dos montajes:
-   incrustado tal cual (D7, pantalla p01a) o dentro de `.pref-panel--popover`
-   en la barra superior. Fieldset/legend reales, radio/checkbox nativos con
-   accent-color — mismo criterio que `.quiz-opcion` en quiz.js: la
+   Un solo componente (`OVA.preferencias.crearPanel()`), montado hoy dentro
+   de `.pref-panel--popover` en la barra superior (p01a incrustaba una
+   segunda copia sin este envoltorio hasta AJUSTES.md tanda 5, ítem 14 — ver
+   `.pref-aviso` más abajo). Fieldset/legend reales, radio/checkbox nativos
+   con accent-color — mismo criterio que `.quiz-opcion` en quiz.js: la
    operación por teclado la da el navegador, no un manejador propio. */
 .pref-panel {
   display: flex;
@@ -2598,4 +2636,88 @@ a.cap-tarjeta:hover {
   color: var(--text-primary);
   border: 1px solid var(--border-default);
   border-radius: var(--r-lg);
+}
+
+/* ---- Aviso de accesibilidad (AJUSTES.md, tanda 5, ítem 14) --------------
+   Reemplaza el panel de preferencias incrustado que tenía p01a: en vez de
+   repetir el panel completo en el cuerpo de la pantalla, un aviso corto
+   cuelga del mismo botón que lo abre en la barra superior — mismo ancla
+   (`.nav-barra__preferencias`, `position:relative`) y misma esquina que
+   `.pref-panel--popover`, pero `--surface-inverse` (en vez del panel claro)
+   para que se lea como una nota que "cuelga" de la barra oscura, no como un
+   segundo formulario. z-index 150: por debajo del popover (202) y del
+   drawer/modal (201) a propósito — si el estudiante abre el popover con el
+   aviso todavía visible, router.js ya lo oculta al click (ver
+   actualizarAvisoAccesibilidad()), pero el z-index de respaldo evita que el
+   aviso tape al popover en el frame entre un evento y el otro.
+   Entrada con fundido (--dur-base, mismo mecanismo que ya usa
+   `.boton-icono--portada.es-visible`): no es una octava categoría del
+   inventario de movimiento de CLAUDE.md, es la misma "entrada de contenido
+   al llegar a una pantalla" (ítem 2) aplicada a un aviso que vive en el
+   chrome en vez de en `.layout` porque necesita señalar un botón de la
+   barra. Solo opacity, nunca top/left.
+
+   inset-inline-end:0 (abre hacia la izquierda del botón) funciona en
+   escritorio porque el botón de accesibilidad cae cerca del borde derecho
+   de la barra. En mobile (≤39.999em, mismo corte que reestructura
+   .nav-barra) el botón es el primero de `.nav-barra__utilidades` — queda
+   cerca del borde IZQUIERDO —, así que abrir hacia la izquierda saca el
+   aviso de la pantalla: se invierte a inset-inline-start:0 (abre hacia la
+   derecha) con un max-width que sí quepa a 320px real, verificado con
+   Playwright, no asumido. `.pref-panel--popover` tiene el mismo ancla y
+   probablemente el mismo problema en mobile, pero no se toca aquí — nadie
+   lo abre desde una pantalla con las manos ocupadas en esta tarea, queda
+   anotado como hallazgo aparte para cuando Juan pida corregirlo. */
+.pref-aviso {
+  position: absolute;
+  top: 100%;
+  inset-inline-end: 0;
+  z-index: 150;
+  /* Ajuste tanda 5 (ítem 15): un poco más de aire respecto a la barra —
+     --sp-2 (8px) se leía pegado al borde inferior; --sp-3 (12px) es el
+     siguiente peldaño de la escala. */
+  margin-block-start: var(--sp-3);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  width: max-content;
+  max-width: min(18rem, 80vw);
+  padding: var(--sp-4);
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+  border-radius: var(--r-md);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.pref-aviso.es-visible {
+  opacity: 1;
+}
+@media (max-width: 39.999em) {
+  .pref-aviso {
+    inset-inline-end: auto;
+    inset-inline-start: 0;
+    max-width: min(16rem, calc(100vw - var(--sp-8)));
+  }
+}
+.pref-aviso__texto {
+  font: var(--text-body-sm);
+}
+.pref-aviso__cerrar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sp-6);
+  height: var(--sp-6);
+  padding: 0;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: inherit;
+}
+.pref-aviso__cerrar:hover {
+  background: var(--nuam-grey-800);
+}
+.pref-aviso__cerrar .icono {
+  font-size: 1rem;
 }

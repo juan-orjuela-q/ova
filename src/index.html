@@ -95,9 +95,7 @@
              se cierra con Escape o con un clic fuera (OVA.preferencias.
              configurarPopover, cableado en router.js). El panel real
              (tamaño de texto, movimiento, transcripción, autolocución) lo
-             arma OVA.preferencias.crearPanel() dentro de #pref-popover; el
-             mismo componente se vuelve a montar, incrustado y sin popover,
-             en la pantalla p01a (D7). -->
+             arma OVA.preferencias.crearPanel() dentro de #pref-popover. -->
         <div class="nav-barra__preferencias">
           <button
             id="pref-abrir"
@@ -110,6 +108,22 @@
             <span class="u-oculto-visualmente">Preferencias del curso</span>
           </button>
           <div id="pref-popover" class="pref-panel pref-panel--popover" hidden></div>
+          <!-- Aviso de accesibilidad (AJUSTES.md, tanda 5, ítem 14): p01a ya
+               no incrusta el panel completo (ver PLANTILLAS.L09 en
+               router.js) — en su lugar, este aviso señala el botón de arriba.
+               role="status" (no "alert": no interrumpe, solo informa) para
+               que también se anuncie a quien usa lector de pantalla.
+               actualizarAvisoAccesibilidad() en router.js lo muestra solo
+               en las pantallas que traen pantalla.avisoAccesibilidad y lo
+               oculta al salir de ellas, al abrir el popover o al pulsar su
+               botón de cerrar. -->
+          <div id="pref-aviso" class="pref-aviso" role="status" hidden>
+            <p id="pref-aviso-texto" class="pref-aviso__texto"></p>
+            <button id="pref-aviso-cerrar" type="button" class="pref-aviso__cerrar">
+              <span class="icono" aria-hidden="true">close</span>
+              <span class="u-oculto-visualmente">Cerrar aviso</span>
+            </button>
+          </div>
         </div>
 
         <!-- Autolocución (D6): botón dedicado, misma clave que el checkbox

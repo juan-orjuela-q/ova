@@ -1398,6 +1398,13 @@
               <span class="u-oculto-visualmente">Preferencias del curso</span>
             </button>
             <div id="ks-pref-popover" class="pref-panel pref-panel--popover" hidden></div>
+            <div id="ks-pref-aviso" class="pref-aviso" role="status" hidden>
+              <p class="pref-aviso__texto">Aquí puedes ajustar el tamaño del texto, el movimiento, la transcripción y la autolocución.</p>
+              <button id="ks-pref-aviso-cerrar" type="button" class="pref-aviso__cerrar">
+                <span class="icono" aria-hidden="true">close</span>
+                <span class="u-oculto-visualmente">Cerrar aviso</span>
+              </button>
+            </div>
           </div>
           <button id="ks-autolocucion" class="boton-icono boton-icono--grande boton-icono--relleno" type="button" aria-pressed="false">
             <span class="icono" aria-hidden="true">voice_over_off</span>
@@ -1412,12 +1419,27 @@
           lados; con <code>aria-pressed="true"</code> también aparece el punto
           naranja de <code>.boton-icono--relleno</code> (tanda 2).
         </p>
+        <p class="ks-intro">
+          <code>.pref-aviso</code> (AJUSTES.md, tanda 5, ítem 14): aviso corto
+          anclado al mismo botón, <code>--surface-inverse</code> en vez del
+          panel claro del popover para leerse como una nota que cuelga de la
+          barra, no como un segundo formulario. router.js lo muestra solo en
+          las pantallas que traen <code>pantalla.avisoAccesibilidad</code>
+          (hoy solo p01a — reemplaza al panel completo que esa pantalla
+          incrustaba antes) y lo oculta al salir de la pantalla, al abrir el
+          popover o al pulsar su botón de cerrar.
+          <button id="ks-pref-aviso-mostrar" type="button" class="boton boton--outline">Mostrar aviso de ejemplo</button>
+        </p>
       </div>
       <div class="ks-layout-bloque">
-        <span class="ks-layout-bloque__etiqueta">Montaje 2 — incrustado (D7, pantalla p01a)</span>
+        <span class="ks-layout-bloque__etiqueta">Montaje 2 — incrustado, sin popover alrededor</span>
         <p class="ks-intro">
-          Mismo componente, sin popover alrededor: así se ve dentro de p01a,
-          a tamaño completo.
+          Mismo componente montado a tamaño completo en vez de dentro de un
+          popover — la forma que usa <code>crearComponente('preferencias')</code>
+          en router.js para cualquier pantalla que lo pida. Sin pantalla real
+          hoy (p01a usaba esta forma hasta AJUSTES.md tanda 5, ítem 14; ver
+          <code>.pref-aviso</code> arriba), se deja montado aquí para
+          verificar que el componente en sí sigue intacto.
         </p>
         <div class="ks-media-marco">
           <div id="ks-pref-incrustado"></div>
@@ -1671,23 +1693,50 @@
         </div>
         <p class="ks-intro"><code>crearListaControles()</code> — alternativa a <code>crearListaIdeas()</code>, mutuamente excluyente con "cuerpo" (mismo criterio que tarjetas/interaccion en L05): cada ítem trae el ícono real del control, no el check de cumplimiento fijo de la lista de ideas — por eso el color del ícono cae al neutro <code>--text-tertiary</code> en vez del verde de arriba (ver <code>.layout__cuerpo--controles</code> en layouts.css). Mismo ejemplo que <code>p01b</code> en <code>content/ova-u1.js</code>; recorrido real (con foco y anuncio de pantalla) en <a href="../src/index.html">src/index.html</a>.</p>
 
-        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · "componente" y "nota" (D7, pantalla p01a — accesibilidad)</span>
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · variante "tarjetas" (AJUSTES.md tanda 5, pantalla p01a — accesibilidad)</span>
         <div class="ks-layout-marco">
-          <div class="layout layout--l09">
-            <span class="layout__kicker tipo-etiqueta">Antes de empezar</span>
-            <div class="layout__texto">
-              <h2 class="layout__titulo tipo-h2">Un curso que funciona para ti</h2>
-              <ul class="layout__cuerpo">
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Cada pantalla con locución muestra su transcripción completa, tenga o no audio.</span></li>
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Puedes recorrer el curso completo con el teclado, con el foco siempre visible.</span></li>
-                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>El texto se puede ampliar hasta el doble de su tamaño sin romper ningún control.</span></li>
-              </ul>
+          <div class="layout layout--l09 layout--l09--tarjetas">
+            <div class="layout--l09__encabezado">
+              <div class="layout--l09__encabezado-interior">
+                <span class="layout__icono-grande" aria-hidden="true"><span class="icono">accessibility_new</span></span>
+                <div class="layout__texto">
+                  <span class="layout__kicker tipo-etiqueta">Antes de empezar</span>
+                  <h2 class="layout__titulo tipo-h2">Un curso para todas las personas</h2>
+                  <div class="layout__cuerpo">
+                    <p class="tipo-cuerpo">Creado bajo estándares internacionales de accesibilidad digital para ofrecer una experiencia fluida, clara y sin barreras.</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="layout__interaccion" id="l09-p01a-pref"></div>
-            <p class="layout__nota tipo-caption">Puedes volver a cambiar estas preferencias cuando quieras desde el botón de ajustes de la barra superior.</p>
+            <div class="layout--l09__grilla">
+              <div class="tarjeta-icono">
+                <div class="tarjeta-icono__franja"><img class="tarjeta-icono__imagen" src="../public/img/icons/ind-transcripcion.svg" alt="" /></div>
+                <p class="tarjeta-icono__texto tipo-cuerpo">Cada pantalla con locución muestra su transcripción completa, tenga o no audio.</p>
+              </div>
+              <div class="tarjeta-icono">
+                <div class="tarjeta-icono__franja"><img class="tarjeta-icono__imagen" src="../public/img/icons/ind-contraste.svg" alt="" /></div>
+                <p class="tarjeta-icono__texto tipo-cuerpo">El contraste de colores está verificado en todo el curso, incluidos los estados de las evaluaciones.</p>
+              </div>
+              <div class="tarjeta-icono">
+                <div class="tarjeta-icono__franja"><img class="tarjeta-icono__imagen" src="../public/img/icons/ind-teclado.svg" alt="" /></div>
+                <p class="tarjeta-icono__texto tipo-cuerpo">Puedes recorrer el curso completo con el teclado, con el foco siempre visible.</p>
+              </div>
+              <div class="tarjeta-icono">
+                <div class="tarjeta-icono__franja"><img class="tarjeta-icono__imagen" src="../public/img/icons/ind-responsive.svg" alt="" /></div>
+                <p class="tarjeta-icono__texto tipo-cuerpo">El diseño se ajusta a pantallas angostas sin perder contenido ni obligarte a hacer scroll lateral.</p>
+              </div>
+              <div class="tarjeta-icono">
+                <div class="tarjeta-icono__franja"><img class="tarjeta-icono__imagen" src="../public/img/icons/ind-zoomtexto.svg" alt="" /></div>
+                <p class="tarjeta-icono__texto tipo-cuerpo">El texto se puede ampliar hasta el doble de su tamaño sin romper ningún control.</p>
+              </div>
+              <div class="tarjeta-icono">
+                <div class="tarjeta-icono__franja"><img class="tarjeta-icono__imagen" src="../public/img/icons/ind-animacion.svg" alt="" /></div>
+                <p class="tarjeta-icono__texto tipo-cuerpo">Si el movimiento te resulta incómodo, puedes reducirlo sin perder ninguna información.</p>
+              </div>
+            </div>
           </div>
         </div>
-        <p class="ks-intro"><code>crearComponente('preferencias')</code> monta el mismo <code>OVA.preferencias.crearPanel()</code> de la sección <a href="#preferencias">Preferencias del curso (D5)</a> — no un tercer componente, la misma pieza incrustada en el mismo hueco de <code>.layout__interaccion</code> que ya usan L05/L06/L07/L10/L11. Cambiar una preferencia aquí queda sincronizado con los otros dos montajes de esta página. "nota" reusa <code>crearNotaTarjetas()</code> de L05. Mismo ejemplo que <code>p01a</code> en <code>content/ova-u1.js</code> — las dos pantallas nuevas llevan <code>progreso:false</code>: recorrerlas no mueve el porcentaje del curso.</p>
+        <p class="ks-intro">Encabezado centrado (ícono <code>accessibility_new</code> + kicker + título + descripción, mismo <code>.layout__texto</code> de siempre) más <code>crearTarjetasIconos()</code>: cada tarjeta trae su propio ícono de <code>public/img/icons/</code> (los seis SVG "antes → después" de accesibilidad) sobre una franja gris 300 que le da contraste a los que tienen fondo blanco. En escritorio ancho, encabezado y grilla comparten una retícula de 12 columnas (el encabezado ocupa 6, cada tarjeta 4) — mismo mecanismo que la retícula de <code>p01-bienvenida</code> (AJUSTES.md #9/#11). Sin "componente" ni "nota" desde AJUSTES.md tanda 5 (ítem 14): el panel de preferencias que esta pantalla incrustaba salió de aquí a favor del aviso <code>.pref-aviso</code> que apunta al botón de la barra superior (ver <a href="#preferencias">Preferencias del curso (D5)</a>). Mismo ejemplo que <code>p01a</code> en <code>content/ova-u1.js</code> — las dos pantallas nuevas llevan <code>progreso:false</code>: recorrerlas no mueve el porcentaje del curso.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l10">
@@ -1826,11 +1875,30 @@
       var incrustado = document.getElementById('ks-pref-incrustado');
       if (incrustado) incrustado.appendChild(OVA.preferencias.crearPanel());
 
-      // D7: tercer montaje del mismo panel, dentro del ejemplo de L09
-      // "componente" (p01a) más abajo en la sección de Layouts — mismo
-      // estado único, sincronizado con los dos de arriba.
-      var incrustadoP01a = document.getElementById('l09-p01a-pref');
-      if (incrustadoP01a) incrustadoP01a.appendChild(OVA.preferencias.crearPanel());
+      // AJUSTES.md, tanda 5 (ítem 14): demo del aviso — mismo mecanismo que
+      // actualizarAvisoAccesibilidad()/ocultarAvisoAccesibilidad() en
+      // router.js (fundido vía "es-visible", oculto al abrir el popover o
+      // al pulsar cerrar), aquí disparado a mano por un botón en vez de por
+      // una navegación real.
+      var avisoDemo = document.getElementById('ks-pref-aviso');
+      var avisoDemoMostrar = document.getElementById('ks-pref-aviso-mostrar');
+      var avisoDemoCerrar = document.getElementById('ks-pref-aviso-cerrar');
+      function ocultarAvisoDemo() {
+        if (!avisoDemo || avisoDemo.hidden) return;
+        avisoDemo.hidden = true;
+        avisoDemo.classList.remove('es-visible');
+      }
+      if (avisoDemoMostrar) {
+        avisoDemoMostrar.addEventListener('click', function () {
+          if (!avisoDemo) return;
+          avisoDemo.hidden = false;
+          window.requestAnimationFrame(function () {
+            avisoDemo.classList.add('es-visible');
+          });
+        });
+      }
+      if (avisoDemoCerrar) avisoDemoCerrar.addEventListener('click', ocultarAvisoDemo);
+      if (popoverBoton) popoverBoton.addEventListener('click', ocultarAvisoDemo);
 
       // D6: mismo patrón que configurarAutolocucion() en router.js —
       // ícono, aria-pressed y etiqueta se actualizan juntos desde la

@@ -183,20 +183,22 @@ window.OVA_CONTENIDO = {
     {
       "id": "p01a",
       "layout": "L09",
-      "titulo": "Un curso que funciona para ti",
+      "titulo": "Un curso para todas las personas",
       "unidad": "Unidad 1",
       "capsula": null,
       "kicker": "Antes de empezar",
       "cuerpo": [
-        "Cada pantalla con locución muestra su transcripción completa, tenga o no audio.",
-        "El contraste de colores está verificado en todo el curso, incluidos los estados de las evaluaciones.",
-        "Puedes recorrer el curso completo con el teclado, con el foco siempre visible.",
-        "El diseño se ajusta a pantallas angostas sin perder contenido ni obligarte a hacer scroll lateral.",
-        "El texto se puede ampliar hasta el doble de su tamaño sin romper ningún control.",
-        "Si el movimiento te resulta incómodo, puedes reducirlo sin perder ninguna información."
+        "Creado bajo estándares internacionales de accesibilidad digital para ofrecer una experiencia fluida, clara y sin barreras."
       ],
-      "componente": "preferencias",
-      "nota": "Puedes volver a cambiar estas preferencias cuando quieras desde el botón de ajustes de la barra superior.",
+      "tarjetas": [
+        { "icono": "../public/img/icons/ind-transcripcion.svg", "texto": "Cada pantalla con locución muestra su transcripción completa, tenga o no audio." },
+        { "icono": "../public/img/icons/ind-contraste.svg", "texto": "El contraste de colores está verificado en todo el curso, incluidos los estados de las evaluaciones." },
+        { "icono": "../public/img/icons/ind-teclado.svg", "texto": "Puedes recorrer el curso completo con el teclado, con el foco siempre visible." },
+        { "icono": "../public/img/icons/ind-responsive.svg", "texto": "El diseño se ajusta a pantallas angostas sin perder contenido ni obligarte a hacer scroll lateral." },
+        { "icono": "../public/img/icons/ind-zoomtexto.svg", "texto": "El texto se puede ampliar hasta el doble de su tamaño sin romper ningún control." },
+        { "icono": "../public/img/icons/ind-animacion.svg", "texto": "Si el movimiento te resulta incómodo, puedes reducirlo sin perder ninguna información." }
+      ],
+      "avisoAccesibilidad": "Aquí puedes ajustar el tamaño del texto, el movimiento, la transcripción y la autolocución.",
       "progreso": false
     },
     {

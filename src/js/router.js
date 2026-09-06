@@ -165,9 +165,13 @@
   // chrome fija en el mismo hueco visual que "interaccion" (.layout__interaccion),
   // pero no es una pregunta (I01–I14 siguen siendo el único catálogo de
   // interacción real): CLAUDE.md define "interaccion" como una pregunta
-  // por pantalla, y el panel de preferencias incrustado de p01a no lo es.
-  // Catálogo de un solo valor por ahora — cualquier otro cae por el mismo
-  // fallo ruidoso que un layout o un tipo de media inventado.
+  // por pantalla, y el panel de preferencias que este componente monta no
+  // lo es. Ninguna pantalla real lo pide desde AJUSTES.md tanda 5 (ítem 14,
+  // ver la nota de PLANTILLAS.L09 más abajo) — se deja en el catálogo por
+  // si hace falta más adelante, mismo criterio que un tipo de media sin
+  // pantalla real todavía (AJUSTES.md #8). Catálogo de un solo valor por
+  // ahora — cualquier otro cae por el mismo fallo ruidoso que un layout o
+  // un tipo de media inventado.
   function crearComponente(nombre) {
     if (nombre !== 'preferencias') {
       throw new Error('El componente "' + nombre + '" no existe en el catálogo (solo "preferencias").');
@@ -258,6 +262,41 @@
       ul.appendChild(li);
     });
     return ul;
+  }
+
+  // AJUSTES.md, tanda 5 (ítem 13): variante de L09 para p01a (resumen de
+  // accesibilidad). "tarjetas" aquí no es la misma forma que la de L05
+  // (crearTarjetasComparativas, {titulo,texto}) — mismo nombre de campo,
+  // interpretación propia de esta plantilla, igual que "cuerpo" ya
+  // significa cosas distintas según el layout que lo lee. Cada tarjeta
+  // trae su propio ícono ilustrativo (SVG de public/img/icons/, no el
+  // check fijo de crearListaIdeas ni el ícono de Material Symbols de
+  // crearListaControles): son afirmaciones de producto con su propio
+  // símbolo, no puntos de una lista ni controles del chrome.
+  function crearTarjetasIconos(tarjetas) {
+    if (!tarjetas || !tarjetas.length) {
+      throw new Error('Esta variante de L09 necesita "tarjetas" (arreglo con al menos un elemento).');
+    }
+    var contenedor = document.createElement('div');
+    contenedor.className = 'layout--l09__grilla';
+    tarjetas.forEach(function (tarjeta) {
+      var div = document.createElement('div');
+      div.className = 'tarjeta-icono';
+      var franja = document.createElement('div');
+      franja.className = 'tarjeta-icono__franja';
+      var img = document.createElement('img');
+      img.className = 'tarjeta-icono__imagen';
+      img.src = tarjeta.icono;
+      img.alt = '';
+      franja.appendChild(img);
+      div.appendChild(franja);
+      var texto = document.createElement('p');
+      texto.className = 'tarjeta-icono__texto tipo-cuerpo';
+      texto.textContent = tarjeta.texto;
+      div.appendChild(texto);
+      contenedor.appendChild(div);
+    });
+    return contenedor;
   }
 
   // C1: L05, de 2 a 4 tarjetas comparables. A diferencia de crearCuerpo
@@ -787,22 +826,57 @@
   //   que usa crearListaControles() en vez del check fijo de
   //   crearListaIdeas().
   // - "componente" monta crearComponente() en el mismo hueco de
-  //   .layout__interaccion que ya usan L05/L06/L07/L10/L11 — p01a lo usa
-  //   para incrustar el panel de preferencias completo.
+  //   .layout__interaccion que ya usan L05/L06/L07/L10/L11. Ninguna
+  //   pantalla real lo pide desde AJUSTES.md tanda 5 (ítem 14: el panel
+  //   de preferencias salió de p01a a favor del aviso que apunta al
+  //   botón de la barra superior, ver actualizarAvisoAccesibilidad() más
+  //   abajo) — se deja en el catálogo, no se borra, mismo criterio que
+  //   el componente "retrato" de AJUSTES.md #8 antes de tener pantalla
+  //   real que lo usara.
   // - "nota" reusa crearNotaTarjetas() de L05: la misma idea (una línea
   //   secundaria de cierre) sirve tal cual aquí, sin inventar una
   //   tercera función para lo mismo.
   PLANTILLAS.L09 = function (pantalla) {
     var raiz = crearRaiz('l09');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
-    var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    var lista = pantalla.controles
-      ? crearListaControles(pantalla.controles)
-      : crearListaIdeas(pantalla.cuerpo, 'tipo-cuerpo');
-    // Kicker fuera de .layout__texto a propósito (ver la nota en
-    // layouts.css): en L09 ocupa su propia fila a todo el ancho, no es
-    // el primer renglón de un bloque de lectura apilado.
-    raiz.appendChild(envolverTexto([titulo, lista]));
+    var titulo;
+    if (pantalla.tarjetas) {
+      // AJUSTES.md, tanda 5 (ítem 13): p01a resume accesibilidad como
+      // grilla ilustrada, no como lista de ideas — encabezado centrado
+      // (ícono + kicker + título, sin cuerpo propio) más la grilla de
+      // crearTarjetasIconos(). No es un layout nuevo (regla dura 8):
+      // variante de L09 activada solo cuando "tarjetas" existe, mismo
+      // patrón que .layout--l03--retrato (AJUSTES.md #9).
+      raiz.classList.add('layout--l09--tarjetas');
+      var iconoEncabezado = document.createElement('span');
+      iconoEncabezado.className = 'layout__icono-grande';
+      iconoEncabezado.setAttribute('aria-hidden', 'true');
+      var iconoEncabezadoGlifo = document.createElement('span');
+      iconoEncabezadoGlifo.className = 'icono';
+      iconoEncabezadoGlifo.textContent = 'accessibility_new';
+      iconoEncabezado.appendChild(iconoEncabezadoGlifo);
+      var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
+      titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+      var descripcion = pantalla.cuerpo ? crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo') : null;
+      var interiorEncabezado = document.createElement('div');
+      interiorEncabezado.className = 'layout--l09__encabezado-interior';
+      interiorEncabezado.appendChild(iconoEncabezado);
+      interiorEncabezado.appendChild(envolverTexto([kicker, titulo, descripcion]));
+      var encabezado = document.createElement('div');
+      encabezado.className = 'layout--l09__encabezado';
+      encabezado.appendChild(interiorEncabezado);
+      raiz.appendChild(encabezado);
+      raiz.appendChild(crearTarjetasIconos(pantalla.tarjetas));
+    } else {
+      if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+      titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
+      var lista = pantalla.controles
+        ? crearListaControles(pantalla.controles)
+        : crearListaIdeas(pantalla.cuerpo, 'tipo-cuerpo');
+      // Kicker fuera de .layout__texto a propósito (ver la nota en
+      // layouts.css): en L09 ocupa su propia fila a todo el ancho, no es
+      // el primer renglón de un bloque de lectura apilado.
+      raiz.appendChild(envolverTexto([titulo, lista]));
+    }
     if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
     if (pantalla.componente) raiz.appendChild(crearComponente(pantalla.componente));
     if (pantalla.nota) raiz.appendChild(crearNotaTarjetas(pantalla.nota));
@@ -1350,14 +1424,61 @@
      El panel en sí (tamaño de texto, movimiento, transcripción,
      autolocución) lo arma OVA.preferencias.crearPanel() — router.js solo
      lo monta dentro del popover de la barra superior y lo cablea con
-     OVA.preferencias.configurarPopover(). La segunda aparición del mismo
-     panel, incrustada a tamaño completo en p01a, es D7 y no vive aquí. */
+     OVA.preferencias.configurarPopover(). */
   function configurarPreferencias() {
     var boton = document.getElementById('pref-abrir');
     var contenedor = document.getElementById('pref-popover');
     if (!boton || !contenedor) return;
     contenedor.appendChild(OVA.preferencias.crearPanel());
     OVA.preferencias.configurarPopover(boton, contenedor);
+    // AJUSTES.md, tanda 5 (ítem 14): si el aviso de abajo está visible y el
+    // estudiante encuentra el botón por su cuenta, el aviso ya cumplió su
+    // función — se oculta al abrir el popover, no solo al cerrar el aviso
+    // a mano.
+    boton.addEventListener('click', ocultarAvisoAccesibilidad);
+  }
+
+  /* ---- Chrome: aviso de accesibilidad (AJUSTES.md, tanda 5, ítem 14) --
+     Reemplaza el panel de preferencias que p01a incrustaba completo en su
+     cuerpo (D7): ahora un aviso corto, anclado al mismo botón que abre el
+     popover real, le dice al estudiante dónde configurar esas preferencias
+     en vez de repetir el formulario dentro de la pantalla. Contenido-
+     driven igual que "nota"/"componente": cualquier pantalla puede traer
+     "avisoAccesibilidad" (hoy solo p01a), no hace falta un caso especial
+     por id. Se oculta al salir de la pantalla que lo pidió (siguiente
+     navegación con avisoAccesibilidad ausente), al abrir el popover (ver
+     configurarPreferencias()) o al pulsar su botón de cerrar — nunca se
+     vuelve a mostrar solo porque el estudiante lo cerró y sigue en la
+     misma pantalla. */
+  function actualizarAvisoAccesibilidad(pantalla) {
+    var aviso = document.getElementById('pref-aviso');
+    var texto = document.getElementById('pref-aviso-texto');
+    if (!aviso || !texto) return;
+    if (!pantalla.avisoAccesibilidad) {
+      ocultarAvisoAccesibilidad();
+      return;
+    }
+    texto.textContent = pantalla.avisoAccesibilidad;
+    aviso.hidden = false;
+    // Mismo patrón que gestionarBotonPortada(): quitar "hidden" y recién
+    // en el siguiente frame agregar la clase que dispara el fundido en
+    // CSS, para que la transición de opacity tenga un valor de partida
+    // real que animar en vez de saltar directo al final.
+    window.requestAnimationFrame(function () {
+      aviso.classList.add('es-visible');
+    });
+  }
+
+  function ocultarAvisoAccesibilidad() {
+    var aviso = document.getElementById('pref-aviso');
+    if (!aviso || aviso.hidden) return;
+    aviso.hidden = true;
+    aviso.classList.remove('es-visible');
+  }
+
+  function configurarAvisoAccesibilidad() {
+    var cerrar = document.getElementById('pref-aviso-cerrar');
+    if (cerrar) cerrar.addEventListener('click', ocultarAvisoAccesibilidad);
   }
 
   // D5: "transcripcionVisible" abre el <details> de transcripción de la
@@ -1420,6 +1541,7 @@
     actualizarReanudar(inst);
     actualizarDrawer(inst);
     gestionarBotonPortada(pantalla);
+    actualizarAvisoAccesibilidad(pantalla);
     aplicarTranscripcionVisible();
     aplicarAutolocucion(pantalla, resultado);
     document.title = pantalla.titulo + ' · ' + contenidoActual.titulo;
@@ -1478,6 +1600,7 @@
     configurarDrawer();
     configurarBarraSuperior();
     configurarPreferencias();
+    configurarAvisoAccesibilidad();
     configurarAutolocucion();
     configurarPantallaCompleta();
     // Encender/apagar "mostrar siempre la transcripción" desde el panel

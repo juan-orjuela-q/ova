@@ -99,13 +99,17 @@
 
   aplicar();
 
-  /* ---- Panel (D5): un solo componente, dos montajes posibles --------
-     Barra superior (popover, ver configurarPopover) e incrustado a
-     tamaño completo en p01a (D7). Cada llamada a crearPanel() arma su
-     propio árbol de controles nativos reales (radio/checkbox dentro de
-     fieldset+legend, mismo criterio que quiz.js) y se suscribe al mismo
-     estado — cambiar una preferencia en un montaje se ve en el otro sin
-     que ninguno de los dos sea dueño del dato. */
+  /* ---- Panel (D5) -----------------------------------------------------
+     Un solo montaje real hoy: el popover de la barra superior (ver
+     configurarPopover). p01a incrustaba una segunda copia a tamaño
+     completo hasta AJUSTES.md tanda 5 (ítem 14) — router.js la reemplazó
+     por un aviso corto que señala este mismo botón, así que crearPanel()
+     ya no se llama dos veces en la práctica, pero sigue admitiendo más de
+     un montaje simultáneo a propósito (cada llamada arma su propio árbol
+     de controles nativos reales — radio/checkbox dentro de fieldset+
+     legend, mismo criterio que quiz.js — y se suscribe al mismo estado):
+     si algo vuelve a incrustarlo en el futuro, los dos montajes quedan
+     sincronizados sin que ninguno sea dueño del dato. */
   var contadorPanel = 0;
 
   function crearOpcionTexto(prefijo, valor, radios) {
