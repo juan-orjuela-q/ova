@@ -417,6 +417,23 @@
   .layout--l03--retrato .layout__cuerpo p:first-child {
     font-weight: 700;
   }
+
+  /* AJUSTES.md tanda 8 (p02, "Objetivos de aprendizaje"). router.js
+     agrega esta clase solo cuando media.tipo es "avatar" (nunca usado
+     antes en L03: las 4 pantallas reales con L03 traen "imagen", mismo
+     criterio de derivar la variante del media.tipo que ya usa --retrato,
+     sin campo nuevo de contrato). Empezó como el 50/50 de arriba con las
+     columnas intercambiadas; un ajuste posterior le pidió la misma
+     retícula de 12 columnas que --retrato (margen + 5 + 5 + margen,
+     mismo column-gap de --sp-10) en vez del 50/50 simple — con las
+     columnas invertidas respecto a --retrato: aquí el contenido va a la
+     izquierda y la media a la derecha. */
+  .layout--l03--avatar {
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--sp-10);
+    grid-template-areas:
+      ". texto texto texto texto texto media media media media media .";
+  }
 }
 
 /* ---- L04 · Lectura larga con imagen de apoyo ----------------------------
@@ -684,66 +701,76 @@
   color: var(--nuam-green-500);
   margin-block-start: 0.2em;
 }
-/* AJUSTES.md tanda 6 (p01b, tutorial de la barra): crearListaControles()
-   ya no reusa el <ul>/<li class="icono"> de arriba — cada control es una
-   miniatura real (<img>, public/img/icons/muestra-navegacion-*.svg) más
-   texto, repartidos en dos columnas para calcar ref-ajustes/tanda-6. El
-   contenedor no lleva la clase .layout__cuerpo (evita el max-width:42rem
-   que .layout--l09 le fija a esa clase en el caso sin media, dos filas
-   más abajo): esta grilla necesita todo el ancho disponible. */
+/* AJUSTES.md tanda 8 (segundo pase): p01b pasó de una lista de dos
+   columnas (icono + texto lado a lado, tanda 6) a una grilla 3×3 —
+   icono centrado arriba, texto centrado debajo, las nueve piezas en el
+   mismo orden de lectura del contenido (fila 1: 1-2-3, fila 2: 4-5-6,
+   fila 3: 7-8-9, ya lo da el orden natural de un grid sin necesidad de
+   partir el arreglo en dos mitades como hacía crearColumnaControles()).
+   Contenedor sin la clase .layout__cuerpo (evita el max-width:42rem que
+   .layout--l09 le fija a esa clase en el caso sin media, más abajo): la
+   grilla necesita su propio ancho, tope puesto por tanda 8 más abajo. */
 .layout__cuerpo--controles {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-6);
+  list-style: none;
+  padding-inline-start: 0;
+  /* margin-block-start suma al gap:var(--sp-4) que .layout__texto ya
+     pone entre título y cuerpo (tanda 4) — el total queda en --sp-10
+     (40px), el mismo separador que ya usa p01a entre su encabezado y su
+     grilla de tarjetas (.layout--l09--tarjetas): la grilla es un bloque
+     visual distinto del título, no una continuación de texto, así que
+     necesita más aire que el gap parejo de --sp-4 que sí tiene sentido
+     para kicker→título→un párrafo. */
+  margin: 0;
+  margin-block-start: var(--sp-6);
 }
 @media (min-width: 48em) {
   .layout__cuerpo--controles {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: var(--sp-10);
-    align-items: start;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-8);
+    /* AJUSTES.md tanda 8: mismo tope que ya usa la grilla de tarjetas de
+       p01a (.layout--l09__grilla más abajo), no uno inventado.
+       margin-inline:auto centra el bloque completo cuando su max-width
+       es menor que el ancho disponible — sin esto, "stretch" (el
+       align-items por defecto de un hijo de flex-column) lo estiraría a
+       todo el ancho en vez de dejarlo centrado a su tamaño. */
+    max-width: 72rem;
+    margin-inline: auto;
   }
-}
-.layout__controles-columna {
-  list-style: none;
-  padding-inline-start: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  /* Pisa el gap:var(--sp-2) que base.css pone en todo ul/ol: aquí el
-     espacio entre filas ya lo da el padding-block de cada
-     .layout__controles-item, un segundo gap encima duplicaría el aire. */
-  gap: 0;
+  /* Kicker y título comparten el mismo tope solo en esta variante (p01b):
+     :has() empata en especificidad con la regla de 42rem de arriba (misma
+     cantidad de clases) y gana por venir después en el archivo. También
+     centrados, a diferencia del resto de L09 sin media (p32 sigue pegado
+     al margen, ver AJUSTES.md #2) — esta variante sí se centra completa. */
+  .layout--l09:has(.layout__cuerpo--controles) .layout__kicker,
+  .layout--l09:has(.layout__cuerpo--controles) .layout__titulo {
+    max-width: 72rem;
+    margin-inline: auto;
+  }
 }
 .layout__controles-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--sp-4);
-  padding-block: var(--sp-4);
-  border-block-end: 1px solid var(--border-default);
-}
-.layout__controles-columna li:last-child {
-  border-block-end: none;
+  text-align: center;
+  gap: var(--sp-3);
 }
 /* 72px de alto (4.5rem) — el tamaño nativo del SVG (viewBox de 72px en
    los nueve archivos), no un valor de la escala --sp-*: es el tamaño de
-   origen del asset, no un ritmo de espaciado. Ancho fijo (18.5rem, mayor
-   que la miniatura más ancha a ese alto — "indicador-progreso", 290px —
-   con un poco de aire) para que el texto de todas las filas arranque en
-   la misma x, igual que la referencia; object-fit:contain conserva la
-   proporción de cada SVG (mismo alto de origen, distinto ancho según el
-   control) sin recortarla ni deformarla dentro de esa caja.
-   min-width:0 es imprescindible, no cosmético: un <img> con alto fijo y
-   ancho automático usa su ancho intrínseco (228/290px en "ubicación" y
-   "progreso") como mínimo automático de flex-shrink, así que sin esto
-   flex-shrink:1 no alcanza a encogerlo por debajo de ese ancho — a
-   320px el texto quedaba empujado fuera de pantalla (regla dura 7),
-   hallazgo real de Playwright/CDP al subir el alto de 40 a 72px. */
+   origen del asset, no un ritmo de espaciado. Ancho automático
+   (object-fit:contain conserva la proporción de cada SVG, distinto ancho
+   según el control) y centrado por `.layout__controles-item` —a
+   diferencia de la disposición en fila de tanda 6, aquí cada ícono está
+   solo sobre su propio texto, así que no hace falta un ancho de caja
+   fijo para alinear nada contra una fila vecina. */
 .layout__controles-imagen {
-  flex: 0 1 18.5rem;
-  min-width: 0;
   height: 4.5rem;
   object-fit: contain;
-  object-position: left center;
+}
+.layout__controles-texto {
+  max-width: 20rem;
 }
 /* D7 (p01a, cierre): mismo tratamiento que .layout--l05 .layout__nota —
    una línea secundaria después del contenido principal, no un párrafo
@@ -799,7 +826,10 @@
 .layout--l09__grilla {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-10);
+  /* AJUSTES.md tanda 8: a la mitad del --sp-10 original — el separador
+     entre encabezado y grilla (.layout--l09--tarjetas, arriba) se queda
+     en --sp-10, esto es solo el aire entre tarjetas. */
+  gap: var(--sp-5);
   width: 100%;
 }
 @media (min-width: 48em) {
@@ -817,7 +847,7 @@
   .layout--l09__grilla {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: var(--sp-10);
+    gap: var(--sp-5);
     max-width: 72rem;
     margin-inline: auto;
   }

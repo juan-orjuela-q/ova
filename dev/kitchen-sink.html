@@ -198,6 +198,32 @@
       align-items: center;
       gap: var(--sp-4);
     }
+    /* Ajustes tanda 8: sm/md/lg comparten fila en .ks-muestras
+       (flex-wrap) igual que el resto de muestras de esta página, pero
+       tres tarjetas de hasta 26rem cada una no caben en una sola línea
+       de 75rem — el flex las encoge (flex-basis:auto en un item de flex
+       es shrink-to-fit, a diferencia de un bloque normal que llenaría su
+       contenedor) en vez de envolverlas, y encogidas el desfase de la
+       figura (fijo en px, ver components.css) ya no alcanza a
+       compensarse con el margen fijo de .media-avatar--lg. Apiladas en
+       columna, con align-items:stretch (.ks-muestras trae "center" en su
+       regla base — hay que pisarlo explícito, el stretch inicial de
+       flexbox no aplica solo) cada item vuelve a llenar el ancho del
+       contenedor, igual que un bloque normal, y cada tarjeta renderiza
+       otra vez a su ancho máximo real (416px) — el mismo caso que ya
+       cubre el margen del componente. Es solo del andamiaje de esta
+       página, no del componente en sí.
+       flex-wrap:nowrap pisa el "wrap" que trae la regla base: con
+       flex-direction:column, "wrap" no envuelve en más filas — envuelve
+       en más COLUMNAS (una segunda columna al lado si el contenido no
+       cabe en la altura disponible), que es justo lo que rompía el
+       ancho aquí — cada item terminaba compartiendo una columna más
+       ancha en vez de quedarse en la única columna angosta esperada. */
+    .ks-muestras--apilado {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      align-items: stretch;
+    }
     .ks-muestras--inverse {
       width: fit-content;
       margin-inline: 0;
@@ -230,16 +256,6 @@
     .ks-media-marco {
       max-width: 26rem;
       width: 100%;
-    }
-    /* Ajustes tanda 7: avatar-md/avatar-lg sobresalen por encima de la
-       carta (164px/432px) — la figura es position:absolute, así que ese
-       espacio no lo reserva el flujo normal. En una pantalla real hay
-       aire de sobra alrededor (.layout__panel, .layout__media); aquí las
-       muestras van una tras otra sin ese aire propio, así que sin este
-       padding las figuras se montan encima del párrafo anterior. Es
-       solo del andamiaje de esta página, no del componente. */
-    .ks-muestras--avatar-figuras {
-      padding-top: 28rem; /* > 432px de avatar-lg + margen */
     }
     /* Ajustes tanda 3: tarjetas angostas para el catálogo de "retrato"
        — mismo criterio que .ks-media-marco (el componente no trae
@@ -484,6 +500,27 @@
         </div>
       </div>
 
+      <div class="ks-layout-bloque" id="c-lista-enriquecida">
+        <span class="ks-layout-bloque__etiqueta">Lista enriquecida (AJUSTES.md, tanda 8)</span>
+        <p class="ks-intro">Círculo grande (40px, negro) con el número en PT Serif 700 naranja-300 — usada en p02 ("Objetivos de aprendizaje") en vez de una lista con check chico. &lt;ol&gt; real: el número visual es <code>aria-hidden</code>, el orden nativo de la lista es lo que anuncia un lector de pantalla.</p>
+        <div class="ks-layout-marco ks-muestras">
+          <ol class="lista-enriquecida" style="max-width: 28rem">
+            <li class="lista-enriquecida__item">
+              <span class="lista-enriquecida__numero" aria-hidden="true">1</span>
+              <span class="tipo-cuerpo">Diferenciar renta variable, renta fija y derivados.</span>
+            </li>
+            <li class="lista-enriquecida__item">
+              <span class="lista-enriquecida__numero" aria-hidden="true">2</span>
+              <span class="tipo-cuerpo">Explicar qué es una acción y qué derechos puede otorgar.</span>
+            </li>
+            <li class="lista-enriquecida__item">
+              <span class="lista-enriquecida__numero" aria-hidden="true">3</span>
+              <span class="tipo-cuerpo">Calcular valorización y dividendo por acción en casos sencillos.</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+
       <div class="ks-layout-bloque" id="c-tarjeta">
         <span class="ks-layout-bloque__etiqueta">Tarjeta</span>
         <div class="ks-layout-marco ks-muestras">
@@ -709,8 +746,15 @@
           —por eso la esquina superior-derecha de la carta queda recta en
           esas dos, sin radio propio que le asome un triángulo de fondo
           detrás de la figura.
+          <strong>Ajustes tanda 8:</strong> las tres variantes reservan su
+          propio espacio en el flujo (<code>margin-block-start</code>, y
+          <code>margin-inline-start</code> solo en avatar-lg) para el
+          sobresaliente de la figura — antes ese aire lo ponía esta misma
+          página con un padding propio; ahora vive en el componente
+          porque apareció un caso real que lo necesitaba (p02, "Objetivos
+          de aprendizaje").
         </p>
-        <div class="ks-layout-marco ks-muestras ks-muestras--avatar-figuras">
+        <div class="ks-layout-marco ks-muestras ks-muestras--apilado">
           <div id="c-media-avatar-sm"></div>
           <div id="c-media-avatar-md"></div>
           <div id="c-media-avatar-lg"></div>
@@ -1558,6 +1602,31 @@
           </div>
         </div>
         <p class="ks-intro"><code>router.js</code> agrega <code>.layout--l03--retrato</code> solo cuando <code>media.tipo</code> es <code>"retrato"</code> — el mismo ejemplo real que <code>p01-bienvenida</code> en <code>content/ova-u1.js</code>, recorrible en <a href="../src/index.html">src/index.html</a>. Primera línea de <code>cuerpo</code> en negrita (CSS, <code>:first-child</code>) porque es la presentación, no un campo distinto.</p>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L03 · variante avatar (AJUSTES.md, tanda 8) — retícula de 12 columnas, contenido a la izquierda, locución a la derecha</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l03 layout--l03--avatar">
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Unidad 1 · Apertura</span>
+              <h2 class="layout__titulo tipo-h2">Objetivos de aprendizaje</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">Al finalizar esta unidad podrás:</p>
+              </div>
+              <ol class="lista-enriquecida">
+                <li class="lista-enriquecida__item">
+                  <span class="lista-enriquecida__numero" aria-hidden="true">1</span>
+                  <span class="tipo-cuerpo">Diferenciar renta variable, renta fija y derivados.</span>
+                </li>
+                <li class="lista-enriquecida__item">
+                  <span class="lista-enriquecida__numero" aria-hidden="true">2</span>
+                  <span class="tipo-cuerpo">Explicar qué es una acción y qué derechos puede otorgar.</span>
+                </li>
+              </ol>
+            </div>
+            <div class="layout__media" id="l03-avatar-media"></div>
+          </div>
+        </div>
+        <p class="ks-intro"><code>router.js</code> agrega <code>.layout--l03--avatar</code> solo cuando <code>media.tipo</code> es <code>"avatar"</code> — el mismo ejemplo real que <code>p02</code> en <code>content/ova-u1.js</code>. Misma retícula de 12 columnas que <code>--retrato</code> (margen + 5 + 5 + margen, <code>column-gap</code> de <code>--sp-10</code>), con las columnas invertidas: aquí el texto va en las columnas 2-6 y la media en las 7-11, al revés que en <code>--retrato</code>.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l04">
@@ -1702,27 +1771,23 @@
         </div>
         <p class="ks-intro">El brief pide media opcional; C1 (4 sep) lo resolvió con <code>:has()</code> en layouts.css — sin <code>.layout__media</code> en el DOM, la grilla de dos columnas de arriba no aplica y el bloque cae a una columna de ancho de lectura. Mismo ejemplo que <code>s18</code> en <code>content/ova-u1.js</code>.</p>
 
-        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · "controles" (AJUSTES.md tanda 6, pantalla p01b — tutorial de la barra)</span>
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · "controles" (AJUSTES.md tanda 8 — grilla 3×3, pantalla p01b — tutorial de la barra)</span>
         <div class="ks-layout-marco">
           <div class="layout layout--l09">
             <span class="layout__kicker tipo-etiqueta">Antes de empezar</span>
             <div class="layout__texto">
               <h2 class="layout__titulo tipo-h2">Cómo se recorre este curso</h2>
-              <div class="layout__cuerpo--controles">
-                <ul class="layout__controles-columna">
-                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-1-menu.svg" alt="" /><span class="tipo-cuerpo">Índice: abre la lista completa de pantallas de la unidad.</span></li>
-                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-2-ubicacion.svg" alt="" /><span class="tipo-cuerpo">Tu ubicación: siempre ves en qué cápsula y tema estás.</span></li>
-                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-3-indicador-progreso.svg" alt="" /><span class="tipo-cuerpo">Progreso: muestra en porcentaje cuánto llevas avanzado en el curso.</span></li>
-                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-4-reanudar.svg" alt="" /><span class="tipo-cuerpo">Reanudar: te lleva directo a la última pantalla que viste.</span></li>
-                </ul>
-                <ul class="layout__controles-columna">
-                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-5-boton-accesibilidad.svg" alt="" /><span class="tipo-cuerpo">Accesibilidad: abre las preferencias de texto, movimiento y transcripción.</span></li>
-                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-6-boton-locucion.svg" alt="" /><span class="tipo-cuerpo">Autolocución: actívala para que el audio de cada pantalla empiece solo.</span></li>
-                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-7-boton-fullscreen.svg" alt="" /><span class="tipo-cuerpo">Pantalla completa: para ver el curso sin distracciones.</span></li>
-                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-8-anterior.svg" alt="" /><span class="tipo-cuerpo">Anterior: vuelve a la pantalla que acabas de ver.</span></li>
-                  <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-9-siguiente.svg" alt="" /><span class="tipo-cuerpo">Siguiente: avanza a la siguiente pantalla del curso.</span></li>
-                </ul>
-              </div>
+              <ul class="layout__cuerpo--controles">
+                <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-1-menu.svg" alt="" /><span class="layout__controles-texto tipo-cuerpo">Índice: abre la lista completa de pantallas de la unidad.</span></li>
+                <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-2-ubicacion.svg" alt="" /><span class="layout__controles-texto tipo-cuerpo">Tu ubicación: siempre ves en qué cápsula y tema estás.</span></li>
+                <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-3-indicador-progreso.svg" alt="" /><span class="layout__controles-texto tipo-cuerpo">Progreso: muestra en porcentaje cuánto llevas avanzado en el curso.</span></li>
+                <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-5-boton-accesibilidad.svg" alt="" /><span class="layout__controles-texto tipo-cuerpo">Accesibilidad: abre las preferencias de texto, movimiento y transcripción.</span></li>
+                <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-6-boton-locucion.svg" alt="" /><span class="layout__controles-texto tipo-cuerpo">Autolocución: actívala para que el audio de cada pantalla empiece solo.</span></li>
+                <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-7-boton-fullscreen.svg" alt="" /><span class="layout__controles-texto tipo-cuerpo">Pantalla completa: para ver el curso sin distracciones.</span></li>
+                <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-4-reanudar.svg" alt="" /><span class="layout__controles-texto tipo-cuerpo">Reanudar: te lleva directo a la última pantalla que viste.</span></li>
+                <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-8-anterior.svg" alt="" /><span class="layout__controles-texto tipo-cuerpo">Anterior: vuelve a la pantalla que acabas de ver.</span></li>
+                <li class="layout__controles-item"><img class="layout__controles-imagen" src="../public/img/icons/muestra-navegacion-9-siguiente.svg" alt="" /><span class="layout__controles-texto tipo-cuerpo">Siguiente: avanza a la siguiente pantalla del curso.</span></li>
+              </ul>
             </div>
           </div>
         </div>
@@ -2013,6 +2078,16 @@
         src: '../public/img/avatar/avatar-sin-fondo-plano-primer-saluda.png',
         variante: 'mascara',
         forma: 'diagonal'
+      });
+      // AJUSTES.md tanda 8: mismo ejemplo real que p02 en content/ova-u1.js,
+      // incluido el placeholder de audio (loc1_objetivos.mp3, el mismo que
+      // ya alternan las otras 13 pantallas de avatar — PLAN-REDISENO.md D8).
+      montar('l03-avatar-media', {
+        tipo: 'avatar',
+        variante: 'lg',
+        imagen: '../public/img/avatar/avatar-medio-confondo-1.webp',
+        audio: '../public/audio/loc1_objetivos.mp3',
+        transcripcion: 'En esta unidad construirás una base práctica. Primero ubicarás las acciones dentro del mercado de capitales. Luego aprenderás qué significa ser accionista, cómo se gana o se pierde dinero por precio y dividendos, y qué preguntas debes hacerte antes de invertir.'
       });
 
       // C3: avatar/audio, mismo criterio que el video de arriba — imagen

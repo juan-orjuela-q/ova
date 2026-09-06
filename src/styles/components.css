@@ -274,6 +274,42 @@
   border-block-start-color: var(--border-strong);
 }
 
+/* ---- Lista enriquecida (AJUSTES.md, tanda 8) ---------------------------
+   Lista numerada con círculo grande en vez del ícono de check chico de
+   crearListaIdeas() — para objetivos/pasos que necesitan más peso visual
+   (p02, "Objetivos de aprendizaje"). <ol> real en router.js: el número
+   visual es decorativo (aria-hidden), el orden nativo de la lista ya le
+   da a un lector de pantalla el "1 de 5" sin duplicarlo. Círculo relleno
+   inverse (negro) + número en PT Serif 700 naranja-300 — el naranja que
+   tokens.css ya reserva para texto sobre superficie inverse (6.9:1 contra
+   --surface-inverse, verificado), no uno nuevo. */
+.lista-enriquecida {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  list-style: none;
+  padding-inline-start: 0;
+  margin: 0;
+}
+.lista-enriquecida__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.lista-enriquecida__numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--sp-10);
+  height: var(--sp-10);
+  border-radius: var(--r-pill);
+  background: var(--surface-inverse);
+  color: var(--nuam-orange-300);
+  font: 700 1.25rem/1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---- Tarjeta (T1.5, componentes) --------------------------------------
    Base de comparación, recurso, glosario y stat. Dos superficies, sin
    mezclarlas: borde sobre default, o relleno subtle sin borde. */
@@ -1101,7 +1137,15 @@
 
 /* avatar-sm: 120×120, centrada, se mete 24px en la carta (sobresale los
    96px restantes por encima) — esquina inferior-izquierda recta a
-   propósito, el resto a 16px. */
+   propósito, el resto a 16px. margin-block-start en el envoltorio (no en
+   la figura) reserva esos 96px en el flujo normal: la figura es
+   position:absolute, así que por sí sola no empuja nada — sin este
+   margen, el sobresaliente se monta encima de lo que venga antes en la
+   pantalla real (visto en p02, AJUSTES.md tanda 8) o de la muestra
+   anterior en la kitchen sink. */
+.media-avatar--sm {
+  margin-block-start: 96px;
+}
 .media-avatar--sm .media-avatar__figura {
   width: 120px;
   height: 120px;
@@ -1111,14 +1155,27 @@
   border-radius: var(--r-avatar) var(--r-avatar) var(--r-avatar) 0;
 }
 
-/* avatar-md: círculo 240×240 arriba a la derecha — 48px de la carta a la
-   derecha, 164px por encima del borde superior (se mete 76px). Va detrás
-   de la carta: ver la nota del bloque de arriba. */
+/* avatar-md: círculo 240×240 arriba a la derecha — 164px por encima del
+   borde superior (se mete 76px), y ahora asomando 48px más allá del
+   borde derecho de la carta (ajuste posterior a tanda 8): la carta
+   encoge ese mismo ancho con padding-right:3rem (48px) en el
+   envoltorio —.media-audio sigue en width:100%, así que hereda el hueco—
+   y la figura pasa de right:48px a right:0, midiéndose contra el borde
+   del envoltorio en vez del borde ya encogido de la carta. Va detrás de
+   la carta: ver la nota del bloque de arriba. margin-block-start reserva
+   los 164px de arriba en el flujo, mismo motivo que avatar-sm arriba —
+   sin margen horizontal propio: la figura nunca pasa del borde derecho
+   del envoltorio (240px de ancho, cabe entera dentro de los 416px
+   incluso saliéndose 48px de la carta encogida). */
+.media-avatar--md {
+  margin-block-start: 164px;
+  padding-right: 3rem;
+}
 .media-avatar--md .media-avatar__figura {
   width: 240px;
   height: 240px;
   top: -164px;
-  right: 48px;
+  right: 0;
   border-radius: var(--r-pill);
   z-index: -1;
 }
@@ -1128,13 +1185,26 @@
   border-top-right-radius: 0;
 }
 
-/* avatar-lg: cuadrado 480×480, misma lógica de desfase que avatar-md
-   (48px a la derecha, 432px por encima → se mete 48px en la carta). */
+/* avatar-lg: cuadrado 480×480, 432px por encima del borde superior (se
+   mete 48px en la carta). Ajuste posterior a tanda 8: la figura pasa de
+   right:48px a right:0 (asoma 64px más allá del borde derecho de la
+   carta en vez de quedar 48px por dentro — a diferencia de avatar-md, la
+   carta no encoge con padding aquí, sigue en sus 416px completos) y se
+   quita el margin-inline-start de 112px que tanda 8 le había puesto
+   para compensar el sobrante por la izquierda: con la figura corrida a
+   la derecha, ese sobrante baja de 112px a 64px (480 − 416 = 64) y
+   queda sin compensar — franja de la figura hacia la izquierda de la
+   carta, aceptada por decisión de Juan en vez del margen fijo anterior.
+   margin-block-start sigue reservando los 432px de arriba, igual que
+   avatar-sm/md. */
+.media-avatar--lg {
+  margin-block-start: 432px;
+}
 .media-avatar--lg .media-avatar__figura {
   width: 480px;
   height: 480px;
   top: -432px;
-  right: 48px;
+  right: 0;
   border-radius: var(--r-avatar);
   z-index: -1;
 }

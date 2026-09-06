@@ -868,3 +868,420 @@ grande, cero errores de consola — sin regresión sobre las trece pantallas
 reales que ya usan `tipo:"avatar"`. Cero hex nuevo en los cuatro archivos
 tocados (`tokens.css`, `components.css`, `media.js`,
 `dev/kitchen-sink.html`).
+
+---
+
+## 14 · Tanda 8: gap de tarjetas p01a, ancho máximo p01b, p02 a dos columnas con avatar — cerrado 6 sep
+
+**Pedido.** Tres retoques puntuales, identificados contando pantallas desde
+la portada (confirmado con Juan antes de tocar código, dado que el conteo
+real no es 1:1 con los ids del contenido): pantalla 3 = `p01a` (tarjetas de
+accesibilidad), pantalla 4 = `p01b` (lista de controles de navegación),
+pantalla 5 = `p02` (objetivos de aprendizaje). (1) En p01a, reducir a la
+mitad el gap entre las tarjetas. (2) En p01b, que el contenido no se
+expanda tanto en escritorio: limitar el ancho máximo del eyebrow, el
+título y el contenedor de ítems. (3) En p02, pasar a la disposición de dos
+columnas de L03 (Juan dijo "L02"; confirmado con Juan que se refería a
+L03, el único layout de dos columnas 50/50 — L02 en el código es "media
+arriba, texto debajo", una sola columna), con la locución de avatar-lg a
+la izquierda en vez del video, el contenido a la derecha, y un componente
+nuevo de "listado enriquecido": números en círculos grandes (~40px), PT
+Serif bold, círculo negro y número naranja.
+
+**1 · Gap de tarjetas en p01a, en `layouts.css`.** `.layout--l09__grilla`
+(la grilla de tarjetas de accesibilidad, AJUSTES.md tanda 5 ítem 13) tenía
+`gap: var(--sp-10)` (40px) tanto en la versión apilada de mobile como en
+la de grid de escritorio — las dos declaraciones bajaron a
+`var(--sp-5)` (20px, la mitad exacta). El separador entre el encabezado y
+la grilla (`.layout--l09--tarjetas`, un bloque distinto) se quedó en
+`--sp-10`: no es "el gap entre las cards", es el aire antes de la grilla.
+
+**2 · Ancho máximo compartido en p01b, en `layouts.css`.** Antes de este
+ajuste, `.layout--l09:not(:has(.layout__media))` ya acotaba kicker/título/
+`.layout__cuerpo` a 42rem (AJUSTES.md #2), pero `.layout__cuerpo--controles`
+(el contenedor de ítems de p01b, deliberadamente sin la clase
+`.layout__cuerpo` desde tanda 6 para no heredar ese tope) no tenía ningún
+límite — se expandía a los 72rem del `.layout` completo mientras el
+título se quedaba en 42rem, dos anchos distintos en el mismo bloque de
+lectura. Arreglo: `.layout__cuerpo--controles` gana su propio
+`max-width: 72rem` (mismo valor que ya usa la grilla de tarjetas de p01a,
+no uno inventado), y una regla nueva —`.layout--l09:has(.layout__cuerpo--controles)
+.layout__kicker`/`.layout__titulo`— sube esos dos de 42rem al mismo
+72rem, solo cuando `.layout__cuerpo--controles` está presente (no afecta a
+`p32`, la otra pantalla real sin media de L09, que sigue en 42rem con su
+lista de ideas clave). Las dos reglas de 42rem y 72rem para kicker/título
+empatan en especificidad (misma cantidad de clases): la de 72rem gana por
+venir después en el archivo, no por ser más específica — documentado en
+el propio CSS para que no se reordene por accidente.
+
+**3 · p02 a dos columnas con avatar, en `router.js`/`layouts.css`/
+`components.css`/`content/ova-u1.js`.**
+
+- **Layout de la pantalla:** `p02` pasa de `L04` (lectura larga, media
+  apilada debajo) a `L03` (dos columnas 50/50). Nueva variante
+  `.layout--l03--avatar`, con el mismo mecanismo que ya usa
+  `.layout--l03--retrato` (AJUSTES.md #9): `router.js` la agrega solo
+  cuando `media.tipo === 'avatar'` — un tipo que ninguna de las cuatro
+  pantallas reales de L03 había usado hasta ahora (todas usan
+  `tipo:"imagen"`), así que no hay riesgo de tocarlas. La variante
+  intercambia `grid-template-areas` de `"texto media"` a `"media texto"`:
+  mismas dos columnas 1fr/1fr de siempre, solo cambiadas de lado.
+- **Media:** el video mudo de motion (`p02-objetivos-aprendizaje.mp4`) se
+  reemplaza por `media.tipo:"avatar"` con `variante:"lg"` (el catálogo de
+  AJUSTES.md tanda 7) y la foto `avatar-medio-confondo-1.webp` — la misma
+  que ya usa la demo de las tres variantes de figura en la kitchen sink,
+  no una nueva. Sin `audio`: no existe locución grabada para esta
+  pantalla todavía, así que degrada a transcripción visible sin colapsar
+  (regla dura 10), el mismo estado de placeholder de producción que ya
+  usan otras pantallas reales (C7, L08/L10). La `transcripcion` es la
+  misma que ya tenía el video, verbatim.
+- **Listado enriquecido, componente nuevo.** El contrato de `p02` ya no
+  mete los cinco objetivos como texto plano numerado a mano dentro de
+  `cuerpo` ("1. Diferenciar…"); pasan a un campo nuevo `pantalla.lista`
+  (array de strings, sin el número — opcional, sibling de `cuerpo`, mismo
+  criterio que "tarjetas"/"controles" en L09). `crearListaEnriquecida()`
+  en `router.js` arma un `<ol class="lista-enriquecida">` real: el `<ol>`
+  nativo es lo que le da a un lector de pantalla "1 de 5, 2 de 5…", y el
+  número visual de cada círculo lleva `aria-hidden="true"` para no
+  duplicarlo — mismo patrón que el ícono de check de `crearListaIdeas()`.
+  CSS nuevo en `components.css`: círculo `--sp-10` (40px) con
+  `background: var(--surface-inverse)` (negro) y
+  `color: var(--nuam-orange-300)` (el naranja que `tokens.css` ya reserva
+  para texto sobre superficie inverse, no uno nuevo), número en
+  `700 1.25rem var(--font-display)` (PT Serif bold). Contraste
+  naranja-300 sobre gris-950 calculado: 6.9:1, muy por encima del 3:1 que
+  exigiría como texto grande y del 4.5:1 de texto normal.
+
+**Verificado con Python + Playwright** (el proyecto usa Playwright vía
+Node en sesiones anteriores; este entorno no tenía el paquete de Node
+instalado, así que esta sesión corrió los mismos chequeos con el
+Playwright de Python ya presente en la máquina — mismo motor Chromium,
+misma metodología), abriendo `src/index.html` y `dev/kitchen-sink.html`
+por `file://`:
+
+- p01a: `.layout--l09__grilla` mide `gap: 20px` computado, y la distancia
+  real entre la primera y segunda tarjeta (`getBoundingClientRect`) es
+  20.0px tanto en la grilla de escritorio (1280px) como apiladas en
+  mobile (375px, distancia vertical). 375px sin scroll horizontal.
+- p01b: `getComputedStyle(...).maxWidth` de kicker, título y
+  `.layout__cuerpo--controles` mide `1152px` (72rem) los tres, a 1280px.
+  320px sin scroll horizontal.
+- p02: la raíz tiene `layout--l03` y `layout--l03--avatar`;
+  `grid-template-areas` computado es `"media texto"`; el rectángulo de
+  `.layout__media` (`left: 40`) queda a la izquierda del de
+  `.layout__texto` (`left: 652`) a 1280px; `.media-avatar--lg` se monta
+  de verdad. Cinco `.lista-enriquecida__item` reales; el círculo mide
+  `40px × 40px`, fondo `rgb(11, 11, 11)` (`--surface-inverse`), texto
+  `rgb(255, 112, 67)` (`--nuam-orange-300`), fuente `"PT Serif"` peso
+  `700`, `border-radius: 999px`; el contenedor es un `<OL>` real y el
+  número lleva `aria-hidden="true"`. 320px sin scroll horizontal.
+- Kitchen sink: sección nueva "Lista enriquecida" (3 ítems de ejemplo) y
+  tercer ejemplo de L03 ("variante avatar") ambos presentes en el DOM.
+- Cero errores de consola nuevos en las cinco páginas comprobadas (los
+  `ERR_FILE_NOT_FOUND` de la kitchen sink son los placeholders
+  preexistentes ya documentados en el ajuste 1). Cero hex nuevo en los
+  cinco archivos tocados (`layouts.css`, `components.css`, `router.js`,
+  `content/ova-u1.js`, `dev/kitchen-sink.html`).
+
+**Corrección el mismo día: el ancho máximo de p01b quedó bien pero el
+bloque se leía pegado al margen izquierdo — Juan pidió que se centrara
+completo, como si llevara `margin-inline:auto`.** Las tres piezas
+(`.layout__cuerpo--controles`, kicker y título) ya tenían su `max-width:
+72rem` de arriba; les faltaba el `margin-inline: auto` para que ese ancho
+menor se centrara en vez de quedarse contra el borde izquierdo (el
+comportamiento por defecto de un hijo de `.layout`/`.layout__texto` en
+flex-column es `align-items: stretch`, que sin márgenes automáticos
+ocupa todo el ancho — con `max-width` puesto, "estirarse" simplemente lo
+deja pegado a la izquierda). Se agregó `margin-inline: auto` a las tres
+reglas de 72rem ya existentes, sin tocar nada más. Verificado con
+Playwright: a 1280px y 1920px, el margen izquierdo y derecho de kicker
+(157.7px de ancho), título (459px) y `.layout__cuerpo--controles`
+(1152px) miden exactamente igual entre sí (`getBoundingClientRect`, no
+asumido) — centrado real, no aproximado. `p32` (la otra pantalla real de
+L09 sin media, que sigue en 42rem sin centrar por AJUSTES.md #2) se
+comprobó como control: su kicker sigue pegado al margen izquierdo
+(40px vs 888px de margen derecho a 1600px), confirmando que el cambio no
+se filtró fuera de la variante de p01b. 320px sin scroll horizontal,
+cero errores de consola nuevos.
+
+**Segunda corrección: los textos de p01b no quedaban alineados entre sí —
+arrancaban en una x distinta por fila.** No era un problema de
+centrado: la imagen de cada control tenía `flex: 0 1 18.5rem` (ancho fijo
+pensado, ver el comentario original de la clase), pero el texto de al
+lado no tenía ningún `flex` propio — por defecto un flex item usa
+`flex-basis:auto`, que para texto es su ancho sin envolver (potencialmente
+muy ancho, una frase completa en una sola línea). Con imagen y texto
+compitiendo por el mismo espacio y los dos con `flex-shrink` activo, el
+algoritmo de flexbox repartía el achique entre ambos según ese tamaño
+hipotético — y como cada frase mide distinto, cada fila encogía la imagen
+en una proporción distinta (verificado con Playwright antes del arreglo:
+anchos reales de imagen entre 181px y 237px según la fila, nunca los
+296px del `flex-basis` declarado). Arreglo: el texto de cada control
+gana su propia clase (`layout__controles-texto`, agregada en
+`router.js` junto a `tipo-cuerpo`) con `flex: 1 1 0%; min-width: 0` — al
+sacar al texto del reparto de achique (su tamaño hipotético pasa a ser 0,
+no compite por nada), toda la imagen se queda en su `flex-basis` de
+296px sin excepción, y el texto simplemente toma el espacio que sobra y
+envuelve con normalidad. Verificado con Playwright: las cuatro imágenes
+de la columna izquierda y las cinco de la derecha miden `296px` de ancho
+cada una (antes, entre 181 y 237px, distinto por fila); los cuatro
+textos de la izquierda arrancan los cuatro en `x=376`, los cinco de la
+derecha en `x=972` (antes, un valor distinto por fila) — alineación real,
+no aproximada. 320px sin scroll horizontal, cero errores de consola.
+Kitchen sink actualizada en la misma tarea (misma clase agregada a los
+nueve `<span>` estáticos, para seguir siendo un espejo real del DOM que
+arma `router.js`).
+
+**Tercera corrección: p01b cambia de lista (icono + texto lado a lado) a
+grilla 3×3 (icono centrado arriba, texto centrado debajo).** El arreglo
+de alineación anterior funcionaba (los textos quedaban en la misma x),
+pero a Juan no le gustó la disposición en sí, no el detalle de
+alineación — pidió una grilla de 3×3 con el icono arriba y el texto
+abajo, ambos centrados.
+
+- **`router.js`:** `crearColumnaControles()` desaparece —ya no hace falta
+  partir el arreglo en dos mitades para dos columnas lado a lado—;
+  `crearListaControles()` ahora arma un único `<ul class="layout__cuerpo--
+  controles">` plano con los nueve `<li>` en el orden real de contenido.
+  El orden de un grid ya los reparte en filas de 3 solo (fila 1: ítems
+  1-2-3, fila 2: 4-5-6, fila 3: 7-8-9) sin necesidad de decidir la
+  partición a mano.
+- **`layouts.css`:** `.layout__cuerpo--controles` pasa de
+  `flex-direction:column` (mobile) + grid de 2 columnas (escritorio) a
+  grid de 1 columna (mobile, apilado) + grid de 3 columnas (`repeat(3,
+  1fr)`, desde 48em) — el tope de `max-width:72rem` y el
+  `margin-inline:auto` de la corrección anterior se conservan tal cual,
+  solo cambia cuántas columnas reparte. `.layout__controles-columna`
+  (el `<ul>` intermedio de cada mitad) se elimina: ya no hace falta,
+  todo es un único nivel de lista. `.layout__controles-item` pasa de fila
+  (`flex-direction:row`, icono+texto lado a lado, con el divisor
+  `border-block-end` de una lista) a columna (`flex-direction:column;
+  align-items:center; text-align:center`) — sin divisor: una grilla de
+  tarjetas no se lee como una lista con separadores entre filas.
+  `.layout__controles-imagen` pierde el ancho fijo de 18.5rem/
+  `object-position:left` (ya no hace falta alinear contra una columna de
+  texto al lado — cada icono está solo, centrado, sobre su propio
+  texto): se queda solo con el alto nativo de 4.5rem y
+  `object-fit:contain`. `.layout__controles-texto` pierde el `flex:1 1
+  0%` (ya no compite por espacio horizontal con nada) y gana
+  `max-width:20rem` para que el texto centrado no se estire de más en la
+  columna ancha de mobile de una sola pista.
+- **Decisión propia, sin pedirle a Juan:** se quitó el divisor
+  (`border-block-end`) entre ítems que tenía la disposición en lista —
+  una grilla de tarjetas centradas no pide el mismo tratamiento visual
+  que una lista de filas. Si Juan prefiere alguna separación entre
+  celdas, es un ajuste aparte.
+
+**Verificado con Playwright, `src/index.html` y `dev/kitchen-sink.html`
+por `file://`:** a 1280px, los nueve `.layout__controles-item` caen en
+exactamente 3 valores de `top` (filas) y 3 de `left` (columnas) —
+`getBoundingClientRect`, no asumido—; en cada ítem el centro horizontal
+del ícono coincide con el centro horizontal del texto (±2px) y el ícono
+queda arriba (`top` menor) del texto; el texto mide `text-align:center`
+computado. El contenedor es un `<UL>` real con exactamente 9 `<li>` (no
+dos listas de 4/5). A 320px, `grid-template-columns` computa a una sola
+pista y no hay scroll horizontal (`scrollWidth === clientWidth`). Kitchen
+sink actualizada con el mismo marcado plano de 9 ítems. Cero errores de
+consola nuevos, cero hex nuevo.
+
+**Cuarto ajuste, sobre la grilla ya aprobada: más espacio bajo el título
+y Reanudar antes de Anterior.**
+
+- **Espacio bajo el título, en `layouts.css`.** `.layout__cuerpo--
+  controles` ganó `margin-block-start: var(--sp-6)`, que se suma al
+  `gap:var(--sp-4)` que `.layout__texto` ya pone entre título y cuerpo
+  (tanda 4) — el total queda en 40px (`--sp-10`), el mismo separador que
+  ya usa p01a entre su encabezado y su grilla de tarjetas
+  (`.layout--l09--tarjetas`): mismo criterio, no un valor inventado. Solo
+  afecta a p01b (la clase es específica de su contenedor de controles),
+  no al resto de L09.
+- **Orden de los controles, en `content/ova-u1.js`.** El arreglo
+  `controles` de p01b se reordenó para que Reanudar quede justo antes de
+  Anterior (y por lo tanto la última fila de la grilla agrupa los tres
+  controles con forma de botón: Reanudar, Anterior, Siguiente — antes
+  Reanudar quedaba suelto en la fila de arriba, entre Progreso y
+  Accesibilidad, sin relación visual con los otros dos botones de
+  navegación). No se tocó `router.js` ni `layouts.css`: el orden de un
+  `<ul>` en grid ya reparte los ítems en filas de 3 según su posición en
+  el arreglo, así que reordenar el contenido basta.
+
+**Verificado con Playwright, `src/index.html` y `dev/kitchen-sink.html`
+por `file://`:** el texto "Reanudar…" aparece en el índice 6 del arreglo
+de nueve y "Anterior…" en el 7 — inmediatamente después, no solo "antes"
+en algún punto anterior. La distancia real entre el borde inferior del
+`<h2>` y el borde superior de la grilla (`getBoundingClientRect`) mide
+40.0px. 320px sin scroll horizontal. Kitchen sink actualizada con el
+mismo orden. Cero errores de consola nuevos, cero hex nuevo.
+
+**Quinto ajuste: el componente de avatar-sm/md/lg se solapaba con otros
+elementos de la pantalla — caso real aparecido en p02.** Tanda 7 ya había
+anotado esto como pendiente ("Hallazgo verificado, no corregido... Queda
+anotado para cuando haya una pantalla real con avatar-lg y aparezca el
+caso de verdad") — p02 (este mismo tanda 8) es esa pantalla real.
+
+**Causa.** La figura de `.media-avatar` es `position:absolute`, así que
+el sobresaliente que dicta su geometría (tanda 7: avatar-sm 96px arriba,
+avatar-md 164px, avatar-lg 432px arriba + 112px a la izquierda del ancho
+máximo de la carta) no lo reserva el flujo normal — nada empujaba al
+elemento anterior en la pantalla para dejarle aire. En p02 esto se veía
+como el avatar tapando el borde izquierdo de la pantalla; en la kitchen
+sink, como avatar-lg montado encima de avatar-md.
+
+**Arreglo, en `components.css` — el espacio pasa a ser del componente,
+no de cada página que lo usa:** `.media-avatar--sm/--md/--lg` ganan
+`margin-block-start` igual al sobresaliente vertical de cada una (96px,
+164px, 432px) y `.media-avatar--lg` además `margin-inline-start: 112px`
+(el único de los tres con sobrante horizontal: 480px de figura + 48px de
+desfase derecho = 528px, 112px más que los 416px de ancho máximo de la
+carta — sm y md no necesitan margen horizontal, sus cuentas dan un
+sobrante negativo o nulo al ancho máximo del componente). Documentado en
+el propio CSS: el margen fijo asume que la carta llega a su ancho máximo
+de 26rem (416px) — en un contenedor más angosto que eso el sobrante
+crece más allá del margen fijo, el mismo límite ya aceptado en tanda 7,
+sin especificación de Juan sobre ese caso.
+
+**Kitchen sink:** las tres muestras de avatar-sm/md/lg pasaron de
+compartir una fila (`.ks-muestras`, flex-wrap) a apilarse en columna
+(`.ks-muestras--apilado`, clase nueva) — tres tarjetas de hasta 416px no
+caben en una sola línea de 1200px, así que el flex las encogía en vez de
+envolverlas (hallazgo real: encogidas a 322px, el margen fijo del
+componente ya no alcanzaba a compensar el sobrante, que crece según el
+límite ya conocido de arriba). Dos trampas de flexbox encontradas y
+corregidas armando este apilado, ambas documentadas en el propio CSS:
+(1) `.ks-muestras` trae `align-items:center` en su regla base — hay que
+pisarlo a `stretch` explícito, si no cada tarjeta vuelve a encogerse a su
+ancho de contenido (322px) en vez de llenar el contenedor como un bloque
+normal (que es como se ve en la pantalla real). (2) la regla base también
+trae `flex-wrap:wrap`, que con `flex-direction:column` no envuelve en
+más filas sino en más COLUMNAS si el contenido no cabe en la altura
+disponible — sin `flex-wrap:nowrap` explícito, las tres tarjetas
+terminaban compartiendo una columna más ancha que el propio contenedor,
+desbordando 320px real (encontrado y corregido con Playwright antes de
+cerrar, no hipotético). Se retiró `.ks-muestras--avatar-figuras`
+(`padding-top:28rem`), el parche de espaciado vertical que tanda 7 había
+puesto en esta misma página — ya no hace falta, el espacio vive en el
+componente.
+
+**Verificado con Playwright, `dev/kitchen-sink.html` y `src/index.html`
+por `file://`:** en la kitchen sink a 1280px, las tres `.media-avatar`
+miden `416px` (antes 322px), sin solapamiento vertical entre las tres
+(`getBoundingClientRect`, 16px de separación real entre cada una) y
+ninguna figura sale del contenedor externo por ningún lado (izquierda,
+derecha). A 320px, el bloque de las tres muestras ya no desborda su
+propio contenedor (`maxRight === contenedor.right`, comprobado) — el
+scrollWidth de toda la página sigue por encima de 320px, pero por las
+mismas causas ya documentadas y fuera de alcance del ajuste #2
+(`.dato-tabla`, etc.), no por este componente. En `src/index.html`, p02
+a 1280px: la figura del avatar-lg ya no invade la columna de texto
+(`.layout__texto`), no sale por encima de la caja del layout ni por la
+izquierda de su columna de media — coincide exactamente con el borde de
+su propia columna (`figura.left === media_col.left`, sin aproximar). A
+320px, p02 sigue sin scroll horizontal (`scrollWidth === clientWidth`).
+Cero errores de consola nuevos en ninguna de las dos páginas, cero hex
+nuevo.
+
+**Sexto ajuste, sobre el arreglo del ítem anterior: en avatar-md y
+avatar-lg la figura pasa a asomar por la derecha de la carta en vez de
+quedar por dentro.** Pedido explícito de Juan, con la implementación ya
+especificada por él: en `components.css`,
+
+- **`.media-avatar--md`** gana `padding-right: 3rem` (48px) — la carta
+  (`.media-audio`, todavía en `width:100%` del envoltorio) se encoge ese
+  mismo ancho; la figura pasa de `right:48px` a `right:0`, midiéndose
+  ahora contra el borde del envoltorio (`.media-avatar`) en vez del borde
+  ya encogido de la carta. Sin cambio de margen: la figura (240px) sigue
+  cabiendo entera dentro de los 416px del envoltorio aunque ahora asome
+  48px más allá del borde derecho de la carta encogida.
+- **`.media-avatar--lg`** pierde el `margin-inline-start: 112px` que el
+  ajuste anterior le había puesto; la figura pasa de `right:48px` a
+  `right:0`. La carta no encoge aquí (sin padding nuevo): sigue en sus
+  416px completos. Efecto verificado, no solo calculado: el sobrante por
+  la izquierda baja de 112px a 64px (480 − 416) pero no desaparece —
+  decisión de Juan, aceptando esa franja en vez del margen fijo que lo
+  compensaba a cero.
+
+**Verificado con Playwright, `dev/kitchen-sink.html` y `src/index.html`
+por `file://`:** en la kitchen sink a 1280px, avatar-md mide carta
+40–408 (368px, encogida por el padding) y figura 216–456 (240px, borde
+derecho en 456 = borde del envoltorio, ninguno de los dos se sale de él);
+avatar-lg mide carta 40–456 (416px completos) y figura -24–456 (480px,
+borde derecho también en 456, borde izquierdo 64px antes del envoltorio).
+Ninguna figura sale del envoltorio por la derecha en ninguna de las tres
+variantes. En `src/index.html`, p02 (avatar-lg real): la figura sigue sin
+invadir la columna de texto (`figura.right=456` vs `texto.left=652`) y el
+sobrante por la izquierda de la columna de media mide exactamente 64px
+(`media_col.left=40` menos `figura.left=-24`) — el número que predice la
+cuenta, no aproximado. 320px sin scroll horizontal en `src/index.html`
+(el sobrante en negativo de la figura no extiende el `scrollWidth` de una
+página LTR, mismo hallazgo ya verificado en tanda 7). Cero errores de
+consola nuevos, cero hex nuevo.
+
+**Séptimo ajuste: p02 pasa del 50/50 simple a la misma retícula de 12
+columnas que p01-bienvenida (1 + 5 + 5 + 1), con las columnas
+invertidas.** Pedido señalando "la pantalla 2" (p01-bienvenida, el mismo
+conteo desde la portada que ya usamos en este backlog) como la
+referencia de retícula a copiar.
+
+**Qué se hizo, en `layouts.css`:** `.layout--l03--avatar` deja de heredar
+el `grid-template-columns:1fr 1fr` del 50/50 base de L03 y pasa a
+`repeat(12, 1fr)` con `column-gap: var(--sp-10)` — la misma retícula
+exacta que ya usa `.layout--l03--retrato` (AJUSTES.md #9/#11), mismo
+token de medianil, sin valor nuevo. La única diferencia contra
+`--retrato` es el orden de las áreas: `--retrato` es
+`". media×5 texto×5 ."` (media a la izquierda); `--avatar` pasa a
+`". texto×5 media×5 ."` (contenido a la izquierda, locución a la
+derecha) — invertida a propósito, como pidió Juan.
+
+**Verificado con Playwright, `src/index.html` y `dev/kitchen-sink.html`
+por `file://`:** en p02 a 1280px, `grid-template-columns` computa a doce
+pistas de 63.33px con `column-gap:40px`; `.layout__texto` mide 476.67px
+de ancho (5 columnas) empezando en el margen izquierdo del layout, y
+`.layout__media` mide lo mismo (476.66px) terminando en el margen
+derecho — texto a la izquierda, media a la derecha, confirmado con
+`getBoundingClientRect`. El margen a cada lado mide 143.33px/143.34px
+(prácticamente idéntico, diferencia de redondeo de subpíxel) y el
+medianil entre las dos columnas mide 40px. Contra p01-bienvenida como
+control: su propio margen izquierdo mide 143.328125px, **el mismo número
+exacto** que el margen de p02 — confirma que es la misma retícula, no una
+parecida. 320px sin scroll horizontal. Kitchen sink actualizada (texto
+descriptivo, sin cambio de marcado — la clase ya trae la retícula nueva
+sola). Cero errores de consola nuevos, cero hex nuevo.
+
+**Octavo ajuste: p02 gana el placeholder de audio que le faltaba.**
+`PLAN-REDISENO.md` (D8) documenta que las 14 pantallas de avatar de la
+unidad llevan uno de dos clips de relleno alternados
+(`demo-avatar.mp3`/`loc1_objetivos.mp3`) mientras no exista locución real
+grabada — p02 se quedó afuera de ese reparto porque se convirtió a
+avatar en esta misma tanda 8, después de que D8 ya lo hubiera hecho.
+Juan confirmó cerrar esa inconsistencia asignándole `loc1_objetivos.mp3`
+(coincide con el tema de la pantalla, "Objetivos de aprendizaje" — sin
+evidencia de que se grabara para ella a propósito, `PLAN-REDISENO.md`
+dice que los dos clips se alternaron sin relación con el contenido real,
+pero el nombre calza). La imagen (`avatar-medio-confondo-1.webp`) no
+cambia: es del pool compartido de fotos por encuadre que ya reutilizan
+varias pantallas (p12 también la usa), no un asset por pantalla.
+
+**Qué se hizo:** se agregó `"audio": "../public/audio/loc1_objetivos.mp3"`
+al objeto `media` de p02 en `content/ova-u1.js`, y el mismo campo al
+ejemplo de la kitchen sink (`l03-avatar-media`) para que siga siendo un
+espejo real del contenido.
+
+**Verificado con Playwright, `src/index.html` y `dev/kitchen-sink.html`
+por `file://`:** p02 monta un `<audio>` real con
+`src=".../loc1_objetivos.mp3"`, `.media-audio` ya no lleva la clase
+`--sin-audio`, y la transcripción vuelve a ser el `<details>` colapsable
+de siempre (en vez del texto directo que exige regla dura 10 sin audio).
+Mismo resultado en la kitchen sink. 320px sin scroll horizontal. Cero
+errores de consola nuevos, cero hex nuevo.
+
+**No verificado con la misma confianza que el resto del archivo: zoom de
+texto al 200% a 320px.** La técnica disponible en este entorno
+(`documentElement.style.fontSize = '200%'`, sin el navegador real de
+Node-Playwright de sesiones anteriores) es más agresiva que un zoom de
+texto real y **ya desborda a 320px en pantallas sin tocar** (`p03`, `p14`,
+`p32`, comprobado como control) — no es una regresión de esta tanda, es
+una limitante de la técnica de prueba disponible hoy. Sin scroll
+horizontal confirmado en cambio a 320px y 1280px sin zoom, y a 1280px con
+el zoom crudo de la prueba. Pendiente de una verificación real de zoom de
+texto (con el Playwright de Node, cuando esté disponible) si Juan quiere
+más confianza en ese punto específico.

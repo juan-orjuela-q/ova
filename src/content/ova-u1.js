@@ -212,10 +212,10 @@ window.OVA_CONTENIDO = {
         { "imagen": "../public/img/icons/muestra-navegacion-1-menu.svg", "texto": "Índice: abre la lista completa de pantallas de la unidad." },
         { "imagen": "../public/img/icons/muestra-navegacion-2-ubicacion.svg", "texto": "Tu ubicación: siempre ves en qué cápsula y tema estás." },
         { "imagen": "../public/img/icons/muestra-navegacion-3-indicador-progreso.svg", "texto": "Progreso: muestra en porcentaje cuánto llevas avanzado en el curso." },
-        { "imagen": "../public/img/icons/muestra-navegacion-4-reanudar.svg", "texto": "Reanudar: te lleva directo a la última pantalla que viste." },
         { "imagen": "../public/img/icons/muestra-navegacion-5-boton-accesibilidad.svg", "texto": "Accesibilidad: abre las preferencias de texto, movimiento y transcripción." },
         { "imagen": "../public/img/icons/muestra-navegacion-6-boton-locucion.svg", "texto": "Autolocución: actívala para que el audio de cada pantalla empiece solo." },
         { "imagen": "../public/img/icons/muestra-navegacion-7-boton-fullscreen.svg", "texto": "Pantalla completa: para ver el curso sin distracciones." },
+        { "imagen": "../public/img/icons/muestra-navegacion-4-reanudar.svg", "texto": "Reanudar: te lleva directo a la última pantalla que viste." },
         { "imagen": "../public/img/icons/muestra-navegacion-8-anterior.svg", "texto": "Anterior: vuelve a la pantalla que acabas de ver." },
         { "imagen": "../public/img/icons/muestra-navegacion-9-siguiente.svg", "texto": "Siguiente: avanza a la siguiente pantalla del curso." }
       ],
@@ -223,22 +223,26 @@ window.OVA_CONTENIDO = {
     },
     {
       "id": "p02",
-      "layout": "L04",
+      "layout": "L03",
       "titulo": "Objetivos de aprendizaje",
       "unidad": "Unidad 1",
       "capsula": null,
       "kicker": "Unidad 1 · Apertura",
       "cuerpo": [
-        "Al finalizar esta unidad podrás:",
-        "1. Diferenciar renta variable, renta fija y derivados.",
-        "2. Explicar qué es una acción y qué derechos puede otorgar.",
-        "3. Calcular valorización y dividendo por acción en casos sencillos.",
-        "4. Comparar acciones ordinarias y preferenciales.",
-        "5. Reconocer tu punto de partida frente al riesgo."
+        "Al finalizar esta unidad podrás:"
+      ],
+      "lista": [
+        "Diferenciar renta variable, renta fija y derivados.",
+        "Explicar qué es una acción y qué derechos puede otorgar.",
+        "Calcular valorización y dividendo por acción en casos sencillos.",
+        "Comparar acciones ordinarias y preferenciales.",
+        "Reconocer tu punto de partida frente al riesgo."
       ],
       "media": {
-        "tipo": "video",
-        "src": "../public/videos/motion/p02-objetivos-aprendizaje.mp4",
+        "tipo": "avatar",
+        "variante": "lg",
+        "imagen": "../public/img/avatar/avatar-medio-confondo-1.webp",
+        "audio": "../public/audio/loc1_objetivos.mp3",
         "transcripcion": "En esta unidad construirás una base práctica. Primero ubicarás las acciones dentro del mercado de capitales. Luego aprenderás qué significa ser accionista, cómo se gana o se pierde dinero por precio y dividendos, y qué preguntas debes hacerte antes de invertir."
       },
       "progreso": true

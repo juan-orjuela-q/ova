@@ -237,24 +237,22 @@
     return ul;
   }
 
-  // D7, rehecha en AJUSTES.md tanda 6: alternativa a crearListaIdeas para
-  // p01b (tutorial de la barra). Antes cada ítem llevaba un ícono de
-  // Material Symbols (glifo genérico); tanda 6 lo reemplaza por una
-  // miniatura real del control (public/img/icons/muestra-navegacion-*.svg
-  // — captura fiel del componente tal como se ve en la barra, no un
-  // símbolo abstracto), sobre la referencia de ref-ajustes/tanda-6. La
-  // imagen es decorativa (alt vacío): el texto de al lado ya describe el
-  // control, la miniatura solo lo ilustra, mismo criterio que el ícono
-  // aria-hidden que reemplaza. Dos columnas (crearColumnaControles),
-  // partidas por mitad — floor a la primera, el resto a la segunda: con 9
-  // controles da 4/5, igual que la referencia, y no depende de codificar
-  // "los primeros cuatro" a mano si el contenido cambia. En mobile las dos
-  // listas se apilan (.layout__cuerpo--controles en columna): como cada
-  // una ya está en el orden real de lectura, apilarlas no reordena nada.
-  function crearColumnaControles(controles) {
+  // D7, rehecha en AJUSTES.md tanda 6 (dos columnas lado a lado) y de
+  // nuevo en tanda 8 (grilla 3×3, ícono arriba centrado y texto debajo):
+  // alternativa a crearListaIdeas para p01b (tutorial de la barra). Cada
+  // ítem lleva una miniatura real del control
+  // (public/img/icons/muestra-navegacion-*.svg — captura fiel del
+  // componente tal como se ve en la barra, no un símbolo abstracto). La
+  // imagen es decorativa (alt vacío): el texto debajo ya describe el
+  // control, la miniatura solo lo ilustra. Una sola lista plana en el
+  // orden real de lectura (layouts.css la arregla en grilla de 3
+  // columnas en escritorio y 1 en mobile) — a diferencia de tanda 6, no
+  // hace falta partir el arreglo en dos mitades: el orden de un grid ya
+  // reparte los nueve en filas de 3 solo.
+  function crearListaControles(controles) {
     var ul = document.createElement('ul');
-    ul.className = 'layout__controles-columna';
-    controles.forEach(function (control) {
+    ul.className = 'layout__cuerpo--controles';
+    (controles || []).forEach(function (control) {
       var li = document.createElement('li');
       li.className = 'layout__controles-item';
       var img = document.createElement('img');
@@ -263,21 +261,40 @@
       img.alt = '';
       li.appendChild(img);
       var texto = document.createElement('span');
-      texto.className = 'tipo-cuerpo';
+      texto.className = 'layout__controles-texto tipo-cuerpo';
       texto.textContent = control.texto;
       li.appendChild(texto);
       ul.appendChild(li);
     });
     return ul;
   }
-  function crearListaControles(controles) {
-    controles = controles || [];
-    var mitad = Math.floor(controles.length / 2);
-    var contenedor = document.createElement('div');
-    contenedor.className = 'layout__cuerpo--controles';
-    contenedor.appendChild(crearColumnaControles(controles.slice(0, mitad)));
-    contenedor.appendChild(crearColumnaControles(controles.slice(mitad)));
-    return contenedor;
+
+  // AJUSTES.md, tanda 8 (p02, "Objetivos de aprendizaje"): alternativa a
+  // que "cuerpo" cargue los números como texto plano ("1. Diferenciar…").
+  // <ol> real — el número visual de cada círculo es decorativo
+  // (aria-hidden), el orden semántico de la lista ya comunica "punto 1,
+  // 2, 3…" a un lector de pantalla, mismo criterio que el ícono de check
+  // de crearListaIdeas(). Opcional, sibling de "cuerpo" (no lo
+  // reemplaza): en L03 la primera frase ("Al finalizar esta unidad
+  // podrás:") se queda como párrafo normal delante de la lista.
+  function crearListaEnriquecida(items) {
+    var ol = document.createElement('ol');
+    ol.className = 'lista-enriquecida';
+    (items || []).forEach(function (texto, indice) {
+      var li = document.createElement('li');
+      li.className = 'lista-enriquecida__item';
+      var numero = document.createElement('span');
+      numero.className = 'lista-enriquecida__numero';
+      numero.setAttribute('aria-hidden', 'true');
+      numero.textContent = String(indice + 1);
+      li.appendChild(numero);
+      var span = document.createElement('span');
+      span.className = 'tipo-cuerpo';
+      span.textContent = texto;
+      li.appendChild(span);
+      ol.appendChild(li);
+    });
+    return ol;
   }
 
   // AJUSTES.md, tanda 5 (ítem 13): variante de L09 para p01a (resumen de
@@ -705,11 +722,19 @@
     var raiz = crearRaiz('l03');
     if (pantalla.media && pantalla.media.tipo === 'retrato') {
       raiz.classList.add('layout--l03--retrato');
+    } else if (pantalla.media && pantalla.media.tipo === 'avatar') {
+      // AJUSTES.md tanda 8: variante con locución de avatar a la
+      // izquierda y contenido a la derecha — ver layouts.css.
+      raiz.classList.add('layout--l03--avatar');
     }
     var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    var cuerpo = crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo');
-    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo]));
+    var cuerpo = pantalla.cuerpo ? crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo') : null;
+    // AJUSTES.md tanda 8: "lista" es opcional, alternativa/complemento a
+    // "cuerpo" (crearListaEnriquecida) — p02 la usa para sus cinco
+    // objetivos con círculo numerado en vez de texto plano "1. …".
+    var lista = pantalla.lista ? crearListaEnriquecida(pantalla.lista) : null;
+    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo, lista]));
     raiz.appendChild(crearMedia(pantalla.media));
     return { raiz: raiz, titulo: titulo };
   };
