@@ -151,11 +151,6 @@ window.OVA_CONTENIDO = {
         "tipo": "video",
         "src": "../public/videos/vid0_introduccion-claudia-mirando-a-camara.mp4"
       },
-      "avatar": {
-        "imagen": "../public/img/avatar/avatar-abierto-confondo-1.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "transcripcion": "Te damos la bienvenida a la primera unidad. Antes de comprar una acción, necesitas entender el mercado en el que estás entrando, qué derechos obtienes y por qué toda inversión exige información, criterio y control del riesgo."
-      },
       "progreso": true
     },
     {

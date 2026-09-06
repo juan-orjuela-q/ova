@@ -92,6 +92,57 @@
   width: 100%;
 }
 
+/* ---- Fondos decorativos (AJUSTES.md #1) --------------------------------
+   Gradientes casi blancos de public/img/backgrounds/, fijos respecto al
+   viewport: el scroll real vive en #app (overflow-y:auto, base.css) y
+   ningún ancestro de .layout tiene transform/filter/perspective, así que
+   `fixed` se ancla al viewport y no al contenedor con scroll — el fondo
+   no se desplaza mientras el contenido de una pantalla larga sí lo hace.
+   Rotación fija por layout (no aleatoria, no por pantalla): siete
+   imágenes para diez layouts, alcanza y sobra para que no se repita el
+   mismo fondo en pantallas consecutivas del recorrido típico.
+
+   Se excluyen L01 (portada a sangre, panel propio), L12 (--surface-brand
+   a sangre) y L13 (--surface-inverse a sangre): los tres fijan su propio
+   `background` en shorthand más abajo en este archivo, lo que ya resetea
+   background-image a `none` — no hace falta anularlos aquí, pero quedan
+   fuera de la lista siguiente por claridad. L13 en particular no es
+   naranja, pero un fondo casi blanco detrás de --text-on-inverse rompería
+   el contraste igual que el naranja lo haría (regla dura 2, no
+   negociable) — se excluye por el mismo motivo aunque el brief solo
+   nombre el naranja.
+
+   Nota de plataforma: iOS Safari no soporta `background-attachment:fixed`
+   y lo degrada a scroll normal — el fondo se mueve con el contenido en
+   vez de quedar fijo. Es una limitación conocida del motor, no un bug de
+   este CSS; no se compensa con JS (violaría la regla dura 4 antes de
+   aportar nada que se note en un fondo casi blanco). */
+.layout--l02,
+.layout--l03,
+.layout--l04,
+.layout--l05,
+.layout--l06,
+.layout--l07,
+.layout--l08,
+.layout--l09,
+.layout--l10,
+.layout--l11 {
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+.layout--l02 { background-image: url("../../public/img/backgrounds/background-1.webp"); }
+.layout--l03 { background-image: url("../../public/img/backgrounds/background-2.webp"); }
+.layout--l04 { background-image: url("../../public/img/backgrounds/background-3.webp"); }
+.layout--l05 { background-image: url("../../public/img/backgrounds/background-4.webp"); }
+.layout--l06 { background-image: url("../../public/img/backgrounds/background-5.webp"); }
+.layout--l07 { background-image: url("../../public/img/backgrounds/background-6.webp"); }
+.layout--l08 { background-image: url("../../public/img/backgrounds/background-7.webp"); }
+.layout--l09 { background-image: url("../../public/img/backgrounds/background-1.webp"); }
+.layout--l10 { background-image: url("../../public/img/backgrounds/background-2.webp"); }
+.layout--l11 { background-image: url("../../public/img/backgrounds/background-3.webp"); }
+
 /* ---- L01 · Portada de unidad -------------------------------------------
    Pantalla de apertura a pantalla completa. Dos rectángulos —panel de
    texto y panel de media— que se traslapan un 10 % del ancho; el
@@ -381,9 +432,21 @@
 /* ---- L06 · Interacción a pantalla completa -------------------------------
    Chrome mínimo: kicker y título centrados y compactos, la interacción
    ocupa el espacio principal. Ej.: quiz, calculadora paramétrica.
-   Antes de C0 era .layout--l10. ------------------------------------- */
-.layout--l06 {
+   Antes de C0 era .layout--l10. -------------------------------------
+   AJUSTES.md #2: el ancho de lectura va en kicker/título/interacción, no
+   en la raíz — .layout tiene que llegar de lado a lado (mismo criterio
+   que el resto del catálogo, ver la nota del 27 ago sobre quitarle el
+   max-width a .layout) para que el fondo de AJUSTES.md #1 cubra toda la
+   pantalla y no una caja angosta. width:100% + margin-inline:auto
+   funciona porque estos tres son hijos flex directos de .layout: el
+   margen automático desactiva el stretch de la cross-axis y los centra
+   en vez de dejarlos pegados al borde. */
+.layout--l06 .layout__kicker,
+.layout--l06 .layout__titulo,
+.layout--l06 .layout__interaccion {
+  width: 100%;
   max-width: 56rem;
+  margin-inline: auto;
 }
 .layout--l06 .layout__kicker,
 .layout--l06 .layout__titulo {
@@ -413,8 +476,14 @@
    plano de superficie subtle como en L06. Ancho más angosto (40rem
    contra 56rem de L06) porque una pregunta es lectura, no un tablero
    de controles. C1 (4 sep). ------------------------------------------- */
-.layout--l07 {
+/* AJUSTES.md #2: mismo criterio que L06 — el ancho de 40rem va en los
+   hijos, no en la raíz, para que .layout llegue de lado a lado. */
+.layout--l07 .layout__kicker,
+.layout--l07 .layout__titulo,
+.layout--l07 .layout__interaccion {
+  width: 100%;
   max-width: 40rem;
+  margin-inline: auto;
 }
 .layout--l07 .layout__kicker {
   display: inline-flex;
@@ -448,11 +517,19 @@
    arreglo espacial, no de datos, así que "dejarlo preparado para texto
    en tiempo de ejecución" es trabajo de router.js (ver
    `obtenerResultado()` ahí), no de este archivo. C1 (4 sep). --------- */
+/* AJUSTES.md #2: text-align:center sí puede quedarse en la raíz (no
+   limita ancho, solo alinea texto heredado); el max-width que si lo
+   hacía se movió a cada hijo, igual que en L06/L07. */
 .layout--l08 {
-  max-width: 40rem;
   text-align: center;
 }
-.layout--l08 .layout__cuerpo {
+.layout--l08 .layout__kicker,
+.layout--l08 .layout__titulo,
+.layout--l08 .layout__cuerpo,
+.layout--l08 .layout__datos,
+.layout--l08 .layout__interaccion {
+  width: 100%;
+  max-width: 40rem;
   margin-inline: auto;
 }
 .layout--l08 .layout__datos {
@@ -489,11 +566,22 @@
   .layout--l09 .layout__media { grid-area: media; }
   .layout--l09:not(:has(.layout__media)) {
     grid-template-columns: 1fr;
-    max-width: 42rem;
     grid-template-areas:
       "kicker"
       "titulo"
       "cuerpo";
+  }
+  /* AJUSTES.md #2: el 42rem vivía en la raíz; se mueve a los tres hijos
+     visibles de este caso (sin margin-inline:auto — este layout no se
+     centra, se lee pegado al margen igual que L02/L03/L04/L11) para que
+     .layout--l09 llegue de lado a lado también sin media. La regla de
+     abajo necesita ganarle a ".layout--l09 .layout__cuerpo { max-width:
+     none }" de arriba: :not(:has(...)) ya la hace más específica, no
+     depende del orden en el archivo. */
+  .layout--l09:not(:has(.layout__media)) .layout__kicker,
+  .layout--l09:not(:has(.layout__media)) .layout__titulo,
+  .layout--l09:not(:has(.layout__media)) .layout__cuerpo {
+    max-width: 42rem;
   }
 }
 /* Ideas clave como lista real (router.js las arma como <ul>, no <p>):
@@ -539,13 +627,21 @@
    es el nav-inferior del chrome (T2/T3), no un botón propio del
    layout: no hay nada más allá del cierre de unidad que el motor
    necesite ofrecer aquí — la unidad siguiente la habilita Moodle. --- */
+/* AJUSTES.md #2: mismo criterio que L06/L07/L08 — text-align:center se
+   queda en la raíz (no limita ancho); el max-width y el margin-inline:auto
+   que ya tenían cuerpo/interacción se mueven aquí y se les suman kicker y
+   título, que antes se centraban gratis por ser la raíz entera la que
+   medía 46rem. */
 .layout--l10 {
-  max-width: 46rem;
   text-align: center;
   padding-block: var(--sp-16);
 }
+.layout--l10 .layout__kicker,
+.layout--l10 .layout__titulo,
 .layout--l10 .layout__cuerpo,
 .layout--l10 .layout__interaccion {
+  width: 100%;
+  max-width: 46rem;
   margin-inline: auto;
 }
 
