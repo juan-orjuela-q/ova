@@ -174,7 +174,7 @@ window.OVA_CONTENIDO = {
       ],
       "media": {
         "tipo": "retrato",
-        "src": "../public/img/avatar/avatar-sin-fondo-plano-primer-saluda.png",
+        "src": "../public/img/avatar/avatar-sin-fondo-plano-primer-saluda.webp",
         "variante": "mascara",
         "forma": "diagonal"
       },
