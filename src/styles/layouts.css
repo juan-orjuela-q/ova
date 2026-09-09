@@ -989,6 +989,47 @@
   }
 }
 
+/* Ajustes tanda 9 (p03) · L12 con avatar: retícula de 12 columnas
+   (margen + 5 + gutter + 4 + margen), invertida en contraste respecto a
+   L12 base — título oscuro en vez de blanco, cuerpo blanco en vez de
+   oscuro. router.js agrega esta clase solo cuando media.tipo es
+   "avatar" (L12 base, sin avatar, sigue disponible tal cual para una
+   futura pantalla de "cifra que golpea" sin locución).
+
+   Contraste (regla dura 2 de CLAUDE.md): el título hereda tamaño de
+   tipo-display-2 (36-56px/700) así que --text-on-brand no tiene margen
+   de sobra, pero de todos modos gris-950 sobre naranja-500 es el par de
+   más contraste disponible en el sistema — nunca falla. El cuerpo SÍ es
+   el caso ajustado: blanco sobre naranja-500 solo cumple a ≥19px/700 o
+   ≥24px/400 (CLAUDE.md), y tipo-cuerpo-lg (18-20px/400) no llega — por
+   eso gana un font-size propio de 1.5rem (24px) fijo en todos los
+   anchos, no un clamp que pueda bajar de 24px en mobile. */
+.layout--l12--avatar .layout__titulo {
+  color: var(--text-on-brand);
+  white-space: normal;
+}
+.layout--l12--avatar .layout__media {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.layout--l12--avatar .layout__media .layout__cuerpo {
+  color: var(--text-on-brand-display);
+}
+.layout--l12--avatar .layout__media .layout__cuerpo p {
+  font-size: 1.5rem;
+}
+@media (min-width: 40em) {
+  .layout--l12--avatar {
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--sp-10);
+    grid-template-areas:
+      ". texto texto texto texto texto . media media media media .";
+  }
+  .layout--l12--avatar .layout__texto { grid-area: texto; }
+  .layout--l12--avatar .layout__media { grid-area: media; }
+}
+
 /* ---- L13 · Corte oscuro, cierre o transición ------------------------------
    Antes de C0 era .layout--l06 ("cita o dato curioso"). C2 (4 sep) le
    agregó el tratamiento de superficie del brief: --surface-inverse a

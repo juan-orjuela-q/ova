@@ -1915,6 +1915,18 @@
           </div>
         </div>
         <p class="ks-intro">Sobre <code>--surface-brand</code> a sangre desde C2 (4 sep). Contraste según la regla de <code>CLAUDE.md</code>: título en blanco (es tipo-display-2, cumple el mínimo de "display"), kicker y cuerpo en gris 950.</p>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L12 · variante avatar (AJUSTES.md, tanda 9) — retícula de 12 columnas, margen + 5 + gutter + 4 + margen</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l12 layout--l12--avatar">
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Unidad 1 · Apertura</span>
+              <h2 class="layout__titulo tipo-display-2">Invertir empieza por cambiar la forma de ahorrar</h2>
+            </div>
+            <div class="layout__media" id="l12-avatar-media"></div>
+          </div>
+        </div>
+        <p class="ks-intro"><code>router.js</code> agrega <code>.layout--l12--avatar</code> solo cuando <code>media.tipo</code> es <code>"avatar"</code> — el mismo ejemplo real que <code>p03</code> en <code>content/ova-u1.js</code>. Contraste invertido respecto a L12 base: título en gris 950 (no blanco) y cuerpo en blanco a 24px fijo (no el tamaño normal de <code>tipo-cuerpo-lg</code>, 18-20px, que a esa combinación no llega al mínimo de contraste). El cuerpo se agrega dentro del mismo <code>.layout__media</code> que arma <code>crearMedia()</code>, no en <code>.layout__texto</code>: avatar y texto blanco comparten el bloque de 4 columnas, apilados.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l13">
@@ -2162,6 +2174,33 @@
       // C7: ranura de avatar nueva en L08/L10/L13 — mismo tono de
       // prueba, sin audio (todavía sin grabar) en L08/L10 y con audio
       // en L13 para seguir ejercitando esa ruta también aquí.
+      // Ajustes tanda 9: mismo ejemplo real que p03 en content/ova-u1.js.
+      // A diferencia de montar() (solo aprecia el reproductor), aquí el
+      // cuerpo se agrega dentro del mismo .layout__media a mano, después
+      // del reproductor — mismo orden que arma PLANTILLAS.L12 en
+      // router.js cuando la pantalla trae avatar, para que la kitchen
+      // sink siga siendo un espejo real del DOM.
+      (function () {
+        var contenedor = document.getElementById('l12-avatar-media');
+        var reproductor = OVA.media.crear({
+          tipo: 'avatar',
+          variante: 'md',
+          imagen: '../public/img/avatar/avatar-abierto-confondo-1.webp',
+          audio: '../public/audio/demo-avatar.mp3',
+          transcripcion: 'En 2024, solo 40% de los adultos en economías en desarrollo ahorró en una cuenta financiera.'
+        });
+        if (contenedor && reproductor) {
+          contenedor.appendChild(reproductor);
+          var cuerpo = document.createElement('div');
+          cuerpo.className = 'layout__cuerpo';
+          var p = document.createElement('p');
+          p.className = 'tipo-cuerpo-lg';
+          p.textContent = 'En 2024, solo 40% de los adultos en economías en desarrollo ahorró en una cuenta financiera.';
+          cuerpo.appendChild(p);
+          contenedor.appendChild(cuerpo);
+        }
+      })();
+
       montar('l08-media', { tipo: 'avatar', imagen: IMAGEN_AVATAR_DEMO, transcripcion: TRANSCRIPCION_AVATAR_DEMO });
       montar('l10-media', { tipo: 'avatar', imagen: IMAGEN_AVATAR_DEMO, transcripcion: TRANSCRIPCION_AVATAR_DEMO });
       montar('l13-media', {

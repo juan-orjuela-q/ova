@@ -257,6 +257,13 @@ window.OVA_CONTENIDO = {
       "cuerpo": [
         "En 2024, solo 40% de los adultos en economías en desarrollo ahorró en una cuenta financiera."
       ],
+      "media": {
+        "tipo": "avatar",
+        "variante": "md",
+        "imagen": "../public/img/avatar/avatar-abierto-confondo-1.webp",
+        "audio": "../public/audio/demo-avatar.mp3",
+        "transcripcion": "En 2024, solo 40% de los adultos en economías en desarrollo ahorró en una cuenta financiera."
+      },
       "progreso": true
     },
     {

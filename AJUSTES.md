@@ -1285,3 +1285,127 @@ horizontal confirmado en cambio a 320px y 1280px sin zoom, y a 1280px con
 el zoom crudo de la prueba. Pendiente de una verificación real de zoom de
 texto (con el Playwright de Node, cuando esté disponible) si Juan quiere
 más confianza en ese punto específico.
+
+---
+
+## 15 · Tanda 9: L12 con avatar (p03) — cerrado 6 sep
+
+**Pedido.** Referencia en `ref-ajustes/tanda-9/referencia-tanda9.png`:
+redibujar `p03` ("Invertir empieza por cambiar la forma de ahorrar",
+hoy `L12` sin avatar) sobre una retícula de 12 columnas — margen, 5
+columnas de kicker+título en gris oscuro, una columna de separación,
+4 columnas con locución en avatar-md y debajo el cuerpo en blanco, margen.
+
+**Cuatro decisiones de alcance, confirmadas con Juan antes de tocar
+código** (mismo criterio que los ítems 4/9 de tandas anteriores):
+
+1. **Variante nueva, no reemplazo de L12.** `L12` hoy solo lo usa `p03`,
+   pero con título blanco (display) y cuerpo oscuro — exactamente al
+   revés de lo pedido. Se optó por `.layout--l12--avatar`, activada por
+   `router.js` solo cuando `media.tipo === 'avatar'` (mismo mecanismo que
+   `.layout--l03--avatar`/`--retrato`, AJUSTES.md #9/tanda 8): `L12` base
+   queda intacto para una futura pantalla de "cifra que golpea" sin
+   locución.
+2. **Contraste del cuerpo blanco (regla dura 2).** El cuerpo de la
+   referencia se ve al tamaño normal de `tipo-cuerpo-lg` (18-20px/400),
+   que sobre naranja-500 en blanco no llega al mínimo de contraste
+   (`--text-on-brand-display` solo cumple a ≥19px/700 o ≥24px/400,
+   `tokens.css`). Se subió a 24px fijo en todos los anchos —no un
+   `clamp` que pueda bajar de 24 en mobile— sin tocar el peso.
+3. **Fondo naranja sólido, sin la textura de rayas de la referencia.**
+   Juan aclaró que la textura era solo una guía de retícula de Figma
+   para él, no un asset a implementar — `L12` sigue excluido de imagen
+   de fondo (AJUSTES.md #1), cero riesgo de contraste nuevo.
+4. **Avatar y audio de `p03`, mismo patrón que `p02` en tanda 8** (`p03`
+   no estaba entre las 14 pantallas de avatar de D8): foto sin usar
+   todavía en contenido real (`avatar-abierto-confondo-1.webp`) y el
+   clip placeholder que le tocaba alternar (`demo-avatar.mp3`, ya que
+   `p02` y `p04` —sus vecinas— ya usan `loc1_objetivos.mp3`).
+
+**Qué se hizo:**
+
+- **`router.js` (`PLANTILLAS.L12`)** se bifurca según `media.tipo`. Sin
+  avatar, el comportamiento es idéntico a antes (kicker/título/cuerpo
+  sueltos). Con avatar: kicker+título van juntos en `.layout__texto`
+  (sin cuerpo ahí — cambio respecto al patrón de L03, donde `texto` sí
+  incluye el cuerpo); el cuerpo se agrega dentro del mismo
+  `.layout__media` que ya arma `crearMedia()`, después del reproductor,
+  para que avatar y texto blanco apilen en una sola área de grid en vez
+  de necesitar un contenedor nuevo.
+- **`layouts.css`**, bloque nuevo después de L12 base: `grid-template-
+  columns: repeat(12, 1fr)` + `column-gap: var(--sp-10)` (40px, mismo
+  token que `--retrato`/`--avatar` de L03) con
+  `grid-template-areas: ". texto×5 . media×4 ."` — la única variante del
+  catálogo con un carril de separación explícito entre bloques de
+  contenido, además del `column-gap` normal entre columnas (a diferencia
+  de L03, que solo usa el `column-gap` como separador). Fuera del media
+  query: `color: var(--text-on-brand)` + `white-space: normal` en
+  `.layout__titulo` (pisa el `nowrap` y el blanco de L12 base, pensado
+  para un número corto, no para un titular de tres líneas);
+  `.layout__media` pasa a `flex-column` con `gap: var(--sp-6)` (24px, el
+  mismo valor ya documentado para separar zonas); su `.layout__cuerpo`
+  gana `color: var(--text-on-brand-display)` y sus párrafos
+  `font-size: 1.5rem`.
+- **`content/ova-u1.js`**: `p03` gana el objeto `media` (avatar, variante
+  `md`, foto + audio + transcripción — la transcripción es el mismo
+  texto breve del `cuerpo`, coherente con un clip de ~15s).
+- **`dev/kitchen-sink.html`**: segundo ejemplo dentro del bloque L12
+  (mismo patrón que el segundo ejemplo de L03), con un script propio
+  —no el `montar()` genérico, que solo aprecia el reproductor— que arma
+  reproductor + cuerpo dentro de `.layout__media` en el mismo orden que
+  `router.js`, para que la kitchen sink siga siendo un espejo real del
+  DOM.
+
+**Verificado con Playwright (Node, `chromium`, instalado en el
+scratchpad de la sesión), `src/index.html` (navegando a `#p03`) y
+`dev/kitchen-sink.html`, por `file://`:**
+
+- A 1280px, `grid-template-columns` computa a 12 pistas de 66px con
+  `column-gap: 40px`; el bloque de texto mide 490px (5 columnas + 4
+  medianiles internos) y el de media 384px (4 columnas + 3 medianiles);
+  el margen izquierdo y derecho miden 130px cada uno (simétrico); el
+  espacio entre los dos bloques mide 146px (1 columna de 66px + 2
+  `column-gap` de 40px, la cuenta esperada de un carril de separación
+  explícito) — todo con `getBoundingClientRect`, no asumido. Centro
+  vertical de ambos bloques idéntico (454.79px los dos), conservando la
+  regla de centrado entre columnas enfrentadas (AJUSTES.md #12).
+- `getComputedStyle`: título en `rgb(11,11,11)` (gris 950) y
+  `white-space: normal`; kicker igual, sin cambio; cuerpo en
+  `rgb(255,255,255)` a `font-size: 24px`; fondo de la raíz en
+  `rgb(255,66,1)` (naranja 500) con `background-image: none` (sin
+  textura). El reproductor monta de verdad (`.media-avatar__figura`
+  presente, `.media-audio` sin la clase `--sin-audio` porque el audio
+  placeholder sí existe) y el disclosure "Ver transcripción" está
+  presente y colapsado (audio real, no el texto directo de la
+  degradación sin audio).
+- Recorrido de teclado real desde el primer Tab en `p03`: cae en el
+  botón de play, luego el scrubber, luego "Ver transcripción", luego
+  "Anterior"/"Siguiente" del chrome — los cinco con
+  `outline: solid 3px` (el foco naranja de siempre, nunca `none`). No
+  hay nada focalizable entre kicker/título/cuerpo (son texto plano), así
+  que el primer Tab entra directo al reproductor — mismo comportamiento
+  que cualquier otra pantalla real de avatar.
+- 320px: `scrollWidth === clientWidth` en `src/index.html` (sin scroll
+  horizontal), `.layout--l12` en `display:flex` (apilado: texto arriba,
+  avatar+cuerpo debajo, sin condición nueva que probar — hereda el
+  `flex-column` de base). En la kitchen sink, el subárbol de
+  `.layout--l12--avatar` no desborda (`right` máximo de sus
+  descendientes en 272px, la raíz en 296px) — el `scrollWidth` global de
+  la página sí supera 320px, pero por los mismos tres elementos ya
+  documentados y fuera de alcance del ajuste #2
+  (`.dato-tabla`, `.media-audio__controles`, un `.boton--outline` de
+  demo), confirmado elemento por elemento con `getBoundingClientRect`
+  antes de descartarlos.
+- Zoom de texto 200% con la misma técnica (y la misma limitante) que
+  tanda 8: `p03` desborda a 502px de `scrollWidth`, pero un control sin
+  tocar (`p04`) desborda casi igual (501px) con la misma técnica — no es
+  una regresión de este ajuste, es la limitante ya documentada de
+  `documentElement.style.fontSize` como sustituto de un zoom de texto
+  real.
+- Cero errores de consola nuevos en ambas páginas (los tres
+  `ERR_FILE_NOT_FOUND` de la kitchen sink son los placeholders
+  preexistentes ya documentados en el ajuste 1). Cero hex nuevo en los
+  cuatro archivos tocados (`router.js`, `layouts.css`,
+  `content/ova-u1.js`, `dev/kitchen-sink.html`) — los colores nuevos son
+  los tokens ya existentes `--text-on-brand`/`--text-on-brand-display`,
+  y el tamaño nuevo (24px) es un valor de tipografía, no de color.

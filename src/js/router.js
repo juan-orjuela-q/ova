@@ -927,10 +927,31 @@
   // Antes de C0 esta era PLANTILLAS.L05 ("cifra destacada").
   PLANTILLAS.L12 = function (pantalla) {
     var raiz = crearRaiz('l12');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
-    var titulo = crearTitulo(pantalla.titulo, 'tipo-display-2');
-    raiz.appendChild(titulo);
-    raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo-lg'));
+    var titulo;
+    if (pantalla.media && pantalla.media.tipo === 'avatar') {
+      // Ajustes tanda 9 (p03, "Invertir empieza por cambiar la forma de
+      // ahorrar"): variante con retícula de 12 columnas (margen + 5 +
+      // gutter + 4 + margen) cuando la pantalla trae avatar — mismo
+      // mecanismo que .layout--l03--avatar/--retrato (se deriva de
+      // media.tipo, sin campo nuevo de contrato). Kicker+título quedan
+      // juntos en el bloque de 5 columnas (envolverTexto, sin cuerpo);
+      // el avatar y el cuerpo comparten el bloque de 4 columnas — el
+      // cuerpo se agrega dentro del mismo .layout__media que crearMedia()
+      // ya arma, en vez de un contenedor aparte, para que ambos apilen
+      // en una sola área de grid (layouts.css).
+      raiz.classList.add('layout--l12--avatar');
+      var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
+      titulo = crearTitulo(pantalla.titulo, 'tipo-display-2');
+      raiz.appendChild(envolverTexto([kicker, titulo]));
+      var media = crearMedia(pantalla.media);
+      media.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo-lg'));
+      raiz.appendChild(media);
+    } else {
+      if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+      titulo = crearTitulo(pantalla.titulo, 'tipo-display-2');
+      raiz.appendChild(titulo);
+      raiz.appendChild(crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo-lg'));
+    }
     return { raiz: raiz, titulo: titulo };
   };
 
