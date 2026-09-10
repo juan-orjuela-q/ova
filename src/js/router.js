@@ -1098,15 +1098,18 @@
      dentro de la OVA — ese índice navegable es el drawer, no la miga.
      CSS fuerza la unidad a su propia línea (flex-basis:100% sobre el
      primer ítem); cápsula y tema quedan en la segunda. Cuando
-     `capsula` es null (Apertura/Cierre) el ítem de cápsula se oculta
-     y el tema pierde su separador — "Tema" solo. Cuando el título de
-     la pantalla es el mismo nombre de la cápsula (su primera
-     pantalla), se muestra solo la cápsula como ítem actual: repetir
-     el mismo texto dos veces separado por "›" es ruido. El separador
-     es un <span aria-hidden="true"> real del DOM (index.html), no
-     contenido generado por CSS, porque un lector de pantalla no
-     siempre ignora el ::after con texto y esto es puramente
-     decorativo. */
+     `capsula` es null el ítem de cápsula se oculta y el tema pierde
+     su separador — "Tema" solo. Desde E3, las etiquetas de
+     agrupación (Antes de empezar, Apertura, Cápsula 1–4, Cierre,
+     Simulador) son valores reales de `capsula`: la única pantalla que
+     sigue en null es la portada, así que esta rama ahora es
+     prácticamente solo el caso de L01. (La regla de "si el título
+     repite el nombre de la cápsula, mostrar solo la cápsula" que
+     vivía aquí quedó descartada: ninguna pantalla se llama igual que
+     su etiqueta — no se implementó.) El separador es un
+     <span aria-hidden="true"> real del DOM (index.html), no contenido
+     generado por CSS, porque un lector de pantalla no siempre ignora
+     el ::after con texto y esto es puramente decorativo. */
   function tituloSinPrefijo(titulo) {
     var i = titulo.indexOf(':');
     return i === -1 ? titulo : titulo.slice(i + 1).trim();
@@ -1329,12 +1332,14 @@
 
      D1: se agrupa por unidad (<h3>) y, dentro, por cápsula (<h4>) —
      encabezados reales, no <div>, para que un lector de pantalla
-     pueda saltar de grupo en grupo. Cuando `capsula` es null
-     (Apertura/Cierre) esas pantallas quedan en su propia <ul> bajo el
-     <h3> de la unidad, sin <h4> intermedio: no hay nombre de cápsula
-     que anunciar. Los grupos se detectan por el cambio de valor
-     consecutivo, no por un mapa aparte — el contenido ya viene
-     ordenado y cada unidad/cápsula es un tramo contiguo. */
+     pueda saltar de grupo en grupo. Cuando `capsula` es null esas
+     pantallas quedan en su propia <ul> bajo el <h3> de la unidad, sin
+     <h4> intermedio: no hay nombre de cápsula que anunciar. Desde E3
+     esto ya casi no pasa — Antes de empezar, Apertura, Cierre y
+     Simulador son valores reales de `capsula`, así que la única
+     pantalla en null es la portada. Los grupos se detectan por el
+     cambio de valor consecutivo, no por un mapa aparte — el contenido
+     ya viene ordenado y cada unidad/cápsula es un tramo contiguo. */
   function construirDrawer(contenido) {
     var titulo = document.getElementById('drawer-titulo');
     var lista = document.getElementById('drawer-lista');

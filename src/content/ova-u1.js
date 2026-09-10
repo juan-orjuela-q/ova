@@ -165,8 +165,8 @@ window.OVA_CONTENIDO = {
       "layout": "L03",
       "titulo": "Te damos la bienvenida",
       "unidad": "Unidad 1",
-      "capsula": null,
-      "kicker": "Antes de empezar",
+      "capsula": "Antes de empezar",
+      "kicker": "Unidad 1 · Antes de empezar",
       "cuerpo": [
         "¡Hola, soy Claudia!",
         "Y seré tu guía en esta primera unidad donde aprenderás a entender el mercado en el que estás entrando, qué derechos obtienes y por qué toda inversión exige información, criterio y control del riesgo.",
@@ -185,8 +185,8 @@ window.OVA_CONTENIDO = {
       "layout": "L09",
       "titulo": "Un curso para todas las personas",
       "unidad": "Unidad 1",
-      "capsula": null,
-      "kicker": "Antes de empezar",
+      "capsula": "Antes de empezar",
+      "kicker": "Unidad 1 · Antes de empezar",
       "cuerpo": [
         "Creado bajo estándares internacionales de accesibilidad digital para ofrecer una experiencia fluida, clara y sin barreras."
       ],
@@ -206,8 +206,8 @@ window.OVA_CONTENIDO = {
       "layout": "L09",
       "titulo": "Cómo se recorre este curso",
       "unidad": "Unidad 1",
-      "capsula": null,
-      "kicker": "Antes de empezar",
+      "capsula": "Antes de empezar",
+      "kicker": "Unidad 1 · Antes de empezar",
       "controles": [
         { "imagen": "../public/img/icons/muestra-navegacion-1-menu.svg", "texto": "Índice: abre la lista completa de pantallas de la unidad." },
         { "imagen": "../public/img/icons/muestra-navegacion-2-ubicacion.svg", "texto": "Tu ubicación: siempre ves en qué cápsula y tema estás." },
@@ -226,8 +226,8 @@ window.OVA_CONTENIDO = {
       "layout": "L03",
       "titulo": "Objetivos de aprendizaje",
       "unidad": "Unidad 1",
-      "capsula": null,
-      "kicker": "Unidad 1 · Apertura",
+      "capsula": "Antes de empezar",
+      "kicker": "Unidad 1 · Antes de empezar",
       "cuerpo": [
         "Al finalizar esta unidad podrás:"
       ],
@@ -252,7 +252,7 @@ window.OVA_CONTENIDO = {
       "layout": "L12",
       "titulo": "Invertir empieza por cambiar la forma de ahorrar",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "cuerpo": [
         "En 2024, solo 40% de los adultos en economías en desarrollo ahorró en una cuenta financiera."
@@ -271,7 +271,7 @@ window.OVA_CONTENIDO = {
       "layout": "L02",
       "titulo": "Antes de empezar: mide tu punto de partida",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "cuerpo": [
         "Responde cinco preguntas rápidas. No tienen nota; sirven para que identifiques qué conceptos ya conoces y cuáles debes reforzar durante la unidad."
@@ -289,7 +289,7 @@ window.OVA_CONTENIDO = {
       "layout": "L07",
       "titulo": "Diagnóstico 1",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I01",
@@ -328,7 +328,7 @@ window.OVA_CONTENIDO = {
       "layout": "L07",
       "titulo": "Diagnóstico 2",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I02",
@@ -353,7 +353,7 @@ window.OVA_CONTENIDO = {
       "layout": "L07",
       "titulo": "Diagnóstico 3",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I01",
@@ -392,7 +392,7 @@ window.OVA_CONTENIDO = {
       "layout": "L07",
       "titulo": "Diagnóstico 4",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I02",
@@ -417,7 +417,7 @@ window.OVA_CONTENIDO = {
       "layout": "L07",
       "titulo": "Diagnóstico 5",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "interaccion": {
         "tipo": "I01",
@@ -456,7 +456,7 @@ window.OVA_CONTENIDO = {
       "layout": "L08",
       "titulo": "Tu punto de partida",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "media": {
         "tipo": "avatar",
@@ -518,7 +518,7 @@ window.OVA_CONTENIDO = {
       "layout": "L05",
       "titulo": "Las cuatro cápsulas de la unidad",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "tarjetas": [
         {
@@ -1251,7 +1251,7 @@ window.OVA_CONTENIDO = {
       "layout": "L09",
       "titulo": "Ideas clave de la unidad",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Cierre",
       "kicker": "Unidad 1 · Cierre",
       "cuerpo": [
         "Las acciones pertenecen a la renta variable.",
@@ -1267,7 +1267,7 @@ window.OVA_CONTENIDO = {
       "layout": "L02",
       "titulo": "Las tres bolsas de nuam",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Cierre",
       "kicker": "Unidad 1 · Cierre",
       "cuerpo": [
         "Colombia: Bolsa de Valores de Colombia | Supervisor: SFC | Depósito: Deceval.",
@@ -1286,7 +1286,7 @@ window.OVA_CONTENIDO = {
       "layout": "L11",
       "titulo": "Recursos para llevarte",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Cierre",
       "kicker": "Unidad 1 · Cierre",
       "cuerpo": [
         "Además del contenido de la unidad, tendrás cuatro herramientas para usar después."
@@ -1324,7 +1324,7 @@ window.OVA_CONTENIDO = {
       "layout": "L10",
       "titulo": "Qué sigue después de esta unidad",
       "unidad": "Unidad 1",
-      "capsula": null,
+      "capsula": "Cierre",
       "kicker": "Unidad 1 · Cierre",
       "cuerpo": [
         "En la siguiente unidad profundizarás en conceptos del mercado bursátil: mercado primario y secundario, operaciones de contado, repos, transferencia temporal de valores y actores del ecosistema."
