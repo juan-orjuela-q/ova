@@ -2140,6 +2140,51 @@ a.cap-tarjeta:hover {
   animation: quiz-retro-entrada var(--dur-base) var(--ease-out) both;
 }
 
+/* ---- I15 cuestionario (E1, PLAN-ESTRUCTURA.md §2, componentes) ---------
+   Única excepción al contrato "una pregunta por pantalla": varias
+   preguntas del catálogo de arriba dentro de una sola interacción. Cada
+   .quiz-cuestionario__item es un <form> independiente (mismo patrón que
+   .quiz-interaccion, sin envolverlo), apiladas con gap y un divisor
+   entre hermanos en vez de márgenes propios. El contador va pegado a
+   cada pregunta a propósito (quiz.js, trampa 3): se ve sin volver
+   arriba aunque la batería desborde el alto disponible y haya que
+   scrollear #app. */
+.quiz-cuestionario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  width: 100%;
+}
+.quiz-cuestionario__enunciado {
+  color: var(--text-secondary);
+}
+.quiz-cuestionario__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+.quiz-cuestionario__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding-block-start: var(--sp-6);
+  border-block-start: 1px solid var(--border-default);
+}
+.quiz-cuestionario__item:first-child {
+  padding-block-start: 0;
+  border-block-start: none;
+}
+.quiz-cuestionario__contador {
+  color: var(--text-tertiary);
+}
+.quiz-cuestionario__resultado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding-block-start: var(--sp-6);
+  border-block-start: 1px solid var(--border-default);
+}
+
 /* ============================================================
    T7 — Datos y gráficos. Familia `.dato-`.
    ============================================================ */

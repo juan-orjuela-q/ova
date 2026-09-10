@@ -3783,3 +3783,167 @@ todavía ningún `data-anim` propio más allá de la entrada escalonada
 genérica que ya heredan `.layout__kicker/titulo/cuerpo/interaccion`
 (ítem 2 del inventario de movimiento) — no había nada específico de
 D7 que animar aparte de eso.
+
+---
+
+## PLAN-ESTRUCTURA.md (E0–E7)
+
+Plan vigente desde el 10 de septiembre — ver `PLAN-ESTRUCTURA.md`. Corre
+después de D0–D6 (D7/D9/D10 quedan pendientes y no se retoman hasta
+cerrar este plan). Reestructura el recorrido de 50 a 26 pantallas; no
+toca el motor salvo lo que E1/E2 necesitan.
+
+- [x] **E0 · Rama `e-reestructura` y el plan** — completada 10 sep
+      (commit `de68814`).
+- [x] **E1 · I15 cuestionario (+ `OVA.resultado` compartido, + kitchen
+      sink)** — completada 10 sep. Detalle abajo.
+- [ ] E2 · `bloqueaAvance` — pendiente.
+- [ ] E3 · etiquetas como agrupador — pendiente.
+- [ ] E4 · contenido nuevo (`content/ova-u1.js` con el orden de §1) —
+      pendiente. **E1 no tocó `content/ova-u1.js`** a propósito: las
+      pantallas p05–p10 del diagnóstico siguen siendo las cinco de
+      siempre (L07 × 5 + L08) hasta que E4 las funda en `p05-diagnostico`
+      (L06 · I15) — el motor ya sabe construir I15, pero nada del
+      contenido real lo usa todavía.
+- [ ] E5–E7 · pendientes.
+
+**10 sep — E1 cerrada: catálogo I15 (cuestionario) en `quiz.js`, con
+una extracción compartida `OVA.resultado` (archivo nuevo) que también
+absorbió al `PLANTILLAS.L08` de `router.js`, verificada de punta a
+punta con Playwright.**
+
+**Qué se construyó:**
+
+- **`src/js/resultado.js`** (nuevo) — `OVA.resultado.resolver(resultado)`
+  (la regla "primera que aplica gana" contra una variable de
+  `state.js`, idéntica a la que antes vivía dentro de
+  `obtenerResultado()` en `router.js`) y `OVA.resultado.construir(efectivo)`
+  (cifra vía `OVA.charts.crear({tipo:'cifra',…})` + callout vía
+  `.callout`, T5 — el mismo candado ícono+título que ya cumplía
+  `crearCalloutResultado()`). Dos funciones con responsabilidades que
+  no se pisan: una decide QUÉ mostrar, la otra lo pinta — así I15
+  puede resolver su propio `datos.resultado` sin pasar por una
+  `pantalla` de `router.js`, que es lo que exigía la nota "reusar, no
+  duplicar" del plan (§2): sin esta extracción habría dos
+  implementaciones de "primera que aplica gana" divergiendo en la
+  primera corrección.
+- **`router.js`** — `obtenerResultado(pantalla)` quedó en tres líneas
+  (el fallo ruidoso propio de L08 sin "resultado" en absoluto o sin
+  cifra/retro tras resolver) delegando el resto en
+  `OVA.resultado.resolver()`; `PLANTILLAS.L08` arma sus dos
+  contenedores (`.layout__datos`/`.layout__interaccion`) alrededor de
+  los nodos que devuelve `OVA.resultado.construir()`, sin volver a
+  construirlos a mano. `mezclarCifraConVariable()` y
+  `crearCalloutResultado()` se borraron de `router.js` (viven en
+  `resultado.js`), no quedaron duplicadas.
+- **`src/js/quiz.js`, `construirCuestionario()`** — despachada por
+  `CONSTRUCTORES_INSIGNIA['I15']`, igual que I07/I08/I13: arma su
+  propio DOM (`.quiz-cuestionario`), no pasa por el
+  fieldset/Comprobar/Reintentar único de `crear()`. Cada pregunta de
+  `datos.preguntas` se resuelve con su constructor real de
+  `CONSTRUCTORES` (I01–I05/completar/numerica/autoevaluacion — nunca
+  otra I15 ni I07/I08/I09–I13) dentro de su propio `<form
+  class="quiz-cuestionario__item">`, con su propio Comprobar/
+  Reintentar/retro (I14) — visualmente las cinco están montadas a la
+  vez, apiladas, no reveladas una por una.
+  - **Trampa 1 (score.raw pisado cinco veces):** cada pregunta reporta
+    su fila a `cmi.interactions` (`reportarSCORM`, sin cambios) pero
+    ninguna llama a `actualizarNota()` — la nota se calcula una sola
+    vez, al resolver la última pregunta, como
+    `Math.round(aciertos / total * 100)`.
+  - **Trampa 2 (recargar a media batería no encierra):** el intento de
+    cada pregunta sigue sin persistirse (T6, sin cambios), pero la
+    terminación de la BATERÍA COMPLETA sí — `OVA.state.establecerVariable(idScorm + '-completo', true)`
+    al resolver la quinta. Al montar, si esa marca ya está en `true`,
+    las cinco preguntas arrancan bloqueadas de una (sin reconstruir
+    qué se respondió — eso sí se pierde, igual que siempre) y el
+    bloque de resultado se muestra directo, sin repetir el reporte a
+    SCORM ni recalcular la nota.
+  - **Trampa 3 (alto ~780px):** sin contenedor de scroll propio — es
+    scroll real dentro de `#app` (regla dura 9). El contador "Pregunta
+    N de 5" va pegado a cada `.quiz-cuestionario__item`, no arriba del
+    cuestionario, así se ve sin volver arriba.
+  - **Trampa 4 (foco):** ninguna llamada a `.focus()` en todo el
+    constructor; la retro de cada pregunta y `.quiz-cuestionario__resultado`
+    son `role="status"`, se anuncian solas.
+  - **Trampa 5 (color):** la cifra final lleva etiqueta y el callout
+    ícono + título — mismos componentes que ya cumplían la regla en
+    L08, reusados vía `OVA.resultado.construir()`.
+  - `datos.variable` (opcional, acumulador único) se aplica a CADA
+    pregunta que resuelva "correcto" vía la `actualizarVariableContenido()`
+    ya existente — el contenido lo declara una sola vez en vez de
+    repetirlo en las cinco preguntas, a diferencia de como está hoy
+    p05–p09 en `content/ova-u1.js` (que E4 todavía no tocó).
+- **CSS (`components.css`)** — familia `.quiz-cuestionario*` nueva,
+  después de `.quiz-retro--entrada`: `flex-direction: column` + `gap`
+  en todos los niveles (regla dura de CLAUDE.md, nada de márgenes por
+  hermano), divisor `border-block-start` entre preguntas en vez de
+  espacio decorativo aparte.
+
+**Verificado con Playwright (Python, Chromium), `dev/kitchen-sink.html`
+y `src/index.html` por `file://`:**
+
+- Los tres estados de I15 en la kitchen sink (`#c-i15-sin-empezar`,
+  `#c-i15-a-medias` con las dos primeras resueltas por script al
+  cargar, `#c-i15-completo` montada con la marca de finalización ya en
+  `true` — el equivalente real de un F5 después de terminar):
+  `role="status"` presente en las cinco retro más el bloque de
+  resultado (seis, confirmado por atributo real); cada `<fieldset>`
+  con su `<legend>`; responder las cinco preguntas a mano en
+  `#c-i15-sin-empezar` (incluida la única con la respuesta correcta en
+  el segundo radio, para no dar por buena una selección por defecto)
+  hace aparecer el bloque de resultado con el texto exacto de la regla
+  que matchea; `#c-i15-a-medias` deja el contador de la pregunta 3 en
+  "Pregunta 3 de 5" sin resultado visible (2/5 no alcanza el total);
+  `#c-i15-completo` arranca con los cinco "Comprobar" ocultos y el
+  resultado visible de una, con el texto de la regla intermedia
+  (variable fijada en 4 antes de montar).
+- Foco real con `Tab` (no `.focus()` sintético — el mismo matiz que ya
+  dejó documentado D2: un `.focus()` por script no siempre dispara
+  `:focus-visible`) hasta el primer radio y hasta "Comprobar" de la
+  primera pregunta: anillo sólido en los dos (`outlineStyle: solid`,
+  `outlineWidth: 3px`), nunca `outline: none`.
+- Zoom de texto 200% (proxy, `font-size` en `:root`) sobre `#c-i15`:
+  sin overflow horizontal propio. `prefers-reduced-motion: reduce`
+  colapsa la animación de cada `.quiz-retro` a `1e-05s` (el mismo
+  token compartido de siempre, sin duplicar el media query).
+- **320px — cero regresión, verificada por comparación real, no solo
+  razonada:** `dev/kitchen-sink.html` sigue desbordando a 320px
+  (414px de `scrollWidth` hoy; 398px en la nota de D1/D3, la
+  diferencia es de sesiones posteriores no leídas en detalle esta
+  vez), pero el listado elemento por elemento es **idéntico antes y
+  después de esta tarea** (`git stash` contra el estado previo a E1,
+  mismo conjunto de nodos desbordados: `.nav-migas__eyebrow`,
+  `.media-audio`/`.media-avatar__figura`, `.dato-tabla` de T7) —
+  ninguno de los nodos `.quiz-cuestionario*` aparece en esa lista.
+  Overflow preexistente, ajeno a E1, heredado por quien cierre E6.
+- `src/index.html`: recorrido real hasta `p10` (L08, sin responder el
+  diagnóstico) sigue mostrando el estado "todavía no respondiste el
+  diagnóstico" — confirma que la extracción de `obtenerResultado()`/
+  `PLANTILLAS.L08` a `OVA.resultado` no cambió el comportamiento
+  visible de las cuatro pantallas reales que ya usan L08 (P10/P31/
+  P43/P47). Cero errores de consola en las dos páginas.
+- `node --check` sobre los tres archivos `.js` tocados/nuevos (sin
+  bundler en el proyecto — regla dura 4 — así que es el chequeo de
+  sintaxis disponible antes de abrir el navegador).
+
+**Cero hex nuevo, cero duración/curva nueva fuera de `tokens.css`**
+(`git diff` filtrado contra `#[0-9a-f]{3,8}` y contra literales de
+`ms`/`cubic-bezier`, cero coincidencias en los seis archivos tocados).
+
+**Kitchen sink.** Sección nueva "I15 · Cuestionario (E1)" dentro de
+"Componentes", después de "Interacciones nuevas (C5)": los tres
+estados como exige el cierre del plan, cada uno montado con
+`OVA.quiz.crear({tipo:'I15',…})` real — nada simulado con CSS. Reusa
+las cinco preguntas reales del diagnóstico (mismos textos que
+p05–p09) con ids de demo propios (`ks-i15-1/-2/-3`) para que los tres
+montajes no compartan acumulador ni marca de finalización entre sí
+dentro de la misma página (`state.js` es un singleton).
+
+**No se tocó `content/ova-u1.js` ni `CLAUDE.md`, a propósito.** El
+primero es tarea de E4 (fusionar p05–p10 reales en `p05-diagnostico`);
+el segundo se corrige en E7 — el plan es explícito en que la
+contradicción de "una pregunta por pantalla" se resuelve ahí, no antes
+("§2: CLAUDE.md se edita en E7, no se deja la contradicción viva").
+Hasta que eso pase, el motor ya sabe construir I15 pero ningún
+contenido real lo usa todavía.

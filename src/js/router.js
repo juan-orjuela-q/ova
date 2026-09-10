@@ -360,100 +360,23 @@
   }
 
   // C1/C4: L08 lee su cifra/retroalimentación de pantalla.resultado.
-  // Sin "variable", es el JSON estático de siempre. Con "variable"
-  // (C4), lee OVA.state.obtenerVariable(resultado.variable) — la
-  // escribe quiz.js, ver su encabezado — y elige entre
-  // resultado.reglas la primera que aplique (evaluadas en el orden
-  // del arreglo: el contenido las ordena de la más exigente a la
-  // menos, la primera que matchea gana):
-  //   { valor: x, cifra?, retro? }    — variable === x (comparación
-  //                                      estricta, para valores
-  //                                      categóricos como perfil_riesgo)
-  //   { minimo: n, cifra?, retro? }   — variable >= n (para contadores
-  //                                      como aciertos_diagnostico)
-  // Si la variable todavía no tiene valor (el estudiante no llegó a
-  // responder) o ninguna regla matchea, cae a resultado.cifra/retro
-  // tal cual — ese par hace de estado "todavía sin dato", no hay que
-  // escribir un tercer camino para eso. Dentro de la cifra elegida,
-  // omitir "valor" muestra el número vivo de la variable tal cual
-  // (aciertos_diagnostico: el contenido no necesita repetir el
-  // conteo a mano en cada regla) — si el contenido sí escribe un
-  // "valor" propio, ese gana, mismo criterio de "más específico
-  // gana" que el resto del contrato de contenido.
-  function mezclarCifraConVariable(resultado, valorVariable) {
-    var copia = {};
-    Object.keys(resultado).forEach(function (clave) { copia[clave] = resultado[clave]; });
-    var cifra = {};
-    Object.keys(resultado.cifra).forEach(function (clave) { cifra[clave] = resultado.cifra[clave]; });
-    cifra.valor = valorVariable;
-    copia.cifra = cifra;
-    return copia;
-  }
-
+  // E1 (PLAN-ESTRUCTURA.md §2): la regla "primera que aplica gana"
+  // contra una variable de contenido vivía entera aquí; se extrajo a
+  // OVA.resultado.resolver() (resultado.js) porque I15 (quiz.js) la
+  // necesita igual al cerrar una batería de preguntas — ver el
+  // encabezado de resultado.js para el contrato completo. Esta función
+  // solo añade el fallo ruidoso propio de L08 (sin "resultado" en
+  // absoluto, o sin cifra/retro tras resolver, el layout no tiene
+  // sentido).
   function obtenerResultado(pantalla) {
-    var resultado = pantalla.resultado;
-    if (!resultado) {
+    if (!pantalla.resultado) {
       throw new Error('Esta pantalla no trae "resultado" (cifra y/o retro) y su layout lo necesita.');
     }
-    var efectivo = resultado;
-    if (resultado.variable) {
-      var valorVariable = OVA.state.obtenerVariable(resultado.variable);
-      // C7: resultado.campo (opcional) — cuando la variable guarda un
-      // objeto en vez de un valor simple (p. ej. resultado_boleta, que
-      // I11 fija como { operacion, tipo, estado, … } — ver quiz.js),
-      // este es el subcampo que se compara contra las reglas, en vez
-      // del objeto completo. Sin "campo", el comportamiento es idéntico
-      // al de antes (compara la variable tal cual) — P10/P31/P47 siguen
-      // sin necesitarlo porque sus variables ya son valores simples.
-      if (resultado.campo && valorVariable != null) {
-        valorVariable = valorVariable[resultado.campo];
-      }
-      if (valorVariable !== undefined && resultado.reglas) {
-        var regla = resultado.reglas.filter(function (r) {
-          if (r.valor !== undefined) return r.valor === valorVariable;
-          if (r.minimo !== undefined) return valorVariable >= r.minimo;
-          return false;
-        })[0];
-        if (regla) efectivo = regla;
-      }
-      if (efectivo.cifra && efectivo.cifra.valor === undefined && valorVariable !== undefined) {
-        efectivo = mezclarCifraConVariable(efectivo, valorVariable);
-      }
-    }
+    var efectivo = OVA.resultado.resolver(pantalla.resultado);
     if (!efectivo.cifra && !efectivo.retro) {
       throw new Error('Esta pantalla no trae "resultado" (cifra y/o retro) y su layout lo necesita.');
     }
     return efectivo;
-  }
-
-  // C1: la caja de retroalimentación de L08 reusa .callout (T5) tal
-  // cual — mismo candado de tipo→ícono→color que ya resolvió
-  // .quiz-retro en T6, para no inventar un cuarto patrón de "estado
-  // con color" en el proyecto.
-  function crearCalloutResultado(retro) {
-    var ICONOS = { nota: 'info', brand: 'lightbulb', alerta: 'warning' };
-    var tipo = retro.tipo && ICONOS[retro.tipo] ? retro.tipo : 'nota';
-    var div = document.createElement('div');
-    div.className = 'callout' + (tipo !== 'nota' ? ' callout--' + tipo : '');
-    var icono = document.createElement('span');
-    icono.className = 'icono callout__icono';
-    icono.setAttribute('aria-hidden', 'true');
-    icono.textContent = ICONOS[tipo];
-    div.appendChild(icono);
-    var cuerpo = document.createElement('div');
-    cuerpo.className = 'callout__cuerpo';
-    if (retro.titulo) {
-      var titulo = document.createElement('p');
-      titulo.className = 'callout__titulo';
-      titulo.textContent = retro.titulo;
-      cuerpo.appendChild(titulo);
-    }
-    var texto = document.createElement('p');
-    texto.className = 'tipo-cuerpo-sm';
-    texto.textContent = retro.texto;
-    cuerpo.appendChild(texto);
-    div.appendChild(cuerpo);
-    return div;
   }
 
   // C1: aviso de logro de L10 — misma pieza que T5 ya dejó lista
@@ -829,24 +752,20 @@
     // media. Mismo patrón opcional que ya usa L09 con su media.
     if (pantalla.media) raiz.appendChild(crearMedia(pantalla.media));
 
-    if (resultado.cifra) {
+    // E1: cifra/callout ya no se arman aquí — OVA.resultado.construir()
+    // (resultado.js) es la única fuente de esos dos nodos, compartida
+    // con I15.
+    var piezas = OVA.resultado.construir(resultado);
+    if (piezas.cifra) {
       var cifra = document.createElement('div');
       cifra.className = 'layout__datos';
-      var nodoCifra = OVA.charts.crear({
-        tipo: 'cifra',
-        valor: resultado.cifra.valor,
-        etiqueta: resultado.cifra.etiqueta,
-        porcentaje: resultado.cifra.porcentaje
-      });
-      if (!nodoCifra) throw new Error('L08: no se pudo construir la cifra de resultado (ver consola).');
-      cifra.appendChild(nodoCifra);
+      cifra.appendChild(piezas.cifra);
       raiz.appendChild(cifra);
     }
-
-    if (resultado.retro) {
+    if (piezas.callout) {
       var interaccion = document.createElement('div');
       interaccion.className = 'layout__interaccion';
-      interaccion.appendChild(crearCalloutResultado(resultado.retro));
+      interaccion.appendChild(piezas.callout);
       raiz.appendChild(interaccion);
     }
 

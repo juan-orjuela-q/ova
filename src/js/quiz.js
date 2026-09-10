@@ -553,6 +553,69 @@
          `OVA.state.establecerVariable()` antes de montar tres
          instancias de I12 —una por perfil— para poder ver las seis
          reglas sin depender de responder I13 primero.
+
+   ---------------------------------------------------------------------
+   E1 (PLAN-ESTRUCTURA.md §2) — I15 cuestionario. Única excepción al
+   contrato "una pregunta por pantalla" que fija CLAUDE.md (la letra se
+   corrige en E7, no antes): varias preguntas gradables del catálogo de
+   arriba (CONSTRUCTORES, I01–I05/completar/numerica/autoevaluacion —
+   nunca CONSTRUCTORES_INSIGNIA, I15 no admite otra I15 ni I07/I08/I09–
+   I13 dentro de "preguntas") dentro de una sola interacción, con un
+   bloque de resultado compartido al terminar. Se despacha por
+   CONSTRUCTORES_INSIGNIA como I07/I08/I13: arma su propio DOM completo
+   (varios <form> independientes, uno por pregunta, más el bloque de
+   resultado) y decide ella misma cuándo reportar.
+
+     I15 cuestionario {
+       enunciado?,
+       preguntas: [ { tipo:'I01'|'I02'|…, datos:{…} } … ],  // misma
+         forma que cada tipo ya documenta arriba; datos.id de cada una
+         sigue siendo el id real que reporta cmi.interactions (p. ej.
+         "u1-p05-diagnostico-1..5", que Pablo ya tiene mapeados) — I15
+         no los toca ni los renumera.
+       variable?: { nombre, modo?, valor? },  // acumulador ÚNICO (mismo
+         objeto que datos.variable del catálogo de arriba — ver el
+         bloque C4): se aplica a CADA pregunta que resuelva "correcto",
+         en vez de que las cinco repitan su propio "variable".
+       resultado?: { variable, campo?, reglas?, cifra?, retro? }  // el
+         mismo objeto que ya resuelve OVA.resultado.resolver() para
+         PLANTILLAS.L08 (resultado.js) — "reusar, no duplicar" la regla
+         "primera que aplica gana". Sin "resultado", la batería reporta
+         la nota y se acaba sin cifra/callout.
+     }
+
+   Reusa los constructores de pregunta que ya existen (CONSTRUCTORES) —
+   no reimplementa I01 ni I02. Cinco trampas, verificadas con Playwright
+   antes de dar la tarea por cerrada (ver ESTADO.md):
+
+   1. cmi.core.score.raw pisado cinco veces. Cada pregunta reporta su
+      propia fila a cmi.interactions (reportarSCORM, igual que siempre)
+      pero NINGUNA llama a actualizarNota(): eso pisaría cinco veces
+      cmi.core.score.raw y la nota final sería la de la última
+      respondida. I15 calcula la nota una sola vez, al resolver la
+      última pregunta, como porcentaje de aciertos sobre el total.
+   2. El intento no se persiste entre recargas (T6, sin cambios) — con
+      cinco preguntas eso dejaría al estudiante "encerrado" tras un F5
+      a media batería (visitada pero sin forma de completarla). I15
+      marca la terminación de la BATERÍA COMPLETA (no cada pregunta) en
+      una variable de contenido dedicada (idScorm + "-completo",
+      state.js ya la persiste y ya la reporta) y, al montar, si esa
+      marca ya está en true, arranca con las cinco preguntas bloqueadas
+      —sin reconstruir qué se respondió, eso sí se pierde— y el bloque
+      de resultado visible de una, sin repetir el reporte a
+      cmi.interactions ni recalcular la nota.
+   3. Alto: cinco preguntas con sus retros no caben en ~780px del
+      contenedor SCORM. Es scroll real dentro de #app (regla dura 9),
+      no un contenedor propio con su propio overflow. El contador "N de
+      5" va pegado a cada pregunta, no arriba del todo — se ve sin
+      volver arriba aunque el estudiante esté a mitad de la lista.
+   4. Revelar sin robar el foco: ninguna llamada a .focus() en todo el
+      constructor — la retro de cada pregunta (ya existente, I14) y el
+      bloque de resultado final son role="status", se anuncian solos,
+      igual que el resto del catálogo.
+   5. El resultado no es solo color: la cifra final lleva etiqueta
+      (charts.js) y el callout ícono + título (resultado.js) — mismos
+      componentes que ya cumplían la regla en L08.
    ============================================================ */
 (function () {
   'use strict';
@@ -2191,11 +2254,174 @@
     return raiz;
   }
 
+  /* ---- I15 cuestionario (E1) — ver el bloque de documentación en el
+     encabezado del archivo para el contrato completo y las cinco
+     trampas. Cada pregunta reutiliza su constructor de CONSTRUCTORES
+     (definido más abajo; se lee en tiempo de montaje, no aquí arriba,
+     así que el orden de declaración no importa) montado dentro de su
+     propio <form> — mismo patrón de Comprobar/Reintentar que crear(),
+     pero sin su envoltorio de una sola pregunta: aquí hay cinco en
+     paralelo y ninguna llama a actualizarNota() por separado (trampa 1). */
+  function construirCuestionario(idBase, idScorm, datos) {
+    var preguntasCfg = datos.preguntas || [];
+    if (!preguntasCfg.length) {
+      throw new Error('I15 cuestionario necesita al menos una pregunta en "preguntas".');
+    }
+    var total = preguntasCfg.length;
+    // Trampa 2 — la marca de la BATERÍA completa, no de cada pregunta.
+    var claveCompletado = idScorm + '-completo';
+    var yaCompleto = !!OVA.state.obtenerVariable(claveCompletado);
+
+    var raiz = crear_('div', 'quiz-cuestionario');
+    if (datos.enunciado) raiz.appendChild(crear_('p', 'tipo-cuerpo quiz-cuestionario__enunciado', datos.enunciado));
+
+    var lista = crear_('div', 'quiz-cuestionario__lista');
+    raiz.appendChild(lista);
+
+    // Trampa 4 — role="status", nunca .focus(): se anuncia sola, igual
+    // que cada .quiz-retro individual.
+    var bloqueResultado = crear_('div', 'quiz-cuestionario__resultado');
+    bloqueResultado.setAttribute('role', 'status');
+    bloqueResultado.hidden = true;
+    raiz.appendChild(bloqueResultado);
+
+    var resueltas = 0;
+    var aciertos = 0;
+
+    function actualizarNotaFinal() {
+      if (!OVA.scorm.disponible()) return;
+      var porcentaje = Math.round((aciertos / total) * 100);
+      OVA.scorm.establecerValor('cmi.core.score.raw', String(porcentaje));
+      OVA.scorm.establecerValor('cmi.core.score.min', '0');
+      OVA.scorm.establecerValor('cmi.core.score.max', '100');
+      OVA.scorm.confirmar();
+    }
+
+    // Trampa 5 — reusa OVA.resultado.resolver()/construir() (resultado.js):
+    // misma cifra con etiqueta + callout con ícono y título que L08, sin
+    // reimplementar la regla "primera que aplica gana".
+    function mostrarResultado() {
+      // Sin "resultado" en los datos, la batería reporta la nota y se
+      // acaba sin cifra/callout — no hay nada que revelar, así que el
+      // bloque (vacío) se queda oculto en vez de aparecer en blanco.
+      if (!datos.resultado) return;
+      var efectivo = OVA.resultado.resolver(datos.resultado);
+      var piezas = OVA.resultado.construir(efectivo);
+      if (piezas.cifra) bloqueResultado.appendChild(piezas.cifra);
+      if (piezas.callout) bloqueResultado.appendChild(piezas.callout);
+      bloqueResultado.hidden = false;
+    }
+
+    function alResolverPregunta(acierto) {
+      resueltas++;
+      if (acierto) aciertos++;
+      if (resueltas >= total) {
+        actualizarNotaFinal();
+        OVA.state.establecerVariable(claveCompletado, true);
+        mostrarResultado();
+      }
+    }
+
+    preguntasCfg.forEach(function (cfg, indice) {
+      var constructor = CONSTRUCTORES[cfg.tipo];
+      if (!constructor) {
+        throw new Error('I15: el tipo de pregunta "' + cfg.tipo + '" no existe en el catálogo I01–I05 (ni en completar/numerica/autoevaluacion).');
+      }
+      var subDatos = cfg.datos || {};
+      var subIdBase = idBase + '-p' + (indice + 1);
+      var subIdScorm = subDatos.id || subIdBase;
+      var pregunta = constructor(subIdBase, subIdScorm, subDatos);
+
+      // Trampa 3 — el contador va pegado a esta pregunta, no arriba del
+      // todo del cuestionario: se ve sin volver a subir el scroll.
+      var item = crear_('form', 'quiz-cuestionario__item');
+      item.setAttribute('novalidate', 'novalidate');
+      item.appendChild(crear_('p', 'tipo-etiqueta quiz-cuestionario__contador', 'Pregunta ' + (indice + 1) + ' de ' + total));
+      item.appendChild(pregunta.fieldset);
+
+      var acciones = crear_('div', 'quiz-acciones');
+      var botonComprobar = crear_('button', 'boton', 'Comprobar');
+      botonComprobar.type = 'submit';
+      var botonReintentar = crear_('button', 'boton boton--outline', 'Reintentar');
+      botonReintentar.type = 'button';
+      botonReintentar.hidden = true;
+      acciones.appendChild(botonComprobar);
+      acciones.appendChild(botonReintentar);
+      item.appendChild(acciones);
+      lista.appendChild(item);
+
+      var intentosMaximos = subDatos.intentos || 0;
+      var intentosUsados = 0;
+      var resuelta = false;
+
+      function textoRetro(estado) {
+        var custom = subDatos.retroalimentacion && subDatos.retroalimentacion[estado];
+        if (estado === 'correcto') return { titulo: 'Correcto', detalle: custom };
+        if (estado === 'incorrecto') return { titulo: 'Incorrecto', detalle: custom };
+        return { titulo: 'Respuesta registrada', detalle: custom };
+      }
+
+      function comprobar(evento) {
+        if (evento) evento.preventDefault();
+        if (resuelta) return;
+        intentosUsados++;
+
+        var resultado = pregunta.evaluar();
+        var msg = textoRetro(resultado || 'neutral');
+        pregunta.retro.mostrar(resultado || 'neutral', msg.titulo, msg.detalle);
+        reportarSCORM(pregunta, resultado);
+        // Trampa 1 — sin actualizarNota() aquí: la nota se calcula una
+        // sola vez en actualizarNotaFinal(), al cerrar la batería.
+        actualizarVariableContenido(datos.variable, resultado);
+
+        pregunta.bloquear();
+        botonComprobar.hidden = true;
+
+        var agotado = intentosMaximos > 0 && intentosUsados >= intentosMaximos;
+        var acierto = resultado === 'correcto';
+
+        if (acierto || agotado) {
+          resuelta = true;
+          botonReintentar.hidden = true;
+          if (resultado === 'incorrecto') pregunta.revelarCorrecta();
+          alResolverPregunta(acierto);
+        } else {
+          botonReintentar.hidden = false;
+        }
+      }
+
+      function reintentar() {
+        pregunta.desbloquear();
+        pregunta.retro.ocultar();
+        botonReintentar.hidden = true;
+        botonComprobar.hidden = false;
+      }
+
+      item.addEventListener('submit', comprobar);
+      botonReintentar.addEventListener('click', reintentar);
+
+      // Trampa 2 — batería ya completa en una visita anterior: no hay
+      // forma de reconstruir qué se respondió (el intento no se
+      // persiste, T6), así que cada pregunta arranca bloqueada y sin
+      // retro individual, sin repetir el reporte a cmi.interactions ni
+      // recalcular la nota.
+      if (yaCompleto) {
+        pregunta.bloquear();
+        botonComprobar.hidden = true;
+        resuelta = true;
+      }
+    });
+
+    if (yaCompleto) mostrarResultado();
+
+    return raiz;
+  }
+
   // A pesar del nombre (heredado de T8, cuando solo cubría I09–I12), esta
   // tabla es "constructores de widget autónomo, sin fieldset/Comprobar/
   // Reintentar" — C5 sumó I07/I08/I13 aquí por la misma razón que I09–I12,
-  // no porque sean piezas insignia de unidad. Ver el bloque C5 en el
-  // encabezado del archivo.
+  // no porque sean piezas insignia de unidad; E1 suma I15 por la misma
+  // razón otra vez. Ver el bloque C5/E1 en el encabezado del archivo.
   var CONSTRUCTORES_INSIGNIA = {
     I07: construirTarjetasVolteables,
     I08: construirComparadorColumnas,
@@ -2203,7 +2429,8 @@
     I10: construirCalculadoraParametrica,
     I11: construirBoletaOrden,
     I12: construirDistribucionCapital,
-    I13: construirTestPerfil
+    I13: construirTestPerfil,
+    I15: construirCuestionario
   };
 
   // Numeración del brief tras C0 (ver la nota al inicio del archivo):
@@ -2248,7 +2475,7 @@
 
     var constructor = CONSTRUCTORES[interaccion.tipo];
     if (!constructor) {
-      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I05 (ni en completar/numerica/autoevaluacion) ni en I07/I08/I09–I13.');
+      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I05 (ni en completar/numerica/autoevaluacion) ni en I07/I08/I09–I13/I15.');
     }
     var pregunta = constructor(idBase, idScorm, datos);
 

@@ -1309,6 +1309,36 @@
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
         </div>
       </div>
+
+      <div class="ks-layout-bloque" id="c-i15">
+        <span class="ks-layout-bloque__etiqueta">I15 · Cuestionario (E1) — cinco preguntas del diagnóstico en una sola pantalla</span>
+        <p class="ks-intro">
+          Única excepción al contrato "una pregunta por pantalla" (CLAUDE.md
+          se corrige en E7, no antes): reusa los mismos constructores de
+          I01/I02 de arriba, un <code>&lt;form&gt;</code> independiente por
+          pregunta. Ninguna pregunta pisa <code>cmi.core.score.raw</code> por
+          separado — la nota se calcula una sola vez, como porcentaje de
+          aciertos, al resolver la última. El bloque de resultado final
+          reusa <code>OVA.resultado.construir()</code>, el mismo que pinta
+          L08. Tres estados, los tres montados con
+          <code>OVA.quiz.crear({tipo:'I15', …})</code> real:
+        </p>
+        <div class="ks-layout-bloque" id="c-i15-sin-empezar">
+          <span class="ks-layout-bloque__etiqueta">Sin empezar</span>
+          <p class="ks-intro">Responde las cinco a mano para ver el resultado aparecer solo, sin recargar.</p>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 40rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-i15-a-medias">
+          <span class="ks-layout-bloque__etiqueta">A medias — dos de cinco ya respondidas</span>
+          <p class="ks-intro">Las dos primeras se comprueban solas al cargar la página (mismo <code>OVA.quiz.crear()</code>, disparado por script en vez de por clic) para no depender de una captura de pantalla a mitad de interacción. El contador de la tercera pregunta ya dice "Pregunta 3 de 5" sin haber tocado nada.</p>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 40rem;"></div>
+        </div>
+        <div class="ks-layout-bloque" id="c-i15-completo">
+          <span class="ks-layout-bloque__etiqueta">Completa, con resultado — y recargada "a media batería" (trampa 2)</span>
+          <p class="ks-intro">Esta instancia se monta con la marca de finalización ya en <code>true</code> en <code>OVA.state</code> (el equivalente real de "el estudiante recargó después de terminar"): arranca con las cinco preguntas bloqueadas de una, sin reconstruir qué se respondió, y el bloque de resultado visible sin esperar ninguna interacción.</p>
+          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 40rem;"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ============================================================ -->
@@ -1976,6 +2006,7 @@
   <script src="../src/js/media.js"></script>
   <script src="../src/js/quiz.js"></script>
   <script src="../src/js/charts.js"></script>
+  <script src="../src/js/resultado.js"></script>
   <script>
     (function () {
       var popoverBoton = document.getElementById('ks-pref-abrir');
@@ -2853,6 +2884,163 @@
         }
       });
       if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+
+  <!-- E1 (PLAN-ESTRUCTURA.md §2): I15 cuestionario — las mismas cinco
+       preguntas reales del diagnóstico (p05–p09 en content/ova-u1.js;
+       ids u1-p05-diagnostico-1..5 que Pablo ya tiene mapeados, aquí
+       prefijados por instancia para no colisionar entre los tres
+       montajes de esta misma página). Tres montajes reales con
+       OVA.quiz.crear() — cada uno con su propio "id"/"variable" de demo,
+       porque state.js es un singleton por página y los tres no deben
+       compartir acumulador ni marca de finalización entre sí. -->
+  <script>
+    (function () {
+      function preguntasDiagnostico(prefijo) {
+        return [
+          {
+            tipo: 'I01',
+            datos: {
+              id: prefijo + '-1',
+              enunciado: 'Una acción es un:',
+              intentos: 2,
+              opciones: [
+                { id: 'a', texto: 'Título participativo' },
+                { id: 'b', texto: 'Título de deuda' },
+                { id: 'c', texto: 'Cuenta de ahorro' }
+              ],
+              correcta: 'a',
+              retroalimentacion: {
+                correcto: 'Muy bien. Una acción representa una participación en la propiedad de una empresa.',
+                incorrecto: 'Recuerda que una acción no promete un interés fijo; representa una parte de una empresa.'
+              }
+            }
+          },
+          {
+            tipo: 'I02',
+            datos: {
+              id: prefijo + '-2',
+              enunciado: 'Una acción preferencial normalmente no otorga voto en asamblea.',
+              intentos: 2,
+              respuestaCorrecta: true,
+              retroalimentacion: {
+                correcto: 'Correcto. La preferencial suele priorizar derechos económicos y no el voto.',
+                incorrecto: 'Recuerda: la preferencial suele sacrificar voto a cambio de preferencias económicas.'
+              }
+            }
+          },
+          {
+            tipo: 'I01',
+            datos: {
+              id: prefijo + '-3',
+              enunciado: '¿Cuál es la principal diferencia entre renta fija y renta variable?',
+              intentos: 2,
+              opciones: [
+                { id: 'a', texto: 'La renta fija siempre gana más' },
+                { id: 'b', texto: 'En renta fija se conoce la rentabilidad pactada desde el inicio' },
+                { id: 'c', texto: 'La renta variable no tiene riesgo' }
+              ],
+              correcta: 'b',
+              retroalimentacion: {
+                correcto: 'Excelente. En renta variable no sabes de antemano cuánto ganarás o perderás.',
+                incorrecto: 'La clave es la certeza inicial: renta fija pacta condiciones; renta variable depende del mercado.'
+              }
+            }
+          },
+          {
+            tipo: 'I02',
+            datos: {
+              id: prefijo + '-4',
+              enunciado: 'Un dividendo permite recibir una porción de las utilidades distribuidas por la empresa.',
+              intentos: 2,
+              respuestaCorrecta: true,
+              retroalimentacion: {
+                correcto: 'Muy bien. El dividendo proviene de utilidades distribuidas.',
+                incorrecto: 'Recuerda que el dividendo es un pago al accionista cuando la empresa decide repartir utilidades.'
+              }
+            }
+          },
+          {
+            tipo: 'I01',
+            datos: {
+              id: prefijo + '-5',
+              enunciado: 'Para comprar acciones necesitas hacerlo mediante un intermediario o una plataforma autorizada.',
+              intentos: 2,
+              opciones: [
+                { id: 'a', texto: 'Verdadero' },
+                { id: 'b', texto: 'Falso' },
+                { id: 'c', texto: 'Solo si inviertes grandes montos' }
+              ],
+              correcta: 'a',
+              retroalimentacion: {
+                correcto: 'Correcto. Debes usar una entidad o plataforma autorizada.',
+                incorrecto: 'No se compra directamente «por fuera» del mercado; se usan intermediarios autorizados.'
+              }
+            }
+          }
+        ];
+      }
+
+      function datosCuestionario(prefijo, nombreVariable) {
+        return {
+          id: prefijo,
+          variable: { nombre: nombreVariable },
+          preguntas: preguntasDiagnostico(prefijo),
+          resultado: {
+            variable: nombreVariable,
+            reglas: [
+              { minimo: 5, cifra: { etiqueta: 'respuestas correctas de 5' }, retro: { tipo: 'brand', titulo: 'Aprovecha para ordenar y aplicar', texto: 'Aprovecha la unidad para ordenar y aplicar lo que ya sabes.' } },
+              { minimo: 3, cifra: { etiqueta: 'respuestas correctas de 5' }, retro: { tipo: 'nota', titulo: 'Buena base inicial', texto: 'Tienes una buena base inicial.' } },
+              { minimo: 0, cifra: { etiqueta: 'respuestas correctas de 5' }, retro: { tipo: 'alerta', titulo: 'Empieza con calma', texto: 'Empieza con calma y toma nota de los conceptos base.' } }
+            ]
+          }
+        };
+      }
+
+      // Estado 1 — sin empezar: instancia real, sin tocar OVA.state antes
+      // de montar. Responde las cinco a mano para ver el resultado.
+      var contenedorSinEmpezar = document.getElementById('c-i15-sin-empezar');
+      if (contenedorSinEmpezar) {
+        var nodoSinEmpezar = OVA.quiz.crear({ tipo: 'I15', datos: datosCuestionario('ks-i15-1', 'ks_i15_aciertos_1') });
+        contenedorSinEmpezar.appendChild(nodoSinEmpezar);
+      }
+
+      // Estado 2 — a medias: misma instancia real; un script marca la
+      // primera opción de las dos primeras preguntas (la correcta en
+      // ambas — I01/I02 construyen sus radios en el mismo orden que sus
+      // opciones/verdadero-falso) y envía cada <form>, para no depender
+      // de una captura de pantalla a mitad de una interacción manual.
+      var contenedorAMedias = document.getElementById('c-i15-a-medias');
+      if (contenedorAMedias) {
+        var nodoAMedias = OVA.quiz.crear({ tipo: 'I15', datos: datosCuestionario('ks-i15-2', 'ks_i15_aciertos_2') });
+        contenedorAMedias.appendChild(nodoAMedias);
+        var itemsAMedias = nodoAMedias.querySelectorAll('.quiz-cuestionario__item');
+        [0, 1].forEach(function (indice) {
+          var item = itemsAMedias[indice];
+          if (!item) return;
+          var radio = item.querySelector('input[type="radio"]');
+          if (radio) radio.checked = true;
+          if (typeof item.requestSubmit === 'function') {
+            item.requestSubmit();
+          } else {
+            var boton = item.querySelector('button[type="submit"]');
+            if (boton) boton.click();
+          }
+        });
+      }
+
+      // Estado 3 — completa, incluso "recargada a media batería" (trampa
+      // 2 de quiz.js): la marca de finalización ya está en true antes de
+      // montar, el mismo mecanismo real que dejaría un F5 después de
+      // terminar la actividad.
+      var contenedorCompleto = document.getElementById('c-i15-completo');
+      if (contenedorCompleto) {
+        OVA.state.establecerVariable('ks_i15_aciertos_3', 4);
+        OVA.state.establecerVariable('ks-i15-3-completo', true);
+        var nodoCompleto = OVA.quiz.crear({ tipo: 'I15', datos: datosCuestionario('ks-i15-3', 'ks_i15_aciertos_3') });
+        contenedorCompleto.appendChild(nodoCompleto);
+      }
     })();
   </script>
 
