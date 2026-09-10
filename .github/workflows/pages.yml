@@ -20,9 +20,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Armar sitio (src/ y public/ como hermanas, igual que en el repo)
+        run: |
+          mkdir site
+          cp -r src site/src
+          cp -r public site/public
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: src
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4
     environment:
