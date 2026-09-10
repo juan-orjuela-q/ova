@@ -738,10 +738,8 @@
    forzada en mobile desde tanda 3 de AJUSTES.md) ------------------------- */
 .nav-inferior {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--sp-4);
+  flex-direction: column;
+  gap: var(--sp-2);
   padding-block: var(--sp-3);
   padding-inline: var(--sp-6);
   background: var(--surface-default);
@@ -750,10 +748,30 @@
      junto a #app en base.css. */
   min-inline-size: 0;
 }
+.nav-inferior__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  min-inline-size: 0;
+}
 .nav-inferior__paso {
   color: var(--text-tertiary);
   font: var(--text-caption);
   white-space: nowrap;
+}
+/* E2 — candado blando de bloqueaAvance: oculta por defecto (`hidden`,
+   router.js la muestra junto con aria-disabled en #nav-siguiente).
+   Nunca solo el borde/aria-disabled del botón: el texto explica el
+   porqué, con su propio ícono — regla dura de CLAUDE.md de que el color
+   nunca es el único código de un estado, aplicada aquí a "inerte". */
+.nav-inferior__aviso {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-tertiary);
+  font: var(--text-caption);
 }
 /* "X/Y" es el texto corto de mobile (media query más abajo); en desktop
    se queda oculto y se ve la frase completa. display:none ya lo saca del
@@ -770,9 +788,11 @@
    OVA.a11y.anunciar() en cada navegación, no depende de este texto). */
 @media (max-width: 39.999em) {
   .nav-inferior {
+    padding-inline: var(--sp-3);
+  }
+  .nav-inferior__fila {
     flex-wrap: nowrap;
     gap: var(--sp-2);
-    padding-inline: var(--sp-3);
   }
   .nav-inferior .boton {
     padding-inline: var(--sp-3);

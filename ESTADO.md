@@ -3797,7 +3797,7 @@ toca el motor salvo lo que E1/E2 necesitan.
       (commit `de68814`).
 - [x] **E1 · I15 cuestionario (+ `OVA.resultado` compartido, + kitchen
       sink)** — completada 10 sep. Detalle abajo.
-- [ ] E2 · `bloqueaAvance` — pendiente.
+- [x] **E2 · `bloqueaAvance`** — completada 10 sep. Detalle abajo.
 - [ ] E3 · etiquetas como agrupador — pendiente.
 - [ ] E4 · contenido nuevo (`content/ova-u1.js` con el orden de §1) —
       pendiente. **E1 no tocó `content/ova-u1.js`** a propósito: las
@@ -3947,3 +3947,143 @@ contradicción de "una pregunta por pantalla" se resuelve ahí, no antes
 ("§2: CLAUDE.md se edita en E7, no se deja la contradicción viva").
 Hasta que eso pase, el motor ya sabe construir I15 pero ningún
 contenido real lo usa todavía.
+
+**10 sep — E2 cerrada: `bloqueaAvance`, canal `{alCompletar}` en
+`OVA.quiz.crear()` y candado blando en `router.js`, sin Playwright
+disponible en esta sesión (verificación por lectura de código y
+`node --check`, mismo criterio que dejó documentado C6 cuando tampoco
+lo tuvo).**
+
+**Qué se construyó:**
+
+- **`quiz.js` — `crear(interaccion, opciones)`.** Segundo argumento
+  opcional, `{ alCompletar }` (no-op si se omite, así que ninguna
+  interacción existente cambia de comportamiento). El motor no decide
+  cuándo algo "está completo": cada constructor lo sabe y avisa —
+  documentado en un bloque nuevo "E2" al inicio del archivo, junto al
+  resto de contratos de catálogo (mismo criterio que I01–I08/I15).
+  - El wrapper de preguntas (CONSTRUCTORES, I01–I05/completar/numerica/
+    autoevaluacion) llama a `alCompletar()` en el mismo punto donde ya
+    ocultaba "Comprobar" para siempre (acierto, agotó intentos o no
+    gradable) — sin tocar nada de la lógica de intentos existente.
+  - `construirCuestionario` (I15) recibe `alCompletar` como cuarto
+    argumento y lo llama al resolver la última pregunta de la batería,
+    y también si `yaCompleto` al montar (un F5 después de terminar no
+    debe dejar "Siguiente" bloqueado otra vez — la misma trampa 2 que
+    ya resolvió E1 para la nota y el reporte a SCORM, extendida aquí).
+  - El resto de `CONSTRUCTORES_INSIGNIA` (I07–I13) reciben el mismo
+    `alCompletar` como argumento —JS no distingue aridad, pasarlo no
+    cuesta nada— pero ninguno lo llama: son exploratorias sin
+    "completo" definido y ninguna pantalla real las usa con
+    `bloqueaAvance` todavía. Si una futura sí lo necesita, ese
+    constructor decide su propio momento — no se inventó uno genérico
+    sin caso de uso real (CLAUDE.md: no diseñar para lo hipotético).
+- **`router.js` — el campo `pantalla.bloqueaAvance` y el candado.**
+  - `crearInteraccion(interaccion, bloqueaAvance)` arma
+    `{alCompletar: manejarActividadCompleta}` solo si `bloqueaAvance`
+    es verdadero y se lo pasa a `OVA.quiz.crear()`. Las tres plantillas
+    que montan `interaccion` (L05, L06, L07) le pasan
+    `pantalla.bloqueaAvance` — ninguna otra plantilla lo necesita
+    porque ninguna otra renderiza `interaccion`.
+  - `montarPantalla()` fija `bloqueoAvanceActivo` (módulo) al entrar,
+    antes de cualquier `return` — así ninguna salida temprana (layout
+    inexistente, no implementado, o el fallo ruidoso de la trampa 3 de
+    abajo) puede heredar por descuido el bloqueo de la pantalla
+    anterior. Con `pantalla.bloqueaAvance` real, lo vuelve a poner en
+    `true` justo antes de construir la plantilla — si la interacción ya
+    avisa que está completa durante ese mismo montaje (I15 con la
+    marca puesta desde un F5 anterior), `manejarActividadCompleta()` ya
+    lo devuelve a `false` antes de que la pantalla termine de armarse.
+  - **Trampa 1 (nunca `disabled` real).** `actualizarBloqueoAvance()`
+    pone `aria-disabled="true"/"false"` en `#nav-siguiente` y
+    `hidden`/visible en la nota nueva `#nav-bloqueo-aviso` (ícono
+    `lock` + "Completa la actividad para continuar", ícono y texto
+    juntos — regla dura del color nunca como único código, aplicada a
+    "inerte"). El botón sigue con `disabled` real de verdad SOLO en el
+    extremo de siempre (`inst.esUltima`), sin tocar esa rama: son dos
+    candados independientes que conviven en el mismo botón. El bloqueo
+    de verdad —el que hace que el clic (o Enter/Espacio con foco en el
+    botón, mismo evento) no haga nada— vive en `siguiente()`, no en el
+    atributo: `aria-disabled` es puramente el reflejo/anuncio, nunca lo
+    que impide el clic (un botón sin `disabled` real siempre es
+    clicable, `aria-disabled` no lo previene por sí solo — de ahí que
+    haga falta la guarda explícita en `siguiente()`).
+  - Al desbloquear, `manejarActividadCompleta()` llama a
+    `OVA.a11y.anunciar('Actividad completa. Ya puedes continuar.')` —
+    pero no si la marca ya venía puesta desde antes de montar (un flag
+    `construyendoPantalla`, verdadero solo durante la llamada a
+    `plantilla(pantalla)`, distingue "se acaba de completar en vivo" de
+    "arrancó ya completa"): anunciar en el segundo caso sería ruido
+    sobre una pantalla que el estudiante ni ha visto todavía.
+  - **Trampa 2 (candado blando, documentado, no tapado).** Solo
+    `siguiente()` consulta `bloqueoAvanceActivo`. El drawer navega por
+    `<a href="#id">` (vía `hashchange` → `alCambiarHash()` →
+    `navegarA()`) y no pasa por `siguiente()`, así que una pantalla con
+    `bloqueaAvance` sigue siendo saltable desde el índice o cambiando
+    el hash a mano — confirmado leyendo el código de
+    `configurarDrawer()`, no hizo falta tocar nada ahí. Comentario
+    dejado junto a la declaración de `bloqueoAvanceActivo` explicando
+    por qué es deliberado (D1: "dentro de una unidad toda pantalla es
+    alcanzable"; el candado duro entre unidades es de Moodle).
+  - **Trampa 3 (L01 no tiene dónde pintarlo).** `montarPantalla()`
+    revienta con `fallarPantalla()` (el mismo estado de error visible
+    de siempre, `role="alert"`) si una pantalla trae
+    `bloqueaAvance: true` con `layout: 'L01'` — la portada esconde la
+    barra inferior entera (regla dura 9), así que "Siguiente" no
+    existe ahí para bloquear. Fallo ruidoso, no un `bloqueaAvance`
+    ignorado en silencio.
+- **`index.html` — el footer se parte en dos filas.** `.nav-inferior`
+  pasa a columna con dos hijos: `.nav-inferior__fila` (lo de siempre —
+  Anterior/paso/Siguiente, la fila que en mobile debe caber en una sola
+  línea a 320px) y `#nav-bloqueo-aviso` (`<p hidden>`, ícono + texto),
+  debajo, fuera de esa fila para no competir por el ancho que ya está
+  ajustado a 320px. `#nav-siguiente` lleva `aria-describedby` apuntando
+  a la nota siempre (inerte mientras está `hidden` — la mayoría de
+  lectores de pantalla no exponen la descripción de un nodo oculto, así
+  que no hace ruido cuando no aplica).
+- **`components.css`** — `.nav-inferior__fila` hereda las reglas de
+  layout que antes tenía `.nav-inferior` directo (flex, `space-between`,
+  `nowrap` en mobile); `.nav-inferior__aviso` es nueva (ícono + caption
+  en `--text-tertiary`, mismo tono que `.nav-inferior__paso`). Cero hex
+  nuevo, cero animación: `bloqueaAvance` no está en el inventario de
+  siete cosas que anima el OVA (`CLAUDE.md`) y no se le inventó una —
+  es un cambio de atributo discreto, como el resto de estados ARIA del
+  proyecto.
+
+**Verificado sin Playwright (no disponible esta sesión — mismo aviso
+que dejó C6):**
+
+- `node --check` sobre `quiz.js` y `router.js`: sin errores de sintaxis.
+- Lectura de código, línea por línea, de las tres trampas contra el
+  texto de PLAN-ESTRUCTURA.md §3 (arriba).
+- `git diff` filtrado contra `#[0-9a-f]{3,8}` y contra literales de
+  `ms`/`cubic-bezier` en los cinco archivos tocados: cero coincidencias.
+- Balance de etiquetas `<footer>`/`</footer>` contado a mano en
+  `index.html` (1/1) y `dev/kitchen-sink.html` (2/2, la nueva y la
+  existente) tras partir el footer en dos filas.
+- Recorrido de código de `configurarDrawer()`/`alCambiarHash()` para
+  confirmar la trampa 2 (candado blando) sin necesidad de ejecutar el
+  navegador: ninguno de los dos pasa por `siguiente()`.
+
+**Pendiente de confirmar con Playwright real en la próxima sesión (o
+antes de dar E6 por cerrada):** el recorrido real de teclado sobre
+`#nav-bloqueo-aviso` apareciendo/desapareciendo, el anuncio de
+`aria-live` al desbloquear, 320px con la nota visible (dos líneas de
+texto largo en un botón angosto) y zoom de texto 200%. La demo de la
+kitchen sink (abajo) ya deja esto montado para esa verificación.
+
+**Kitchen sink.** Dos añadidos a la sección "Chrome del OVA", dentro de
+"Barra inferior": el ejemplo existente se actualizó a la nueva
+estructura de dos filas sin cambiar lo que muestra, y un bloque nuevo
+`#c-nav-inferior-bloqueo` con una interacción real (I02, no I15 —
+para dejar claro que el mecanismo no es especial del diagnóstico) que
+arranca bloqueada y suelta el candado en vivo al responder. Como
+`router.js` no se carga en esta página (depende de contenido/hash
+real, mismo criterio que "Motor" en T2), el script de la demo
+reimplementa a mano en unas 15 líneas lo que ahí hacen
+`actualizarBloqueoAvance()`/`siguiente()` — comentado como tal, para
+que quien lo lea sepa que el original vive en `router.js`.
+
+**No se tocó `CLAUDE.md`.** El campo `bloqueaAvance` se documenta ahí
+en E7, junto con el resto de reglas que este plan cambia — mismo
+criterio que E1 dejó sin tocar `CLAUDE.md` para I15.

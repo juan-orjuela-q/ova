@@ -83,6 +83,24 @@
   // enfocarEncabezado() de la pantalla nueva, sería un salto de foco doble.
   var elementoAntesDelDrawer = null;
 
+  // E2 (PLAN-ESTRUCTURA.md §3) — bloqueaAvance. `bloqueoAvanceActivo` es
+  // "la pantalla actual pide bloqueaAvance y su interacción todavía no
+  // avisó que terminó" (ver quiz.js, crear(interaccion, {alCompletar})).
+  // `construyendoPantalla` distingue "arrancó ya completa" (I15 con la
+  // marca puesta desde antes de un F5 — no hay nada que anunciar, ya
+  // estaba así) de "se acaba de completar en vivo" (sí se anuncia) —
+  // ambas pasan por la misma manejarActividadCompleta().
+  //
+  // Trampa 2 de PLAN-ESTRUCTURA.md §3: es un candado BLANDO a propósito.
+  // Solo siguiente() lo consulta — el drawer (navega por <a href="#id">,
+  // vía hashchange) y "Anterior" no, así que una pantalla con
+  // bloqueaAvance sigue siendo saltable desde el índice o cambiando el
+  // hash a mano. Bloquear el índice contradice "dentro de una unidad
+  // toda pantalla es alcanzable" (D1); el candado duro entre unidades es
+  // de Moodle, no de este motor.
+  var bloqueoAvanceActivo = false;
+  var construyendoPantalla = false;
+
   /* ---- Construcción de DOM por layout --------------------------- */
 
   function crearKicker(texto) {
@@ -151,11 +169,16 @@
   // con media.tipo. Sin interaccion en absoluto, también falla: L06 no
   // tiene sentido sin ella. (T8 agrega las cuatro interacciones insignia
   // I09–I12 por el mismo punto de entrada.)
-  function crearInteraccion(interaccion) {
+  //
+  // E2: `bloqueaAvance` (booleano, de pantalla.bloqueaAvance) decide si se
+  // le pasa el canal `{alCompletar}` a OVA.quiz.crear() — manejarActividadCompleta
+  // vive junto al resto de la navegación, más abajo en este archivo.
+  function crearInteraccion(interaccion, bloqueaAvance) {
     if (!interaccion) throw new Error('Esta pantalla no trae "interaccion" y su layout lo necesita.');
     var contenedor = document.createElement('div');
     contenedor.className = 'layout__interaccion';
-    var nodo = OVA.quiz.crear(interaccion);
+    var opciones = bloqueaAvance ? { alCompletar: manejarActividadCompleta } : undefined;
+    var nodo = OVA.quiz.crear(interaccion, opciones);
     if (!nodo) throw new Error('No se pudo construir la interacción (ver consola).');
     contenedor.appendChild(nodo);
     return contenedor;
@@ -701,7 +724,7 @@
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
     if (pantalla.interaccion) {
-      raiz.appendChild(crearInteraccion(pantalla.interaccion));
+      raiz.appendChild(crearInteraccion(pantalla.interaccion, pantalla.bloqueaAvance));
     } else {
       raiz.appendChild(crearTarjetasComparativas(pantalla.tarjetas));
     }
@@ -718,7 +741,7 @@
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
-    raiz.appendChild(crearInteraccion(pantalla.interaccion));
+    raiz.appendChild(crearInteraccion(pantalla.interaccion, pantalla.bloqueaAvance));
     return { raiz: raiz, titulo: titulo };
   };
 
@@ -731,7 +754,7 @@
     raiz.appendChild(crearKickerConIcono(pantalla.kicker || 'Pregunta', 'help'));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);
-    raiz.appendChild(crearInteraccion(pantalla.interaccion));
+    raiz.appendChild(crearInteraccion(pantalla.interaccion, pantalla.bloqueaAvance));
     return { raiz: raiz, titulo: titulo };
   };
 
@@ -980,6 +1003,11 @@
   }
 
   function montarPantalla(pantalla) {
+    // Cualquier salida temprana de aquí en adelante deja la pantalla sin
+    // interacción montada: nada la bloquea. Se fija primero para que
+    // ningún "return fallarPantalla(...)" de abajo pueda heredar por
+    // descuido el bloqueoAvanceActivo de la pantalla anterior.
+    bloqueoAvanceActivo = false;
     if (CATALOGO_LAYOUTS.indexOf(pantalla.layout) === -1) {
       return fallarPantalla(pantalla, 'El layout "' + pantalla.layout + '" no existe en el catálogo L01–L13.');
     }
@@ -987,15 +1015,30 @@
     if (!plantilla) {
       return fallarPantalla(pantalla, 'El layout "' + pantalla.layout + '" es válido pero todavía no está implementado en el motor.');
     }
+    // E2, trampa 3 de PLAN-ESTRUCTURA.md §3: L01 (portada) esconde la
+    // barra inferior entera (regla dura 9) — bloqueaAvance ahí no tendría
+    // dónde pintar "Siguiente" ni la nota. Fallo ruidoso, no silencio.
+    if (pantalla.bloqueaAvance && pantalla.layout === 'L01') {
+      return fallarPantalla(pantalla, 'bloqueaAvance no tiene sentido en L01: la portada no muestra la barra inferior donde vive "Siguiente".');
+    }
+    bloqueoAvanceActivo = !!pantalla.bloqueaAvance;
     // Desde T4 una plantilla puede fallar en tiempo real (media.tipo
     // inválido, media ausente en un layout que la exige): el mismo
     // criterio de "nunca renderizar a medias en silencio" aplica aquí,
     // no solo al layout inexistente.
     var resultado;
     try {
+      // construyendoPantalla distingue, dentro de manejarActividadCompleta(),
+      // un alCompletar() disparado durante el montaje (I15 que arranca ya
+      // completa tras un F5 — no hay nada que anunciar) de uno disparado
+      // en vivo ya con la pantalla puesta.
+      construyendoPantalla = true;
       resultado = plantilla(pantalla);
     } catch (error) {
+      bloqueoAvanceActivo = false;
       return fallarPantalla(pantalla, error.message);
+    } finally {
+      construyendoPantalla = false;
     }
     var app = limpiarApp();
     app.appendChild(resultado.raiz);
@@ -1009,6 +1052,34 @@
     return hash || null;
   }
 
+  // E2 — candado blando: aria-disabled + nota, nunca `disabled` real (eso
+  // sacaría "Siguiente" del orden de tabulación y no diría por qué, ver
+  // trampa 1 de PLAN-ESTRUCTURA.md §3). siguiente() es quien de verdad
+  // bloquea el clic; esto solo refleja bloqueoAvanceActivo en el DOM.
+  function actualizarBloqueoAvance() {
+    var botonSiguiente = document.getElementById('nav-siguiente');
+    var aviso = document.getElementById('nav-bloqueo-aviso');
+    if (botonSiguiente) botonSiguiente.setAttribute('aria-disabled', bloqueoAvanceActivo ? 'true' : 'false');
+    if (aviso) aviso.hidden = !bloqueoAvanceActivo;
+  }
+
+  // Único punto que apaga bloqueoAvanceActivo: lo llama el alCompletar()
+  // que crearInteraccion() le pasó a OVA.quiz.crear() (ver quiz.js, E2).
+  // Sin bloqueo activo, no-op — una interacción sin bloqueaAvance también
+  // puede llamar a su alCompletar() por defecto (no-op de quiz.js) o, si
+  // se reusara el mismo constructor en dos pantallas, una sin bloqueo.
+  function manejarActividadCompleta() {
+    if (!bloqueoAvanceActivo) return;
+    bloqueoAvanceActivo = false;
+    actualizarBloqueoAvance();
+    // Trampa 2 de I15 (arrancar ya completa tras un F5): no es un cambio
+    // en vivo, no hay nada que anunciar — la pantalla ni ha terminado de
+    // montarse todavía.
+    if (!construyendoPantalla) {
+      OVA.a11y.anunciar('Actividad completa. Ya puedes continuar.');
+    }
+  }
+
   function actualizarNavInferior(inst) {
     var botonAnterior = document.getElementById('nav-anterior');
     var botonSiguiente = document.getElementById('nav-siguiente');
@@ -1018,6 +1089,7 @@
     if (botonSiguiente) botonSiguiente.disabled = inst.esUltima;
     if (pasoCompleto) pasoCompleto.textContent = 'Pantalla ' + (inst.indice + 1) + ' de ' + inst.total;
     if (pasoCorto) pasoCorto.textContent = (inst.indice + 1) + '/' + inst.total;
+    actualizarBloqueoAvance();
   }
 
   /* ---- Chrome: migas de pan / jerarquía (D1) ----------------------
@@ -1539,6 +1611,10 @@
   }
 
   function siguiente() {
+    // E2 — el candado real: aria-disabled en el botón es solo el reflejo
+    // visual/anunciado (actualizarBloqueoAvance), esto es lo que de
+    // verdad hace el clic (o Enter/Espacio con foco en el botón) inerte.
+    if (bloqueoAvanceActivo) return false;
     var inst = OVA.state.instantanea();
     if (inst.esUltima) return false;
     return navegarA(contenidoActual.pantallas[inst.indice + 1].id);

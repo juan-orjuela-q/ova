@@ -657,12 +657,38 @@
         </p>
         <div class="ks-layout-marco">
           <footer class="nav-inferior">
-            <button class="boton boton--outline" type="button"><span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior</button>
-            <span class="nav-inferior__paso">
-              <span class="nav-inferior__paso-completo">Pantalla 5 de 13</span>
-              <span class="nav-inferior__paso-corto">5/13</span>
-            </span>
-            <button class="boton" type="button">Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
+            <div class="nav-inferior__fila">
+              <button class="boton boton--outline" type="button"><span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior</button>
+              <span class="nav-inferior__paso">
+                <span class="nav-inferior__paso-completo">Pantalla 5 de 13</span>
+                <span class="nav-inferior__paso-corto">5/13</span>
+              </span>
+              <button class="boton" type="button">Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
+            </div>
+          </footer>
+        </div>
+      </div>
+
+      <div class="ks-layout-bloque" id="c-nav-inferior-bloqueo">
+        <span class="ks-layout-bloque__etiqueta">Barra inferior — candado de <code>bloqueaAvance</code> (E2)</span>
+        <p class="ks-intro">
+          <code>bloqueaAvance: true</code> en la pantalla hace que <code>crearInteraccion()</code> le pase <code>{alCompletar}</code> a <code>OVA.quiz.crear()</code> (mismo canal para cualquier tipo del catálogo I01–I08 — no un caso especial escrito a mano para el diagnóstico, ver el bloque "E2" en el encabezado de <code>quiz.js</code>). <code>router.js</code> no se carga en esta página (depende del hash y del contenido real, mismo criterio que la sección "Motor" de T2), así que este bloque repite en unas líneas lo que hacen <code>actualizarBloqueoAvance()</code>/<code>siguiente()</code> ahí: <code>aria-disabled</code> en el botón más la nota visible mientras la actividad sigue sin resolver, el clic sin efecto, y al completarse un <code>OVA.a11y.anunciar()</code> real (misma región <code>#anuncios</code> del principio de esta página). La pregunta de abajo sí es una interacción real del catálogo (I02, sin nada de I15) — respóndela para ver el candado soltarse.
+        </p>
+        <div class="ks-layout-marco">
+          <div id="c-bloqueo-interaccion"></div>
+          <footer class="nav-inferior">
+            <div class="nav-inferior__fila">
+              <button class="boton boton--outline" type="button"><span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior</button>
+              <span class="nav-inferior__paso">
+                <span class="nav-inferior__paso-completo">Pantalla 8 de 23</span>
+                <span class="nav-inferior__paso-corto">8/23</span>
+              </span>
+              <button id="c-bloqueo-siguiente" class="boton" type="button" aria-disabled="true" aria-describedby="c-bloqueo-aviso">Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
+            </div>
+            <p id="c-bloqueo-aviso" class="nav-inferior__aviso">
+              <span class="icono" aria-hidden="true">lock</span>
+              Completa la actividad para continuar
+            </p>
           </footer>
         </div>
       </div>
@@ -3041,6 +3067,47 @@
         var nodoCompleto = OVA.quiz.crear({ tipo: 'I15', datos: datosCuestionario('ks-i15-3', 'ks_i15_aciertos_3') });
         contenedorCompleto.appendChild(nodoCompleto);
       }
+    })();
+  </script>
+
+  <!-- E2: candado de bloqueaAvance sobre una interacción CUALQUIERA del
+       catálogo (I02 aquí, no I15) — prueba de que el canal {alCompletar}
+       de OVA.quiz.crear() no es un caso especial del diagnóstico. Esta
+       página no carga router.js (depende del hash y de contenido real,
+       mismo criterio que "Motor" en T2), así que estas pocas líneas
+       reimplementan a mano lo que ahí hacen actualizarBloqueoAvance()/
+       siguiente(): aria-disabled + nota mientras sigue bloqueado, clic
+       sin efecto, aviso real por OVA.a11y.anunciar() al soltarse. -->
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-bloqueo-interaccion');
+      var boton = document.getElementById('c-bloqueo-siguiente');
+      var aviso = document.getElementById('c-bloqueo-aviso');
+      if (!contenedor || !boton || !aviso) return;
+
+      function alCompletar() {
+        boton.setAttribute('aria-disabled', 'false');
+        aviso.hidden = true;
+        OVA.a11y.anunciar('Actividad completa. Ya puedes continuar.');
+      }
+
+      var nodo = OVA.quiz.crear({
+        tipo: 'I02',
+        datos: {
+          id: 'ks-bloqueo-1',
+          enunciado: 'Verdadero o falso: una acción representa una parte de la propiedad de una empresa.',
+          respuestaCorrecta: true,
+          intentos: 1
+        }
+      }, { alCompletar: alCompletar });
+      contenedor.appendChild(nodo);
+
+      // El mismo no-op de siguiente() en router.js: mientras aria-disabled
+      // siga en "true", el clic (o Enter/Espacio con foco en el botón,
+      // que dispara el mismo evento click) no hace nada.
+      boton.addEventListener('click', function () {
+        if (boton.getAttribute('aria-disabled') === 'true') return;
+      });
     })();
   </script>
 

@@ -191,16 +191,27 @@
        hace falta ningún aria-hidden manual ni duplicar el anuncio que ya
        da OVA.a11y.anunciar() en cada navegación. -->
   <footer class="nav-inferior">
-    <button id="nav-anterior" class="boton boton--outline" type="button">
-      <span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior
-    </button>
-    <span id="nav-paso" class="nav-inferior__paso">
-      <span id="nav-paso-completo" class="nav-inferior__paso-completo"></span>
-      <span id="nav-paso-corto" class="nav-inferior__paso-corto"></span>
-    </span>
-    <button id="nav-siguiente" class="boton" type="button">
-      Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span>
-    </button>
+    <div class="nav-inferior__fila">
+      <button id="nav-anterior" class="boton boton--outline" type="button">
+        <span class="boton__icono" aria-hidden="true">arrow_back</span> Anterior
+      </button>
+      <span id="nav-paso" class="nav-inferior__paso">
+        <span id="nav-paso-completo" class="nav-inferior__paso-completo"></span>
+        <span id="nav-paso-corto" class="nav-inferior__paso-corto"></span>
+      </span>
+      <button id="nav-siguiente" class="boton" type="button" aria-describedby="nav-bloqueo-aviso">
+        Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span>
+      </button>
+    </div>
+    <!-- E2: candado blando de bloqueaAvance — router.js pone/quita
+         aria-disabled en #nav-siguiente y hidden aquí; el click en
+         "Siguiente" no hace nada mientras está puesto (ver siguiente()
+         en router.js), nunca `disabled` real: eso sacaría el botón del
+         orden de tabulación y no explicaría por qué. -->
+    <p id="nav-bloqueo-aviso" class="nav-inferior__aviso" hidden>
+      <span class="icono" aria-hidden="true">lock</span>
+      Completa la actividad para continuar
+    </p>
   </footer>
 
   <!-- Drawer de índice (T3). Oculto por defecto con `hidden` —fuera

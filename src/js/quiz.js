@@ -616,6 +616,30 @@
    5. El resultado no es solo color: la cifra final lleva etiqueta
       (charts.js) y el callout ícono + título (resultado.js) — mismos
       componentes que ya cumplían la regla en L08.
+
+   ---------------------------------------------------------------------
+   E2 (PLAN-ESTRUCTURA.md §3) — bloqueaAvance. crear(interaccion, opciones)
+   admite un segundo argumento opcional, `{ alCompletar }`: el canal
+   mínimo de vuelta desde una interacción hacia router.js, para el caso
+   "el botón Siguiente queda inerte hasta terminar esta actividad". El
+   motor (quiz.js) no decide cuándo una interacción "está completa" —
+   eso lo sabe cada constructor, no un bus de eventos genérico:
+     - Preguntas del catálogo (CONSTRUCTORES): crear() llama a
+       alCompletar() la primera vez que comprobar() bloquea la pregunta
+       (acierto, agotó intentos o no es gradable) — el mismo momento en
+       que hoy oculta "Comprobar" para siempre.
+     - I15 (construirCuestionario, la única que lo usa hoy — ver E4 en
+       PLAN-ESTRUCTURA.md): llama a alCompletar() al resolver la última
+       pregunta de la batería, y también al montar si la marca de
+       finalización ya estaba en true (trampa 2 de E1) — un F5 después
+       de terminar no debe dejar "Siguiente" bloqueado de nuevo.
+     - El resto de CONSTRUCTORES_INSIGNIA (I07–I13) reciben el mismo
+       `alCompletar` como argumento pero ninguno lo llama todavía: son
+       exploratorias, sin "completo" definido, y ninguna pantalla real
+       las usa con bloqueaAvance — si una futura sí lo necesita, ese
+       constructor decide su propio momento, no se inventa uno aquí.
+   Sin `opciones` (el caso de siempre, sin bloqueaAvance), alCompletar
+   es un no-op — ninguna interacción existente cambia de comportamiento.
    ============================================================ */
 (function () {
   'use strict';
@@ -2262,7 +2286,8 @@
      propio <form> — mismo patrón de Comprobar/Reintentar que crear(),
      pero sin su envoltorio de una sola pregunta: aquí hay cinco en
      paralelo y ninguna llama a actualizarNota() por separado (trampa 1). */
-  function construirCuestionario(idBase, idScorm, datos) {
+  function construirCuestionario(idBase, idScorm, datos, alCompletar) {
+    alCompletar = typeof alCompletar === 'function' ? alCompletar : function () {};
     var preguntasCfg = datos.preguntas || [];
     if (!preguntasCfg.length) {
       throw new Error('I15 cuestionario necesita al menos una pregunta en "preguntas".');
@@ -2319,6 +2344,7 @@
         actualizarNotaFinal();
         OVA.state.establecerVariable(claveCompletado, true);
         mostrarResultado();
+        alCompletar();
       }
     }
 
@@ -2412,7 +2438,13 @@
       }
     });
 
-    if (yaCompleto) mostrarResultado();
+    if (yaCompleto) {
+      mostrarResultado();
+      // E2, trampa 2 de E1: un F5 después de terminar arranca ya
+      // desbloqueada — alCompletar() no es solo para el momento en que
+      // el estudiante termina en vivo.
+      alCompletar();
+    }
 
     return raiz;
   }
@@ -2456,13 +2488,19 @@
      interacción por instancia — a diferencia de "un solo reproductor
      activo" en media.js, aquí no hay nada que deba ser único: la
      kitchen sink monta las ocho a la vez sin registro compartido. */
-  function crear(interaccion) {
+  function crear(interaccion, opciones) {
     if (!interaccion || !interaccion.tipo) {
       throw new Error('La interacción no trae "tipo".');
     }
     var datos = interaccion.datos || {};
     var idBase = 'quiz' + (++contadorInstancias);
     var idScorm = datos.id || idBase;
+    // E2 — ver el bloque de documentación al inicio del archivo. Sin
+    // `opciones.alCompletar`, no-op: ninguna interacción existente
+    // cambia de comportamiento.
+    var alCompletar = (opciones && typeof opciones.alCompletar === 'function')
+      ? opciones.alCompletar
+      : function () {};
 
     // Las interacciones insignia (T8) no son preguntas: no pasan por el
     // fieldset/Comprobar/Reintentar/retro de abajo, arman su propio DOM
@@ -2470,7 +2508,7 @@
     // el encabezado del archivo.
     var constructorInsignia = CONSTRUCTORES_INSIGNIA[interaccion.tipo];
     if (constructorInsignia) {
-      return constructorInsignia(idBase, idScorm, datos);
+      return constructorInsignia(idBase, idScorm, datos, alCompletar);
     }
 
     var constructor = CONSTRUCTORES[interaccion.tipo];
@@ -2542,6 +2580,7 @@
         resumen.textContent = noGradable
           ? 'Respuesta registrada.'
           : (acierto ? '¡Correcto!' : 'Se acabaron los intentos (' + intentosUsados + ').');
+        alCompletar();
       } else {
         botonReintentar.hidden = false;
         resumen.textContent = 'Incorrecto. Intento ' + intentosUsados + ' de ' + intentosMaximos + '. Puedes volver a intentarlo.';
