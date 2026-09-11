@@ -3807,7 +3807,8 @@ toca el motor salvo lo que E1/E2 necesitan.
       migas que ocultaba el ítem de cápsula.
 - [x] **E4 · contenido nuevo** (`content/ova-u1.js` reescrito con el
       orden de §1) — completada 10 sep. Detalle abajo.
-- [ ] E5–E7 · pendientes.
+- [x] **E5 · banco archivado** — completada 11 sep. Detalle abajo.
+- [ ] E6–E7 · pendientes.
 
 **10 sep — E1 cerrada: catálogo I15 (cuestionario) en `quiz.js`, con
 una extracción compartida `OVA.resultado` (archivo nuevo) que también
@@ -4206,3 +4207,56 @@ retiradas no viven en ningún archivo del proyecto por ahora), E6
 (documentación/avisos). `CLAUDE.md` no se tocó — el catálogo I15 y
 `bloqueaAvance` ya quedaron documentados en `quiz.js`/`router.js`
 desde E1/E2, y esta tarea no cambia ninguna regla dura.
+
+**11 sep — E5 cerrada: `src/content/ova-u1-archivo.js`, con las 26
+pantallas que E4 recortó, sin editar y sin cablear a `index.html`.**
+
+**Cómo se recuperó el contenido exacto.** E4 no dejó las 26 pantallas
+en ningún archivo del proyecto — solo en el historial de git (nota
+que dejó la propia sesión de E4). El commit que hizo el recorte real
+es `8fe7ad1` ("Refactor code structure...", pese al nombre genérico:
+confirmado comparando el conteo de pantallas contra su padre, 50 →
+26); su padre, `821b6ac`, es la última versión de `ova-u1.js` con las
+50 pantallas completas, ya con los ajustes de `capsula`/`kicker` de
+esa misma sesión aplicados. Se extrajeron ahí los 26 objetos cuyo
+`id` aparece en la lista "Al banco" de PLAN-ESTRUCTURA.md §1
+(`p12, p14, p16–p21, p23, p26–p28, p31, p33, p35–p41, p43–p47`) — los
+26 coinciden exacto, sin ids de más ni de menos. **Se copiaron tal
+cual, sin editar una coma**: la regla dura de E5 (§5 del plan) es que
+esto es un banco recuperable, no una reescritura.
+
+**Qué se construyó:**
+
+- **`src/content/ova-u1-archivo.js`** (nuevo) — `window.OVA_CONTENIDO_ARCHIVO`
+  como arreglo plano de los 26 objetos de pantalla (mismo contrato de
+  contenido de siempre, JSON puro dentro de la asignación JSONP).
+  Encabezado que dice qué es el archivo, de qué commit vienen las
+  pantallas, y por qué salieron agrupadas por causa (las dos piezas
+  insignia que se van del OVA — Repo y Portafolio completos —, p41
+  huérfana de la boleta autosuficiente, p27/p28 sin cápsula que las
+  sostenga, y el recorte general de guion contra las cuatro cápsulas
+  de Jonás). No es un objeto con la forma completa del contrato
+  (`{id, titulo, unidad, pantallas}}`) porque no es un segundo
+  contenido cargable — es un banco de pantallas sueltas para copiar
+  de vuelta a `pantallas` de `ova-u1.js`, así que un arreglo es la
+  forma más simple que sigue siendo JSON puro reconocible.
+- **`index.html` no lo referencia** — confirmado por grep, el único
+  `<script src="content/…">` sigue siendo `ova-u1.js`. El archivo
+  archivado nunca se ejecuta en el OVA real ni en la kitchen sink.
+- **`ova-u1.js`** — la nota de cabecera que decía "E5 pendiente" se
+  actualizó a "E5 la movió a `ova-u1-archivo.js`", sin repetir el
+  detalle completo (ya vive aquí, mismo criterio que el resto de
+  notas de arquitectura del archivo).
+
+**Verificado:** `node --check` limpio sobre el archivo nuevo; los 26
+ids extraídos son exactamente los 26 de la lista "Al banco" de
+PLAN-ESTRUCTURA.md §1 (comparación de conjuntos, cero de más/menos);
+cero hex nuevo (grep contra `#[0-9a-f]{3,8}`, sin coincidencias — es
+contenido de datos, no CSS, pero se corrió la misma verificación por
+disciplina). No aplica kitchen sink (E5 no es un componente visual,
+es un archivo de datos inertes) ni recorrido con teclado (nada se
+monta en pantalla).
+
+**Sin tocar todavía:** E6 (verificación completa contra Moodle/SCORM
+real) y E7 (documentación/avisos — CLAUDE.md sigue sin el catálogo
+I15/`bloqueaAvance` como regla del contrato de contenido).

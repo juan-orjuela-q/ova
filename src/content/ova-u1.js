@@ -22,11 +22,10 @@
 
    - **26 pantallas quedan, 26 salen.** Las 26 que salen (p12, p14,
      p16–p21, p23, p26–p28, p31, p33, p35–p41, p43–p47) están
-     recortadas aquí, no reescritas — E5 las mueve a
-     `src/content/ova-u1-archivo.js` (índice.html no lo carga)
-     todavía **pendiente**: hasta que esa tarea corra, esas 26
-     pantallas solo existen en el historial de git, no en un banco
-     recuperable dentro del proyecto.
+     recortadas aquí, no reescritas — E5 las movió a
+     `src/content/ova-u1-archivo.js` (índice.html no lo carga).
+     Recuperar una pantalla es moverla de vuelta desde ese banco, no
+     hacer arqueología de git.
    - **Las cuatro cápsulas son las de Jonás (video), no las de Jose
      (DI):** Contexto del mercado / Valorización en acciones / El
      dividendo / El perfil de riesgo. `capsula` pasa a ser
