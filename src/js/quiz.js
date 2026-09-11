@@ -249,20 +249,32 @@
    deciden ellas mismas cuándo reportar a SCORM, aunque numéricamente el
    brief las ubique fuera del rango I09–I12.
 
-     I07 tarjetas_volteables { enunciado?, tarjetas:[{frente,reverso}], retroalimentacion? }
+     I07 tarjetas_volteables { enunciado?, tarjetas:[{frente,reverso,imagen?,alt?}], retroalimentacion? }
        - Una `<button aria-expanded>` por tarjeta (pedido explícito del
          cierre de C5 en PLAN-CONTENIDO.md) — Enter/Espacio y el foco
          vienen gratis del navegador, mismo criterio que el resto del
          catálogo. Cada tarjeta guarda dos caras (`.calc-tarjeta__cara`)
-         como hijos directos del botón; volver a pulsar la vuelve a
-         tapar — no es un candado de una sola vía como el bloqueo de una
-         pregunta gradable, es una ficha que se consulta cuantas veces
-         se quiera, mismo espíritu que I10–I12.
-       - El ícono del botón cambia de texto ('help' → 'task_alt') junto
-         con el texto visible al voltear — nunca solo un color — y cada
-         volteo se anuncia por `OVA.a11y.anunciar()` (la región
-         compartida de a11y.js, no una región propia), mismo patrón que
-         los botones "Mover antes/después" de I09.
+         dentro de un `.calc-tarjeta__interior` que gira en 3D
+         (`rotateY`, `backface-visibility: hidden`) cuando cambia
+         `aria-expanded` — proporción 4:5, cara frontal naranja con el
+         `frente` en blanco arriba y la ilustración (opcional, decorativa)
+         a sangre abajo, cara reverso gris con el `frente` repetido en
+         texto oscuro, `reverso` como definición y la misma ilustración
+         reducida a un círculo que se superpone a una franja inferior con
+         sombra (mismo `--shadow-card` que la tarjeta de audio, invertido).
+         Volver a pulsar la vuelve a tapar — no es un candado de una sola
+         vía como el bloqueo de una pregunta gradable, es una ficha que se
+         consulta cuantas veces se quiera, mismo espíritu que I10–I12. La
+         cara no visible se marca `aria-hidden` (el giro 3D solo la oculta
+         visualmente, no del árbol de accesibilidad) y cada volteo se
+         anuncia por `OVA.a11y.anunciar()` (la región compartida de
+         a11y.js, no una región propia), mismo patrón que los botones
+         "Mover antes/después" de I09. La duración del giro usa
+         `--dur-slow`, así que respeta movimiento reducido (SO o panel de
+         preferencias) igual que el resto del catálogo. `imagen` sigue el
+         mismo criterio de degradación que `crearIlustracionTarjeta` de
+         router.js: si falla al cargar, se quita y la tarjeta se queda con
+         su texto.
        - Sin arrastre y sin evaluación: no hay "correcta". Al voltear
          las tarjetas completas al menos una vez, se revela
          `retroalimentacion` (si el contenido la trae) en un
@@ -270,6 +282,15 @@
          `cmi.interactions` (tipoScorm 'other', neutral) — el mismo
          criterio de "reportar al completar la exploración" que usa I08.
        - `datos.id` opcional, igual que el resto del catálogo.
+       - Ajustes tanda 12 (p13, pedido de Juan): el título de cada cara
+         (`.calc-tarjeta__titulo-frente`/`-reverso`) va centrado y en
+         `--font-display` (PT Serif), no en la tipografía de UI del resto
+         del catálogo — mismo criterio que kicker/título de pantalla. La
+         definición del reverso sube de `tipo-cuerpo-sm` a `tipo-cuerpo`
+         y el círculo de la ilustración reducida de 4.5rem a 5.5rem (ver
+         la nota de `.calc-tarjeta__icono-circulo` en components.css
+         para la cuenta que evita que vuelva a recortarse contra
+         `overflow: hidden`).
 
      I08 comparador_columnas { enunciado?, columnas:[textoIzq,textoDer], filas:[{etiqueta,izquierda,derecha}] }
        - Nace de un problema real de layout, no de decoración: dos
@@ -388,11 +409,36 @@
    (`valor_accion_dividendo`, s11) se actualizó al contrato nuevo sin
    cambiar su matemática.
 
-     I10 calculadora_parametrica { enunciado?, formula, entradas, salidas, mensajes?, accion? }
+     I10 calculadora_parametrica { enunciado?, formula, entradas, salidas, mensajes?, accion?, variante?, mostrarAccion? }
        - `accion` (opcional): texto del botón de registro —antes fijo
          en "Registrar valorización", hoy con varias fórmulas no todas
          valorizan; por defecto "Registrar resultado".
-       - `salidas`: [{ id, etiqueta, unidad?, decimales? }, …] — un
+       - `mostrarAccion` (opcional, tanda 13): por defecto true. En
+         false quita el botón "Registrar resultado" y el `.calc-resumen`
+         enteros — Juan lo pidió para p22 y p24 porque el botón no hacía
+         nada perceptible (solo un evento SCORM neutral en segundo
+         plano). `botonRegistrar`/`resumen` quedan `null` y todo el
+         código que los toca (recalcular, registrar) hace guardia
+         primero.
+       - `variante` (opcional, tanda 13): agrega
+         `calc-calculadora--<variante>` a la raíz. Dos valores existen
+         (ver components.css): `"dashboard"` (p22, cinco salidas en dos
+         columnas — la última ocupa las dos como fila de cierre) y
+         `"dashboard-3col"` (p24, tres salidas en tres columnas, una
+         cada una). Las dos son controles fijos a la izquierda,
+         resultados en cuadrícula a la derecha desde 64em, con router.js
+         agregando además `layout--l06--ancho` al layout cuando
+         `datos.variante` empieza por `"dashboard"` (más ancho que el
+         56rem estándar de L06). Por debajo de 64em ninguna hace nada —
+         cae al apilado estándar de `.calc-calculadora`. Un tercer valor
+         necesitaría su propia regla `grid-template-columns` en
+         components.css; no hay mecanismo genérico de "N columnas" —no
+         hizo falta con solo dos pantallas usándolo.
+       - `salidas[].acento` (opcional, tanda 13): `"gris"` o `"naranja"`
+         — agrega `calc-calculadora__resultado--<acento>` a esa fila.
+         Solo tiene efecto visual dentro de una variante tablero; en la
+         calculadora estándar (p42) el campo no cambia nada.
+       - `salidas`: [{ id, etiqueta, unidad?, decimales?, acento? }, …] — un
          `.calc-calculadora__resultado` por salida (mismas clases de
          siempre, ahora repetidas), todas dentro de un único
          `<output class="calc-calculadora__resultados">` envolvente en
@@ -1356,8 +1402,13 @@
     var entradas = datos.entradas || [];
     var salidas = datos.salidas || [];
     var mensajes = datos.mensajes || null;
+    // Ajustes tanda 13 (p22): variante opcional, ver la nota "variante
+    // tablero" en el bloque C6 de arriba. Sin datos.variante, idéntica a
+    // siempre — es lo que sigue montando p24 (dividendos) sin tocar su
+    // contenido.
+    var mostrarAccion = datos.mostrarAccion !== false;
 
-    var raiz = crear_('div', 'calc-calculadora');
+    var raiz = crear_('div', 'calc-calculadora' + (datos.variante ? ' calc-calculadora--' + datos.variante : ''));
     if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
 
     var campos = crear_('div', 'calc-calculadora__entradas');
@@ -1421,7 +1472,11 @@
     raiz.appendChild(resultados);
 
     var filasResultado = salidas.map(function (salidaCfg) {
-      var fila = crear_('div', 'calc-calculadora__resultado');
+      // Ajustes tanda 13 (p22): acento gris/naranja opcional por salida,
+      // solo tiene efecto visual dentro de .calc-calculadora--dashboard
+      // (components.css) — en la calculadora estándar el campo, si
+      // llegara a existir, no cambia nada.
+      var fila = crear_('div', 'calc-calculadora__resultado' + (salidaCfg.acento ? ' calc-calculadora__resultado--' + salidaCfg.acento : ''));
       var icono = crear_('span', 'icono calc-calculadora__resultado-icono');
       icono.setAttribute('aria-hidden', 'true');
       var texto = crear_('div', 'calc-calculadora__resultado-texto');
@@ -1439,15 +1494,24 @@
     mensajeParrafo.hidden = true;
     resultados.appendChild(mensajeParrafo);
 
-    var acciones = crear_('div', 'calc-acciones');
-    var botonRegistrar = crear_('button', 'boton', datos.accion || 'Registrar resultado');
-    botonRegistrar.type = 'button';
-    acciones.appendChild(botonRegistrar);
-    raiz.appendChild(acciones);
+    // Ajustes tanda 13 (p22): mostrarAccion:false quita "Registrar
+    // resultado" entero (botón y resumen) — Juan pidió eliminar la
+    // funcionalidad porque el botón no hacía nada perceptible para el
+    // estudiante (solo un evento SCORM neutral en segundo plano). Sigue
+    // existiendo para p24 (dividendos), que no pidió el cambio.
+    var botonRegistrar = null;
+    var resumen = null;
+    if (mostrarAccion) {
+      var acciones = crear_('div', 'calc-acciones');
+      botonRegistrar = crear_('button', 'boton', datos.accion || 'Registrar resultado');
+      botonRegistrar.type = 'button';
+      acciones.appendChild(botonRegistrar);
+      raiz.appendChild(acciones);
 
-    var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
-    resumen.setAttribute('role', 'status');
-    raiz.appendChild(resumen);
+      resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
+      resumen.setAttribute('role', 'status');
+      raiz.appendChild(resumen);
+    }
 
     var ultimoCalculo = null;
 
@@ -1473,7 +1537,7 @@
             f.valor.textContent = resultadoFormula.error;
           }
         });
-        botonRegistrar.disabled = true;
+        if (botonRegistrar) botonRegistrar.disabled = true;
       } else {
         ultimoCalculo = resultadoFormula.valores;
         resultados.dataset.estado = 'ok';
@@ -1490,7 +1554,7 @@
         } else {
           mensajeParrafo.hidden = true;
         }
-        botonRegistrar.disabled = false;
+        if (botonRegistrar) botonRegistrar.disabled = false;
       }
     }
 
@@ -1517,7 +1581,7 @@
       resumen.textContent = 'Resultado registrado: ' + textoValores + '.';
     }
 
-    botonRegistrar.addEventListener('click', registrar);
+    if (mostrarAccion) botonRegistrar.addEventListener('click', registrar);
 
     return raiz;
   }
@@ -2037,25 +2101,64 @@
     var grilla = crear_('div', 'calc-tarjetas');
     raiz.appendChild(grilla);
 
+    // Ilustración opcional por tarjeta: mismo criterio de degradación
+    // que crearIlustracionTarjeta (router.js) — si falla al cargar se
+    // quita en vez de dejar el ícono de imagen rota.
+    function crearIlustracion(datosTarjeta, clase) {
+      if (!datosTarjeta.imagen) return null;
+      var img = document.createElement('img');
+      img.className = clase;
+      img.src = datosTarjeta.imagen;
+      img.alt = datosTarjeta.alt || '';
+      img.loading = 'lazy';
+      img.addEventListener('error', function () {
+        if (img.parentNode) img.parentNode.removeChild(img);
+      });
+      return img;
+    }
+
     var tarjetas = tarjetasDatos.map(function (datosTarjeta, indice) {
       var boton = document.createElement('button');
       boton.type = 'button';
       boton.className = 'calc-tarjeta';
       boton.setAttribute('aria-expanded', 'false');
 
-      var icono = crear_('span', 'icono calc-tarjeta__icono', 'help');
-      icono.setAttribute('aria-hidden', 'true');
-      boton.appendChild(icono);
+      var interior = crear_('span', 'calc-tarjeta__interior');
+      boton.appendChild(interior);
 
+      // Cara frontal: título en blanco sobre naranja, ilustración a
+      // sangre abajo (frame 33/38/39 de la referencia de Juan).
       var caraFrente = crear_('span', 'calc-tarjeta__cara calc-tarjeta__cara--frente');
-      caraFrente.appendChild(crear_('span', 'tipo-h5', datosTarjeta.frente));
-      var caraReverso = crear_('span', 'calc-tarjeta__cara calc-tarjeta__cara--reverso', datosTarjeta.reverso);
-      caraReverso.hidden = true;
-      boton.appendChild(caraFrente);
-      boton.appendChild(caraReverso);
+      caraFrente.appendChild(crear_('span', 'tipo-h5 calc-tarjeta__titulo-frente', datosTarjeta.frente));
+      var ilustracionFrente = crearIlustracion(datosTarjeta, 'calc-tarjeta__ilustracion');
+      if (ilustracionFrente) caraFrente.appendChild(ilustracionFrente);
+
+      // Cara reverso: fondo gris claro, título oscuro + definición
+      // centrados, y la misma ilustración reducida a un círculo que se
+      // superpone a la franja inferior con sombra.
+      var caraReverso = crear_('span', 'calc-tarjeta__cara calc-tarjeta__cara--reverso');
+      caraReverso.setAttribute('aria-hidden', 'true');
+      var cuerpoReverso = crear_('span', 'calc-tarjeta__cuerpo-reverso');
+      cuerpoReverso.appendChild(crear_('span', 'tipo-h5 calc-tarjeta__titulo-reverso', datosTarjeta.frente));
+      // Ajustes tanda 12: tipo-cuerpo, no tipo-cuerpo-sm — Juan pidió más
+      // tamaño para la definición del reverso que el resto del catálogo
+      // usa por defecto en tarjetas.
+      cuerpoReverso.appendChild(crear_('span', 'tipo-cuerpo calc-tarjeta__definicion', datosTarjeta.reverso));
+      caraReverso.appendChild(cuerpoReverso);
+      var pie = crear_('span', 'calc-tarjeta__pie');
+      var ilustracionReverso = crearIlustracion(datosTarjeta, 'calc-tarjeta__ilustracion-mini');
+      if (ilustracionReverso) {
+        var circulo = crear_('span', 'calc-tarjeta__icono-circulo');
+        circulo.appendChild(ilustracionReverso);
+        pie.appendChild(circulo);
+      }
+      caraReverso.appendChild(pie);
+
+      interior.appendChild(caraFrente);
+      interior.appendChild(caraReverso);
 
       grilla.appendChild(boton);
-      return { boton: boton, icono: icono, caraFrente: caraFrente, caraReverso: caraReverso, volteada: false };
+      return { boton: boton, interior: interior, caraFrente: caraFrente, caraReverso: caraReverso, volteada: false };
     });
 
     var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
@@ -2075,9 +2178,12 @@
       var expandido = t.boton.getAttribute('aria-expanded') === 'true';
       var nuevo = !expandido;
       t.boton.setAttribute('aria-expanded', String(nuevo));
-      t.caraFrente.hidden = nuevo;
-      t.caraReverso.hidden = !nuevo;
-      t.icono.textContent = nuevo ? 'task_alt' : 'help';
+      // El giro 3D (CSS, sobre .calc-tarjeta__interior) es lo único que
+      // decide qué cara se ve — aria-hidden es aparte porque
+      // backface-visibility solo oculta visualmente, no del árbol de
+      // accesibilidad.
+      t.caraFrente.setAttribute('aria-hidden', String(nuevo));
+      t.caraReverso.setAttribute('aria-hidden', String(!nuevo));
       OVA.a11y.anunciar((nuevo ? 'Mostrando: ' : 'Volviendo a: ') + (nuevo ? d.reverso : d.frente));
       if (nuevo) t.volteada = true;
 

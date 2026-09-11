@@ -606,6 +606,22 @@
   }
 }
 
+/* Ajustes tanda 12 (p13, p29 — variante sin avatar): kicker, título e
+   interacción/tarjetas comparten un único ancho máximo, centrado, en
+   vez de estirarse cada uno al ancho completo de .layout. Mismo tope
+   que ya usa .layout--l09__encabezado/__grilla (72rem) — no un valor
+   nuevo, la consistencia que pidió Juan con el resto del curso. Sin
+   media query: por debajo de 72rem el max-width no hace nada y el
+   contenedor ya ocupa el ancho completo que .layout le deja. */
+.layout--l05__contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
 /* C7: cuando la pantalla trae "interaccion" en vez de "tarjetas"
    (router.js, PLANTILLAS.L05 — P13/P28 del storyboard real), I07/I08
    ya son en sí mismas la disposición comparable que promete L05, pero
@@ -656,6 +672,25 @@
   background: var(--surface-subtle);
   border-radius: var(--r-lg);
   padding: var(--sp-8);
+}
+
+/* Ajustes tanda 13 (p22, "Calcula tú la valorización" — pantalla 15 de
+   26): variante ancha de L06 para la calculadora en modo tablero
+   (quiz.js, .calc-calculadora--dashboard, activada por router.js cuando
+   datos.variante === "dashboard"). 56rem alcanza para una interacción
+   apilada en una columna, pero se queda corto para controles+resultados
+   en dos columnas lado a lado — el mismo criterio de "el ancho va en
+   los hijos" de la nota de AJUSTES.md #2 de arriba, solo que con un
+   tope mayor. Sin ancho propio por debajo de 64em: a esos anchos
+   .calc-calculadora--dashboard tampoco arma la cuadrícula (components.
+   css), así que el máximo de 88rem no hace nada hasta que la cuadrícula
+   exista. */
+@media (min-width: 64em) {
+  .layout--l06--ancho .layout__kicker,
+  .layout--l06--ancho .layout__titulo,
+  .layout--l06--ancho .layout__interaccion {
+    max-width: 88rem;
+  }
 }
 
 /* ---- L07 · Pregunta -------------------------------------------------------

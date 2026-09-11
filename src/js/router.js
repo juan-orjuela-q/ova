@@ -826,16 +826,32 @@
       ]));
       encabezado.appendChild(crearLocucion(pantalla.avatar));
       raiz.appendChild(encabezado);
-    } else {
-      if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
-      raiz.appendChild(titulo);
+      if (pantalla.interaccion) {
+        raiz.appendChild(crearInteraccion(pantalla.interaccion, pantalla.bloqueaAvance));
+      } else {
+        raiz.appendChild(crearTarjetasComparativas(pantalla.tarjetas));
+      }
+      if (pantalla.nota) raiz.appendChild(crearNotaTarjetas(pantalla.nota));
+      return { raiz: raiz, titulo: titulo };
     }
+    // Ajustes tanda 12 (p13, pedido de Juan): sin avatar, kicker + título
+    // + interacción/tarjetas comparten un único contenedor de ancho
+    // máximo — mismo tope de 72rem que ya usa L09--tarjetas
+    // (p01a/p01b) para la misma necesidad de "agrupar todo el
+    // contenido bajo un ancho consistente con el resto del curso".
+    // Solo esta rama: p11 (con avatar) no lo pidió y conserva su ancho
+    // completo actual.
+    var contenedor = document.createElement('div');
+    contenedor.className = 'layout--l05__contenedor';
+    if (pantalla.kicker) contenedor.appendChild(crearKicker(pantalla.kicker));
+    contenedor.appendChild(titulo);
     if (pantalla.interaccion) {
-      raiz.appendChild(crearInteraccion(pantalla.interaccion, pantalla.bloqueaAvance));
+      contenedor.appendChild(crearInteraccion(pantalla.interaccion, pantalla.bloqueaAvance));
     } else {
-      raiz.appendChild(crearTarjetasComparativas(pantalla.tarjetas));
+      contenedor.appendChild(crearTarjetasComparativas(pantalla.tarjetas));
     }
-    if (pantalla.nota) raiz.appendChild(crearNotaTarjetas(pantalla.nota));
+    if (pantalla.nota) contenedor.appendChild(crearNotaTarjetas(pantalla.nota));
+    raiz.appendChild(contenedor);
     return { raiz: raiz, titulo: titulo };
   };
 
@@ -845,6 +861,20 @@
   // igual que su marcador en la kitchen sink desde T1.5.
   PLANTILLAS.L06 = function (pantalla) {
     var raiz = crearRaiz('l06');
+    // Ajustes tanda 13 (p22, p24): cualquier variante tablero de la
+    // interacción (quiz.js, datos.variante empieza por "dashboard" —
+    // "dashboard" en p22 con dos columnas de resultados, "dashboard-3col"
+    // en p24 con tres) necesita más ancho que el 56rem de lectura
+    // estándar de L06 — controles+resultados en columnas se ven
+    // apretados ahí. El modificador vive en el layout (layouts.css)
+    // porque el ancho es del layout, no del componente; se deriva del
+    // contrato de contenido, no de pantalla.id, para no acoplar el
+    // motor a una pantalla concreta (misma lógica que el resto de
+    // PLANTILLAS: reacciona a datos, no a ids).
+    var datosInteraccion = pantalla.interaccion && pantalla.interaccion.datos;
+    if (datosInteraccion && /^dashboard/.test(datosInteraccion.variante || '')) {
+      raiz.classList.add('layout--l06--ancho');
+    }
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     raiz.appendChild(titulo);

@@ -504,11 +504,13 @@ window.OVA_CONTENIDO = {
       "capsula": "Cápsula 1",
       "kicker": "Unidad 1 · Cápsula 1",
       "cuerpo": [
-        "Video pendiente de producción (Jonás). Guion, cuerpo y transcripción pendientes de Jose (DI) — ver PLAN-ESTRUCTURA.md §6."
+        "Antes de definir qué es una acción, ubica el mercado en el que estás incursionando: cómo se organiza el sistema financiero colombiano y por qué el foco de este curso es la renta variable."
       ],
       "media": {
         "tipo": "video",
-        "src": "../public/videos/capsulas/c1-contexto-mercado.mp4"
+        "src": "https://proyectosappicua.com/nuam-media/capsula-1.mp4",
+        "poster": "../public/videos/capsulas/capsula-1-cover.webp",
+        "transcripcion": "Hola, bienvenido a la unidad 1. Antes de hablar sobre qué es una acción, es importante que conozcas el contexto del mercado en el que estás incursionando. En Colombia el sistema financiero está compuesto por varios mercados, uno de ellos es el mercado de capitales donde se transan los títulos valor de las empresas que emiten activos como acciones, bonos, derivados, entre otros. Estos activos son administrados por Bolsa de Valores de Colombia por medio de 3 mercados:\nEl mercado de renta variable, en el cual, la rentabilidad no se conoce de manera anticipada ni está garantizada, ya que depende de factores tales como el comportamiento de los mercados, el desempeño de las empresas en las que se invierte y su situación económica.\nEl mercado de renta fija, en este, desde un inicio se tiene conocimiento de la rentabilidad que se tendrá al final de la negociación ya que el interés que generan es fijo.\nY, por último, está el mercado de derivados, el cual consiste en acuerdos o contratos que se hacen entre dos partes en el presente para la compra o venta de un activo con el propósito de pagarlos en el futuro.\nNuestro foco en este curso estará puesto en el mercado de renta variable, es decir, en la inversión en acciones ya que estás son el título característico de este mercado.\nPues bien, empecemos por definir qué es una acción, estas son títulos valor participativos que representan un porcentaje mínimo de propiedad de una empresa, en otras palabras, si adquieres una acción, es como si fueras dueño de una mínima parte de la empresa. Las acciones tienen unas características muy interesantes:\nLa primera, es que como inversionista puedes comprar y vender acciones en el mercado de valores de manera fácil, rápida y segura.\nLa segunda, es que podrás recibir ganancias por la valorización de una acción y los dividendos de una empresa.\nY la tercera es que te conviertes en accionista de una compañía listada en Bolsa y esto, en algunos casos, te da derechos políticos dependiendo del tipo de acción. Esto lo veremos con más detalle más adelante."
       },
       "progreso": true
     },
@@ -523,22 +525,27 @@ window.OVA_CONTENIDO = {
         "tipo": "I07",
         "datos": {
           "id": "u1-p13-tres-familias",
-          "enunciado": "Renta variable: resultado no garantizado; depende del precio y dividendos.\nRenta fija: condiciones de pago pactadas desde el inicio.\nDerivados: contratos cuyo valor depende de otro activo.",
+          "enunciado": "Interactúa con las tarjetas para reforzar los conceptos.",
           "tarjetas": [
             {
               "frente": "Renta variable",
-              "reverso": "Resultado no garantizado"
+              "reverso": "Resultado no garantizado, depende del precio y dividendos",
+              "imagen": "../public/img/ilustraciones/renta-variable.webp",
+              "alt": ""
             },
             {
               "frente": "Renta fija",
-              "reverso": "Pagos o condiciones pactadas"
+              "reverso": "Condiciones de pago pactadas desde el inicio",
+              "imagen": "../public/img/ilustraciones/renta-fija.webp",
+              "alt": ""
             },
             {
               "frente": "Derivados",
-              "reverso": "Contratos sobre otro activo"
+              "reverso": "Contratos cuyo valor depende de otro activo",
+              "imagen": "../public/img/ilustraciones/derivados.webp",
+              "alt": ""
             }
-          ],
-          "retroalimentacion": "Bien. Las acciones pertenecen a renta variable porque su rentabilidad no se conoce al comprar."
+          ]
         }
       },
       "progreso": true
@@ -591,7 +598,8 @@ window.OVA_CONTENIDO = {
       ],
       "media": {
         "tipo": "video",
-        "src": "../public/videos/capsulas/c2-valorizacion-acciones.mp4"
+        "src": "https://proyectosappicua.com/nuam-media/capsula-2.mp4",
+        "poster": "../public/videos/capsulas/capsula-2-cover.webp"
       },
       "progreso": true
     },
@@ -606,6 +614,8 @@ window.OVA_CONTENIDO = {
         "tipo": "I10",
         "datos": {
           "id": "u1-p22-valorizacion",
+          "variante": "dashboard",
+          "mostrarAccion": false,
           "enunciado": "Mueve el precio de compra y el precio de venta para ver cómo cambia la valorización.",
           "formula": "valorizacion",
           "entradas": [
@@ -615,8 +625,8 @@ window.OVA_CONTENIDO = {
               "unidad": " COP",
               "min": 1,
               "max": 10000,
-              "paso": 10,
-              "valorInicial": 1000,
+              "paso": 200,
+              "valorInicial": 1001,
               "decimales": 0
             },
             {
@@ -625,8 +635,8 @@ window.OVA_CONTENIDO = {
               "unidad": " COP",
               "min": 1,
               "max": 10000,
-              "paso": 10,
-              "valorInicial": 1500,
+              "paso": 200,
+              "valorInicial": 1401,
               "decimales": 0
             },
             {
@@ -635,8 +645,8 @@ window.OVA_CONTENIDO = {
               "unidad": " acciones",
               "min": 1,
               "max": 10000,
-              "paso": 1,
-              "valorInicial": 500,
+              "paso": 500,
+              "valorInicial": 501,
               "decimales": 0
             }
           ],
@@ -645,31 +655,36 @@ window.OVA_CONTENIDO = {
               "id": "monto_invertido",
               "etiqueta": "Monto invertido",
               "unidad": " COP",
-              "decimales": 0
+              "decimales": 0,
+              "acento": "gris"
             },
             {
               "id": "diferencia_por_accion",
               "etiqueta": "Diferencia por acción",
               "unidad": " COP",
-              "decimales": 0
+              "decimales": 0,
+              "acento": "naranja"
             },
             {
               "id": "variacion_porcentual",
               "etiqueta": "Variación porcentual",
               "unidad": " %",
-              "decimales": 1
+              "decimales": 1,
+              "acento": "naranja"
             },
             {
               "id": "ganancia_perdida",
               "etiqueta": "Ganancia/pérdida por precio",
               "unidad": " COP",
-              "decimales": 0
+              "decimales": 0,
+              "acento": "naranja"
             },
             {
               "id": "monto_final_bruto",
               "etiqueta": "Monto final bruto",
               "unidad": " COP",
-              "decimales": 0
+              "decimales": 0,
+              "acento": "gris"
             }
           ],
           "mensajes": {
@@ -720,7 +735,8 @@ window.OVA_CONTENIDO = {
       ],
       "media": {
         "tipo": "video",
-        "src": "../public/videos/capsulas/c3-dividendo.mp4"
+        "src": "https://proyectosappicua.com/nuam-media/capsula-3.mp4",
+        "poster": "../public/videos/capsulas/capsula-3-cover.webp"
       },
       "progreso": true
     },
@@ -735,6 +751,8 @@ window.OVA_CONTENIDO = {
         "tipo": "I10",
         "datos": {
           "id": "u1-p24-dividendo-por-accion",
+          "variante": "dashboard-3col",
+          "mostrarAccion": false,
           "enunciado": "Ajusta utilidad neta, porcentaje a repartir y número de acciones. Observa el dividendo estimado por acción.",
           "formula": "dividendo_por_accion",
           "entradas": [
@@ -784,19 +802,22 @@ window.OVA_CONTENIDO = {
               "id": "monto_a_repartir",
               "etiqueta": "Monto a repartir",
               "unidad": " COP",
-              "decimales": 0
+              "decimales": 0,
+              "acento": "gris"
             },
             {
               "id": "dividendo_por_accion",
               "etiqueta": "Dividendo por acción",
               "unidad": " COP",
-              "decimales": 2
+              "decimales": 2,
+              "acento": "naranja"
             },
             {
               "id": "dividendo_estudiante",
               "etiqueta": "Dividendo estimado del estudiante",
               "unidad": " COP",
-              "decimales": 2
+              "decimales": 2,
+              "acento": "gris"
             }
           ],
           "mensajes": {
@@ -860,7 +881,8 @@ window.OVA_CONTENIDO = {
       ],
       "media": {
         "tipo": "video",
-        "src": "../public/videos/capsulas/c4-perfil-riesgo.mp4"
+        "src": "https://proyectosappicua.com/nuam-media/capsula-4.mp4",
+        "poster": "../public/videos/capsulas/capsula-4-cover.webp"
       },
       "progreso": true
     },

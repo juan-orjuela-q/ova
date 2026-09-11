@@ -2743,6 +2743,160 @@ a.cap-tarjeta:hover {
   color: var(--text-secondary);
 }
 
+/* ---- Variante tablero de la calculadora (I10, ajustes tanda 13) ----
+   Pedido de Juan para p22 ("Calcula tú la valorización", pantalla 15
+   de 26): en vez de una columna larga donde hay que bajar para ver
+   cómo cambió cada resultado, los controles quedan fijos en un bloque
+   a la izquierda y los resultados en una cuadrícula a la derecha, para
+   ver en un mismo vistazo cómo cambian al mover los sliders. Dos
+   variantes comparten esta cáscara —`datos.variante` (quiz.js) agrega
+   `calc-calculadora--<variante>` a la raíz—: `"dashboard"` (p22, cinco
+   salidas en dos columnas) y `"dashboard-3col"` (p24, tres salidas en
+   tres columnas — una por resultado, así que no hace falta la fila
+   final a todo el ancho que sí necesita p22). router.js agrega además
+   `layout--l06--ancho` al layout (layouts.css, activa con cualquier
+   variante que empiece por "dashboard") para el ancho mayor que
+   necesita el tablero — todo se activa solo cuando el contenido pide
+   la variante, nada depende de pantalla.id.
+   Sin media query, las dos son idénticas a la calculadora estándar
+   (apiladas, un resultado por fila) — es lo que mantiene la
+   adaptación a mobile y a pantallas angostas sin duplicar ninguna
+   regla: la cuadrícula solo se arma desde 64em. */
+@media (min-width: 64em) {
+  .calc-calculadora--dashboard,
+  .calc-calculadora--dashboard-3col {
+    display: grid;
+    grid-template-areas:
+      "enunciado enunciado"
+      "controles resultados";
+    align-items: start;
+    gap: var(--sp-8);
+  }
+  .calc-calculadora--dashboard {
+    grid-template-columns: minmax(24rem, 28rem) 1fr;
+  }
+  /* p24 tiene una entrada más que p22 (cuatro sliders) y cifras de
+     hasta diez dígitos (utilidad neta, tope 1.000.000.000 COP) en el
+     valor de cada campo — el mismo problema de espacio que ya resolvió
+     ronda 2 de ajustes tanda 13 para "Número de acciones" en p22, aquí
+     de entrada: columna un poco más ancha que la de p22. */
+  .calc-calculadora--dashboard-3col {
+    grid-template-columns: minmax(26rem, 30rem) 1fr;
+  }
+  .calc-calculadora--dashboard .calc-calculadora__enunciado,
+  .calc-calculadora--dashboard-3col .calc-calculadora__enunciado {
+    grid-area: enunciado;
+  }
+  .calc-calculadora--dashboard .calc-calculadora__entradas,
+  .calc-calculadora--dashboard-3col .calc-calculadora__entradas {
+    grid-area: controles;
+    background: var(--surface-default);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    padding: var(--sp-5);
+  }
+  .calc-calculadora--dashboard .calc-calculadora__resultados,
+  .calc-calculadora--dashboard-3col .calc-calculadora__resultados {
+    grid-area: resultados;
+    display: grid;
+    align-content: start;
+    gap: var(--sp-4);
+  }
+  .calc-calculadora--dashboard .calc-calculadora__resultados {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .calc-calculadora--dashboard-3col .calc-calculadora__resultados {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  /* p22 (dos columnas, cinco salidas): el último resultado (monto
+     final bruto) ocupa las dos columnas como fila de cierre — es el
+     total que resume a los cuatro anteriores, no una cifra más del
+     mismo nivel. :last-of-type cuenta solo entre
+     .calc-calculadora__resultado — el <p> de .calc-calculadora__mensaje
+     que sigue es otro tipo de nodo y no lo desplaza. p24 (tres
+     columnas, tres salidas) no necesita esto: cada resultado ya cae en
+     su propia columna, ninguno queda suelto. */
+  .calc-calculadora--dashboard .calc-calculadora__resultado:last-of-type {
+    grid-column: 1 / -1;
+  }
+  .calc-calculadora--dashboard .calc-calculadora__mensaje,
+  .calc-calculadora--dashboard-3col .calc-calculadora__mensaje {
+    grid-column: 1 / -1;
+  }
+}
+/* Acentos gris/naranja opcionales por salida (datos.salidas[].acento,
+   quiz.js) — border-inline-start en transparent en vez de quitarlo:
+   así el borde rojo de data-estado="error" (arriba) todavía se ve si
+   alguna vez esta variante se usa con una fórmula que sí tiene estado
+   de error (hoy ni "valorizacion" ni "dividendo_por_accion" lo tienen).
+   Solo tienen efecto dentro de las variantes tablero: en la
+   calculadora estándar (p42) el mismo campo no cambiaría nada. */
+.calc-calculadora--dashboard .calc-calculadora__resultado,
+.calc-calculadora--dashboard-3col .calc-calculadora__resultado {
+  border-inline-start: 3px solid transparent;
+}
+.calc-calculadora--dashboard .calc-calculadora__resultado--gris,
+.calc-calculadora--dashboard-3col .calc-calculadora__resultado--gris {
+  background: var(--surface-inverse);
+}
+.calc-calculadora--dashboard .calc-calculadora__resultado--gris .calc-calculadora__resultado-etiqueta,
+.calc-calculadora--dashboard-3col .calc-calculadora__resultado--gris .calc-calculadora__resultado-etiqueta {
+  color: var(--text-on-inverse-2);
+}
+.calc-calculadora--dashboard .calc-calculadora__resultado--gris .calc-calculadora__resultado-valor,
+.calc-calculadora--dashboard .calc-calculadora__resultado--gris .calc-calculadora__resultado-icono,
+.calc-calculadora--dashboard-3col .calc-calculadora__resultado--gris .calc-calculadora__resultado-valor,
+.calc-calculadora--dashboard-3col .calc-calculadora__resultado--gris .calc-calculadora__resultado-icono {
+  color: var(--text-on-inverse);
+}
+/* Naranja-500 de relleno: blanco sobre naranja-500 mide 3.48:1 fijo
+   (el mismo número que ya documenta tokens.css junto a --text-button),
+   pasa el 3:1 de texto grande (>=19px/700 o >=24px/400) pero no el
+   4.5:1 de texto normal — restricción de CLAUDE.md, no solo del botón.
+   El valor es tipo-h5 en negrita: 22px desde 48em (tokens.css, escala
+   de escritorio), texto grande de sobra, pero solo 17px por debajo de
+   eso — no llega al piso de 18.66px/700 de WCAG. La etiqueta hereda el
+   cuerpo normal (16–18px/400 según el ancho): ni de cerca. Juan pidió
+   blanco también ahí — en vez de dejarla en gris o de ignorar la regla,
+   sube a negrita y al mismo tamaño mínimo que ya usa --text-button
+   (19px/700, "el mínimo del botón naranja" de tokens.css) SOLO en la
+   variante naranja de estos tableros: dejó de ser una etiqueta
+   discreta y pasa a leerse como un segundo dato corto, que es lo que
+   su nuevo peso visual ya sugiere. Blanco (--text-on-brand-display)
+   para las tres —etiqueta, valor, ícono— entra recién a partir de
+   48em, que es donde el valor cruza el piso de texto grande; en mobile
+   las tres se quedan en --text-on-brand (gris 950) sin cambiar de
+   tamaño, mismo criterio de siempre. El ícono sigue el mismo corte
+   aunque sea aria-hidden — no tiene sentido que las tres cambien de
+   color en momentos distintos dentro de la misma tarjeta. */
+.calc-calculadora--dashboard .calc-calculadora__resultado--naranja,
+.calc-calculadora--dashboard-3col .calc-calculadora__resultado--naranja {
+  background: var(--surface-brand);
+}
+.calc-calculadora--dashboard .calc-calculadora__resultado--naranja .calc-calculadora__resultado-etiqueta,
+.calc-calculadora--dashboard .calc-calculadora__resultado--naranja .calc-calculadora__resultado-valor,
+.calc-calculadora--dashboard .calc-calculadora__resultado--naranja .calc-calculadora__resultado-icono,
+.calc-calculadora--dashboard-3col .calc-calculadora__resultado--naranja .calc-calculadora__resultado-etiqueta,
+.calc-calculadora--dashboard-3col .calc-calculadora__resultado--naranja .calc-calculadora__resultado-valor,
+.calc-calculadora--dashboard-3col .calc-calculadora__resultado--naranja .calc-calculadora__resultado-icono {
+  color: var(--text-on-brand);
+}
+@media (min-width: 48em) {
+  .calc-calculadora--dashboard .calc-calculadora__resultado--naranja .calc-calculadora__resultado-etiqueta,
+  .calc-calculadora--dashboard .calc-calculadora__resultado--naranja .calc-calculadora__resultado-valor,
+  .calc-calculadora--dashboard .calc-calculadora__resultado--naranja .calc-calculadora__resultado-icono,
+  .calc-calculadora--dashboard-3col .calc-calculadora__resultado--naranja .calc-calculadora__resultado-etiqueta,
+  .calc-calculadora--dashboard-3col .calc-calculadora__resultado--naranja .calc-calculadora__resultado-valor,
+  .calc-calculadora--dashboard-3col .calc-calculadora__resultado--naranja .calc-calculadora__resultado-icono {
+    color: var(--text-on-brand-display);
+  }
+  .calc-calculadora--dashboard .calc-calculadora__resultado--naranja .calc-calculadora__resultado-etiqueta,
+  .calc-calculadora--dashboard-3col .calc-calculadora__resultado--naranja .calc-calculadora__resultado-etiqueta {
+    font-weight: 700;
+    font-size: 1.1875rem;
+  }
+}
+
 /* ---- Línea de tiempo recorrible (I09, C6) --------------------------
    Reemplaza la versión ordenable de T8 (ver el bloque C6 en el
    encabezado de quiz.js): un panel único que muestra un paso a la vez
@@ -2799,7 +2953,8 @@ a.cap-tarjeta:hover {
 /* ---- Tarjetas volteables (I07) --------------------------------------
    Ver el bloque de documentación C5 en el encabezado de quiz.js. Grid
    fluido en vez de un carrusel: a 320px cada tarjeta cae a una columna
-   sola, sin scroll horizontal. */
+   sola, sin scroll horizontal. Rediseño del 11 sep sobre referencia de
+   Juan: proporción 4:5, giro 3D real en vez de mostrar/ocultar texto. */
 .calc-tarjetas {
   display: grid;
   /* min(14rem, 100%), no 14rem a secas: a 320px + zoom de texto 200% un
@@ -2810,36 +2965,127 @@ a.cap-tarjeta:hover {
   gap: var(--sp-4);
 }
 .calc-tarjeta {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  /* La perspectiva vive en el botón, no en .calc-tarjeta__interior: así
+     cada tarjeta gira "sobre sí misma" con su propio punto de fuga en
+     vez de compartir uno solo entre las tres de la grilla. */
+  perspective: 100rem;
+}
+.calc-tarjeta:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+.calc-tarjeta__interior {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform var(--dur-slow) var(--ease-in-out);
+}
+.calc-tarjeta[aria-expanded="true"] .calc-tarjeta__interior {
+  transform: rotateY(180deg);
+}
+.calc-tarjeta__cara {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--sp-3);
-  padding: var(--sp-5);
-  border: 1px solid var(--border-default);
+  overflow: hidden;
   border-radius: var(--r-md);
-  background: var(--surface-default);
-  text-align: left;
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  backface-visibility: hidden;
 }
-.calc-tarjeta:hover {
-  background: var(--surface-subtle);
+/* Cara frontal: fondo naranja plano, título en blanco arriba,
+   ilustración a sangre en el resto de la tarjeta. */
+.calc-tarjeta__cara--frente {
+  background: var(--surface-brand);
 }
-.calc-tarjeta__icono {
-  font-size: 1.5rem;
-  color: var(--text-tertiary);
+.calc-tarjeta__titulo-frente {
+  flex-shrink: 0;
+  padding: var(--sp-5) var(--sp-5) 0;
+  color: var(--text-on-brand-display);
+  text-align: center;
+  font-family: var(--font-display);
 }
-/* El ícono cambia de glifo (help → task_alt) junto con el texto que
-   muestra el botón — nunca solo el color, regla dura de CLAUDE.md. El
-   verde aquí es un acento adicional, no el único código del estado. */
-.calc-tarjeta[aria-expanded="true"] {
-  border-color: var(--nuam-green-500);
+.calc-tarjeta__ilustracion {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  object-fit: cover;
 }
-.calc-tarjeta[aria-expanded="true"] .calc-tarjeta__icono {
-  color: var(--nuam-green-500);
-}
+/* Cara reverso: gris claro, gira ya orientada hacia adelante (rotateY
+   180deg de origen) para que al llegar al final del giro se lea al
+   derecho y no en espejo. */
 .calc-tarjeta__cara--reverso {
+  background: var(--surface-subtle-2);
+  color: var(--text-primary);
+  transform: rotateY(180deg);
+}
+.calc-tarjeta__cuerpo-reverso {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-6) var(--sp-5) var(--sp-10);
+  text-align: center;
+}
+.calc-tarjeta__titulo-reverso {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+.calc-tarjeta__definicion {
   color: var(--text-secondary);
+}
+/* Franja inferior: mismo gris que el resto del reverso (ajustes tanda
+   13, pedido de Juan — antes blanca contra el cuerpo gris de
+   .calc-tarjeta__cara--reverso) y no la caja completa, así que la
+   sombra hacia arriba sigue siendo lo único que la separa del cuerpo;
+   se suavizó junto con el cambio de color porque un blanco-sobre-gris
+   necesitaba más sombra para leerse como una capa aparte de lo que
+   necesita gris-sobre-gris. */
+.calc-tarjeta__pie {
+  position: relative;
+  flex-shrink: 0;
+  /* --sp-12 (antes --sp-10): sube junto con el círculo de abajo — ver
+     su comentario para la cuenta completa. */
+  height: var(--sp-12);
+  background: var(--surface-subtle-2);
+  box-shadow: 0 -3px 6px -2px rgba(0, 0, 0, 0.12);
+}
+.calc-tarjeta__icono-circulo {
+  position: absolute;
+  left: 50%;
+  /* Centrado sobre el borde superior de .calc-tarjeta__pie (la franja),
+     no sobre su borde inferior: así el círculo queda contenido dentro
+     de .calc-tarjeta__cara (overflow: hidden) en vez de recortarse
+     contra el borde real de la tarjeta. Ajustes tanda 12: círculo de
+     4.5rem a 5.5rem (pedido de Juan) — su radio (2.75rem) sigue por
+     debajo del alto de la franja (--sp-12, 3rem), mismo margen de
+     ~4px que ya tenía el par 4.5rem/--sp-10 antes de este ajuste. */
+  top: 0;
+  transform: translate(-50%, -50%);
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface-brand);
+  border: 3px solid var(--surface-default);
+}
+.calc-tarjeta__ilustracion-mini {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* ---- Comparador de dos columnas (I08) -------------------------------
@@ -2884,7 +3130,8 @@ a.cap-tarjeta:hover {
   color: var(--text-tertiary);
 }
 /* Fila activa: ícono + borde cambian juntos (nunca solo el color),
-   mismo patrón que la tarjeta de I07 y el "ejecutada" de I11. */
+   mismo patrón que el "ejecutada" de I11 (el giro de I07 desde el
+   rediseño del 11 sep comunica su estado por sí solo, sin ícono). */
 .calc-comparador__fila--activa {
   border-color: var(--nuam-green-500);
 }
