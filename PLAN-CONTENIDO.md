@@ -1,5 +1,14 @@
 # Plan de implementación del contenido — OVA Unidad 1
 
+> **Superado por `PLAN-ESTRUCTURA.md` (10 sep).** Las 47 pantallas de Jose
+> (§1) ya no son el recorrido del OVA: la reestructura las bajó a 26,
+> archivó las 21 restantes en `src/content/ova-u1-archivo.js` y sumó tres
+> pantallas sin guion propio (`p10-tutor` y las dos comprobaciones de
+> cápsula). Los catálogos L01–L13/I01–I14 de §2 y la caja 16:9 de §4 siguen
+> vigentes sin cambios — sigue siendo la referencia para eso. Para saber qué
+> pantalla existe hoy y bajo qué etiqueta, usa `PLAN-ESTRUCTURA.md` §1, no la
+> tabla de bloques de este archivo.
+
 Este plan cubre el tramo que `PLAN.md` no cubría: montar el diseño instruccional
 real de Jose (`disenoInstruccional/`, v2 del 3 de septiembre) sobre el motor que
 cerró T1–T9. `PLAN.md` sigue siendo la historia de cómo se construyó el motor;

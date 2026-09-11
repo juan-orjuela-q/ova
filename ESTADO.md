@@ -3783,3 +3783,635 @@ todavía ningún `data-anim` propio más allá de la entrada escalonada
 genérica que ya heredan `.layout__kicker/titulo/cuerpo/interaccion`
 (ítem 2 del inventario de movimiento) — no había nada específico de
 D7 que animar aparte de eso.
+
+---
+
+## PLAN-ESTRUCTURA.md (E0–E7)
+
+Plan vigente desde el 10 de septiembre — ver `PLAN-ESTRUCTURA.md`. Corre
+después de D0–D6 (D7/D9/D10 quedan pendientes y no se retoman hasta
+cerrar este plan). Reestructura el recorrido de 50 a 26 pantallas; no
+toca el motor salvo lo que E1/E2 necesitan.
+
+- [x] **E0 · Rama `e-reestructura` y el plan** — completada 10 sep
+      (commit `de68814`).
+- [x] **E1 · I15 cuestionario (+ `OVA.resultado` compartido, + kitchen
+      sink)** — completada 10 sep. Detalle abajo.
+- [x] **E2 · `bloqueaAvance`** — completada 10 sep. Detalle abajo.
+- [x] **E3 · etiquetas como agrupador** — completada 10 sep (commit
+      `821b6ac`, sin entrada propia en este archivo cuando se hizo —
+      confirmada por el comentario de `actualizarMigas()` en
+      `router.js`: "Desde E3, las etiquetas de agrupación... son
+      valores reales de `capsula`"). `capsula` deja de ser `null` en
+      Antes de empezar/Apertura/Cierre y `router.js` ajusta la rama de
+      migas que ocultaba el ítem de cápsula.
+- [x] **E4 · contenido nuevo** (`content/ova-u1.js` reescrito con el
+      orden de §1) — completada 10 sep. Detalle abajo.
+- [x] **E5 · banco archivado** — completada 11 sep. Detalle abajo.
+- [x] **E6 · verificación** — completada 11 sep. Detalle abajo.
+- [x] **E7 · documentación y avisos** — completada 11 sep. Detalle abajo.
+
+**10 sep — E1 cerrada: catálogo I15 (cuestionario) en `quiz.js`, con
+una extracción compartida `OVA.resultado` (archivo nuevo) que también
+absorbió al `PLANTILLAS.L08` de `router.js`, verificada de punta a
+punta con Playwright.**
+
+**Qué se construyó:**
+
+- **`src/js/resultado.js`** (nuevo) — `OVA.resultado.resolver(resultado)`
+  (la regla "primera que aplica gana" contra una variable de
+  `state.js`, idéntica a la que antes vivía dentro de
+  `obtenerResultado()` en `router.js`) y `OVA.resultado.construir(efectivo)`
+  (cifra vía `OVA.charts.crear({tipo:'cifra',…})` + callout vía
+  `.callout`, T5 — el mismo candado ícono+título que ya cumplía
+  `crearCalloutResultado()`). Dos funciones con responsabilidades que
+  no se pisan: una decide QUÉ mostrar, la otra lo pinta — así I15
+  puede resolver su propio `datos.resultado` sin pasar por una
+  `pantalla` de `router.js`, que es lo que exigía la nota "reusar, no
+  duplicar" del plan (§2): sin esta extracción habría dos
+  implementaciones de "primera que aplica gana" divergiendo en la
+  primera corrección.
+- **`router.js`** — `obtenerResultado(pantalla)` quedó en tres líneas
+  (el fallo ruidoso propio de L08 sin "resultado" en absoluto o sin
+  cifra/retro tras resolver) delegando el resto en
+  `OVA.resultado.resolver()`; `PLANTILLAS.L08` arma sus dos
+  contenedores (`.layout__datos`/`.layout__interaccion`) alrededor de
+  los nodos que devuelve `OVA.resultado.construir()`, sin volver a
+  construirlos a mano. `mezclarCifraConVariable()` y
+  `crearCalloutResultado()` se borraron de `router.js` (viven en
+  `resultado.js`), no quedaron duplicadas.
+- **`src/js/quiz.js`, `construirCuestionario()`** — despachada por
+  `CONSTRUCTORES_INSIGNIA['I15']`, igual que I07/I08/I13: arma su
+  propio DOM (`.quiz-cuestionario`), no pasa por el
+  fieldset/Comprobar/Reintentar único de `crear()`. Cada pregunta de
+  `datos.preguntas` se resuelve con su constructor real de
+  `CONSTRUCTORES` (I01–I05/completar/numerica/autoevaluacion — nunca
+  otra I15 ni I07/I08/I09–I13) dentro de su propio `<form
+  class="quiz-cuestionario__item">`, con su propio Comprobar/
+  Reintentar/retro (I14) — visualmente las cinco están montadas a la
+  vez, apiladas, no reveladas una por una.
+  - **Trampa 1 (score.raw pisado cinco veces):** cada pregunta reporta
+    su fila a `cmi.interactions` (`reportarSCORM`, sin cambios) pero
+    ninguna llama a `actualizarNota()` — la nota se calcula una sola
+    vez, al resolver la última pregunta, como
+    `Math.round(aciertos / total * 100)`.
+  - **Trampa 2 (recargar a media batería no encierra):** el intento de
+    cada pregunta sigue sin persistirse (T6, sin cambios), pero la
+    terminación de la BATERÍA COMPLETA sí — `OVA.state.establecerVariable(idScorm + '-completo', true)`
+    al resolver la quinta. Al montar, si esa marca ya está en `true`,
+    las cinco preguntas arrancan bloqueadas de una (sin reconstruir
+    qué se respondió — eso sí se pierde, igual que siempre) y el
+    bloque de resultado se muestra directo, sin repetir el reporte a
+    SCORM ni recalcular la nota.
+  - **Trampa 3 (alto ~780px):** sin contenedor de scroll propio — es
+    scroll real dentro de `#app` (regla dura 9). El contador "Pregunta
+    N de 5" va pegado a cada `.quiz-cuestionario__item`, no arriba del
+    cuestionario, así se ve sin volver arriba.
+  - **Trampa 4 (foco):** ninguna llamada a `.focus()` en todo el
+    constructor; la retro de cada pregunta y `.quiz-cuestionario__resultado`
+    son `role="status"`, se anuncian solas.
+  - **Trampa 5 (color):** la cifra final lleva etiqueta y el callout
+    ícono + título — mismos componentes que ya cumplían la regla en
+    L08, reusados vía `OVA.resultado.construir()`.
+  - `datos.variable` (opcional, acumulador único) se aplica a CADA
+    pregunta que resuelva "correcto" vía la `actualizarVariableContenido()`
+    ya existente — el contenido lo declara una sola vez en vez de
+    repetirlo en las cinco preguntas, a diferencia de como está hoy
+    p05–p09 en `content/ova-u1.js` (que E4 todavía no tocó).
+- **CSS (`components.css`)** — familia `.quiz-cuestionario*` nueva,
+  después de `.quiz-retro--entrada`: `flex-direction: column` + `gap`
+  en todos los niveles (regla dura de CLAUDE.md, nada de márgenes por
+  hermano), divisor `border-block-start` entre preguntas en vez de
+  espacio decorativo aparte.
+
+**Verificado con Playwright (Python, Chromium), `dev/kitchen-sink.html`
+y `src/index.html` por `file://`:**
+
+- Los tres estados de I15 en la kitchen sink (`#c-i15-sin-empezar`,
+  `#c-i15-a-medias` con las dos primeras resueltas por script al
+  cargar, `#c-i15-completo` montada con la marca de finalización ya en
+  `true` — el equivalente real de un F5 después de terminar):
+  `role="status"` presente en las cinco retro más el bloque de
+  resultado (seis, confirmado por atributo real); cada `<fieldset>`
+  con su `<legend>`; responder las cinco preguntas a mano en
+  `#c-i15-sin-empezar` (incluida la única con la respuesta correcta en
+  el segundo radio, para no dar por buena una selección por defecto)
+  hace aparecer el bloque de resultado con el texto exacto de la regla
+  que matchea; `#c-i15-a-medias` deja el contador de la pregunta 3 en
+  "Pregunta 3 de 5" sin resultado visible (2/5 no alcanza el total);
+  `#c-i15-completo` arranca con los cinco "Comprobar" ocultos y el
+  resultado visible de una, con el texto de la regla intermedia
+  (variable fijada en 4 antes de montar).
+- Foco real con `Tab` (no `.focus()` sintético — el mismo matiz que ya
+  dejó documentado D2: un `.focus()` por script no siempre dispara
+  `:focus-visible`) hasta el primer radio y hasta "Comprobar" de la
+  primera pregunta: anillo sólido en los dos (`outlineStyle: solid`,
+  `outlineWidth: 3px`), nunca `outline: none`.
+- Zoom de texto 200% (proxy, `font-size` en `:root`) sobre `#c-i15`:
+  sin overflow horizontal propio. `prefers-reduced-motion: reduce`
+  colapsa la animación de cada `.quiz-retro` a `1e-05s` (el mismo
+  token compartido de siempre, sin duplicar el media query).
+- **320px — cero regresión, verificada por comparación real, no solo
+  razonada:** `dev/kitchen-sink.html` sigue desbordando a 320px
+  (414px de `scrollWidth` hoy; 398px en la nota de D1/D3, la
+  diferencia es de sesiones posteriores no leídas en detalle esta
+  vez), pero el listado elemento por elemento es **idéntico antes y
+  después de esta tarea** (`git stash` contra el estado previo a E1,
+  mismo conjunto de nodos desbordados: `.nav-migas__eyebrow`,
+  `.media-audio`/`.media-avatar__figura`, `.dato-tabla` de T7) —
+  ninguno de los nodos `.quiz-cuestionario*` aparece en esa lista.
+  Overflow preexistente, ajeno a E1, heredado por quien cierre E6.
+- `src/index.html`: recorrido real hasta `p10` (L08, sin responder el
+  diagnóstico) sigue mostrando el estado "todavía no respondiste el
+  diagnóstico" — confirma que la extracción de `obtenerResultado()`/
+  `PLANTILLAS.L08` a `OVA.resultado` no cambió el comportamiento
+  visible de las cuatro pantallas reales que ya usan L08 (P10/P31/
+  P43/P47). Cero errores de consola en las dos páginas.
+- `node --check` sobre los tres archivos `.js` tocados/nuevos (sin
+  bundler en el proyecto — regla dura 4 — así que es el chequeo de
+  sintaxis disponible antes de abrir el navegador).
+
+**Cero hex nuevo, cero duración/curva nueva fuera de `tokens.css`**
+(`git diff` filtrado contra `#[0-9a-f]{3,8}` y contra literales de
+`ms`/`cubic-bezier`, cero coincidencias en los seis archivos tocados).
+
+**Kitchen sink.** Sección nueva "I15 · Cuestionario (E1)" dentro de
+"Componentes", después de "Interacciones nuevas (C5)": los tres
+estados como exige el cierre del plan, cada uno montado con
+`OVA.quiz.crear({tipo:'I15',…})` real — nada simulado con CSS. Reusa
+las cinco preguntas reales del diagnóstico (mismos textos que
+p05–p09) con ids de demo propios (`ks-i15-1/-2/-3`) para que los tres
+montajes no compartan acumulador ni marca de finalización entre sí
+dentro de la misma página (`state.js` es un singleton).
+
+**No se tocó `content/ova-u1.js` ni `CLAUDE.md`, a propósito.** El
+primero es tarea de E4 (fusionar p05–p10 reales en `p05-diagnostico`);
+el segundo se corrige en E7 — el plan es explícito en que la
+contradicción de "una pregunta por pantalla" se resuelve ahí, no antes
+("§2: CLAUDE.md se edita en E7, no se deja la contradicción viva").
+Hasta que eso pase, el motor ya sabe construir I15 pero ningún
+contenido real lo usa todavía.
+
+**10 sep — E2 cerrada: `bloqueaAvance`, canal `{alCompletar}` en
+`OVA.quiz.crear()` y candado blando en `router.js`, sin Playwright
+disponible en esta sesión (verificación por lectura de código y
+`node --check`, mismo criterio que dejó documentado C6 cuando tampoco
+lo tuvo).**
+
+**Qué se construyó:**
+
+- **`quiz.js` — `crear(interaccion, opciones)`.** Segundo argumento
+  opcional, `{ alCompletar }` (no-op si se omite, así que ninguna
+  interacción existente cambia de comportamiento). El motor no decide
+  cuándo algo "está completo": cada constructor lo sabe y avisa —
+  documentado en un bloque nuevo "E2" al inicio del archivo, junto al
+  resto de contratos de catálogo (mismo criterio que I01–I08/I15).
+  - El wrapper de preguntas (CONSTRUCTORES, I01–I05/completar/numerica/
+    autoevaluacion) llama a `alCompletar()` en el mismo punto donde ya
+    ocultaba "Comprobar" para siempre (acierto, agotó intentos o no
+    gradable) — sin tocar nada de la lógica de intentos existente.
+  - `construirCuestionario` (I15) recibe `alCompletar` como cuarto
+    argumento y lo llama al resolver la última pregunta de la batería,
+    y también si `yaCompleto` al montar (un F5 después de terminar no
+    debe dejar "Siguiente" bloqueado otra vez — la misma trampa 2 que
+    ya resolvió E1 para la nota y el reporte a SCORM, extendida aquí).
+  - El resto de `CONSTRUCTORES_INSIGNIA` (I07–I13) reciben el mismo
+    `alCompletar` como argumento —JS no distingue aridad, pasarlo no
+    cuesta nada— pero ninguno lo llama: son exploratorias sin
+    "completo" definido y ninguna pantalla real las usa con
+    `bloqueaAvance` todavía. Si una futura sí lo necesita, ese
+    constructor decide su propio momento — no se inventó uno genérico
+    sin caso de uso real (CLAUDE.md: no diseñar para lo hipotético).
+- **`router.js` — el campo `pantalla.bloqueaAvance` y el candado.**
+  - `crearInteraccion(interaccion, bloqueaAvance)` arma
+    `{alCompletar: manejarActividadCompleta}` solo si `bloqueaAvance`
+    es verdadero y se lo pasa a `OVA.quiz.crear()`. Las tres plantillas
+    que montan `interaccion` (L05, L06, L07) le pasan
+    `pantalla.bloqueaAvance` — ninguna otra plantilla lo necesita
+    porque ninguna otra renderiza `interaccion`.
+  - `montarPantalla()` fija `bloqueoAvanceActivo` (módulo) al entrar,
+    antes de cualquier `return` — así ninguna salida temprana (layout
+    inexistente, no implementado, o el fallo ruidoso de la trampa 3 de
+    abajo) puede heredar por descuido el bloqueo de la pantalla
+    anterior. Con `pantalla.bloqueaAvance` real, lo vuelve a poner en
+    `true` justo antes de construir la plantilla — si la interacción ya
+    avisa que está completa durante ese mismo montaje (I15 con la
+    marca puesta desde un F5 anterior), `manejarActividadCompleta()` ya
+    lo devuelve a `false` antes de que la pantalla termine de armarse.
+  - **Trampa 1 (nunca `disabled` real).** `actualizarBloqueoAvance()`
+    pone `aria-disabled="true"/"false"` en `#nav-siguiente` y
+    `hidden`/visible en la nota nueva `#nav-bloqueo-aviso` (ícono
+    `lock` + "Completa la actividad para continuar", ícono y texto
+    juntos — regla dura del color nunca como único código, aplicada a
+    "inerte"). El botón sigue con `disabled` real de verdad SOLO en el
+    extremo de siempre (`inst.esUltima`), sin tocar esa rama: son dos
+    candados independientes que conviven en el mismo botón. El bloqueo
+    de verdad —el que hace que el clic (o Enter/Espacio con foco en el
+    botón, mismo evento) no haga nada— vive en `siguiente()`, no en el
+    atributo: `aria-disabled` es puramente el reflejo/anuncio, nunca lo
+    que impide el clic (un botón sin `disabled` real siempre es
+    clicable, `aria-disabled` no lo previene por sí solo — de ahí que
+    haga falta la guarda explícita en `siguiente()`).
+  - Al desbloquear, `manejarActividadCompleta()` llama a
+    `OVA.a11y.anunciar('Actividad completa. Ya puedes continuar.')` —
+    pero no si la marca ya venía puesta desde antes de montar (un flag
+    `construyendoPantalla`, verdadero solo durante la llamada a
+    `plantilla(pantalla)`, distingue "se acaba de completar en vivo" de
+    "arrancó ya completa"): anunciar en el segundo caso sería ruido
+    sobre una pantalla que el estudiante ni ha visto todavía.
+  - **Trampa 2 (candado blando, documentado, no tapado).** Solo
+    `siguiente()` consulta `bloqueoAvanceActivo`. El drawer navega por
+    `<a href="#id">` (vía `hashchange` → `alCambiarHash()` →
+    `navegarA()`) y no pasa por `siguiente()`, así que una pantalla con
+    `bloqueaAvance` sigue siendo saltable desde el índice o cambiando
+    el hash a mano — confirmado leyendo el código de
+    `configurarDrawer()`, no hizo falta tocar nada ahí. Comentario
+    dejado junto a la declaración de `bloqueoAvanceActivo` explicando
+    por qué es deliberado (D1: "dentro de una unidad toda pantalla es
+    alcanzable"; el candado duro entre unidades es de Moodle).
+  - **Trampa 3 (L01 no tiene dónde pintarlo).** `montarPantalla()`
+    revienta con `fallarPantalla()` (el mismo estado de error visible
+    de siempre, `role="alert"`) si una pantalla trae
+    `bloqueaAvance: true` con `layout: 'L01'` — la portada esconde la
+    barra inferior entera (regla dura 9), así que "Siguiente" no
+    existe ahí para bloquear. Fallo ruidoso, no un `bloqueaAvance`
+    ignorado en silencio.
+- **`index.html` — el footer se parte en dos filas.** `.nav-inferior`
+  pasa a columna con dos hijos: `.nav-inferior__fila` (lo de siempre —
+  Anterior/paso/Siguiente, la fila que en mobile debe caber en una sola
+  línea a 320px) y `#nav-bloqueo-aviso` (`<p hidden>`, ícono + texto),
+  debajo, fuera de esa fila para no competir por el ancho que ya está
+  ajustado a 320px. `#nav-siguiente` lleva `aria-describedby` apuntando
+  a la nota siempre (inerte mientras está `hidden` — la mayoría de
+  lectores de pantalla no exponen la descripción de un nodo oculto, así
+  que no hace ruido cuando no aplica).
+- **`components.css`** — `.nav-inferior__fila` hereda las reglas de
+  layout que antes tenía `.nav-inferior` directo (flex, `space-between`,
+  `nowrap` en mobile); `.nav-inferior__aviso` es nueva (ícono + caption
+  en `--text-tertiary`, mismo tono que `.nav-inferior__paso`). Cero hex
+  nuevo, cero animación: `bloqueaAvance` no está en el inventario de
+  siete cosas que anima el OVA (`CLAUDE.md`) y no se le inventó una —
+  es un cambio de atributo discreto, como el resto de estados ARIA del
+  proyecto.
+
+**Verificado sin Playwright (no disponible esta sesión — mismo aviso
+que dejó C6):**
+
+- `node --check` sobre `quiz.js` y `router.js`: sin errores de sintaxis.
+- Lectura de código, línea por línea, de las tres trampas contra el
+  texto de PLAN-ESTRUCTURA.md §3 (arriba).
+- `git diff` filtrado contra `#[0-9a-f]{3,8}` y contra literales de
+  `ms`/`cubic-bezier` en los cinco archivos tocados: cero coincidencias.
+- Balance de etiquetas `<footer>`/`</footer>` contado a mano en
+  `index.html` (1/1) y `dev/kitchen-sink.html` (2/2, la nueva y la
+  existente) tras partir el footer en dos filas.
+- Recorrido de código de `configurarDrawer()`/`alCambiarHash()` para
+  confirmar la trampa 2 (candado blando) sin necesidad de ejecutar el
+  navegador: ninguno de los dos pasa por `siguiente()`.
+
+**Pendiente de confirmar con Playwright real en la próxima sesión (o
+antes de dar E6 por cerrada):** el recorrido real de teclado sobre
+`#nav-bloqueo-aviso` apareciendo/desapareciendo, el anuncio de
+`aria-live` al desbloquear, 320px con la nota visible (dos líneas de
+texto largo en un botón angosto) y zoom de texto 200%. La demo de la
+kitchen sink (abajo) ya deja esto montado para esa verificación.
+
+**Kitchen sink.** Dos añadidos a la sección "Chrome del OVA", dentro de
+"Barra inferior": el ejemplo existente se actualizó a la nueva
+estructura de dos filas sin cambiar lo que muestra, y un bloque nuevo
+`#c-nav-inferior-bloqueo` con una interacción real (I02, no I15 —
+para dejar claro que el mecanismo no es especial del diagnóstico) que
+arranca bloqueada y suelta el candado en vivo al responder. Como
+`router.js` no se carga en esta página (depende de contenido/hash
+real, mismo criterio que "Motor" en T2), el script de la demo
+reimplementa a mano en unas 15 líneas lo que ahí hacen
+`actualizarBloqueoAvance()`/`siguiente()` — comentado como tal, para
+que quien lo lea sepa que el original vive en `router.js`.
+
+**No se tocó `CLAUDE.md`.** El campo `bloqueaAvance` se documenta ahí
+en E7, junto con el resto de reglas que este plan cambia — mismo
+criterio que E1 dejó sin tocar `CLAUDE.md` para I15.
+
+---
+
+**10 sep — E4 cerrada: `src/content/ova-u1.js` reescrito con las 26
+pantallas de PLAN-ESTRUCTURA.md §1, verificado de punta a punta con
+Playwright (recorrido completo, no solo lectura de JSON).**
+
+**Qué se construyó:**
+
+- **Recorte de 50 a 26 pantallas**, en el orden exacto de la tabla de
+  §1. Las 26 que salen (p12, p14, p16–p21, p23, p26–p28, p31, p33,
+  p35–p41, p43–p47) se quitaron del array — **no están archivadas
+  todavía**: E5 (pendiente) es quien las mueve a
+  `ova-u1-archivo.js`. Hasta entonces solo existen en el historial de
+  git.
+- **`p05-diagnostico` (I15)** funde los antiguos p05–p10: cinco
+  preguntas (ids `u1-p05-diagnostico-1..5` sin tocar, Pablo ya los
+  tiene mapeados) más el bloque de resultado de p10 (mismas reglas,
+  movidas a `interaccion.datos.resultado`). `bloqueaAvance: true` —
+  la única pantalla del recorrido que lo usa. Verificado con
+  Playwright: "Siguiente" arranca con `aria-disabled="true"`,
+  responder las cinco (incluida una intencionalmente mal al primer
+  intento, para probar Reintentar) lo desbloquea y revela el bloque
+  de resultado.
+- **`p10-tutor` — bug real encontrado y corregido antes de cerrar la
+  tarea.** El bullet de PLAN-ESTRUCTURA.md §5 pedía "título y cuerpo
+  en blanco". Un `titulo: ""` literal tumba el arranque completo de
+  la OVA: `app.js` valida `pantalla.titulo` como obligatorio y no
+  vacío para las 26 pantallas, no solo para esta — confirmado con
+  Playwright (`"La pantalla en la posición 8 no tiene 'id', 'layout'
+  o 'titulo'."`, estado de error visible, ninguna pantalla cargaba).
+  Se cambió a `titulo: "Pendiente de guion"` — un marcador real, no
+  una cadena vacía — que cumple la misma intención (no hay copy
+  todavía, y queda marcado para que no se confunda con un olvido) sin
+  romper la validación de arranque. `cuerpo` sí queda ausente del
+  todo (opcional en L03).
+- **Cuatro pantallas de video** (`c1-video`..`c4-video`, L03) con los
+  nombres de cápsula de Jonás (Contexto del mercado / Valorización en
+  acciones / El dividendo / El perfil de riesgo — decisión 0.1, no
+  las cuatro del DI viejo). Sin guion de Jose todavía: en vez de
+  inventar cuerpo/transcripción, cada una lleva un aviso explícito de
+  "pendiente de producción" como único `cuerpo`, visible en pantalla
+  — la misma idea que ya aplicaba a motion/infografía sin producir,
+  extendida a cuando ni el texto de apoyo existe.
+- **`c2-comprobacion` / `c4-comprobacion`** (L07 · I01) con enunciado
+  y las tres opciones marcados como "provisional" de forma explícita
+  en el propio texto — no una pregunta inventada que parezca
+  definitiva, tal como pide PLAN-ESTRUCTURA.md §5.
+- **`capsula` uniforme a "Cápsula 1".."Cápsula 4"** en las tres
+  pantallas retenidas de cada cápsula (antes tenían el nombre largo
+  del DI de Jose: "¿En qué mercado estás entrando?", "Valorización y
+  dividendo", "Tipos de acciones y perfil"). p22 además cambia de
+  kicker: pasa de "Cápsula 3" (agrupación vieja) a "Cápsula 2" — es
+  la única pantalla retenida cuyo número de cápsula cambia, porque la
+  vieja Cápsula 3 ("Valorización y dividendo") se parte en dos
+  cápsulas nuevas (2: valorización, 3: dividendo).
+- **P11** — las cuatro tarjetas pasan a nombrar las cápsulas de
+  Jonás en vez de las preguntas del DI viejo.
+- **P42 (Simulador), dos cambios:**
+  - `unidad`/`capsula`/`kicker` de "Unidad 3 · Pieza insignia Orden"
+    a "Unidad 1 · Simulador" — Repo y Portafolio (las otras dos
+    piezas insignia) salen del OVA, esta es la única que queda,
+    dentro de la Unidad 1 (decisión 0.5).
+  - **Enunciado autosuficiente.** P41 ("mercado vs. límite"), que
+    explicaba la distinción que la boleta pide aplicar, se va al
+    banco. PLAN-ESTRUCTURA.md §5 punto 2 deja dos salidas: traer P41
+    de vuelta (rompe el conteo fijo de 26) o hacer el enunciado de la
+    interacción autosuficiente. Se tomó la segunda: el `enunciado` de
+    I11 ahora explica mercado vs. límite en dos frases antes de pedir
+    completar la boleta.
+- **P32 (Ideas clave) corregida**, no solo recortada. La idea
+  "Ordinarias y preferenciales otorgan derechos distintos" se
+  reemplazó por una sobre los tres perfiles de riesgo — P27/P28 (que
+  enseñaban ordinarias/preferenciales) se van al banco y la Cápsula 4
+  ya no es "tipos de acciones", es "perfil de riesgo" (P29/P30, que
+  sí se quedan). PLAN-ESTRUCTURA.md §5 punto 1 pedía "reemplazar o
+  eliminar"; se reemplazó para no perder una idea de cierre.
+- **Bump de contenido** a `u1-contexto-mercado-v2` — un progreso
+  guardado contra las 50 pantallas viejas no debe convivir a medias
+  con las 26 nuevas (mismo mecanismo de `storage.js` namespaced por
+  `contenidoId` que ya documentaba C7).
+
+**Decisión dejada abierta a propósito, sin resolver en esta
+sesión.** PLAN-ESTRUCTURA.md §5 punto 3 (`perfil_riesgo` sin lector:
+P31/P46/P47 se van, y "el Cierre puede volver a nombrarlo, con poco
+costo — decisión de Juan") **no se implementó.** Ninguna de las dos
+pantallas de Cierre que quedan (P32 L09, P34 L11) tiene hoy una
+ranura de resultado — añadirla es una decisión de producto, no una
+mecánica ya resuelta por el motor, y el propio plan la marca
+pendiente de Juan en vez de especificarla. Queda igual que la dejó
+E1/E2: el diagnóstico es lo único que sostiene el argumento
+"adaptativo" del demo.
+
+**Verificado con Playwright, abriendo `src/index.html` por
+`file://`:** recorrido completo de clic desde la portada
+(`.boton--portada`, no "Siguiente" — L01 no tiene barra inferior)
+hasta p42, pie de página 1/26..26/26 sin saltos; `p05-diagnostico`
+arranca con "Siguiente" `aria-disabled="true"`, las cinco preguntas
+respondidas (una con Reintentar de por medio) lo dejan en `"false"` y
+revelan el bloque de resultado (`hidden` pasa a `false`); `p10-tutor`
+monta con título "Pendiente de guion" en vez de tumbar el arranque;
+drawer con los nueve encabezados exactos de la decisión 0.4 (`Unidad
+1`, `Antes de empezar`, `Apertura`, `Cápsula 1`..`Cápsula 4`,
+`Cierre`, `Simulador`) y 26 ítems navegables. Cero errores de consola
+de JavaScript en toda la corrida — los cinco `ERR_FILE_NOT_FOUND` que
+sí aparecen son los archivos de video/tutor todavía sin producir
+(degradación esperada, no un bug). `node --check` limpio y un script
+de validación aparte confirmó: 26 ids únicos, 23 con
+`progreso:true` (coincide con el denominador de §1), y que ninguna
+pantalla L01–L07 quedó sin el campo que su layout exige.
+
+**Sin tocar todavía:** E5 (banco archivado, las 26 pantallas
+retiradas no viven en ningún archivo del proyecto por ahora), E6
+(verificación completa contra Moodle/SCORM real) y E7
+(documentación/avisos). `CLAUDE.md` no se tocó — el catálogo I15 y
+`bloqueaAvance` ya quedaron documentados en `quiz.js`/`router.js`
+desde E1/E2, y esta tarea no cambia ninguna regla dura.
+
+**11 sep — E5 cerrada: `src/content/ova-u1-archivo.js`, con las 26
+pantallas que E4 recortó, sin editar y sin cablear a `index.html`.**
+
+**Cómo se recuperó el contenido exacto.** E4 no dejó las 26 pantallas
+en ningún archivo del proyecto — solo en el historial de git (nota
+que dejó la propia sesión de E4). El commit que hizo el recorte real
+es `8fe7ad1` ("Refactor code structure...", pese al nombre genérico:
+confirmado comparando el conteo de pantallas contra su padre, 50 →
+26); su padre, `821b6ac`, es la última versión de `ova-u1.js` con las
+50 pantallas completas, ya con los ajustes de `capsula`/`kicker` de
+esa misma sesión aplicados. Se extrajeron ahí los 26 objetos cuyo
+`id` aparece en la lista "Al banco" de PLAN-ESTRUCTURA.md §1
+(`p12, p14, p16–p21, p23, p26–p28, p31, p33, p35–p41, p43–p47`) — los
+26 coinciden exacto, sin ids de más ni de menos. **Se copiaron tal
+cual, sin editar una coma**: la regla dura de E5 (§5 del plan) es que
+esto es un banco recuperable, no una reescritura.
+
+**Qué se construyó:**
+
+- **`src/content/ova-u1-archivo.js`** (nuevo) — `window.OVA_CONTENIDO_ARCHIVO`
+  como arreglo plano de los 26 objetos de pantalla (mismo contrato de
+  contenido de siempre, JSON puro dentro de la asignación JSONP).
+  Encabezado que dice qué es el archivo, de qué commit vienen las
+  pantallas, y por qué salieron agrupadas por causa (las dos piezas
+  insignia que se van del OVA — Repo y Portafolio completos —, p41
+  huérfana de la boleta autosuficiente, p27/p28 sin cápsula que las
+  sostenga, y el recorte general de guion contra las cuatro cápsulas
+  de Jonás). No es un objeto con la forma completa del contrato
+  (`{id, titulo, unidad, pantallas}}`) porque no es un segundo
+  contenido cargable — es un banco de pantallas sueltas para copiar
+  de vuelta a `pantallas` de `ova-u1.js`, así que un arreglo es la
+  forma más simple que sigue siendo JSON puro reconocible.
+- **`index.html` no lo referencia** — confirmado por grep, el único
+  `<script src="content/…">` sigue siendo `ova-u1.js`. El archivo
+  archivado nunca se ejecuta en el OVA real ni en la kitchen sink.
+- **`ova-u1.js`** — la nota de cabecera que decía "E5 pendiente" se
+  actualizó a "E5 la movió a `ova-u1-archivo.js`", sin repetir el
+  detalle completo (ya vive aquí, mismo criterio que el resto de
+  notas de arquitectura del archivo).
+
+**Verificado:** `node --check` limpio sobre el archivo nuevo; los 26
+ids extraídos son exactamente los 26 de la lista "Al banco" de
+PLAN-ESTRUCTURA.md §1 (comparación de conjuntos, cero de más/menos);
+cero hex nuevo (grep contra `#[0-9a-f]{3,8}`, sin coincidencias — es
+contenido de datos, no CSS, pero se corrió la misma verificación por
+disciplina). No aplica kitchen sink (E5 no es un componente visual,
+es un archivo de datos inertes) ni recorrido con teclado (nada se
+monta en pantalla).
+
+**Sin tocar todavía:** E6 (verificación completa contra Moodle/SCORM
+real) y E7 (documentación/avisos — CLAUDE.md sigue sin el catálogo
+I15/`bloqueaAvance` como regla del contrato de contenido).
+
+---
+
+**11 sep — E6 cerrada: verificación de punta a punta del recorrido de
+26 pantallas, con Playwright real (disponible esta sesión — las notas
+de E1/E2 que decían "no disponible" quedan superadas).**
+
+**Cómo se verificó.** Un script de Playwright (`playwright-core`
+instalado ad hoc en el scratchpad de la sesión, no es dependencia del
+proyecto — el OVA sigue sin build step, regla dura 4) abrió
+`src/index.html` por `file://` real y recorrió los siete puntos de
+PLAN-ESTRUCTURA.md §7 más los cinco criterios de siempre. 43
+verificaciones, 0 fallos tras corregir un hallazgo real (abajo).
+
+**Qué se confirmó:**
+
+- **Recorrido de las 26 pantallas.** Pie consecutivo 2/26..26/26 (la
+  portada, 1/26, no tiene barra inferior — regla dura 9 — así que el
+  primer paso con pie visible es p01-bienvenida); progreso final
+  100 % con "23 de 23 pantallas" en el `aria-valuetext` (denominador
+  de D3, confirmado en runtime, no solo leído del JSON).
+- **Diagnóstico (`p05-diagnostico`, I15).** Siguiente arranca
+  `aria-disabled="true"` con el aviso visible; una pregunta respondida
+  mal a propósito (agotando los 2 intentos) deja retro + "Incorrecto"
+  sin romper nada; **F5 a media batería** no encierra al estudiante —
+  Siguiente sigue bloqueado (correcto: la batería no está completa) y
+  el drawer se sigue abriendo (candado blando, trampa 2 de E2);
+  completar las 5 preguntas (4 aciertos de 5, tras la falla a
+  propósito) desbloquea Siguiente, revela el resultado, y el texto
+  coincide con la regla que corresponde ("Buena base inicial",
+  mínimo:3 — la primera regla que aplica con 4/5). **Trampa 1
+  verificada con una API SCORM simulada** (no hay Moodle real
+  disponible esta sesión, ver más abajo): `cmi.core.score.raw` queda
+  en `80` (4/5, calculado una sola vez al cerrar la batería, no en
+  cada pregunta) y `cmi.interactions` recibió 6 filas para 5 preguntas
+  únicas (la pregunta reintentada agrega una fila extra) — mismo
+  patrón de "una fila por intento" que ya usa `crear()` para una sola
+  pregunta (quiz.js, confirmado leyendo el código: no es un caso
+  especial de I15, es el comportamiento existente del motor).
+- **Migas y drawer en las nueve etiquetas.** Portada sin barra (sin
+  etiqueta); las ocho etiquetas de agrupación (Antes de empezar,
+  Apertura, Cápsula 1–4, Cierre, Simulador) aparecen tanto en las
+  migas como los ocho `<h4>` del drawer; un solo `<h3>` "Unidad 1";
+  26 ítems navegables.
+- **Reflow 320 px y zoom de texto 200 %** en las seis pantallas nuevas
+  o más cargadas (`p05-diagnostico`, `p10-tutor`, `c1-video`,
+  `c2-comprobacion`, `c4-comprobacion`, `p42`): sin scroll horizontal
+  en ningún caso, incluido el documento completo con `html{font-size:
+  200%}` (las barras fijas no generan overflow, el scroll queda en
+  `#app`, regla dura 9).
+- **`prefers-reduced-motion`**: `--dur-slow`/`--dur-base` colapsan a
+  1 ms y `--shift-sm` a 0 en runtime (no solo leído en `tokens.css`).
+- **Cero hex nuevo** fuera de `tokens.css` (barrido sobre `src/` y
+  `dev/` completos, no solo los archivos tocados en E1–E5) y
+  `node --check` limpio en los siete archivos centrales del motor y
+  el contenido.
+- **Kitchen sink**: I15 y el bloque de barra inferior bloqueada siguen
+  presentes y sin errores de JS. Los `ERR_FILE_NOT_FOUND` que aparecen
+  son assets con nombre `demo-inexistente`/`demo-tres-familias` — la
+  propia demo de degradación a placeholder (regla dura 10), no un bug.
+
+**Hallazgo real, corregido en esta tarea — `imsmanifest.xml` estaba
+desactualizado.** `build/package-scorm.sh` (el propio guardarraíl que
+T9 dejó para esto) abortó el empaquetado: `src/content/ova-u1-archivo.js`
+(E5), `src/js/preferencias.js` y `src/js/resultado.js` (D5 y E1, ya
+cerradas) existen en disco y nunca se sumaron al manifiesto. Sin este
+empaquetado no hay forma de generar el zip que sube a Moodle — es
+exactamente el escenario que la verificación de E6 está para atrapar.
+Se agregaron las tres entradas `<file>` (orden alfabético, mismo
+criterio que el resto de la lista) y el zip se generó limpio después:
+`build/out/ova-u1-scorm.zip` (7.5 MB, 19 archivos de `src/` + el video
+de `public/`) y `build/out/standalone/src/index.html`, este último
+verificado con Playwright — abre, navega, cero errores de JS (los
+`ERR_FILE_NOT_FOUND` de siempre por media sin producir).
+
+**Lo único de E6 que no se pudo verificar esta sesión: Moodle real.**
+No hay acceso al Moodle de Pablo desde este entorno. La API SCORM
+simulada confirma que el *código* hace lo correcto (trampa 1
+resuelta), pero `cmi.interactions`, `score.raw` y `lesson_status`
+contra una LMS real — con su propio parser de manifiesto, sus propias
+reglas de sesión — quedan pendientes de que Pablo suba
+`build/out/ova-u1-scorm.zip` y confirme. Esto es explícito en
+PLAN-ESTRUCTURA.md §7 y no es una tarea que el motor pueda cerrar solo.
+
+**Hallazgo fuera de alcance de este plan, no corregido — anotado para
+no perderlo.** Al comprobar una pregunta (I01/I02/… en cualquier
+pantalla, no solo I15), el botón "Comprobar" se oculta
+(`botonComprobar.hidden = true`) inmediatamente después de recibir el
+foco por teclado; como el elemento enfocado desaparece del DOM
+visible, el foco cae a `<body>` en vez de quedarse visible en algún
+control cercano. Confirmado que es preexistente y no algo que E1
+introdujo: el mismo comportamiento aparece en `p15` (L07 · I01,
+pantalla sin tocar por esta reestructura). Contradice el espíritu de
+la trampa 4 de E1 ("revelar sin robar el foco") pero ahí sí se cumple
+—el foco no se mueve activamente a ningún sitio, simplemente el
+control que lo tenía deja de existir—, así que no es una regresión de
+esta tarea. Se deja documentado, no se toca `quiz.js` para esto: es un
+cambio que afecta a las ocho preguntas del catálogo, no algo que
+PLAN-ESTRUCTURA.md pida resolver.
+
+**Verificado:** los siete puntos de PLAN-ESTRUCTURA.md §7 (26
+pantallas/pie/progreso, diagnóstico con F5 y respuesta mala a
+propósito, migas/drawer en las nueve etiquetas, empaquetado SCORM) más
+los cinco criterios de siempre (kitchen sink, teclado con foco
+visible, 320 px, zoom 200 %, cero hex, reduced-motion). `node --check`
+limpio. Cero errores de consola JS en ningún recorrido (solo 404 de
+media sin producir, esperados).
+
+**Sin tocar todavía:** E7 (CLAUDE.md sigue sin documentar el catálogo
+I15/`bloqueaAvance`; ESTADO.md se actualiza en esta misma entrada;
+falta la nota de encabezado en PLAN-CONTENIDO.md y BRIEF-DI.md). La
+verificación contra el Moodle real de Pablo queda pendiente de que él
+suba `build/out/ova-u1-scorm.zip` — no es una tarea de código.
+
+---
+
+**11 sep — E7 cerrada: documentación.**
+
+- **`CLAUDE.md`.** "El contrato de contenido" ya no dice "una pregunta
+  por pantalla" sin excepción: documenta I15 (varias preguntas
+  gradables + resultado compartido, para el caso puntual de batería de
+  diagnóstico, no una forma genérica de acumular preguntas) y
+  `bloqueaAvance` (campo genérico del contrato, `aria-disabled` no
+  `disabled`, sin efecto en L01 por regla dura 9). La regla dura 8 suma
+  la nota de que I15 no viene de `BRIEF-DI.md` — lo agregó
+  `PLAN-ESTRUCTURA.md` (E1), es la única excepción a "los catálogos son
+  los del brief". "Archivos del proyecto" ahora nombra
+  `PLAN-ESTRUCTURA.md` como el plan vigente (antes decía
+  `PLAN-REDISENO.md`, que quedó pausado en D7/D9/D10 desde el 10 sep y
+  nunca se reflejó ahí) y marca `disenoInstruccional/` como superado en
+  parte por la reestructura.
+- **`PLAN-CONTENIDO.md`.** Nota al inicio: superado por
+  `PLAN-ESTRUCTURA.md`, con qué partes siguen vigentes (catálogos L01–
+  L13/I01–I14 de §2, caja 16:9 de §4) y cuáles no (la tabla de 47
+  pantallas de §1).
+- **`BRIEF-DI.md` — no se pudo tocar, y es un hallazgo, no un olvido.**
+  El archivo no existe en el repo (`git log --all -- BRIEF-DI.md` no
+  devuelve nada) pese a que `CLAUDE.md` (regla dura 8),
+  `PLAN-CONTENIDO.md` §2 y el encabezado de `quiz.js` lo citan como si
+  fuera un archivo del proyecto. Es el documento externo de Jose contra
+  el que se validaron los catálogos — vive fuera de este repositorio.
+  El aviso que le corresponde ("tu lista de 47 pantallas quedó
+  superada") es el mismo que ya pedía PLAN-ESTRUCTURA.md §6 ("Jose (DI):
+  el paquete v2 de 47 pantallas queda superado... una hoja delta contra
+  esta tabla alcanza") — sigue siendo una conversación con Jose, no una
+  edición de archivo. No se inventó un `BRIEF-DI.md` en el repo para
+  poder tacharlo: habría quedado desincronizado del documento real de
+  Jose la primera vez que él lo edite. Juan decide si vale la pena
+  empezar a trackear una copia en el repo; por ahora sigue siendo un
+  documento externo.
+
+**PLAN-ESTRUCTURA.md queda cerrado (E0–E7).** Sin tocar: los tres avisos
+externos de §6 (propuesta comercial, Jose, Pablo) y la verificación
+contra el Moodle real — ninguno es una tarea de código.

@@ -43,12 +43,15 @@
   <resources>
     <resource identifier="RES-OVA-U1" type="webcontent" adlcp:scormtype="sco" href="src/index.html">
       <file href="src/index.html"/>
+      <file href="src/content/ova-u1-archivo.js"/>
       <file href="src/content/ova-u1.js"/>
       <file href="src/js/a11y.js"/>
       <file href="src/js/app.js"/>
       <file href="src/js/charts.js"/>
       <file href="src/js/media.js"/>
+      <file href="src/js/preferencias.js"/>
       <file href="src/js/quiz.js"/>
+      <file href="src/js/resultado.js"/>
       <file href="src/js/router.js"/>
       <file href="src/js/scorm.js"/>
       <file href="src/js/state.js"/>

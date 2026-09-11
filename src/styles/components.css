@@ -738,10 +738,8 @@
    forzada en mobile desde tanda 3 de AJUSTES.md) ------------------------- */
 .nav-inferior {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--sp-4);
+  flex-direction: column;
+  gap: var(--sp-2);
   padding-block: var(--sp-3);
   padding-inline: var(--sp-6);
   background: var(--surface-default);
@@ -750,10 +748,30 @@
      junto a #app en base.css. */
   min-inline-size: 0;
 }
+.nav-inferior__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  min-inline-size: 0;
+}
 .nav-inferior__paso {
   color: var(--text-tertiary);
   font: var(--text-caption);
   white-space: nowrap;
+}
+/* E2 — candado blando de bloqueaAvance: oculta por defecto (`hidden`,
+   router.js la muestra junto con aria-disabled en #nav-siguiente).
+   Nunca solo el borde/aria-disabled del botón: el texto explica el
+   porqué, con su propio ícono — regla dura de CLAUDE.md de que el color
+   nunca es el único código de un estado, aplicada aquí a "inerte". */
+.nav-inferior__aviso {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-tertiary);
+  font: var(--text-caption);
 }
 /* "X/Y" es el texto corto de mobile (media query más abajo); en desktop
    se queda oculto y se ve la frase completa. display:none ya lo saca del
@@ -770,9 +788,11 @@
    OVA.a11y.anunciar() en cada navegación, no depende de este texto). */
 @media (max-width: 39.999em) {
   .nav-inferior {
+    padding-inline: var(--sp-3);
+  }
+  .nav-inferior__fila {
     flex-wrap: nowrap;
     gap: var(--sp-2);
-    padding-inline: var(--sp-3);
   }
   .nav-inferior .boton {
     padding-inline: var(--sp-3);
@@ -2138,6 +2158,51 @@ a.cap-tarjeta:hover {
 }
 .quiz-retro--entrada {
   animation: quiz-retro-entrada var(--dur-base) var(--ease-out) both;
+}
+
+/* ---- I15 cuestionario (E1, PLAN-ESTRUCTURA.md §2, componentes) ---------
+   Única excepción al contrato "una pregunta por pantalla": varias
+   preguntas del catálogo de arriba dentro de una sola interacción. Cada
+   .quiz-cuestionario__item es un <form> independiente (mismo patrón que
+   .quiz-interaccion, sin envolverlo), apiladas con gap y un divisor
+   entre hermanos en vez de márgenes propios. El contador va pegado a
+   cada pregunta a propósito (quiz.js, trampa 3): se ve sin volver
+   arriba aunque la batería desborde el alto disponible y haya que
+   scrollear #app. */
+.quiz-cuestionario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  width: 100%;
+}
+.quiz-cuestionario__enunciado {
+  color: var(--text-secondary);
+}
+.quiz-cuestionario__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+.quiz-cuestionario__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding-block-start: var(--sp-6);
+  border-block-start: 1px solid var(--border-default);
+}
+.quiz-cuestionario__item:first-child {
+  padding-block-start: 0;
+  border-block-start: none;
+}
+.quiz-cuestionario__contador {
+  color: var(--text-tertiary);
+}
+.quiz-cuestionario__resultado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding-block-start: var(--sp-6);
+  border-block-start: 1px solid var(--border-default);
 }
 
 /* ============================================================
