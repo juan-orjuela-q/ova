@@ -169,6 +169,11 @@ window.OVA_CONTENIDO = {
         "variante": "mascara",
         "forma": "diagonal"
       },
+      "avatar": {
+        "variante": "sin-avatar",
+        "audio": "../public/audio/a01-bienvenida.mp3",
+        "transcripcion": "Hola, soy Claudia. Antes de que empieces a invertir, quiero que entiendas bien dónde estás entrando: qué es un mercado de valores, qué derechos ganas al comprar una acción, y por qué ninguna decisión de inversión debería tomarse sin información, criterio y control del riesgo. Eso es justamente lo que vamos a construir juntos en esta primera unidad. Antes de avanzar, revisa las siguientes pantallas: ahí te cuento cómo está organizado el curso, qué herramientas de accesibilidad tienes disponibles y cómo sacarle el máximo provecho a tu tiempo. Son solo un par de minutos, y te van a ahorrar tiempo en todo lo que viene después. ¿Listo? Empecemos."
+      },
       "progreso": false
     },
     {
@@ -233,7 +238,7 @@ window.OVA_CONTENIDO = {
         "tipo": "avatar",
         "variante": "lg",
         "imagen": "../public/img/avatar/avatar-medio-confondo-1.webp",
-        "audio": "../public/audio/loc1_objetivos.mp3",
+        "audio": "../public/audio/a02-objetivos.mp3",
         "transcripcion": "En esta unidad construirás una base práctica. Primero ubicarás las acciones dentro del mercado de capitales. Luego aprenderás qué significa ser accionista, cómo se gana o se pierde dinero por precio y dividendos, y qué preguntas debes hacerte antes de invertir."
       },
       "progreso": true
@@ -251,9 +256,9 @@ window.OVA_CONTENIDO = {
       "media": {
         "tipo": "avatar",
         "variante": "md",
-        "imagen": "../public/img/avatar/avatar-abierto-confondo-1.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "transcripcion": "En 2024, solo 40% de los adultos en economías en desarrollo ahorró en una cuenta financiera."
+        "imagen": "../public/img/avatar/avatar-abierto-confondo-5.webp",
+        "audio": "../public/audio/a03-forma-de-ahorrar.mp3",
+        "transcripcion": "Invertir empieza por ordenar la forma de ahorrar. Según Global Findex, en dos mil veinticuatro solo cuatro de cada diez adultos en economías en desarrollo ahorraron en una cuenta financiera. Ese dato no significa que todos deban comprar acciones; significa que existe una oportunidad enorme para pasar de guardar dinero sin plan a construir hábitos financieros formales, con objetivos, información y control del riesgo."
       },
       "progreso": true
     },
@@ -269,8 +274,9 @@ window.OVA_CONTENIDO = {
       ],
       "media": {
         "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-1.webp",
-        "audio": "../public/audio/loc1_objetivos.mp3",
+        "variante": "md",
+        "imagen": "../public/img/avatar/avatar-medio-confondo-5.webp",
+        "audio": "../public/audio/a04-punto-de-partida.mp3",
         "transcripcion": "Antes de entrar al contenido, responde una prueba diagnóstica. No busca calificarte. Su propósito es mostrarte qué tan familiarizado estás con conceptos como acción, dividendo, renta variable y tipos de acciones."
       },
       "progreso": true
@@ -412,6 +418,12 @@ window.OVA_CONTENIDO = {
               "tipo": "nota",
               "titulo": "Responde el diagnóstico",
               "texto": "Responde las cinco preguntas del diagnóstico para ver tu resultado aquí."
+            },
+            "locucion": {
+              "variante": "sm",
+              "imagen": "../public/img/avatar/avatar-primerplano-confondo-1.webp",
+              "audio": "../public/audio/a05-diagnostico-resultado.mp3",
+              "transcripcion": "Tu resultado no te encasilla. Solo te ayuda a estudiar mejor. Si algunas respuestas no fueron correctas, perfecto: esta unidad está diseñada para explicar los conceptos desde cero y llevarlos a ejemplos prácticos."
             }
           }
         }
@@ -421,13 +433,30 @@ window.OVA_CONTENIDO = {
     {
       "id": "p10-tutor",
       "layout": "L03",
-      "titulo": "Pendiente de guion",
+      "titulo": "Conoce al tutor",
       "unidad": "Unidad 1",
       "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
+      "mediaLado": "fin",
+      "cuerpo": [
+        "José F. Mejía, FRM",
+        "Ingeniero Industrial (Javeriana), Magíster en Finanzas (U. Alcalá, España), certificado como Financial Risk Manager - FRM® por GARP y certificado en Sustainable Investing por CFA Institute.",
+        "Actualmente, Consultor de inversiones para BID Invest – Banco Interamericano de Desarrollo. Anteriormente, Asesor Financiero en la Agencia Nacional de Infraestructura, la Bolsa de Valores de Colombia, el Autorregulador del Mercado de Valores, INVIAS, Santander Asset Management, Repsol, entre otras.",
+        "Profesor de posgrado en diversas universidades como CESA, Javeriana, Rosario, Sabana y EAFIT."
+      ],
       "media": {
-        "tipo": "video",
-        "src": "../public/videos/tutor/p10-tutor-pendiente.mp4"
+        "tipo": "retrato",
+        "src": "../public/img/tutor-jose-fernando-mejia.webp",
+        "alt": "José F. Mejía, tutor de la unidad",
+        "variante": "mascara",
+        "forma": "diagonal",
+        "fondo": { "tipo": "color", "valor": "naranja" }
+      },
+      "avatar": {
+        "variante": "sm",
+        "imagen": "../public/img/avatar/avatar-primerplano-confondo-2.webp",
+        "audio": "../public/audio/a06-tutor.mp3",
+        "transcripcion": "Quiero presentarles a quien les explicará los conceptos fundamentales de esta unidad. Él es Jose Mejía. Ha trabajado tanto del lado de los inversionistas como del lado de los mercados: en la Bolsa de Valores de Colombia, en el Autorregulador del Mercado de Valores, y actualmente como consultor de inversiones para el BID Invest. Cuenta además con experiencia académica, habiendo enseñado finanzas en programas de posgrado de distintas universidades. Con esa perspectiva, que combina la práctica del mercado con la claridad para explicarlo, Jose los guiará a través de los temas de esta unidad."
       },
       "progreso": true
     },
@@ -441,21 +470,30 @@ window.OVA_CONTENIDO = {
       "tarjetas": [
         {
           "titulo": "Cápsula 1",
-          "texto": "Contexto del mercado"
+          "texto": "Contexto del mercado",
+          "imagen": "../public/img/ilustraciones/capsula-1.webp"
         },
         {
           "titulo": "Cápsula 2",
-          "texto": "Valorización en acciones"
+          "texto": "Valorización en acciones",
+          "imagen": "../public/img/ilustraciones/capsula-2.webp"
         },
         {
           "titulo": "Cápsula 3",
-          "texto": "El dividendo"
+          "texto": "El dividendo",
+          "imagen": "../public/img/ilustraciones/capsula-3.webp"
         },
         {
           "titulo": "Cápsula 4",
-          "texto": "El perfil de riesgo"
+          "texto": "El perfil de riesgo",
+          "imagen": "../public/img/ilustraciones/capsula-4.webp"
         }
       ],
+      "avatar": {
+        "variante": "sin-avatar",
+        "audio": "../public/audio/a07-capsulas.mp3",
+        "transcripcion": "La unidad se divide en cuatro cápsulas cortas. Cada una inicia con una idea central presentada por nuestro tutor, luego desarrolla un concepto aplicable y cierra con una interacción para que verifiques lo aprendido."
+      },
       "progreso": true
     },
     {
@@ -966,6 +1004,13 @@ window.OVA_CONTENIDO = {
         "Existen perfiles conservador, moderado y agresivo, cada uno con distinta tolerancia al riesgo.",
         "Invertir exige objetivos, información y perfil de riesgo."
       ],
+      "media": {
+        "tipo": "avatar",
+        "variante": "lg",
+        "imagen": "../public/img/avatar/avatar-medio-confondo-7.webp",
+        "audio": "../public/audio/a08-ideas-cierre.mp3",
+        "transcripcion": "Llegaste al final de la primera unidad. Vale la pena recoger algunos aspectos de lo que has aprendido. Las acciones pertenecen a la renta variable: no generan una promesa de lo que vas a ganar. Esa es la diferencia de fondo con un producto de renta fija. Cuando compras una acción, compras una parte de una empresa. Es una fracción pequeña, pero es propiedad e incluye derechos económicos y políticos. En acciones el retorno puede generarse por dos caminos: vía valorización del precio, si la acción llega a valer más de lo que pagaste, y vía pago de dividendos, cuando la empresa reparte utilidades. No todas las acciones otorgan los mismos derechos: las ordinarias y las preferenciales dan derechos distintos, así que conviene saber cuál de ellas estás comprando. Y, finalmente, la idea que sostiene a las cuatro anteriores: invertir no empieza por elegir una acción. Empieza por tener claro tu objetivo, buscar información y reconocer cuánto riesgo estás dispuesto a asumir. Con esa base, lo que sigue deja de ser un salto al vacío."
+      },
       "progreso": true
     },
     {

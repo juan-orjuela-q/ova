@@ -28,10 +28,14 @@
   white-space: nowrap;
   transition: background var(--dur-fast) var(--ease-out);
 }
-.boton:hover {
+/* :not([aria-disabled="true"]) — el candado blando de bloqueaAvance
+   (ajustes tanda 10) deja el botón en el DOM, focalizable y con su
+   nombre accesible intacto; lo que no puede hacer es seguir
+   respondiendo al puntero como si estuviera activo. */
+.boton:not([aria-disabled="true"]):hover {
   background: var(--nuam-grey-800);
 }
-.boton:active {
+.boton:not([aria-disabled="true"]):active {
   background: var(--nuam-grey-700);
 }
 
@@ -45,6 +49,23 @@
   opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* Ajustes tanda 10 — mismo tratamiento visual para el candado blando de
+   `bloqueaAvance`, que usa `aria-disabled` y NUNCA `disabled` real (ver
+   router.js y la trampa 1 de PLAN-ESTRUCTURA.md §3: `disabled` sacaría
+   "Siguiente" del orden de tabulación y no diría por qué). Dos
+   diferencias deliberadas respecto al bloque de arriba: sin
+   `pointer-events:none`, para que el cursor "prohibido" se vea de
+   verdad al pasar por encima —es parte de lo que comunica el estado— y
+   sin tocar el foco, que tiene que seguir cayendo aquí.
+
+   El color no es el único código del estado (regla dura 3): el ícono
+   del botón cambia de flecha a candado y su descripción accesible
+   —`aria-describedby` al aviso de la barra inferior— explica por qué. */
+.boton[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .boton__icono {
@@ -61,7 +82,7 @@
   -webkit-font-smoothing: antialiased;
   transition: transform var(--dur-fast) var(--ease-out);
 }
-.boton:hover .boton__icono {
+.boton:not([aria-disabled="true"]):hover .boton__icono {
   transform: translateX(0.25em);
 }
 
@@ -762,10 +783,18 @@
   white-space: nowrap;
 }
 /* E2 — candado blando de bloqueaAvance: oculta por defecto (`hidden`,
-   router.js la muestra junto con aria-disabled en #nav-siguiente).
-   Nunca solo el borde/aria-disabled del botón: el texto explica el
-   porqué, con su propio ícono — regla dura de CLAUDE.md de que el color
-   nunca es el único código de un estado, aplicada aquí a "inerte". */
+   router.js la quita junto con aria-disabled en #nav-siguiente).
+
+   Ajustes tanda 10: deja de verse en la barra. El aviso escrito debajo
+   de "Siguiente" competía con el propio botón por explicar lo mismo, así
+   que el estado pasa a comunicarse en el botón —ícono de candado en vez
+   de flecha, más opacidad y cursor de "prohibido"— y esta frase se queda
+   SOLO para lectores de pantalla (.u-oculto-visualmente en index.html,
+   enganchada con aria-describedby). No se borra: sin ella el botón diría
+   que está inerte pero no por qué, y el ícono solo no es un texto
+   alternativo — es la misma regla dura 3 de CLAUDE.md (el color nunca es
+   el único código de un estado), resuelta con ícono + nombre accesible
+   en vez de con una línea de texto visible que nadie leía. */
 .nav-inferior__aviso {
   display: flex;
   align-items: center;
@@ -1136,9 +1165,23 @@
    a llenar el ancho del envoltorio: así la figura, posicionada contra
    los bordes de .media-avatar, siempre coincide con los bordes reales de
    la carta en vez de con un contenedor más ancho. */
+/* Ajustes tanda 10: el ancho pasa de `max-width` a `width` con tope
+   relativo. Con `max-width: 26rem` a secas la carta se quedaba en 416px
+   fijos y la figura —que sobresale hacia la derecha— empujaba el borde
+   real del componente fuera de su columna en cuanto la columna medía
+   menos que eso. Ahora la carta pide 26rem pero cede 48px al contenedor
+   (justo lo que la figura asoma por la derecha en avatar-md/lg), así que
+   el conjunto carta+figura nunca pasa del ancho disponible.
+
+   Y el tope de la figura: sin él, una figura de 480px (avatar-lg) dentro
+   de una columna angosta se sale por la IZQUIERDA —está anclada a
+   `right: 0`— y se monta encima del texto de la columna vecina.
+   calc(100% + 48px) la deja asomar exactamente esos 48px por la derecha
+   y ni un píxel más por la izquierda. */
 .media-avatar {
   position: relative;
-  max-width: 26rem;
+  width: 26rem;
+  max-width: calc(100% - 48px);
 }
 .media-avatar .media-audio {
   max-width: none;
@@ -1147,6 +1190,7 @@
 .media-avatar__figura {
   position: absolute;
   overflow: hidden;
+  max-width: calc(100% + 48px);
   background: var(--surface-muted);
 }
 .media-avatar__figura img {
@@ -1230,6 +1274,19 @@
 }
 .media-avatar--lg .media-audio {
   border-top-right-radius: 0;
+}
+
+/* Ajustes tanda 10: dentro de una columna de media (L03/L09 en
+   escritorio) la carta se recuesta contra el borde derecho de su
+   columna en vez de quedar a la izquierda con el sobrante a la derecha.
+   Es el lado por el que la figura ya asoma: alineada a la derecha, ese
+   sobrante cae en el margen del layout y no entre las dos columnas.
+   Fuera de una columna de media (p04, donde la carta va centrada) no
+   aplica — de ahí el selector de hijo directo. */
+@media (min-width: 48em) {
+  .layout__media > .media-avatar--lg {
+    margin-inline-start: auto;
+  }
 }
 
 /* ---- Reproductor de video (T4) -----------------------------------------
@@ -1411,6 +1468,61 @@
 .media-marcador .icono {
   font-size: 2rem;
   color: var(--text-tertiary);
+}
+
+/* ---- Tarjeta comparativa ilustrada (ajustes, tanda 11) ----------------
+   La tarjeta de L05 con una ilustración arriba de su título (p11, las
+   cuatro cápsulas). Clase propia y no un tratamiento suelto sobre
+   `.layout__cuerpo > *` porque cambia la anatomía de la tarjeta: el
+   padding se muda de la caja al bloque de texto para que la ilustración
+   llegue a sangre hasta los bordes, como en la referencia.
+
+   Sin la caja (por debajo de 40em, donde L05 apila las tarjetas sin
+   fondo ni padding — ver layouts.css) la ilustración lleva su propio
+   radio y un gap la separa del título; dentro de la caja pierde las dos
+   cosas y las hereda del recorte del contenedor.
+
+   `aspect-ratio` con `object-fit: cover` y no la proporción nativa del
+   archivo: los originales son cuadrados (1254×1254) y cuatro cuadrados
+   en fila empujan las tarjetas fuera de la pantalla. 6/5 recorta un 8%
+   arriba y otro tanto abajo, que es aire en las cuatro ilustraciones.
+   `max-width: 100%` no hace falta (width:100% ya lo fija) pero sí el
+   `display:block`: sin él la línea base del <img> deja un hueco de
+   varios píxeles entre la imagen y el borde de la caja. */
+.tarjeta-comparativa {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.tarjeta-comparativa__ilustracion {
+  display: block;
+  width: 100%;
+  aspect-ratio: 6 / 5;
+  /* Tope de alto además de la proporción: 6/5 sobre una tarjeta ancha
+     (2×2 en el rango intermedio, o una sola columna en móvil) daba
+     ilustraciones de más de 330px que empujaban el texto de la tarjeta
+     fuera de la pantalla. 16rem es el alto que ya tienen a cuatro
+     columnas en escritorio, así que ahí no cambia nada y en los demás
+     anchos la imagen recorta por los lados en vez de crecer. */
+  max-height: 16rem;
+  object-fit: cover;
+  border-radius: var(--r-md);
+}
+@media (min-width: 40em) {
+  .layout--l05 .layout__cuerpo > .tarjeta-comparativa {
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
+  }
+  .layout--l05 .layout__cuerpo > .tarjeta-comparativa .tarjeta-comparativa__ilustracion {
+    border-radius: 0;
+  }
+  .layout--l05 .layout__cuerpo > .tarjeta-comparativa .tarjeta-comparativa__texto {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    padding: var(--sp-5);
+  }
 }
 
 /* ---- Retrato con máscara o marco (ajustes, tanda 3) --------------------
@@ -2197,12 +2309,24 @@ a.cap-tarjeta:hover {
 .quiz-cuestionario__contador {
   color: var(--text-tertiary);
 }
+/* Ajustes tanda 10: el resultado es la vista que queda cuando la lista
+   de preguntas se oculta, no un bloque al pie de ella — de ahí que ya no
+   lleve el divisor superior que lo separaba de la última pregunta (no
+   hay nada encima de lo que separarlo). */
 .quiz-cuestionario__resultado {
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
-  padding-block-start: var(--sp-6);
-  border-block-start: 1px solid var(--border-default);
+}
+/* Sin outline propio: hereda el foco visible global de base.css. Lo
+   recibe por script al abrir la vista (quiz.js), nunca con Tab. */
+.quiz-cuestionario__resultado-titulo {
+  margin: 0;
+}
+/* La carta de locución del resultado, separada de la cifra y el callout
+   con el mismo aire que usa el layout entre zonas. */
+.quiz-cuestionario__locucion {
+  margin-block-start: var(--sp-4);
 }
 
 /* ============================================================

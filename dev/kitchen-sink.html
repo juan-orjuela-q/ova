@@ -672,7 +672,8 @@
       <div class="ks-layout-bloque" id="c-nav-inferior-bloqueo">
         <span class="ks-layout-bloque__etiqueta">Barra inferior — candado de <code>bloqueaAvance</code> (E2)</span>
         <p class="ks-intro">
-          <code>bloqueaAvance: true</code> en la pantalla hace que <code>crearInteraccion()</code> le pase <code>{alCompletar}</code> a <code>OVA.quiz.crear()</code> (mismo canal para cualquier tipo del catálogo I01–I08 — no un caso especial escrito a mano para el diagnóstico, ver el bloque "E2" en el encabezado de <code>quiz.js</code>). <code>router.js</code> no se carga en esta página (depende del hash y del contenido real, mismo criterio que la sección "Motor" de T2), así que este bloque repite en unas líneas lo que hacen <code>actualizarBloqueoAvance()</code>/<code>siguiente()</code> ahí: <code>aria-disabled</code> en el botón más la nota visible mientras la actividad sigue sin resolver, el clic sin efecto, y al completarse un <code>OVA.a11y.anunciar()</code> real (misma región <code>#anuncios</code> del principio de esta página). La pregunta de abajo sí es una interacción real del catálogo (I02, sin nada de I15) — respóndela para ver el candado soltarse.
+          <code>bloqueaAvance: true</code> en la pantalla hace que <code>crearInteraccion()</code> le pase <code>{alCompletar}</code> a <code>OVA.quiz.crear()</code> (mismo canal para cualquier tipo del catálogo I01–I08 — no un caso especial escrito a mano para el diagnóstico, ver el bloque "E2" en el encabezado de <code>quiz.js</code>). <code>router.js</code> no se carga en esta página (depende del hash y del contenido real, mismo criterio que la sección "Motor" de T2), así que este bloque repite en unas líneas lo que hacen <code>actualizarBloqueoAvance()</code>/<code>siguiente()</code> ahí: <code>aria-disabled</code> en el botón, el clic sin efecto, y al completarse un <code>OVA.a11y.anunciar()</code> real (misma región <code>#anuncios</code> del principio de esta página). La pregunta de abajo sí es una interacción real del catálogo (I02, sin nada de I15) — respóndela para ver el candado soltarse.
+          <strong>Ajustes tanda 10:</strong> la nota "Completa la actividad para continuar" dejó de verse en la barra —competía con el propio botón por explicar lo mismo— y el estado pasó al botón: ícono de candado en vez de flecha, opacidad 0.4 y cursor de "prohibido". La frase sigue en el DOM, <code>.u-oculto-visualmente</code>, porque sigue siendo la descripción accesible del botón (<code>aria-describedby</code>): el ícono dice que está inerte, no por qué. Sigue sin ser <code>disabled</code> real — Tab llega, el foco se ve, y el nombre accesible explica.
         </p>
         <div class="ks-layout-marco">
           <div id="c-bloqueo-interaccion"></div>
@@ -683,10 +684,9 @@
                 <span class="nav-inferior__paso-completo">Pantalla 8 de 23</span>
                 <span class="nav-inferior__paso-corto">8/23</span>
               </span>
-              <button id="c-bloqueo-siguiente" class="boton" type="button" aria-disabled="true" aria-describedby="c-bloqueo-aviso">Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span></button>
+              <button id="c-bloqueo-siguiente" class="boton" type="button" aria-disabled="true" aria-describedby="c-bloqueo-aviso">Siguiente <span id="c-bloqueo-siguiente-icono" class="boton__icono" aria-hidden="true">lock</span></button>
             </div>
-            <p id="c-bloqueo-aviso" class="nav-inferior__aviso">
-              <span class="icono" aria-hidden="true">lock</span>
+            <p id="c-bloqueo-aviso" class="nav-inferior__aviso u-oculto-visualmente">
               Completa la actividad para continuar
             </p>
           </footer>
@@ -780,10 +780,27 @@
           porque apareció un caso real que lo necesitaba (p02, "Objetivos
           de aprendizaje").
         </p>
+        <p class="ks-intro">
+          <strong>Ajustes tanda 10.</strong> Cuarta variante,
+          <code>"sin-avatar"</code>: ni figura grande ni círculo chico —
+          la carta sola. Es para la pantalla que ya muestra a quien habla
+          en otra parte de la misma pantalla (p01-bienvenida, con el
+          retrato de Claudia al lado), donde repetir su cara en 3rem no
+          agrega nada. Es la única variante que además relaja el
+          contrato: sin ella <code>imagen</code> es obligatorio.
+          En la misma tanda, el ancho pasó de <code>max-width: 26rem</code>
+          fijo a <code>width: 26rem</code> con tope
+          <code>calc(100% - 48px)</code>, y la figura ganó
+          <code>max-width: calc(100% + 48px)</code>: la carta cede al
+          contenedor los 48px que la figura asoma, así que en una columna
+          angosta el conjunto ya no se sale por la izquierda encima del
+          texto vecino. Se ve estrechando esta ventana.
+        </p>
         <div class="ks-layout-marco ks-muestras ks-muestras--apilado">
           <div id="c-media-avatar-sm"></div>
           <div id="c-media-avatar-md"></div>
           <div id="c-media-avatar-lg"></div>
+          <div id="c-media-avatar-sin"></div>
         </div>
       </div>
 
@@ -1337,7 +1354,7 @@
       </div>
 
       <div class="ks-layout-bloque" id="c-i15">
-        <span class="ks-layout-bloque__etiqueta">I15 · Cuestionario (E1) — cinco preguntas del diagnóstico en una sola pantalla</span>
+        <span class="ks-layout-bloque__etiqueta">I15 · Cuestionario (E1, reformado en tanda 10) — cinco preguntas del diagnóstico en una sola pantalla, de a una</span>
         <p class="ks-intro">
           Única excepción al contrato "una pregunta por pantalla" (CLAUDE.md
           se corrige en E7, no antes): reusa los mismos constructores de
@@ -1346,22 +1363,32 @@
           separado — la nota se calcula una sola vez, como porcentaje de
           aciertos, al resolver la última. El bloque de resultado final
           reusa <code>OVA.resultado.construir()</code>, el mismo que pinta
-          L08. Tres estados, los tres montados con
-          <code>OVA.quiz.crear({tipo:'I15', …})</code> real:
+          L08. <strong>Ajustes tanda 10:</strong> sigue siendo una sola
+          pantalla, pero se ve una sola pregunta a la vez — al resolverse,
+          la retroalimentación se queda en pantalla y aparece "Siguiente
+          pregunta" (en la quinta, "Ver mi resultado"). Ese último clic
+          oculta la lista y el enunciado y deja la <em>vista de
+          resultado</em>: encabezado, cifra, callout y carta de locución
+          (avatar-sm). Por eso el bloque de resultado ya no lleva
+          <code>role="status"</code>: ahora se llega con un clic, y el
+          botón que tenía el foco desaparece con la lista — el patrón
+          correcto es mover el foco al <code>&lt;h3&gt;</code> de la vista
+          nueva, no anunciarla desde lejos. Tres estados, los tres
+          montados con <code>OVA.quiz.crear({tipo:'I15', …})</code> real:
         </p>
         <div class="ks-layout-bloque" id="c-i15-sin-empezar">
           <span class="ks-layout-bloque__etiqueta">Sin empezar</span>
-          <p class="ks-intro">Responde las cinco a mano para ver el resultado aparecer solo, sin recargar.</p>
+          <p class="ks-intro">Responde las cinco a mano —una por una, con "Siguiente pregunta" entre ellas— para ver la vista de resultado, sin recargar.</p>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 40rem;"></div>
         </div>
         <div class="ks-layout-bloque" id="c-i15-a-medias">
           <span class="ks-layout-bloque__etiqueta">A medias — dos de cinco ya respondidas</span>
-          <p class="ks-intro">Las dos primeras se comprueban solas al cargar la página (mismo <code>OVA.quiz.crear()</code>, disparado por script en vez de por clic) para no depender de una captura de pantalla a mitad de interacción. El contador de la tercera pregunta ya dice "Pregunta 3 de 5" sin haber tocado nada.</p>
+          <p class="ks-intro">Las dos primeras se responden y se avanzan solas al cargar la página (mismo <code>OVA.quiz.crear()</code>, disparado por script en vez de por clic) para no depender de una captura de pantalla a mitad de interacción. Se ve la tercera, y solo la tercera: su contador dice "Pregunta 3 de 5" sin haber tocado nada.</p>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 40rem;"></div>
         </div>
         <div class="ks-layout-bloque" id="c-i15-completo">
           <span class="ks-layout-bloque__etiqueta">Completa, con resultado — y recargada "a media batería" (trampa 2)</span>
-          <p class="ks-intro">Esta instancia se monta con la marca de finalización ya en <code>true</code> en <code>OVA.state</code> (el equivalente real de "el estudiante recargó después de terminar"): arranca con las cinco preguntas bloqueadas de una, sin reconstruir qué se respondió, y el bloque de resultado visible sin esperar ninguna interacción.</p>
+          <p class="ks-intro">Esta instancia se monta con la marca de finalización ya en <code>true</code> en <code>OVA.state</code> (el equivalente real de "el estudiante recargó después de terminar"): arranca directamente en la vista de resultado, con la lista de preguntas oculta y sin reconstruir qué se respondió. Es el único camino que <strong>no</strong> mueve el foco: nadie hizo clic, no hay foco que recuperar.</p>
           <div class="ks-layout-marco ks-ancho-marco" style="max-width: 40rem;"></div>
         </div>
       </div>
@@ -1625,6 +1652,21 @@
             <div class="layout__media" id="l02-media"></div>
           </div>
         </div>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L02 · variante avatar (ajustes tanda 10) — una columna de 56rem centrada, locución debajo del texto</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l02 layout--l02--avatar">
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Unidad 1 · Apertura</span>
+              <h2 class="layout__titulo tipo-h2">Antes de empezar: mide tu punto de partida</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">Responde cinco preguntas rápidas. No tienen nota; sirven para que identifiques qué conceptos ya conoces y cuáles debes reforzar durante la unidad.</p>
+              </div>
+            </div>
+            <div class="layout__media" id="l02-avatar-media"></div>
+          </div>
+        </div>
+        <p class="ks-intro"><code>router.js</code> agrega <code>.layout--l02--avatar</code> cuando <code>media.tipo</code> es <code>"avatar"</code> — el mismo ejemplo real que <code>p04</code> en <code>content/ova-u1.js</code>. Con locución, la media deja de ser protagonista: se anula el <code>order:-1</code> de L02 y la carta (avatar-md) baja debajo del texto, centrada. El tope de 56rem va en los hijos y no en la raíz a propósito — <code>.layout</code> pinta el fondo decorativo a sangre y acotarlo dejaría dos franjas blancas a los lados.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l03">
@@ -1658,6 +1700,24 @@
           </div>
         </div>
         <p class="ks-intro"><code>router.js</code> agrega <code>.layout--l03--retrato</code> solo cuando <code>media.tipo</code> es <code>"retrato"</code> — el mismo ejemplo real que <code>p01-bienvenida</code> en <code>content/ova-u1.js</code>, recorrible en <a href="../src/index.html">src/index.html</a>. Primera línea de <code>cuerpo</code> en negrita (CSS, <code>:first-child</code>) porque es la presentación, no un campo distinto.</p>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L03 · retrato del otro lado (ajustes tanda 10) — perfil del tutor, con locución en la columna de texto</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l03 layout--l03--retrato layout--l03--retrato-fin">
+            <div class="layout__texto">
+              <span class="layout__kicker tipo-etiqueta">Unidad 1 · Apertura</span>
+              <h2 class="layout__titulo tipo-h2">Conoce al tutor</h2>
+              <div class="layout__cuerpo">
+                <p class="tipo-cuerpo">José F. Mejía, FRM</p>
+                <p class="tipo-cuerpo">Ingeniero Industrial (Javeriana), Magíster en Finanzas (U. Alcalá, España), certificado como Financial Risk Manager - FRM® por GARP y certificado en Sustainable Investing por CFA Institute.</p>
+                <p class="tipo-cuerpo">Actualmente, Consultor de inversiones para BID Invest – Banco Interamericano de Desarrollo.</p>
+              </div>
+              <div class="layout__locucion" id="l03-perfil-locucion"></div>
+            </div>
+            <div class="layout__media" id="l03-perfil-media"></div>
+          </div>
+        </div>
+        <p class="ks-intro">Mismo <code>.layout--l03--retrato</code> más <code>--retrato-fin</code>, que solo invierte el orden de las dos columnas. Lo elige <code>router.js</code> con <code>mediaLado: "fin"</code> en la pantalla — el único campo del contrato que no se deriva de la media, porque la diferencia entre esta pantalla y la de bienvenida es editorial, no estructural. La carta de locución (<code>pantalla.avatar</code>, avatar-sm) va <strong>dentro</strong> de <code>.layout__texto</code>, no como hermana: pertenece a la columna del texto que narra. Ejemplo real: <code>p10-tutor</code>.</p>
 
         <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L03 · variante avatar (AJUSTES.md, tanda 8) — retícula de 12 columnas, contenido a la izquierda, locución a la derecha</span>
         <div class="ks-layout-marco">
@@ -1740,6 +1800,50 @@
           </div>
         </div>
         <p class="ks-intro">Cuando la pantalla trae <code>interaccion</code> en vez de <code>tarjetas</code>, <code>PLANTILLAS.L05</code> monta esa interacción con la misma <code>crearInteraccion()</code> de L06/L07: I07/I08 ya son en sí mismas la disposición de tarjetas comparables que promete L05, así que no hace falta una tarjeta de solo lectura por delante. Resuelve la nota abierta que dejó C5 en <code>PLAN-CONTENIDO.md</code>.</p>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L05 · tarjetas ilustradas + locución en el encabezado (ajustes tanda 11) — p11 real</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l05">
+            <div class="layout__encabezado">
+              <div class="layout__texto">
+                <span class="layout__kicker tipo-etiqueta">Unidad 1 · Apertura</span>
+                <h2 class="layout__titulo tipo-h2">Las cuatro cápsulas de la unidad</h2>
+              </div>
+              <div class="layout__locucion" id="l05-locucion"></div>
+            </div>
+            <div class="layout__cuerpo">
+              <div class="tarjeta-comparativa">
+                <img class="tarjeta-comparativa__ilustracion" src="../public/img/ilustraciones/capsula-1.webp" alt="">
+                <div class="tarjeta-comparativa__texto">
+                  <p class="tipo-h5">Cápsula 1</p>
+                  <p class="tipo-cuerpo-sm">Contexto del mercado</p>
+                </div>
+              </div>
+              <div class="tarjeta-comparativa">
+                <img class="tarjeta-comparativa__ilustracion" src="../public/img/ilustraciones/capsula-2.webp" alt="">
+                <div class="tarjeta-comparativa__texto">
+                  <p class="tipo-h5">Cápsula 2</p>
+                  <p class="tipo-cuerpo-sm">Valorización en acciones</p>
+                </div>
+              </div>
+              <div class="tarjeta-comparativa">
+                <img class="tarjeta-comparativa__ilustracion" src="../public/img/ilustraciones/capsula-3.webp" alt="">
+                <div class="tarjeta-comparativa__texto">
+                  <p class="tipo-h5">Cápsula 3</p>
+                  <p class="tipo-cuerpo-sm">El dividendo</p>
+                </div>
+              </div>
+              <div class="tarjeta-comparativa">
+                <img class="tarjeta-comparativa__ilustracion" src="../public/img/ilustraciones/capsula-4.webp" alt="">
+                <div class="tarjeta-comparativa__texto">
+                  <p class="tipo-h5">Cápsula 4</p>
+                  <p class="tipo-cuerpo-sm">El perfil de riesgo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="ks-intro">Dos cosas a la vez, las dos de la tanda 11. <strong>La tarjeta ilustrada:</strong> <code>tarjetas[].imagen</code> (opcional, con <code>alt</code> opcional que por defecto es <code>''</code> — decorativa, igual que <code>media.tipo:"imagen"</code>) monta una ilustración arriba del título, a sangre contra los bordes de la caja; el padding se muda de la tarjeta a <code>.tarjeta-comparativa__texto</code>. Los originales son cuadrados, así que el CSS los recorta a 6/5 con <code>object-fit: cover</code>: cuatro cuadrados en fila empujan las tarjetas fuera de la pantalla. Si la ilustración no carga, <code>router.js</code> quita la <code>&lt;img&gt;</code> y la tarjeta se queda con su texto — misma degradación limpia que "imagen"/"video" en <code>media.js</code>. <strong>La locución:</strong> sube de "al final y centrada" (tanda 10) a <code>.layout__encabezado</code>, compartiendo fila con kicker+título — arriba a la derecha desde 48em, apilada debajo del título por debajo de ese ancho, siempre en el orden del DOM. Va en variante <code>sin-avatar</code>: con cuatro ilustraciones cargando el peso visual, una foto más en la esquina compite en vez de sumar.</p>
       </div>
 
       <div class="ks-layout-bloque" id="l06">
@@ -1810,6 +1914,23 @@
           </div>
         </div>
         <p class="ks-intro">router.js arma el cuerpo como lista real (ícono de check + texto), no párrafos: es "ideas clave", no prosa. La media (infografía, sin producir todavía) sigue siendo la maqueta <code>.ks-marcador</code> de siempre.</p>
+
+        <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · variante avatar (ajustes tanda 10) — la segunda columna es la locución del cierre</span>
+        <div class="ks-layout-marco">
+          <div class="layout layout--l09 layout--l09--avatar">
+            <span class="layout__kicker tipo-etiqueta">Unidad 1 · Cierre</span>
+            <div class="layout__texto">
+              <h2 class="layout__titulo tipo-h2">Ideas clave de la unidad</h2>
+              <ul class="layout__cuerpo">
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Las acciones pertenecen a la renta variable.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>Una acción representa propiedad fraccionada.</span></li>
+                <li class="tipo-cuerpo"><span class="icono" aria-hidden="true">check_circle</span><span>El retorno puede venir de precio y dividendos.</span></li>
+              </ul>
+            </div>
+            <div class="layout__media" id="l09-avatar-media"></div>
+          </div>
+        </div>
+        <p class="ks-intro"><code>router.js</code> agrega <code>.layout--l09--avatar</code> cuando <code>media.tipo</code> es <code>"avatar"</code>. Desde 1200px la segunda columna pasa de 4 a 5 de las 10 columnas útiles: una carta de 26rem no es una imagen de apoyo que pueda encogerse, y avatar-lg en 4 columnas se comía el texto de al lado. Ejemplo real: <code>p32</code>.</p>
 
         <span class="ks-layout-bloque__etiqueta" style="margin-block-start: var(--sp-8);">L09 · Ideas clave — sin media (el caso que C1 agregó; P32/P39 no la usan)</span>
         <div class="ks-layout-marco">
@@ -2139,6 +2260,37 @@
         vtt: VTT_DEMO,
         transcripcion: TRANSCRIPCION_DEMO
       });
+      // Ajustes tanda 10: los tres montajes nuevos de esta tanda, con los
+      // mismos datos que sus pantallas reales (p04, p10-tutor, p32).
+      montar('l02-avatar-media', {
+        tipo: 'avatar',
+        variante: 'md',
+        imagen: '../public/img/avatar/avatar-primerplano-sinfondo-1.webp',
+        audio: '../public/audio/a04-punto-de-partida.mp3',
+        transcripcion: 'Antes de entrar al contenido, responde una prueba diagnóstica. No busca calificarte. Su propósito es mostrarte qué tan familiarizado estás con conceptos como acción, dividendo, renta variable y tipos de acciones.'
+      });
+      montar('l03-perfil-media', {
+        tipo: 'retrato',
+        src: '../public/img/tutor-jose-fernando-mejia.webp',
+        alt: 'José F. Mejía, tutor de la unidad',
+        variante: 'mascara',
+        forma: 'diagonal',
+        fondo: { tipo: 'color', valor: 'naranja' }
+      });
+      montar('l03-perfil-locucion', {
+        tipo: 'avatar',
+        variante: 'sm',
+        imagen: '../public/img/avatar/avatar-primerplano-sinfondo-2.webp',
+        audio: '../public/audio/a06-tutor.mp3',
+        transcripcion: 'Quiero presentarles a quien les explicará los conceptos fundamentales de esta unidad.'
+      });
+      montar('l09-avatar-media', {
+        tipo: 'avatar',
+        variante: 'lg',
+        imagen: '../public/img/avatar/avatar-medio-confondo-3.webp',
+        audio: '../public/audio/a08-ideas-cierre.mp3',
+        transcripcion: 'Llegaste al final de la primera unidad. Vale la pena recoger algunos aspectos de lo que has aprendido.'
+      });
       // Ajustes tanda 4: mismo archivo que RETRATO_MASCARA_DEMO más abajo
       // (declarada después en este mismo script) — inline aquí en vez de
       // reordenar el archivo para una sola referencia.
@@ -2226,6 +2378,24 @@
         audio: AUDIO_DEMO,
         transcripcion: TRANSCRIPCION_AVATAR_DEMO,
         variante: 'lg'
+      });
+      // Ajustes tanda 10: sin foto ninguna — y a propósito SIN el campo
+      // "imagen", que es lo que esta variante deja de exigir.
+      montar('c-media-avatar-sin', {
+        tipo: 'avatar',
+        audio: AUDIO_DEMO,
+        transcripcion: TRANSCRIPCION_AVATAR_DEMO,
+        variante: 'sin-avatar'
+      });
+
+      // Ajustes tanda 11: la locución de p11 dentro del encabezado de
+      // L05 — misma variante "sin-avatar" del bloque de arriba, aquí
+      // dentro del layout real para ver la fila completa.
+      montar('l05-locucion', {
+        tipo: 'avatar',
+        audio: AUDIO_DEMO,
+        transcripcion: TRANSCRIPCION_AVATAR_DEMO,
+        variante: 'sin-avatar'
       });
 
       // C7: ranura de avatar nueva en L08/L10/L13 — mismo tono de
@@ -3019,7 +3189,16 @@
               { minimo: 5, cifra: { etiqueta: 'respuestas correctas de 5' }, retro: { tipo: 'brand', titulo: 'Aprovecha para ordenar y aplicar', texto: 'Aprovecha la unidad para ordenar y aplicar lo que ya sabes.' } },
               { minimo: 3, cifra: { etiqueta: 'respuestas correctas de 5' }, retro: { tipo: 'nota', titulo: 'Buena base inicial', texto: 'Tienes una buena base inicial.' } },
               { minimo: 0, cifra: { etiqueta: 'respuestas correctas de 5' }, retro: { tipo: 'alerta', titulo: 'Empieza con calma', texto: 'Empieza con calma y toma nota de los conceptos base.' } }
-            ]
+            ],
+            // Ajustes tanda 10: mismos datos que p05-diagnostico en
+            // content/ova-u1.js — la carta la monta la interacción, no
+            // router.js (el audio comenta el resultado, no la pantalla).
+            locucion: {
+              variante: 'sm',
+              imagen: '../public/img/avatar/avatar-primerplano-sinfondo-3.webp',
+              audio: '../public/audio/a05-diagnostico-resultado.mp3',
+              transcripcion: 'Tu resultado no te encasilla. Solo te ayuda a estudiar mejor. Si algunas respuestas no fueron correctas, perfecto: esta unidad está diseñada para explicar los conceptos desde cero y llevarlos a ejemplos prácticos.'
+            }
           }
         };
       }
@@ -3035,8 +3214,13 @@
       // Estado 2 — a medias: misma instancia real; un script marca la
       // primera opción de las dos primeras preguntas (la correcta en
       // ambas — I01/I02 construyen sus radios en el mismo orden que sus
-      // opciones/verdadero-falso) y envía cada <form>, para no depender
-      // de una captura de pantalla a mitad de una interacción manual.
+      // opciones/verdadero-falso), envía cada <form> y además pulsa
+      // "Siguiente pregunta", para no depender de una captura de
+      // pantalla a mitad de una interacción manual.
+      // Ajustes tanda 10: el paso de avanzar es nuevo y es justamente lo
+      // que hay que ejercitar — sin él, responder las dos primeras
+      // dejaría la primera en pantalla y la tercera invisible, que no es
+      // el estado "a medias" que este bloque quiere mostrar.
       var contenedorAMedias = document.getElementById('c-i15-a-medias');
       if (contenedorAMedias) {
         var nodoAMedias = OVA.quiz.crear({ tipo: 'I15', datos: datosCuestionario('ks-i15-2', 'ks_i15_aciertos_2') });
@@ -3050,9 +3234,14 @@
           if (typeof item.requestSubmit === 'function') {
             item.requestSubmit();
           } else {
-            var boton = item.querySelector('button[type="submit"]');
-            if (boton) boton.click();
+            var botonComprobar = item.querySelector('button[type="submit"]');
+            if (botonComprobar) botonComprobar.click();
           }
+          var botonContinuar = Array.prototype.filter.call(
+            item.querySelectorAll('button'),
+            function (b) { return !b.hidden && /Siguiente pregunta|Ver mi resultado/.test(b.textContent); }
+          )[0];
+          if (botonContinuar) botonContinuar.click();
         });
       }
 
@@ -3087,6 +3276,10 @@
 
       function alCompletar() {
         boton.setAttribute('aria-disabled', 'false');
+        // Ajustes tanda 10: el ícono vuelve a ser la flecha, igual que en
+        // actualizarBloqueoAvance() de router.js.
+        var icono = document.getElementById('c-bloqueo-siguiente-icono');
+        if (icono) icono.textContent = 'arrow_forward';
         aviso.hidden = true;
         OVA.a11y.anunciar('Actividad completa. Ya puedes continuar.');
       }

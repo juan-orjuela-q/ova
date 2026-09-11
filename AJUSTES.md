@@ -1409,3 +1409,294 @@ scratchpad de la sesión), `src/index.html` (navegando a `#p03`) y
   `content/ova-u1.js`, `dev/kitchen-sink.html`) — los colores nuevos son
   los tokens ya existentes `--text-on-brand`/`--text-on-brand-display`,
   y el tamaño nuevo (24px) es un valor de tipografía, no de color.
+
+---
+
+# Tanda 10 — margen de retícula, locuciones reales, diagnóstico de a una y pantalla del tutor (11 sep 2026)
+
+Pedido de Juan en cuatro frentes: un ajuste general de retícula, el
+cableado de las ocho locuciones grabadas (`lucuciones.txt`), cuatro
+ajustes puntuales de pantalla y la pantalla del tutor según
+`ref-ajustes/tanda-10/pantalla-tutor.jpg`.
+
+**Nota de numeración.** Juan numera por posición en el recorrido de 26
+("pantalla 7"), salvo en el pedido del tutor, donde usó el id (`p10`).
+La tabla completa posición ↔ id quedó en
+`disenoInstruccional/locuciones-estructura-e.md`.
+
+## 1. Margen lateral de 1 columna arriba de 1200px
+
+**Pedido.** Los layouts de dos columnas en escritorio dejan un margen
+lateral de 1 columna arriba de 1200px. `p02` y `p03` siguen la misma
+lógica, pero pierden ese margen por debajo de 1200.
+
+Hasta ahora el margen existía solo en tres variantes sueltas
+(`--l03--retrato` desde tanda 4, `--l03--avatar` desde tanda 8,
+`--l12--avatar` desde tanda 9), siempre desde 48em/40em. Pasa a ser
+comportamiento del catálogo, y solo desde **1200px** (breakpoint nuevo,
+`75em`, documentado en el encabezado de `layouts.css` junto a los otros
+dos). No es un breakpoint de reflow: nada cambia de orden ni de número
+de columnas ahí, solo aparece un carril vacío a cada lado.
+
+| Layout | 48em–1200px | ≥1200px |
+|---|---|---|
+| L03 base (pantallas 9, 11, 14, 17, 20) | 50/50 | `. texto×5 media×5 .` |
+| L03 `--retrato` (2) | 50/50, media primero | `. media×5 texto×5 .` |
+| L03 `--retrato-fin` (9) | 50/50, texto primero | `. texto×5 media×5 .` |
+| L03 `--avatar` (5) | 50/50 | `. texto×5 media×5 .` |
+| L09 con media (24) | 2fr 1fr | `. texto×6 media×4 .` |
+| L09 `--avatar` (24) | 1fr 1fr | `. texto×5 media×5 .` |
+| L12 `--avatar` (6) | 5fr 4fr | `. texto×5 . media×4 .` |
+
+Tres decisiones dentro del ajuste:
+
+1. **El margen no baja de 1200px.** A 768px un carril vacío de 1 columna
+   se come el ancho que el texto necesita para no partirse en renglones
+   de tres palabras. Por eso `--retrato`/`--avatar`/`--l12--avatar`
+   pierden el suyo en ese rango en vez de conservarlo: es el pedido
+   explícito de Juan para `p02`/`p03`, aplicado a las tres por
+   coherencia.
+2. **L09 solo lo recibe cuando tiene media.** Sin media ya cae a una
+   columna de ancho de lectura (regla de C1 con `:has()`) y un carril
+   vacío no tendría nada que separar — `p01b`, la única L09 real sin
+   media, queda exactamente igual. De ahí que las dos reglas nuevas
+   vayan sobre `:has(.layout__media)` y no sobre la clase pelada.
+3. **L09 con avatar reparte 5/5 y no 6/4.** La proporción 2:1 de L09
+   existe porque su media es una imagen de apoyo; una carta de locución
+   de 26rem no se encoge igual. Con 4 columnas, avatar-lg se comía el
+   texto de al lado.
+
+## 2. Componente de avatar: ancho relativo y tope de la figura
+
+**Pedido**, literal de Juan sobre `.media-avatar--lg` en la pantalla 5:
+`width: 26rem`, `max-width: calc(100% - 48px)`, `margin-left: auto`
+"en esta pantalla para que se pegue a la derecha en escritorio", y
+`max-width: calc(100% + 48px)` en `.media-avatar__figura` "para evitar
+que la imagen se monte sobre elementos que pueda tener a la izquierda".
+
+Se aplicó **al componente**, no a la pantalla, porque el problema no era
+de `p02`: con `max-width: 26rem` a secas la carta se quedaba en 416px
+fijos y la figura —que asoma 48px por la derecha— empujaba el borde real
+del componente fuera de su columna en cuanto la columna medía menos. Y
+una figura de 480px (avatar-lg) anclada a `right: 0` dentro de una
+columna angosta se sale por la **izquierda**, encima del texto vecino:
+eso es exactamente lo que el tope de la figura corrige.
+
+El `margin-left: auto` sí es contextual, pero no de una pantalla: se
+aplicó como `.layout__media > .media-avatar--lg` desde 48em — dentro de
+una columna de media la carta se recuesta al borde derecho, que es el
+lado por el que la figura ya asoma, así que el sobrante cae en el margen
+del layout y no entre las dos columnas. Fuera de una columna de media
+(`p04`, centrada) no aplica; de ahí el selector de hijo directo.
+
+## 3. Locuciones: los ocho audios cableados
+
+Los ocho `mp3` de `public/audio/` estaban en disco sin usar: el
+contenido seguía apuntando a `loc1_objetivos.mp3` y `demo-avatar.mp3`,
+los placeholders de D8/tanda 9. Ahora los ocho están cableados con su
+transcripción real.
+
+**Los audios se nombran `aNN-<slug>.mp3`, no por el id de la pantalla.**
+Es como Juan los entregó y se conservó a propósito: el orden de las
+pantallas ya se movió dos veces (reestructura E) y volvería a romper los
+nombres de archivo cada vez. El cruce entre las dos numeraciones vive en
+un solo lugar, la tabla de
+`disenoInstruccional/locuciones-estructura-e.md`, que se reescribió
+entera con los ocho textos, el componente de cada una y las dos
+pantallas sin locución decidida (`p34`, `p42`).
+
+Tres pantallas recibían locución sin tener dónde ponerla:
+
+- **`pantalla.avatar` deja de ser exclusivo de L01.** Ya existía desde
+  C3 como "la locución de una pantalla que además tiene otra media" (el
+  video de fondo de la portada). Es exactamente el caso de
+  `p01-bienvenida` y `p10-tutor` (retrato en la otra columna) y de `p11`
+  (L05 no tiene ranura de media en absoluto). Se extrajo a
+  `crearLocucion()` en `router.js`, se cableó en L03 (dentro de
+  `.layout__texto`, la columna del texto que narra) y en L05 (al final y
+  centrada: arriba de las tarjetas, avatar-md las empujaría fuera de
+  pantalla con los 164px que su figura reserva). De paso pasa
+  `variante`, que L01 ignoraba por ser su único consumidor.
+- **Variante `"sin-avatar"` en `media.js`** para `p01-bienvenida` (Juan:
+  "audio sin avatar después del texto"): ni figura grande ni círculo
+  chico, la carta sola. Es la única variante que relaja el contrato —
+  `imagen` deja de ser obligatorio— y se justifica sola: el retrato de
+  Claudia ya está a tamaño grande en la columna de al lado, repetir su
+  cara en 3rem es ruido.
+
+## 4. Pantalla 7 (`p04`) — contenedor centrado con avatar-md
+
+Juan pidió "contenedor con max-width de 56px" y audio avatar-md
+centrado; confirmó que eran **56rem**. Variante nueva
+`.layout--l02--avatar`, que `router.js` agrega cuando `media.tipo` es
+`"avatar"` (mismo mecanismo que L03 y L12, sin campo nuevo de contrato).
+Con locución la media deja de ser protagonista —una carta de audio no es
+un hero—, así que se anula el `order: -1` de L02 y la carta baja debajo
+del texto.
+
+**El tope de 56rem va en los hijos, no en la raíz.** `.layout` pinta el
+fondo decorativo a sangre (ajuste #1 de este archivo) y acotar la raíz
+dejaría el fondo recortado a 56rem con dos franjas blancas a los lados.
+
+`p04` estaba también en la lista de "layouts de dos columnas que deben
+modificarse", lo que contradecía este ajuste; Juan confirmó que gana la
+columna centrada.
+
+## 5. Pantalla 8 (`p05-diagnostico`) — una pregunta a la vez, resultado aparte
+
+**Pedido.** Que siga siendo una sola pantalla pero con las preguntas de
+a una; quitar el texto del pie "Completa la actividad para continuar" y
+en su lugar pasar el botón Siguiente a estado disabled con ícono de
+candado en vez de flecha; y mostrar el resultado también aparte, con la
+puntuación y el audio del avatar en componente avatar-sm.
+
+**El recorrido no crece**: sigue siendo la pantalla 8 de 26. Lo que
+cambia es el interior de I15. Al resolverse una pregunta, la
+retroalimentación se queda en pantalla y aparece "Siguiente pregunta";
+en la quinta, "Ver mi resultado". Ese clic oculta la lista y el
+enunciado y deja la vista de resultado: encabezado, cifra, callout y la
+carta de locución (`resultado.locucion`, campo nuevo de I15 — el audio
+comenta el resultado, así que lo monta la interacción y no `router.js`).
+
+Dos notas de `quiz.js` quedaron desactualizadas y se corrigieron en el
+mismo encabezado en vez de dejar la contradicción viva:
+
+- **La trampa 3** (cinco preguntas no caben en los ~780px del contenedor
+  SCORM) deja de aplicar como estaba escrita: con una pregunta visible,
+  el alto ya no es el problema que era.
+- **La trampa 4** ("ninguna llamada a `.focus()`") cambia de solución,
+  no de principio. El bloque de resultado ya no lleva `role="status"`:
+  no se revela solo, se llega con un clic, y el botón que tenía el foco
+  desaparece junto con la lista. Dejar el foco caer al `<body>` sería
+  peor que moverlo, así que la vista estrena un `<h3>Tu resultado</h3>`
+  con `tabIndex = -1` que lo recibe — mismo patrón que
+  `OVA.a11y.enfocarEncabezado()` entre pantallas. Al montar con la
+  batería ya completa (trampa 2, el F5 después de terminar) **no** se
+  enfoca nada: ahí nadie hizo clic.
+
+`alCompletar()` sigue disparándose al **resolver** la última pregunta,
+no al abrir el resultado: `bloqueaAvance` mide "respondió la actividad",
+y la vista de resultado es lectura, no un requisito más.
+
+### El candado, sin la nota visible
+
+La frase "Completa la actividad para continuar" competía con el propio
+botón por explicar lo mismo. Se quitó de la barra y el estado pasó al
+botón: ícono `lock` en vez de `arrow_forward`, opacidad 0.4 y cursor de
+"prohibido" (`.boton[aria-disabled="true"]`, bloque nuevo en
+`components.css`).
+
+**La frase no se borró: se volvió invisible.** Sigue en el DOM con
+`.u-oculto-visualmente` y sigue siendo la descripción accesible del
+botón vía `aria-describedby`, porque el ícono dice que está inerte pero
+no por qué, y un glifo `aria-hidden` de una fuente de símbolos no es
+texto alternativo de nada. Es la regla dura 3 de `CLAUDE.md` (el color
+nunca es el único código de un estado) resuelta con ícono + nombre
+accesible en vez de con una línea que nadie leía.
+
+Sigue sin ser `disabled` real (trampa 1 de `PLAN-ESTRUCTURA.md` §3).
+Dos diferencias deliberadas del bloque `:disabled` de al lado: sin
+`pointer-events: none`, para que el cursor de "prohibido" se vea de
+verdad, y sin tocar el foco. Los `:hover`/`:active` de `.boton` se
+guardaron con `:not([aria-disabled="true"])` para que no respondan al
+puntero como si estuviera activo.
+
+## 6. Pantalla 9 (`p10-tutor`) — "Conoce al tutor"
+
+De "Pendiente de guion" con un `.mp4` inexistente a la pantalla de la
+referencia: bio a la izquierda con la carta de locución (avatar-sm,
+`a06-tutor.mp3`) debajo, retrato del tutor a la derecha con la máscara
+naranja del componente ya existente (`retrato`, variante `mascara`,
+forma `diagonal`, fondo naranja — `public/img/tutor-jose-feranndo-mejia.png`,
+verificado con canal alfa real, 1254×1254).
+
+**Campo nuevo de contrato: `pantalla.mediaLado` (`"inicio"` | `"fin"`).**
+Es el único campo que **no** se deriva de la media, y fue deliberado.
+Las dos pantallas reales con retrato quieren lados opuestos: en la
+bienvenida el retrato entra primero, en la del tutor manda el nombre y
+las credenciales. Esa diferencia es editorial, no estructural —
+derivarla de que haya locución, o del `forma`, sería una regla que nadie
+puede adivinar leyendo el contenido. (El primer intento la derivó de
+`pantalla.avatar` y rompió la bienvenida en cuanto esta también recibió
+locución; se descartó por eso.) Vive en la pantalla y no dentro de
+`media` porque es una decisión de layout, y `media.js` no sabe de
+layouts. La variante CSS es `.layout--l03--retrato-fin`, que solo
+invierte el orden de las dos columnas sobre `--retrato`.
+
+## 7. Verificado con Playwright (Chromium 1194, `file://`)
+
+Sobre `src/index.html` y `dev/kitchen-sink.html`, con la copia sin tocar
+del repo como control para no confundir un límite preexistente con una
+regresión:
+
+- **Retícula.** A 1199px las siete pantallas de dos columnas computan 2
+  pistas y `texto.left = 40px` (el padding del layout); a 1200px, 12
+  pistas y `texto.left = 137px` (1 columna + medianil). A 900px vuelven a
+  2 pistas; a 760px, las de L03/L09 caen a `flex` apilado. `overflowX`
+  de `#app` en 0 en los cuatro anchos.
+- **Clases por pantalla.** `p01-bienvenida` → `--retrato` (media
+  izquierda); `p10-tutor` → `--retrato --retrato-fin` (media derecha);
+  `p02` → `--avatar`; `p03` → `--l12--avatar`; `p04` → `--l02--avatar`
+  (avatar centrado: 512–928 en viewport de 1440, centro exacto);
+  `p32` → `--l09--avatar` con avatar-lg pegado al borde derecho.
+- **Audios.** Los ocho `<source>` resuelven al `aNN-*.mp3` correcto en
+  su pantalla.
+- **Diagnóstico completo, de punta a punta.** Al entrar: 1 de 5 items
+  visible, `aria-disabled="true"`, ícono `lock`, aviso en el DOM con
+  ancho renderizado de 1px (oculto, no ausente). Las cinco preguntas
+  avanzan una a una; tras cada "Siguiente pregunta" el foco cae en el
+  item nuevo y `aria-live` dice "Pregunta N de 5". Al terminar: lista y
+  enunciado ocultos, resultado visible con
+  `[título, dato-cifra, callout, locución]`, cifra "4 respuestas
+  correctas de 5", carta `media-avatar--sm` con
+  `a05-diagnostico-resultado.mp3`, foco en el `<h3>`, botón en
+  `aria-disabled="false"` con la flecha de vuelta. Cero `pageerror`.
+- **Revisita con la batería ya completa** (trampa 2): arranca en la
+  vista de resultado, sin robar el foco (queda en el `<h2>` de la
+  pantalla, que es quien lo mueve entre pantallas).
+- **Teclado con el candado puesto.** Tab llega a `#nav-siguiente`;
+  `outline: solid`, opacidad 0.4, cursor `not-allowed`, ícono `lock`, y
+  la descripción accesible lee "Completa la actividad para continuar".
+  Enter no cambia el hash.
+- **320px.** `#app` sin scroll horizontal en las nueve pantallas
+  tocadas. El `scrollWidth` del documento marca 108–116px, **idéntico
+  al de la copia de control**: límite preexistente del chrome, no de
+  esta tanda. `p05-diagnostico` incluso mejora, de 108 a 37, al mostrar
+  una pregunta en vez de cinco.
+- **Zoom de texto 200%** (`documentElement.style.fontSize`): 55px de
+  desborde en las mismas pantallas y con el mismo número **antes y
+  después** del cambio — la limitante de la técnica ya documentada en
+  tandas 8 y 9, no una regresión.
+- **Kitchen sink.** Los cuatro montajes nuevos existen y montan de
+  verdad (`--l02--avatar` con avatar-md, `--retrato-fin` con locución
+  avatar-sm dentro de `.layout__texto`, `--l09--avatar` con avatar-lg,
+  `sin-avatar` sin figura **y** sin círculo). El estado "a medias" de
+  I15 ahora responde **y avanza** las dos primeras (el paso nuevo es lo
+  que había que ejercitar) y deja visible solo la tercera. El estado
+  "completa" arranca en la vista de resultado con su locución. Cero
+  errores de consola nuevos.
+- **Cero hex fuera de `tokens.css`** en los siete archivos tocados. Los
+  valores nuevos son de tamaño y retícula (`56rem`, `75em`, `48px`), no
+  de color.
+
+## 8. Lo que queda abierto
+
+1. **`p32`: la locución y la lista en pantalla no dicen lo mismo.** La
+   cuarta idea de `a08-ideas-cierre.mp3` habla de acciones ordinarias y
+   preferenciales; la cuarta viñeta visible habla de perfiles de riesgo.
+   No es un error de transcripción: la viñeta se cambió a "perfiles"
+   porque la reestructura E archivó las pantallas que enseñaban tipos de
+   acción (uno de los tres huecos que dejó abiertos
+   `PLAN-ESTRUCTURA.md`), y el audio se grabó después con el texto
+   anterior. La transcripción se dejó **igual al audio**, que es lo
+   único que no se puede editar. Decidir: regrabar ese tramo, recuperar
+   del archivo la pantalla de tipos de acción, o aceptar el desfase para
+   el demo.
+2. **`p42` (Simula tu primera orden) sigue sin locución decidida**, y
+   `p34` (Recursos) no la pidió nadie.
+3. **El cuerpo de `p10-tutor` nombra entidades de un solo país** (ANI,
+   INVIAS, Santander Asset Management, Repsol, además de las que ya
+   nombra el audio). Es la trayectoria real del tutor, no un ejemplo de
+   mercado — mismo criterio que la excepción ya validada de P33 —, pero
+   conviene que Juan lo confirme antes de presentar a un comité
+   tri-país.

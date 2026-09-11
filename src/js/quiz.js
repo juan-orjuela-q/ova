@@ -577,11 +577,17 @@
          objeto que datos.variable del catálogo de arriba — ver el
          bloque C4): se aplica a CADA pregunta que resuelva "correcto",
          en vez de que las cinco repitan su propio "variable".
-       resultado?: { variable, campo?, reglas?, cifra?, retro? }  // el
-         mismo objeto que ya resuelve OVA.resultado.resolver() para
+       resultado?: { variable, campo?, reglas?, cifra?, retro?,
+                     locucion? }  // todo menos "locucion" es el mismo
+         objeto que ya resuelve OVA.resultado.resolver() para
          PLANTILLAS.L08 (resultado.js) — "reusar, no duplicar" la regla
          "primera que aplica gana". Sin "resultado", la batería reporta
          la nota y se acaba sin cifra/callout.
+         "locucion" (ajustes tanda 10) es el mismo contrato de
+         media.tipo 'avatar' sin el campo "tipo" —imagen, audio?, vtt?,
+         variante?, transcripcion— y la monta esta interacción, no
+         router.js: el audio comenta el resultado, así que pertenece a
+         la vista de resultado y no a la pantalla.
      }
 
    Reusa los constructores de pregunta que ya existen (CONSTRUCTORES) —
@@ -616,6 +622,38 @@
    5. El resultado no es solo color: la cifra final lleva etiqueta
       (charts.js) y el callout ícono + título (resultado.js) — mismos
       componentes que ya cumplían la regla en L08.
+
+   ---------------------------------------------------------------------
+   Ajustes tanda 10 — una pregunta a la vez y resultado aparte.
+
+   La batería sigue siendo UNA pantalla (eso no cambió: el recorrido de
+   26 pantallas de PLAN-ESTRUCTURA.md no crece), pero dentro de ella se
+   ve una sola pregunta. Al resolverse, la retroalimentación queda en
+   pantalla y aparece "Siguiente pregunta"; en la quinta, "Ver mi
+   resultado". Ese clic oculta la lista entera y el enunciado, y deja la
+   vista de resultado: encabezado, cifra, callout y la carta de locución
+   (variante avatar-sm en p05-diagnostico).
+
+   Dos consecuencias que corrigen notas de arriba:
+
+   - **La trampa 3 deja de aplicar como estaba escrita.** Con una
+     pregunta visible, el alto del contenedor SCORM ya no es el problema
+     que era; el contador sigue pegado a cada pregunta igual, ahora
+     porque es lo único que dice por dónde va.
+   - **La trampa 4 cambia de solución, no de principio.** El bloque de
+     resultado ya no lleva role="status": no se revela solo, se llega
+     con un clic, y el botón que tenía el foco desaparece con la lista.
+     Dejar el foco caer al <body> sería peor que moverlo, así que la
+     vista de resultado estrena un `<h3>Tu resultado</h3>` con
+     `tabIndex = -1` que recibe el foco — mismo patrón que
+     OVA.a11y.enfocarEncabezado() entre pantallas. Al montar con la
+     batería ya completa (trampa 2) no se enfoca nada: ahí nadie hizo
+     clic. El cambio de pregunta se anuncia con OVA.a11y.anunciar()
+     porque el contenedor que recibe el foco no es un encabezado.
+
+   `alCompletar()` (E2, abajo) sigue disparándose al RESOLVER la última
+   pregunta, no al abrir el resultado: bloqueaAvance mide "respondió la
+   actividad", y la vista de resultado es lectura, no un requisito más.
 
    ---------------------------------------------------------------------
    E2 (PLAN-ESTRUCTURA.md §3) — bloqueaAvance. crear(interaccion, opciones)
@@ -2298,20 +2336,41 @@
     var yaCompleto = !!OVA.state.obtenerVariable(claveCompletado);
 
     var raiz = crear_('div', 'quiz-cuestionario');
-    if (datos.enunciado) raiz.appendChild(crear_('p', 'tipo-cuerpo quiz-cuestionario__enunciado', datos.enunciado));
+    var enunciado = datos.enunciado
+      ? crear_('p', 'tipo-cuerpo quiz-cuestionario__enunciado', datos.enunciado)
+      : null;
+    if (enunciado) raiz.appendChild(enunciado);
 
     var lista = crear_('div', 'quiz-cuestionario__lista');
     raiz.appendChild(lista);
 
-    // Trampa 4 — role="status", nunca .focus(): se anuncia sola, igual
-    // que cada .quiz-retro individual.
+    // Ajustes tanda 10 — el resultado es una VISTA APARTE, no un bloque
+    // que aparece debajo de las preguntas: al terminar la batería la
+    // lista se oculta entera y queda solo esto. Por eso ya no lleva
+    // role="status" (la trampa 4 de E1, pensada para cuando el bloque
+    // se revelaba sin que el estudiante hiciera nada): ahora se llega
+    // con un clic explícito en "Ver mi resultado", así que lo correcto
+    // es mover el foco al encabezado de la vista nueva — si no,
+    // desaparece el botón que tenía el foco y este se cae al <body>.
+    // Con `tabIndex = -1` es focalizable por script pero no una parada
+    // de Tab, mismo patrón que OVA.a11y.enfocarEncabezado() usa entre
+    // pantallas.
     var bloqueResultado = crear_('div', 'quiz-cuestionario__resultado');
-    bloqueResultado.setAttribute('role', 'status');
     bloqueResultado.hidden = true;
+    var tituloResultado = crear_('h3', 'tipo-h3 quiz-cuestionario__resultado-titulo', 'Tu resultado');
+    tituloResultado.tabIndex = -1;
+    bloqueResultado.appendChild(tituloResultado);
     raiz.appendChild(bloqueResultado);
 
     var resueltas = 0;
     var aciertos = 0;
+    // Ajustes tanda 10 — una pregunta a la vez. `items` guarda los
+    // contenedores en orden para poder mostrar uno y ocultar el resto;
+    // `activa` es el índice visible. No es un "paso" persistido: si el
+    // estudiante recarga a mitad de la batería vuelve a empezar desde la
+    // primera, igual que antes (quiz.js no persiste el intento, T6).
+    var items = [];
+    var activa = 0;
 
     function actualizarNotaFinal() {
       if (!OVA.scorm.disponible()) return;
@@ -2325,16 +2384,50 @@
     // Trampa 5 — reusa OVA.resultado.resolver()/construir() (resultado.js):
     // misma cifra con etiqueta + callout con ícono y título que L08, sin
     // reimplementar la regla "primera que aplica gana".
-    function mostrarResultado() {
+    function mostrarResultado(opciones) {
+      opciones = opciones || {};
       // Sin "resultado" en los datos, la batería reporta la nota y se
       // acaba sin cifra/callout — no hay nada que revelar, así que el
       // bloque (vacío) se queda oculto en vez de aparecer en blanco.
+      // Ajustes tanda 10: la lista se oculta igual. La vista de
+      // preguntas ya cumplió su función y dejarla ahí, con las cinco
+      // bloqueadas y sin botones, no es "el resultado aparte" que pide
+      // el guion — es la misma pantalla con basura al final.
+      lista.hidden = true;
+      if (enunciado) enunciado.hidden = true;
       if (!datos.resultado) return;
       var efectivo = OVA.resultado.resolver(datos.resultado);
       var piezas = OVA.resultado.construir(efectivo);
       if (piezas.cifra) bloqueResultado.appendChild(piezas.cifra);
       if (piezas.callout) bloqueResultado.appendChild(piezas.callout);
+      // Ajustes tanda 10 — locución del resultado. Mismo contrato que
+      // media.tipo 'avatar' (ver el encabezado de media.js) sin el campo
+      // "tipo": aquí la carta de audio es parte del resultado, no de la
+      // pantalla, así que la monta la interacción y no router.js. Si
+      // falla (falta transcripción, p. ej.) media.js ya lo dijo en
+      // consola — el resultado se muestra igual, sin la carta: no vale
+      // la pena tirar la pantalla entera por el audio.
+      if (datos.resultado.locucion) {
+        var carta = OVA.media.crear({
+          tipo: 'avatar',
+          imagen: datos.resultado.locucion.imagen,
+          audio: datos.resultado.locucion.audio,
+          vtt: datos.resultado.locucion.vtt,
+          variante: datos.resultado.locucion.variante,
+          transcripcion: datos.resultado.locucion.transcripcion
+        });
+        if (carta) {
+          var envoltura = crear_('div', 'quiz-cuestionario__locucion');
+          envoltura.appendChild(carta);
+          bloqueResultado.appendChild(envoltura);
+        }
+      }
       bloqueResultado.hidden = false;
+      // Solo en el camino interactivo: al montar con la batería ya
+      // completa (trampa 2 de E1, un F5 después de terminar) nadie hizo
+      // nada, no hay foco que recuperar y robarlo sería justo lo que
+      // aplicarAutolocucion() y el resto del motor evitan al montar.
+      if (opciones.enfocar) tituloResultado.focus();
     }
 
     function alResolverPregunta(acierto) {
@@ -2343,9 +2436,28 @@
       if (resueltas >= total) {
         actualizarNotaFinal();
         OVA.state.establecerVariable(claveCompletado, true);
-        mostrarResultado();
+        // alCompletar() acá y no al abrir la vista de resultado: la
+        // batería YA está respondida, que es lo que bloqueaAvance mide.
+        // El resultado es una pantalla de lectura, no un requisito más.
         alCompletar();
       }
+    }
+
+    // Ajustes tanda 10 — avanza a la pregunta `indice` (o al resultado,
+    // si ya no quedan). Mueve el foco al contenedor de la pregunta
+    // nueva: sin esto el foco se queda en un botón que acaba de
+    // ocultarse y se cae al <body>. El anuncio por aria-live lo hace
+    // OVA.a11y.anunciar() porque el contenedor no es un encabezado y un
+    // lector de pantalla no diría nada al enfocarlo.
+    function mostrarPregunta(indice) {
+      items.forEach(function (item, i) {
+        item.hidden = i !== indice;
+      });
+      activa = indice;
+      var item = items[indice];
+      if (!item) return;
+      item.focus();
+      OVA.a11y.anunciar('Pregunta ' + (indice + 1) + ' de ' + total + '.');
     }
 
     preguntasCfg.forEach(function (cfg, indice) {
@@ -2362,6 +2474,10 @@
       // todo del cuestionario: se ve sin volver a subir el scroll.
       var item = crear_('form', 'quiz-cuestionario__item');
       item.setAttribute('novalidate', 'novalidate');
+      // Ajustes tanda 10: focalizable por script (no parada de Tab) para
+      // que mostrarPregunta() pueda llevarle el foco al cambiar de
+      // pregunta — ver la nota de mostrarPregunta().
+      item.tabIndex = -1;
       item.appendChild(crear_('p', 'tipo-etiqueta quiz-cuestionario__contador', 'Pregunta ' + (indice + 1) + ' de ' + total));
       item.appendChild(pregunta.fieldset);
 
@@ -2371,9 +2487,30 @@
       var botonReintentar = crear_('button', 'boton boton--outline', 'Reintentar');
       botonReintentar.type = 'button';
       botonReintentar.hidden = true;
+      // Ajustes tanda 10 — con una pregunta a la vez hace falta un paso
+      // explícito para avanzar: sin él, o se salta solo la
+      // retroalimentación que el estudiante acaba de recibir, o la
+      // pregunta resuelta se queda en pantalla sin nada que hacer. El
+      // texto cambia en la última porque lo que viene no es otra
+      // pregunta.
+      var esUltima = indice === total - 1;
+      var botonContinuar = crear_(
+        'button',
+        'boton',
+        esUltima ? 'Ver mi resultado' : 'Siguiente pregunta'
+      );
+      botonContinuar.type = 'button';
+      botonContinuar.hidden = true;
+      var iconoContinuar = crear_('span', 'boton__icono', 'arrow_forward');
+      iconoContinuar.setAttribute('aria-hidden', 'true');
+      botonContinuar.appendChild(iconoContinuar);
       acciones.appendChild(botonComprobar);
       acciones.appendChild(botonReintentar);
+      acciones.appendChild(botonContinuar);
       item.appendChild(acciones);
+      // Ajustes tanda 10: todas menos la primera arrancan ocultas.
+      item.hidden = indice !== 0;
+      items.push(item);
       lista.appendChild(item);
 
       var intentosMaximos = subDatos.intentos || 0;
@@ -2411,9 +2548,21 @@
           botonReintentar.hidden = true;
           if (resultado === 'incorrecto') pregunta.revelarCorrecta();
           alResolverPregunta(acierto);
+          // Ajustes tanda 10: el paso siguiente queda a mano del
+          // estudiante, con la retroalimentación de esta pregunta
+          // todavía en pantalla.
+          botonContinuar.hidden = false;
         } else {
           botonReintentar.hidden = false;
         }
+      }
+
+      function continuar() {
+        if (esUltima) {
+          mostrarResultado({ enfocar: true });
+          return;
+        }
+        mostrarPregunta(indice + 1);
       }
 
       function reintentar() {
@@ -2425,6 +2574,7 @@
 
       item.addEventListener('submit', comprobar);
       botonReintentar.addEventListener('click', reintentar);
+      botonContinuar.addEventListener('click', continuar);
 
       // Trampa 2 — batería ya completa en una visita anterior: no hay
       // forma de reconstruir qué se respondió (el intento no se

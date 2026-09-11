@@ -59,6 +59,17 @@
      ignora y cae al círculo chico, no es un error: es la variante por
      defecto, no una combinación fuera de catálogo.
 
+     `"sin-avatar"` (ajustes tanda 10) es la cuarta variante y la única
+     que además relaja el contrato: la carta se monta sin foto ninguna,
+     así que `imagen` deja de ser obligatorio. Es para la pantalla que
+     ya muestra a quien habla en otra parte de la misma pantalla —
+     p01-bienvenida, con el retrato de Claudia a tamaño grande en la
+     columna de al lado: repetir ahí su cara en un círculo de 3rem no
+     agrega información, solo ruido. Sigue siendo tipo "avatar" y no un
+     tipo nuevo porque todo lo demás —audio, controles, `vtt`,
+     transcripción obligatoria— es idéntico; lo único que cambia es que
+     no hay retrato que pintar.
+
    - **"imagen"** (C7): `{ tipo, src, alt? }`. Infografías y motion sin
      avatar (P14/P17/P21/P23/P27/P33/P41/P45 del storyboard real): una
      imagen fija sin controles de reproducción — a diferencia de
@@ -432,6 +443,9 @@
   // nada real que mostrar en ninguna de las dos rutas); `audio`/`vtt`
   // son opcionales y `vtt` solo tiene sentido si hay `audio`.
   var VARIANTES_FIGURA_AVATAR = ['sm', 'md', 'lg'];
+  // Ajustes tanda 10: ni figura grande ni círculo chico — ver el
+  // encabezado del archivo.
+  var VARIANTE_SIN_AVATAR = 'sin-avatar';
 
   // Ajustes tanda 7: crea la <img> con la misma degradación de siempre
   // (sin archivo, se quita la <img> y queda el fondo --surface-muted del
@@ -467,8 +481,12 @@
   }
 
   function crearAvatar(datos) {
-    if (!datos.imagen) {
-      console.error('[OVA] OVA.media.crear: media "avatar" necesita "imagen".');
+    var sinAvatar = datos.variante === VARIANTE_SIN_AVATAR;
+    if (!datos.imagen && !sinAvatar) {
+      console.error(
+        '[OVA] OVA.media.crear: media "avatar" necesita "imagen" ' +
+        '(salvo con variante "sin-avatar", que monta la carta sin foto).'
+      );
       return null;
     }
     if (!datos.transcripcion) {
@@ -485,7 +503,7 @@
     var raiz = document.createElement('div');
     raiz.className = 'media-audio' + (datos.audio ? '' : ' media-audio--sin-audio');
 
-    if (!tieneFigura) {
+    if (!tieneFigura && !sinAvatar) {
       // Sin variante: el círculo chico de siempre, inline en la carta —
       // avatar-sm/md/lg lo reemplazan por la figura grande de
       // envolverConFigura(), las dos rutas no conviven a la vez.

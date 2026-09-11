@@ -162,6 +162,35 @@
     return contenedor;
   }
 
+  // Ajustes tanda 10: `pantalla.avatar` deja de ser exclusivo de L01.
+  // Es la locución de una pantalla que YA tiene otra media (el video de
+  // fondo en L01, el retrato con máscara en L03) o cuyo layout no tiene
+  // ranura de media en absoluto (L05, tarjetas comparativas). Mismo
+  // contrato que media.tipo 'avatar' —ver el encabezado de media.js—
+  // sin el campo "tipo", que aquí lo da el nombre del campo, y con
+  // `variante` ahora sí pasada tal cual (L01 la ignoraba: era el único
+  // consumidor y siempre usaba el círculo chico).
+  //
+  // El envoltorio .layout__locucion existe para que cada layout decida
+  // dónde y con cuánto ancho vive la carta, igual que .layout__media:
+  // en L03 va dentro del bloque de texto y en L05 (ajustes tanda 11) va
+  // dentro de .layout__encabezado, arriba a la derecha del título.
+  function crearLocucion(avatar) {
+    var contenedor = document.createElement('div');
+    contenedor.className = 'layout__locucion';
+    var reproductor = OVA.media.crear({
+      tipo: 'avatar',
+      imagen: avatar.imagen,
+      audio: avatar.audio,
+      vtt: avatar.vtt,
+      variante: avatar.variante,
+      transcripcion: avatar.transcripcion
+    });
+    if (!reproductor) throw new Error('No se pudo construir la locución de la pantalla (ver consola).');
+    contenedor.appendChild(reproductor);
+    return contenedor;
+  }
+
   // T6: única entrada de layout que renderiza pantalla.interaccion.
   // Delega en OVA.quiz.crear, que falla ruidoso si interaccion.tipo no
   // existe en el catálogo I01–I05 (más completar/numerica/autoevaluacion,
@@ -366,7 +395,13 @@
       throw new Error('L05 necesita "tarjetas" (arreglo de 2 a 4 elementos).');
     }
     var contenedor = document.createElement('div');
-    contenedor.className = 'layout__cuerpo';
+    // Ajustes tanda 11: con ilustraciones el cuerpo pasa de flex-wrap a
+    // grilla (layouts.css) — una tarjeta ilustrada que envuelve sola a
+    // la fila siguiente se estiraría a todo el ancho y su imagen con
+    // ella. Modificador y no `:has()` por el mismo criterio que
+    // `.layout--l09--tarjetas`: quien arma el nodo ya sabe la respuesta.
+    var ilustradas = tarjetas.some(function (t) { return !!t.imagen; });
+    contenedor.className = 'layout__cuerpo' + (ilustradas ? ' layout__cuerpo--ilustrado' : '');
     tarjetas.forEach(function (tarjeta) {
       var div = document.createElement('div');
       var titulo = document.createElement('p');
@@ -375,11 +410,42 @@
       var texto = document.createElement('p');
       texto.className = 'tipo-cuerpo-sm';
       texto.textContent = tarjeta.texto;
-      div.appendChild(titulo);
-      div.appendChild(texto);
+      if (tarjeta.imagen) {
+        div.className = 'tarjeta-comparativa';
+        div.appendChild(crearIlustracionTarjeta(tarjeta));
+        var bloque = document.createElement('div');
+        bloque.className = 'tarjeta-comparativa__texto';
+        bloque.appendChild(titulo);
+        bloque.appendChild(texto);
+        div.appendChild(bloque);
+      } else {
+        div.appendChild(titulo);
+        div.appendChild(texto);
+      }
       contenedor.appendChild(div);
     });
     return contenedor;
+  }
+
+  // Ajustes tanda 11 (p11): ilustración opcional arriba del título de
+  // una tarjeta de L05. `alt` es opcional y por defecto '' (decorativa),
+  // mismo criterio que media.tipo "imagen" (ver el encabezado de
+  // media.js): el título y el texto de la tarjeta ya dicen todo lo que
+  // la ilustración ilustra, así que anunciarla dos veces solo alarga el
+  // recorrido de un lector de pantalla. Si la fuente falla al cargar se
+  // quita la <img> y la tarjeta se queda con su texto —degradación
+  // limpia, mismo criterio que "imagen"/"video" en media.js— en vez de
+  // dejar el ícono de imagen rota dentro de la caja.
+  function crearIlustracionTarjeta(tarjeta) {
+    var img = document.createElement('img');
+    img.className = 'tarjeta-comparativa__ilustracion';
+    img.src = tarjeta.imagen;
+    img.alt = tarjeta.alt || '';
+    img.loading = 'lazy';
+    img.addEventListener('error', function () {
+      if (img.parentNode) img.parentNode.removeChild(img);
+    });
+    return img;
   }
 
   // C1/C4: L08 lee su cifra/retroalimentación de pantalla.resultado.
@@ -525,7 +591,9 @@
   // pide otro texto) avanza como "Siguiente" del chrome; no es un
   // layout con su propia navegación aparte.
   //
-  // C3: L01 puede además traer `pantalla.avatar` (mismo contrato de
+  // C3: L01 puede además traer `pantalla.avatar` (ajustes tanda 10: ya
+  // no es exclusivo de L01 — ver crearLocucion() más arriba; el resto de
+  // esta nota sigue explicando por qué L01 lo estrenó). (Mismo contrato de
   // media.tipo:'avatar' — ver el encabezado de media.js — sin el campo
   // "tipo", que aquí ya lo da el nombre del campo), un objeto
   // independiente de `pantalla.media`. Van separados a propósito: L01
@@ -578,15 +646,7 @@
     // "Comenzar". Objeto independiente del fondo (pantalla.media): ver
     // la nota completa arriba, junto a PLANTILLAS.L01.
     if (pantalla.avatar) {
-      var narracion = OVA.media.crear({
-        tipo: 'avatar',
-        imagen: pantalla.avatar.imagen,
-        audio: pantalla.avatar.audio,
-        vtt: pantalla.avatar.vtt,
-        transcripcion: pantalla.avatar.transcripcion
-      });
-      if (!narracion) throw new Error('No se pudo construir el avatar de la portada (ver consola).');
-      panel.appendChild(narracion);
+      panel.appendChild(crearLocucion(pantalla.avatar));
     }
 
     var boton = document.createElement('button');
@@ -650,6 +710,14 @@
     // en L11 — es la jerarquía visual la que decide el orden en pantalla,
     // no el orden del documento).
     var raiz = crearRaiz('l02');
+    // Ajustes tanda 10 (p04): con locución de avatar la pantalla deja de
+    // ser "media protagonista" — una carta de audio no es un hero. La
+    // variante la acota a 56rem centrada y baja la carta debajo del
+    // texto (layouts.css). Mismo mecanismo de derivar la variante del
+    // media.tipo que L03 y L12, sin campo nuevo de contrato.
+    if (pantalla.media && pantalla.media.tipo === 'avatar') {
+      raiz.classList.add('layout--l02--avatar');
+    }
     var kicker = pantalla.kicker ? crearKicker(pantalla.kicker) : null;
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
     var cuerpo = crearCuerpo(pantalla.cuerpo, 'tipo-cuerpo');
@@ -668,6 +736,17 @@
     var raiz = crearRaiz('l03');
     if (pantalla.media && pantalla.media.tipo === 'retrato') {
       raiz.classList.add('layout--l03--retrato');
+      // Ajustes tanda 10: `pantalla.mediaLado` es el único campo del
+      // contrato que NO se deriva de la media — porque la diferencia
+      // entre las dos pantallas reales con retrato es editorial, no
+      // estructural: en la bienvenida el retrato entra primero y el
+      // texto después (por defecto, "inicio"); en la del tutor manda el
+      // nombre y las credenciales, y el retrato acompaña ("fin").
+      // Derivarlo de otra cosa —de que haya locución, del `forma`—
+      // sería una regla que nadie puede adivinar leyendo el contenido.
+      // Vive en la pantalla y no dentro de `media` a propósito: es una
+      // decisión de layout, y media.js no sabe de layouts.
+      if (pantalla.mediaLado === 'fin') raiz.classList.add('layout--l03--retrato-fin');
     } else if (pantalla.media && pantalla.media.tipo === 'avatar') {
       // AJUSTES.md tanda 8: variante con locución de avatar a la
       // izquierda y contenido a la derecha — ver layouts.css.
@@ -680,7 +759,13 @@
     // "cuerpo" (crearListaEnriquecida) — p02 la usa para sus cinco
     // objetivos con círculo numerado en vez de texto plano "1. …".
     var lista = pantalla.lista ? crearListaEnriquecida(pantalla.lista) : null;
-    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo, lista]));
+    // Ajustes tanda 10 (p01-bienvenida, p10-tutor): `avatar` es la
+    // locución de una pantalla cuyo `media` ya está ocupado por el
+    // retrato de la columna de al lado. Va DENTRO de .layout__texto —no
+    // como hermana— para que quede en la misma columna que el texto que
+    // narra, igual que en la referencia de la pantalla del tutor.
+    var locucion = pantalla.avatar ? crearLocucion(pantalla.avatar) : null;
+    raiz.appendChild(envolverTexto([kicker, titulo, cuerpo, lista, locucion]));
     raiz.appendChild(crearMedia(pantalla.media));
     return { raiz: raiz, titulo: titulo };
   };
@@ -720,9 +805,31 @@
   // caja que usa L06 para que no quede sin estilo.
   PLANTILLAS.L05 = function (pantalla) {
     var raiz = crearRaiz('l05');
-    if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
     var titulo = crearTitulo(pantalla.titulo, 'tipo-h2');
-    raiz.appendChild(titulo);
+    // Ajustes tanda 10 (p11): L05 no tiene ranura de media —sus tarjetas
+    // ocupan el espacio principal— pero sí puede tener locución.
+    //
+    // Ajustes tanda 11: esa locución deja de ir al final y centrada y
+    // pasa a compartir una fila de encabezado con kicker+título, arriba
+    // a la derecha (layouts.css). Con las tarjetas ilustradas la columna
+    // de tarjetas creció hacia abajo y una carta debajo de ellas quedaba
+    // fuera de la pantalla sin scroll. La variante que usa p11 es
+    // "sin-avatar": la ilustración de cada tarjeta ya carga el peso
+    // visual de la pantalla y una foto más en la esquina compite con
+    // ella en vez de sumar.
+    if (pantalla.avatar) {
+      var encabezado = document.createElement('div');
+      encabezado.className = 'layout__encabezado';
+      encabezado.appendChild(envolverTexto([
+        pantalla.kicker ? crearKicker(pantalla.kicker) : null,
+        titulo
+      ]));
+      encabezado.appendChild(crearLocucion(pantalla.avatar));
+      raiz.appendChild(encabezado);
+    } else {
+      if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
+      raiz.appendChild(titulo);
+    }
     if (pantalla.interaccion) {
       raiz.appendChild(crearInteraccion(pantalla.interaccion, pantalla.bloqueaAvance));
     } else {
@@ -821,6 +928,13 @@
   //   tercera función para lo mismo.
   PLANTILLAS.L09 = function (pantalla) {
     var raiz = crearRaiz('l09');
+    // Ajustes tanda 10 (p32): con locución de avatar la segunda columna
+    // pasa de 4 a 5 de las 10 columnas útiles en escritorio ancho — una
+    // carta de 26rem no es una imagen de apoyo que pueda encogerse (ver
+    // layouts.css).
+    if (pantalla.media && pantalla.media.tipo === 'avatar') {
+      raiz.classList.add('layout--l09--avatar');
+    }
     var titulo;
     if (pantalla.tarjetas) {
       // AJUSTES.md, tanda 5 (ítem 13): p01a resume accesibilidad como
@@ -1058,8 +1172,18 @@
   // bloquea el clic; esto solo refleja bloqueoAvanceActivo en el DOM.
   function actualizarBloqueoAvance() {
     var botonSiguiente = document.getElementById('nav-siguiente');
+    var icono = document.getElementById('nav-siguiente-icono');
     var aviso = document.getElementById('nav-bloqueo-aviso');
     if (botonSiguiente) botonSiguiente.setAttribute('aria-disabled', bloqueoAvanceActivo ? 'true' : 'false');
+    // Ajustes tanda 10: el estado se lee en el botón — candado en vez de
+    // flecha. El ícono es aria-hidden (es el glifo de una fuente de
+    // símbolos, no texto), así que no reemplaza a nada: quien no lo ve
+    // sigue teniendo aria-disabled y la descripción de #nav-bloqueo-aviso.
+    if (icono) icono.textContent = bloqueoAvanceActivo ? 'lock' : 'arrow_forward';
+    // El aviso ya no se ve (u-oculto-visualmente, index.html) pero sigue
+    // siendo la descripción accesible del botón: `hidden` lo saca del
+    // árbol de accesibilidad mientras no hay bloqueo, para que
+    // aria-describedby no arrastre una frase que no aplica.
     if (aviso) aviso.hidden = !bloqueoAvanceActivo;
   }
 
@@ -1556,9 +1680,12 @@
   }
 
   // D6: autolocución. Dos formas de traer un avatar con audio en el
-  // contrato — `pantalla.avatar` (solo L01, portada) y
+  // contrato — `pantalla.avatar` (la locución "extra", en L01/L03/L05
+  // desde la tanda 10 de ajustes; antes solo la portada) y
   // `pantalla.media.tipo === 'avatar'` (el resto, vía crearMedia) — así
-  // que se comprueban las dos en vez de asumir una sola forma.
+  // que se comprueban las dos en vez de asumir una sola forma. Ninguna
+  // pantalla real trae las dos a la vez con audio: donde hay `avatar`,
+  // el `media` es un retrato o un video de fondo, que no suenan.
   function tieneAvatarConAudio(pantalla) {
     if (pantalla.avatar && pantalla.avatar.audio) return true;
     return !!(pantalla.media && pantalla.media.tipo === 'avatar' && pantalla.media.audio);

@@ -43,6 +43,13 @@
    queries no leen custom properties):
      40em (~640px) — layouts que pasan a dos columnas
      48em (~768px) — layouts con panel de media o proporción 2:1
+     75em (1200px) — margen lateral de 1 columna en los layouts que ya
+       están en dos columnas (ajustes tanda 10). No es un breakpoint de
+       reflow: nada cambia de orden ni de número de columnas ahí, solo
+       aparece un carril vacío a cada lado. Debajo de 1200px los dos
+       bloques usan el ancho completo del contenedor — incluidas las
+       variantes --retrato/--avatar de L03 y L12, que antes traían ese
+       margen desde 48em/40em.
 
    Un layout define arreglo espacial, no tipografía. El tamaño visual
    de kicker/título/cuerpo lo pone la clase .tipo-* (base.css) o la
@@ -93,7 +100,9 @@
    aire, no dos.
    router.js (envolverTexto()) es quien decide qué entra en este
    contenedor por pantalla — no todos los layouts lo usan igual: L05/L06/
-   L07 no tienen "cuerpo" nunca (tarjetas/interacción ocupan su lugar) y
+   L07 no tienen "cuerpo" nunca (tarjetas/interacción ocupan su lugar)
+   —L05 sí lo usa desde la tanda 11, pero solo para agrupar kicker+título
+   dentro de .layout__encabezado, nunca con "cuerpo"— y
    L12 pone título y cuerpo lado a lado a propósito (el número grande
    junto a su explicación, no apilados) — agruparlos ahí rompería esa
    disposición, así que ninguno de los tres pasa por este contenedor.
@@ -114,6 +123,49 @@
    .layout--l04 .layout__datos más abajo). */
 .layout__datos {
   width: 100%;
+}
+
+/* Ajustes tanda 10: la carta de locución de `pantalla.avatar` — la
+   pantalla que ya tiene otra media (retrato, video de fondo) o cuyo
+   layout no tiene ranura de media. Elemento propio y no `.layout__media`
+   porque no compite por la misma zona: cada layout decide dónde lo pone
+   (dentro de .layout__texto en L03, al final y centrado en L05).
+   Sin ancho propio aquí — el componente .media-avatar ya trae el suyo
+   (26rem con tope relativo, components.css). */
+.layout__locucion {
+  width: 100%;
+}
+/* Ajustes tanda 11 (p11): en L05 la carta de locución sube a una fila de
+   encabezado que comparte con kicker+título, arriba a la derecha. La
+   tanda 10 la dejaba al final y centrada; con las tarjetas ilustradas
+   (cada una con su imagen arriba del título) la fila de tarjetas creció
+   hacia abajo y la carta quedaba fuera de la pantalla sin scroll.
+   Por debajo de 48em la fila se apila en el orden del DOM —título,
+   locución, tarjetas— sin reordenar nada con CSS: es el mismo orden de
+   lectura y el mismo orden de tabulación. */
+.layout__encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+@media (min-width: 48em) {
+  .layout__encabezado {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--sp-8);
+  }
+  /* El bloque de texto cede el ancho que pida la carta (26rem es su tope
+     propio en components.css) y se queda con el resto; min-width:0 ya lo
+     trae .layout__texto, así que un título largo envuelve en vez de
+     empujar la carta fuera de la fila. */
+  .layout__encabezado > .layout__texto {
+    flex: 1 1 auto;
+  }
+  .layout__encabezado > .layout__locucion {
+    flex: 0 1 auto;
+    width: auto;
+  }
 }
 
 /* ---- Fondos decorativos (AJUSTES.md #1) --------------------------------
@@ -372,12 +424,50 @@
   order: -1;
 }
 
+/* Ajustes tanda 10 (p04, "mide tu punto de partida") · L02 con locución.
+   router.js agrega esta clase solo cuando media.tipo es "avatar" — mismo
+   mecanismo de derivar la variante del media.tipo que ya usan
+   .layout--l03--avatar y .layout--l12--avatar, sin campo nuevo de
+   contrato. Pantalla de una sola columna acotada a 56rem y centrada, con
+   la carta de locución centrada debajo del texto: el `order:-1` de arriba
+   se anula porque aquí la media no es la protagonista visual, es el audio
+   de la pantalla y va después de lo que se lee.
+
+   El ancho máximo va en los hijos y no en la raíz a propósito: .layout
+   pinta el fondo decorativo a sangre (ver "Fondos decorativos" arriba) y
+   acotar la raíz dejaría ese fondo recortado a 56rem con dos franjas
+   blancas a los lados. */
+.layout--l02--avatar {
+  align-items: center;
+}
+.layout--l02--avatar .layout__texto,
+.layout--l02--avatar .layout__media {
+  width: 100%;
+  max-width: 56rem;
+}
+.layout--l02--avatar .layout__cuerpo {
+  max-width: none;
+}
+.layout--l02--avatar .layout__media {
+  order: 0;
+  display: flex;
+  justify-content: center;
+}
+
 /* ---- L03 · Media a un lado, texto al otro (50/50) -----------------------
    Cápsula con video de apoyo junto al texto. Sin cambio de C0. Ajustes
    tanda 4: kicker/título/cuerpo comparten un solo `grid-area` ("texto",
    el .layout__texto que arma router.js) en vez de tres separadas — el
    grid ya no necesita tres filas para apilarlos, uno solo alcanza y
-   .layout__texto los apila por dentro con su propio gap. --------- */
+   .layout__texto los apila por dentro con su propio gap.
+
+   Ajustes tanda 10: el margen lateral de 1 columna que --retrato y
+   --avatar traían desde 48em pasa a ser comportamiento de TODO L03 (la
+   base incluida: es el layout de las cuatro cápsulas de video y de la
+   pantalla del tutor) y solo desde 1200px. Entre 48em y 1200px las tres
+   variantes comparten el mismo 50/50 sin carriles vacíos: a 768px un
+   margen de 1 columna se come el ancho que el texto necesita para no
+   partirse en renglones de tres palabras. --------------------------- */
 @media (min-width: 48em) {
   .layout--l03 {
     display: grid;
@@ -393,22 +483,13 @@
   .layout--l03 .layout__cuerpo { max-width: none; }
   .layout--l03 .layout__media { grid-area: media; }
 
-  /* Ajustes tanda 4: variante de bienvenida sobre retrícula de 12
-     columnas (margen y medianil = --sp-10, 40px — ya existían en
-     tokens.css, no son un valor nuevo). router.js agrega esta clase
-     solo cuando media.tipo es "retrato": el 50/50 de arriba sigue
-     siendo el comportamiento por defecto de L03 para las 4 pantallas
-     reales del storyboard que usan video/avatar, así que esta variante
-     no las toca. Corrección sobre el primer intento (dejaba las dos
-     columnas recostadas a la izquierda, con las dos columnas libres
-     juntas a la derecha): el grupo va centrado — 1 columna de margen +
-     5 de retrato + 5 de texto + 1 columna de margen, simétrico a los
-     dos lados. */
+  /* Variante de bienvenida/retrato (ajustes tanda 4): lo único propio
+     que le queda en este rango es el orden invertido —retrato a la
+     izquierda, texto a la derecha—; la retícula de 12 columnas se
+     mudó al bloque de 1200px de abajo. router.js agrega esta clase
+     solo cuando media.tipo es "retrato". */
   .layout--l03--retrato {
-    grid-template-columns: repeat(12, 1fr);
-    column-gap: var(--sp-10);
-    grid-template-areas:
-      ". media media media media media texto texto texto texto texto .";
+    grid-template-areas: "media texto";
   }
   /* "¡Hola, soy Claudia!" es la primera línea de cuerpo — lleva más
      peso que las dos de abajo porque es la presentación, no porque
@@ -417,20 +498,40 @@
   .layout--l03--retrato .layout__cuerpo p:first-child {
     font-weight: 700;
   }
+  /* --avatar (AJUSTES.md tanda 8, p02) no necesita nada aquí: su orden
+     —contenido a la izquierda, locución a la derecha— ya es el de la
+     base. router.js la sigue agregando cuando media.tipo es "avatar"
+     porque el bloque de 1200px sí la distingue de --retrato. */
 
-  /* AJUSTES.md tanda 8 (p02, "Objetivos de aprendizaje"). router.js
-     agrega esta clase solo cuando media.tipo es "avatar" (nunca usado
-     antes en L03: las 4 pantallas reales con L03 traen "imagen", mismo
-     criterio de derivar la variante del media.tipo que ya usa --retrato,
-     sin campo nuevo de contrato). Empezó como el 50/50 de arriba con las
-     columnas intercambiadas; un ajuste posterior le pidió la misma
-     retícula de 12 columnas que --retrato (margen + 5 + 5 + margen,
-     mismo column-gap de --sp-10) en vez del 50/50 simple — con las
-     columnas invertidas respecto a --retrato: aquí el contenido va a la
-     izquierda y la media a la derecha. */
-  .layout--l03--avatar {
+  /* Ajustes tanda 10 · --retrato-fin (p10-tutor, "Conoce al tutor"):
+     el mismo retrato, del otro lado. Todo lo demás de --retrato sigue
+     aplicando —incluido el peso de la primera línea de cuerpo, que allá
+     es el saludo y aquí el nombre de la persona—; lo único que cambia es
+     el orden de las dos columnas. router.js la agrega cuando la pantalla
+     trae `mediaLado: "fin"`. Va después de --retrato en el archivo: las
+     dos pesan igual (0,1,0), el orden es lo que decide. */
+  .layout--l03--retrato-fin {
+    grid-template-areas: "texto media";
+  }
+}
+
+/* Ajustes tanda 10 · margen lateral de 1 columna desde 1200px.
+   Retícula de 12 columnas con medianil de --sp-10 (40px, el mismo que
+   ya usaban --retrato/--avatar): 1 columna de margen + 5 + 5 + 1 de
+   margen, simétrico. Es la misma cuenta que la variante --retrato
+   estrenó en tanda 4, generalizada al catálogo entero. */
+@media (min-width: 75em) {
+  .layout--l03 {
     grid-template-columns: repeat(12, 1fr);
     column-gap: var(--sp-10);
+    grid-template-areas:
+      ". texto texto texto texto texto media media media media media .";
+  }
+  .layout--l03--retrato {
+    grid-template-areas:
+      ". media media media media media texto texto texto texto texto .";
+  }
+  .layout--l03--retrato-fin {
     grid-template-areas:
       ". texto texto texto texto texto media media media media media .";
   }
@@ -480,6 +581,31 @@
     border-radius: var(--r-md);
   }
 }
+/* Ajustes tanda 11: cuando las tarjetas traen ilustración, el cuerpo deja
+   el flex-wrap y pasa a grilla de columnas iguales. Con flex-wrap, cuatro
+   tarjetas en un ancho intermedio se reparten 3 + 1 y la que queda sola
+   se estira a todo el ancho de la fila — con texto se notaba apenas, con
+   una ilustración de 6/5 encima la tarjeta huérfana medía media pantalla
+   de alto. 2×2 hasta 64em y las cuatro en fila a partir de ahí: son
+   cuatro cápsulas comparables, así que las particiones que se leen bien
+   son 4×1 y 2×2, nunca 3+1. `min-width: 0` anula el mínimo de 14rem que
+   `.layout__cuerpo > *` pone para el flex: en grilla el reparto ya lo
+   fija `1fr` y ese mínimo solo podría desbordar la fila. */
+@media (min-width: 40em) {
+  .layout--l05 .layout__cuerpo--ilustrado {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .layout--l05 .layout__cuerpo--ilustrado > * {
+    min-width: 0;
+  }
+}
+@media (min-width: 64em) {
+  .layout--l05 .layout__cuerpo--ilustrado {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 /* C7: cuando la pantalla trae "interaccion" en vez de "tarjetas"
    (router.js, PLANTILLAS.L05 — P13/P28 del storyboard real), I07/I08
    ya son en sí mismas la disposición comparable que promete L05, pero
@@ -676,6 +802,35 @@
   .layout--l09:not(:has(.layout__media)) .layout__titulo,
   .layout--l09:not(:has(.layout__media)) .layout__cuerpo {
     max-width: 42rem;
+  }
+}
+
+/* Ajustes tanda 10 · L09 en dos columnas, con margen lateral de 1
+   columna desde 1200px. Solo aplica cuando la pantalla trae media: sin
+   ella, L09 ya cae a una sola columna de ancho de lectura (regla de
+   arriba) y un carril vacío no tendría nada que separar — p01b, la
+   única L09 real sin media, se queda exactamente como está.
+
+   Dos repartos dentro de las 10 columnas útiles: 6/4 conserva la
+   proporción 2:1 de la regla base (media de apoyo más angosta que en
+   L03), y 5/5 para --avatar, que router.js agrega cuando media.tipo es
+   "avatar" — la carta de locución no es una imagen de apoyo que pueda
+   encogerse: avatar-lg mide 26rem y en 4 columnas se quedaría sin el
+   ancho que la figura necesita para no comerse el texto. Las dos reglas
+   pesan igual (0,2,0) — el orden en el archivo es lo que hace ganar a
+   la de --avatar, igual que en L03. */
+@media (min-width: 75em) {
+  .layout--l09:has(.layout__media) {
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--sp-10);
+    grid-template-areas:
+      ". kicker kicker kicker kicker kicker kicker kicker kicker kicker kicker ."
+      ". texto texto texto texto texto texto media media media media .";
+  }
+  .layout--l09--avatar:has(.layout__media) {
+    grid-template-areas:
+      ". kicker kicker kicker kicker kicker kicker kicker kicker kicker kicker ."
+      ". texto texto texto texto texto media media media media media .";
   }
 }
 /* Ideas clave como lista real (router.js las arma como <ul>, no <p>):
@@ -1019,15 +1174,26 @@
 .layout--l12--avatar .layout__media .layout__cuerpo p {
   font-size: 1.5rem;
 }
+/* Ajustes tanda 10: entre 40em y 1200px la variante usa las dos
+   columnas completas —sin carriles vacíos— conservando la proporción
+   5:4 de la retícula; el margen lateral de 1 columna (y el carril de
+   separación explícito entre los dos bloques, que sigue siendo la
+   única excepción del catálogo) aparece solo desde 1200px. */
 @media (min-width: 40em) {
+  .layout--l12--avatar {
+    grid-template-columns: 5fr 4fr;
+    grid-template-areas: "texto media";
+  }
+  .layout--l12--avatar .layout__texto { grid-area: texto; }
+  .layout--l12--avatar .layout__media { grid-area: media; }
+}
+@media (min-width: 75em) {
   .layout--l12--avatar {
     grid-template-columns: repeat(12, 1fr);
     column-gap: var(--sp-10);
     grid-template-areas:
       ". texto texto texto texto texto . media media media media .";
   }
-  .layout--l12--avatar .layout__texto { grid-area: texto; }
-  .layout--l12--avatar .layout__media { grid-area: media; }
 }
 
 /* ---- L13 · Corte oscuro, cierre o transición ------------------------------

@@ -4415,3 +4415,83 @@ suba `build/out/ova-u1-scorm.zip` — no es una tarea de código.
 **PLAN-ESTRUCTURA.md queda cerrado (E0–E7).** Sin tocar: los tres avisos
 externos de §6 (propuesta comercial, Jose, Pablo) y la verificación
 contra el Moodle real — ninguno es una tarea de código.
+
+---
+
+## Assets de imagen (11 sep)
+
+Optimización de los assets del OVA y reemplazo del set de avatares de la
+mitad del recorrido. No toca el motor: solo archivos en `public/img/` y
+las rutas del contenido.
+
+**Convención fijada.** Todo asset del OVA va en WebP. Los masters PNG se
+quedan intactos en `Recursos/Avatar raw/` (1254×1254, ~1,8 MB c/u): son
+la fuente sin pérdida y no se convierten ni se borran. Los avatares se
+exportan cuadrados —las tres variantes de `.media-avatar` son 1:1 con
+`object-fit: cover`, 120/240/480 px— a **800×800 para slots md/lg** y
+**640×640 para slots sm**, calidad 82. Los retratos (`media.tipo:
+"retrato"`, `width: 100%` en una columna de ~600 px) **conservan sus
+dimensiones nativas** y solo se recomprimen: bajarlos rompería el retina
+de la columna. El alfa de WebP es sin pérdida, así que los recortes
+sobre fondo naranja no pierden borde.
+
+**Nomenclatura:** `avatar-<encuadre>-<fondo>-<n>.webp`, con encuadre
+`abierto`/`medio`/`primerplano` y fondo `confondo`/`sinfondo`. Ojo: los
+`*-sinfondo-*` heredados **no tienen alfa** — son RGB con oficina
+desenfocada detrás; el nombre describe el encuadre, no un recorte. Los
+primeros planos obtenidos recortando un plano medio van como
+`primerplano-confondo-N`.
+
+**Los 6 avatares nuevos.** Los PNG de `Recursos/Avatar raw/` (11 MB)
+salieron a WebP (198 KB en total) y reemplazan a los avatares **de la
+pantalla 6 en adelante** — decisión de Juan: el set anterior mezclaba
+encuadres y `medio-confondo-3` era **otra modelo**. Un slot `sm` de
+120 px no admite plano medio, así que para p05-diagnóstico y p10-tutor
+se recortó el rostro antes de exportar (cuadrado desde el borde
+superior, ~66 % del ancho, centrado en la cabeza).
+
+| # | pantalla | variante | archivo nuevo | reemplazó a |
+|---|---|---|---|---|
+| 06 | p03 | md | `avatar-abierto-confondo-5.webp` | `abierto-confondo-1` |
+| 07 | p04 | md | `avatar-medio-confondo-5.webp` | `primerplano-sinfondo-1` |
+| 08 | p05-diagnostico | sm | `avatar-primerplano-confondo-1.webp` | `primerplano-sinfondo-3` |
+| 09 | p10-tutor | sm | `avatar-primerplano-confondo-2.webp` | `primerplano-sinfondo-2` |
+| 10 | p11 | md | `avatar-medio-confondo-6.webp` | `medio-confondo-2` |
+| 24 | p32 | lg | `avatar-medio-confondo-7.webp` | `medio-confondo-3` (otra modelo) |
+
+**Los tres pesados que quedaban en uso.**
+
+- `avatar-medio-confondo-1.webp` (p02) — 1.264 KB → **37 KB**, a
+  800×800. Se sobrescribió en sitio: el original de 1254 px sigue
+  disponible byte a byte en `avatar-abierto-confondo-1.webp`, que era un
+  duplicado exacto y quedó sin uso al entrar el set nuevo.
+- `avatar-sin-fondo-plano-primer-saluda.webp` (p01-bienvenida) — 880 KB
+  → **113 KB**, mismas dimensiones (1205×1129) y mismo alfa. El master
+  con más aire sigue en el `.png` homónimo (1254×1254).
+- `tutor-jose-feranndo-mejia.png` (p10-tutor) — 1.456 KB → **126 KB**
+  como `tutor-jose-fernando-mejia.webp`, mismas dimensiones y alfa. **Se
+  corrigió de paso el typo del nombre** ("feranndo" → "fernando"): era
+  el único PNG que referenciaba el contenido y el nombre iba a viajar
+  dentro del SCORM. Rutas actualizadas en `content/ova-u1.js` y en
+  `dev/kitchen-sink.html`; el PNG original sigue en disco.
+
+Total en uso: de **3.600 KB a 276 KB** en los tres, más los 6 avatares
+nuevos a 198 KB.
+
+**Sin tocar, para decidir.**
+
+- **~12 MB de PNG/JPG sin uso en `public/img/`**: `0_Claudia_Referencia*`,
+  `0_Sofia_Referencia`, `1_claudia-senala-hacia-la-derecha`,
+  `2_Claudia-saluda`, `avatar-sin-fondo-plano-primer-saluda (1).png`,
+  el duplicado en `backgrounds/` y `avatar_1/2/3.jpg`. Son restos de
+  prueba; nadie los referencia (salvo los que quedaron citados en
+  `ova-u1-archivo.js`, que es el banco archivado).
+- **`build/package-scorm.sh` no empaqueta `public/img` ni
+  `public/audio`.** Copia `src/**` completo pero de `public/` solo lo
+  listado a mano en `PUBLIC_ASSETS`, y hoy esa lista tiene un único
+  archivo: `public/videos/woman_Businesswoman_1920x1010.mp4`. O sea que
+  ni los avatares, ni los fondos, ni los SVG de `graf/`, ni las ocho
+  locuciones entran en el zip SCORM ni en la copia standalone. Agregar
+  un asset obliga a tocar `PUBLIC_ASSETS` **y** `imsmanifest.xml` — el
+  script revienta si se hace solo uno de los dos. Es el pendiente más
+  serio de esta lista.

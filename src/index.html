@@ -200,16 +200,23 @@
         <span id="nav-paso-corto" class="nav-inferior__paso-corto"></span>
       </span>
       <button id="nav-siguiente" class="boton" type="button" aria-describedby="nav-bloqueo-aviso">
-        Siguiente <span class="boton__icono" aria-hidden="true">arrow_forward</span>
+        Siguiente <span id="nav-siguiente-icono" class="boton__icono" aria-hidden="true">arrow_forward</span>
       </button>
     </div>
     <!-- E2: candado blando de bloqueaAvance — router.js pone/quita
          aria-disabled en #nav-siguiente y hidden aquí; el click en
          "Siguiente" no hace nada mientras está puesto (ver siguiente()
          en router.js), nunca `disabled` real: eso sacaría el botón del
-         orden de tabulación y no explicaría por qué. -->
-    <p id="nav-bloqueo-aviso" class="nav-inferior__aviso" hidden>
-      <span class="icono" aria-hidden="true">lock</span>
+         orden de tabulación y no explicaría por qué.
+         Ajustes tanda 10: el aviso ya no se ve en la barra (el estado
+         lo dice el botón: candado en vez de flecha, más opacidad y
+         cursor de "prohibido"), pero sigue en el DOM y sigue siendo la
+         descripción accesible del botón — el ícono no explica por qué
+         está inerte y el nombre accesible tiene que hacerlo. `hidden`
+         lo saca también del árbol de accesibilidad mientras no hay
+         bloqueo; .u-oculto-visualmente es lo que impide que se vea
+         cuando router.js lo quita. -->
+    <p id="nav-bloqueo-aviso" class="nav-inferior__aviso u-oculto-visualmente" hidden>
       Completa la actividad para continuar
     </p>
   </footer>
