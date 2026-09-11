@@ -237,6 +237,43 @@ encabezado que diga qué es, de qué fecha viene y por qué no se carga.
 
 ---
 
+## 5.b Dónde van las locuciones, transcripciones y videos nuevos
+
+**La regla ya existe y no cambia: el archivo se llama como el id de la
+pantalla.** Es la misma que siguen los motion (`p17-propiedad-fraccionada.mp4`)
+y las infografías (`p14-renta-variable.svg`). Las pantallas nuevas estrenan ids
+por rol, así que sus archivos también: `c1-contexto`, `c2-valorizacion`,
+`c3-dividendo`, `c4-perfil` (antes `cNN-video` en §1 — se renombran para que el
+id sirva de nombre de archivo).
+
+| Qué | Dónde | Cómo se llama |
+|---|---|---|
+| Locución de avatar | `public/audio/` | `<id>-<slug>.mp3` |
+| Video de cápsula | `public/videos/capsulas/` | `<id>-<slug>.mp4` |
+| Foto del tutor | `public/img/avatar/` | `p10-tutor-<nombre>.webp` |
+| Transcripción | `src/content/ova-u1.js` → `media.transcripcion` | no es archivo |
+| Subtítulos | `src/content/ova-u1.js` → `media.vtt` | no es archivo |
+
+**Ni la transcripción ni los subtítulos son archivos sueltos.** La
+transcripción es contenido y vive en el JSON; `media.vtt` guarda el **texto**
+WebVTT, no una ruta, porque un `<track src="archivo.vtt">` real falla bajo
+`file://` en Chromium (T4, y la misma razón por la que el contenido es `.js` y
+no `.json`). Si Producción entrega archivos `.vtt`, se pega su contenido.
+
+El texto hablado se redacta y se revisa en
+`disenoInstruccional/locuciones-estructura-e.md`, un bloque por pantalla con su
+nombre de archivo y su estado. De ahí se copia al contenido: un solo lugar que
+editar cuando cambia una locución, en vez de buscarla dentro de un archivo de
+69 KB.
+
+**Ocho locuciones de avatar en la estructura nueva:** `p01-bienvenida`, `p02`,
+`p03`, `p04`, `p05-diagnostico` (el cierre de la batería, texto heredado de la
+antigua P10), `p10-tutor`, `p32` (ideas clave) y `p42` si se decide que lleve.
+Los cuatro videos de cápsula traen su locución dentro del video, pero **igual
+necesitan transcripción** en su pantalla — la regla dura 10 no distingue.
+
+---
+
 ## 6. Fuera del OVA — a quién hay que avisar
 
 - **La propuesta comercial dice tres piezas insignia.** Con Repo y Portafolio

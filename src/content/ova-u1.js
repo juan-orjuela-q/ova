@@ -10,30 +10,83 @@
    dentro de esta asignación — el motor (router.js) no sabe nada de
    este archivo más allá de leer `window.OVA_CONTENIDO`.
 
-   C7 (conversión del storyboard real) reemplaza por completo el
+   C7 (conversión del storyboard real) reemplazó por completo el
    contenido de prueba de C0–C6 (s00–s26) por las 47 pantallas reales
    de Jose (`disenoInstruccional/storyboard_data_v2.json`, v2 del
-   3 sep) — p01..p47, en el mismo orden del storyboard. El contenido de
-   prueba cumplió su función (ejercitar cada layout/interacción de
-   extremo a extremo antes de que existiera contenido real) y queda en
-   el historial de git, no en este archivo: mantenerlo en paralelo sería
-   contenido muerto, y la kitchen sink ya cubre cada pieza del motor por
-   separado sin depender de este archivo.
+   3 sep) — p01..p47, en el mismo orden del storyboard.
 
-   Generado con un script de conversión (no a mano): las partes
-   mecánicas del storyboard (parseo de los payloads en formato "A | B |
-   C" de I01/I02/I07/I08, el reformateo de los payloads JSON de
-   I09/I10/I11/I12/I13 a la forma exacta que documenta quiz.js) se
-   traducen sin intervención; las partes que el storyboard no fija de
-   forma estructurada (asignación de imagen de avatar por pantalla,
-   rutas de motion/infografía todavía sin producir, rangos de slider no
-   especificados por Jose, el empaquetado de cifra/retro de L08) son
-   decisiones de autoría de esta sesión, tomadas contra las reglas
-   fijadas en `PLAN-CONTENIDO.md` y documentadas en la lista de revisión
-   de `ESTADO.md` — no se inventó nada que no estuviera ya decidido en
-   una sesión anterior o anotado ahí como pendiente de producción.
+   **E4 (10 sep, PLAN-ESTRUCTURA.md §5) — reestructura del recorrido,
+   de 50 a 26 pantallas.** El motor no cambió; cambió qué pantallas
+   existen, en qué orden y bajo qué agrupador. Decisiones tomadas
+   contra PLAN-ESTRUCTURA.md §0–§1, detalle completo en ESTADO.md:
 
-   Mapa rápido de decisiones, detalle completo en ESTADO.md:
+   - **26 pantallas quedan, 26 salen.** Las 26 que salen (p12, p14,
+     p16–p21, p23, p26–p28, p31, p33, p35–p41, p43–p47) están
+     recortadas aquí, no reescritas — E5 las mueve a
+     `src/content/ova-u1-archivo.js` (índice.html no lo carga)
+     todavía **pendiente**: hasta que esa tarea corra, esas 26
+     pantallas solo existen en el historial de git, no en un banco
+     recuperable dentro del proyecto.
+   - **Las cuatro cápsulas son las de Jonás (video), no las de Jose
+     (DI):** Contexto del mercado / Valorización en acciones / El
+     dividendo / El perfil de riesgo. `capsula` pasa a ser
+     "Cápsula 1".."Cápsula 4" uniforme (antes tenía el nombre largo
+     del DI) — igual que "Antes de empezar", "Apertura", "Cierre" y
+     "Simulador" ya no son `capsula: null` (E3).
+   - **`p05-diagnostico` (I15)** funde los antiguos p05–p10 (cinco
+     preguntas + resultado) en una sola pantalla — ver el catálogo
+     I15 en el encabezado de `quiz.js`. Los ids de pregunta
+     (`u1-p05-diagnostico-1..5`) no cambian: Pablo ya los tiene
+     mapeados. `bloqueaAvance: true` — la única pantalla del
+     recorrido que lo usa hoy.
+   - **Cuatro pantallas de video nuevas** (`c1-video`..`c4-video`,
+     L03): el video de Jonás todavía no existe y Jose todavía no
+     entregó guion/cuerpo/transcripción para ellas (PLAN-ESTRUCTURA.md
+     §6) — el `cuerpo` de cada una es un aviso explícito de "pendiente",
+     no texto inventado que parezca definitivo. `media.src` apunta a
+     la ruta que va a usar el archivo real (`public/videos/capsulas/`)
+     para que enganchar el video producido sea solo reemplazar el
+     archivo, no tocar el contenido.
+   - **`p10-tutor`** — pantalla nueva, pendiente de guion de Jose.
+     `titulo:"Pendiente de guion"` en vez de vacío de verdad: `app.js`
+     exige `pantalla.titulo` no vacío (falla ruidoso si no), así que un
+     `""` literal tumbaría el arranque completo de la OVA en vez de
+     quedar como marcador de esta sola pantalla — el marcador de texto
+     es el "en blanco" que puede existir sin romper la validación.
+     `cuerpo` sí queda ausente (opcional en L03). `media` igual de
+     pendiente que las cuatro de video, mismo criterio.
+   - **`c2-comprobacion` / `c4-comprobacion`** — L07 · I01 con
+     enunciado y opciones marcados como provisionales de forma
+     visible (no una pregunta inventada que parezca real): Jose
+     todavía no entregó el enunciado real de estas dos comprobaciones.
+   - **P11 rebautizada**: las cuatro tarjetas ahora nombran las
+     cápsulas de Jonás en vez de las preguntas del DI viejo.
+   - **P42 (Simulador) autosuficiente.** P41 ("mercado vs. límite"),
+     que explicaba la distinción que la boleta pide aplicar, se va al
+     banco. En vez de traerla de vuelta (rompería el conteo fijo de
+     26), el `enunciado` de la interacción I11 absorbe esa explicación
+     — PLAN-ESTRUCTURA.md §5 deja las dos opciones abiertas, esta es
+     la que no agrega una pantalla. También cambia de Unidad 3 a
+     Unidad 1 / Simulador: Repo y Portafolio (las otras dos piezas
+     insignia) salen del OVA, la boleta es la única que queda.
+   - **P32 (Ideas clave) corregida.** La idea "Ordinarias y
+     preferenciales otorgan derechos distintos" ya no tiene detrás
+     ninguna pantalla que la enseñe (P27/P28 se van al banco) y la
+     Cápsula 4 ahora es perfil de riesgo, no tipos de acción. Se
+     reemplaza por una idea sobre los tres perfiles (P29/P30, que sí
+     se quedan).
+   - **`perfil_riesgo` sin lector en el Cierre** — PLAN-ESTRUCTURA.md
+     §5 punto 3 lo deja como decisión pendiente de Juan (volver a
+     nombrar el perfil obtenido en el Cierre tiene poco costo, pero
+     ninguna de las dos pantallas de Cierre que quedan, L09/L11, tiene
+     hoy una ranura de resultado). **No se resolvió en esta sesión** —
+     sigue abierto.
+   - **Bump de `id`** a `u1-contexto-mercado-v2`: `storage.js` guarda
+     progreso por `contenidoId`, así que un progreso guardado contra
+     las 50 pantallas viejas no debe convivir a medias con el
+     recorrido nuevo.
+
+   Mapa rápido de decisiones de C7, detalle completo en ESTADO.md:
 
    - **Kicker**: `unidad_capsula` del storyboard con " / " → " · "
      (p. ej. "Unidad 1 / Cápsula 2" → "Unidad 1 · Cápsula 2"), igual en
@@ -44,102 +97,41 @@
      L09 (ideas clave) le quita el "N. " inicial porque router.js ya
      antepone su propio ícono de check por ítem — repetir el número
      sería un segundo marcador para la misma idea.
-   - **Avatar** (14 pantallas: p01, p04, p10, p12, p16, p20, p26, p31,
-     p35, p36, p40, p43, p44, p47): `imagen` sale de la asignación de
-     plano/fondo de `PLAN-CONTENIDO.md` §5 (abierto/medio/primerplano ×
-     con o sin fondo), numerada secuencialmente dentro de cada grupo —
-     14 referencias contra ~12 imágenes reales que Juan produce; qué
-     archivo numerado reutiliza para cuáles pantallas es su decisión,
-     no una regla del motor. `transcripcion` es la `locucion` del
-     storyboard, con la marca de tiempo final ("[0:16]") quitada; sin
-     `audio` todavía (Juan las graba por separado, PLAN-CONTENIDO.md
-     §7) — degrada a imagen + transcripción directa, el placeholder de
-     producción que exige la regla dura 10 de CLAUDE.md, no un hueco.
-   - **Motion sin avatar** (p02, p17, p21, p23): `media.tipo:'video'`
-     apuntando a `public/videos/motion/pNN-slug.mp4`, todavía sin
-     producir a propósito (mismo criterio que las imágenes de avatar:
-     degrada limpio en vez de sustituirse por un video que no es el
-     que corresponde). Sin `vtt`: no hay dato real de sincronización
-     por escena para fabricar subtítulos con marcas de tiempo
-     honestas — `transcripcion` (la locución completa) es la
-     alternativa textual real, sin inventar cues.
-   - **Infografía** (p14, p27, p33, p41, p45 — las cinco cuyo layout,
-     L02/L03, exige `media`; p03/p11/p18/p29 usan L05/L12, que no
-     tienen ranura de media y no la necesitan): `media.tipo:'imagen'`
-     (catálogo nuevo de `media.js`, C7) apuntando a
+   - **Avatar**: `imagen` sale de la asignación de plano/fondo de
+     `PLAN-CONTENIDO.md` §5. `transcripcion` es la `locucion` del
+     storyboard, con la marca de tiempo final quitada; sin `audio`
+     todavía (Juan las graba por separado) — degrada a imagen +
+     transcripción directa, el placeholder de producción que exige la
+     regla dura 10 de CLAUDE.md, no un hueco.
+   - **Motion sin avatar**: `media.tipo:'video'` apuntando a
+     `public/videos/motion/pNN-slug.mp4`, todavía sin producir a
+     propósito. Sin `vtt`: `transcripcion` (la locución completa) es
+     la alternativa textual real, sin inventar cues.
+   - **Infografía**: `media.tipo:'imagen'` apuntando a
      `public/img/infografia/pNN-slug.svg`, todavía sin producir.
      `alt: ''` a propósito: el texto real de la pantalla ya vive en
-     `cuerpo`, y no existe un diagrama que describir todavía —
-     inventar un texto alternativo para un diagrama que no existe
-     describiría algo que no está. Cuando Juan entregue el SVG real,
-     quien lo enganche le agrega el `alt` que describe esa estructura
-     visual concreta.
-   - **L05 con interacción incrustada** (p13, p28): el storyboard real
-     ubica I07/I08 en L05, no en L06 — resuelve la nota abierta que
-     dejó C5 en `PLAN-CONTENIDO.md`. `pantalla.interaccion` reemplaza
-     a `pantalla.tarjetas`; el `enunciado` de la interacción lleva el
-     `texto` completo del storyboard porque L05 con interacción no
-     rinde un `cuerpo` aparte.
-   - **L05 con nota** (p29): el storyboard trae un disclaimer de una
-     línea ("es un perfil orientativo, no regulatorio") que no es una
-     cuarta tarjeta comparable — `pantalla.nota`, capacidad nueva de
-     C7 en `PLANTILLAS.L05`.
-   - **L08 dinámico** (p10, p31, p43, p47): `resultado.variable` +
-     `resultado.reglas` sobre `aciertos_diagnostico` (p10, mecanismo de
-     C4), `perfil_riesgo` (p31/p47, categórico) y `resultado_boleta`
-     (p43, un objeto — usa `resultado.campo:'estado'`, capacidad nueva
-     de C7 en `obtenerResultado()`). Los títulos y el empaquetado de
-     cada regla en título+cuerpo son autoría de esta sesión sobre las
-     frases reales de Jose (mismo criterio editorial que `s17` ya
-     estableció en C4), no texto inventado.
-   - **Diagnóstico → aciertos_diagnostico** (p05–p09 escriben la
-     variable; p10 la lee): el storyboard no declara esta dependencia
-     en su campo `dependencias` (queda vacío en las cinco), pero
-     `PLAN-CONTENIDO.md` §3.1 la fija explícitamente ("P10 lee los
-     aciertos del diagnóstico de cinco preguntas P05–P09") y el propio
-     texto de p10 (umbrales 0–2/3–4/5) solo tiene sentido contra un
-     diagnóstico de cinco preguntas.
-   - **Intentos de las preguntas I01/I02** (p05–p09, p15, p19, p25,
-     p38): `2`, uniforme — el storyboard no fija un número; se adoptó
-     el mismo valor que ya usaban `s07`/`s16` en el contenido de
-     prueba, no una cifra nueva sin precedente.
-   - **I10 (p22, p24) e I11 (p42)**: entradas/salidas y sus `unidad`
-     con el criterio de `quiz.js` ("unidad" es sufijo con espacio
-     inicial: `" COP"`, `" %"`, `" acciones"`); `decimales` por salida
-     y los rangos de slider de precioActual/precioLimite/cantidad en
-     p42 (el storyboard de P42 no trae min/max/paso, solo el escenario)
-     son autoría de esta sesión, con el mismo criterio que ya usó C6
-     para poblar la kitchen sink: el valor inicial reproduce el
-     escenario/caso de prueba real de Jose (p42 arranca en el caso
-     "expuesta", el que enseña la diferencia entre mercado y límite).
-   - **I12 (p46)**: `categorias`/`reglas`/`aviso` son literalmente los
-     que C6 ya había validado a mano contra este mismo payload en
-     `s14`/`s26` del contenido de prueba — se reusan tal cual, no se
-     re-derivan.
-   - **P03** (L12): el storyboard trae una segunda línea de atribución
-     ("World Bank Global Findex 2025") que L12 no tiene dónde mostrar
-     (kicker/título/cuerpo, sin una ranura de fuente) — queda fuera por
-     ahora, anotado en la lista de revisión de ESTADO.md, no se
-     extendió el layout para un solo caso sin verificar antes con Jose
-     si la atribución debe ser visible o basta con la trazabilidad de
-     `Storyboard_Master_v2.md`.
-   - **P34** (L11): los cuatro `recursos` llevan `href:'#'` sin
-     archivo real detrás — C8 los engancha.
-   - **`p01-bienvenida`** (ajustes tanda 4, 6 sep): pantalla nueva de
-     Juan, no del storyboard de Jose — va entre p01 (portada) y p01a
-     (accesibilidad). L03 con `media.tipo:'retrato'` en vez de
-     video/avatar dispara la variante `.layout--l03--retrato`
-     (retícula de 12 columnas, ver layouts.css) en vez del 50/50
-     normal de L03; `progreso:false` porque es arranque, igual que
-     p01a/p01b.
+     `cuerpo`, y no existe un diagrama que describir todavía.
+   - **L05 con interacción incrustada** (p13, antes también p28):
+     `pantalla.interaccion` reemplaza a `pantalla.tarjetas`.
+   - **L05 con nota** (p29): `pantalla.nota`, capacidad de C7 en
+     `PLANTILLAS.L05`.
+   - **L08 dinámico**: `resultado.variable` + `resultado.reglas` sobre
+     una variable de contenido — mecanismo de C4/E1, resuelto por
+     `OVA.resultado` (resultado.js) desde E1.
+   - **Intentos de las preguntas I01/I02**: `2`, uniforme.
+   - **I10/I11**: entradas/salidas y sus `unidad` con el criterio de
+     `quiz.js` ("unidad" es sufijo con espacio inicial: `" COP"`,
+     `" %"`, `" acciones"`).
+   - **`p01-bienvenida`**: L03 con `media.tipo:'retrato'` en vez de
+     video/avatar dispara la variante `.layout--l03--retrato`;
+     `progreso:false` porque es arranque, igual que p01a/p01b.
 
    Resto de las notas de arquitectura (JSONP en vez de .json, `media.vtt`
-   como texto WebVTT completo, etc.) no cambiaron de C0–C6 y no se
-   repiten aquí — ver el historial de este archivo en git si hace falta
-   ese detalle.
+   como texto WebVTT completo, etc.) no cambiaron y no se repiten aquí —
+   ver el historial de este archivo en git si hace falta ese detalle.
    ============================================================ */
 window.OVA_CONTENIDO = {
-  "id": "u1-contexto-mercado",
+  "id": "u1-contexto-mercado-v2",
   "titulo": "Contexto sobre el mercado, la bolsa y las acciones",
   "unidad": 1,
   "pantallas": [
@@ -285,231 +277,158 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
-      "id": "p05",
-      "layout": "L07",
-      "titulo": "Diagnóstico 1",
+      "id": "p05-diagnostico",
+      "layout": "L06",
+      "titulo": "Diagnóstico: tu punto de partida",
       "unidad": "Unidad 1",
       "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
+      "bloqueaAvance": true,
       "interaccion": {
-        "tipo": "I01",
+        "tipo": "I15",
         "datos": {
-          "id": "u1-p05-diagnostico-1",
-          "enunciado": "Una acción es un:",
-          "intentos": 2,
-          "opciones": [
+          "id": "u1-p05-diagnostico",
+          "enunciado": "Responde las cinco preguntas. No tienen nota: te muestran qué ya sabes y qué conviene reforzar en esta unidad.",
+          "variable": {
+            "nombre": "aciertos_diagnostico"
+          },
+          "preguntas": [
             {
-              "id": "a",
-              "texto": "Título participativo"
+              "tipo": "I01",
+              "datos": {
+                "id": "u1-p05-diagnostico-1",
+                "enunciado": "Una acción es un:",
+                "intentos": 2,
+                "opciones": [
+                  { "id": "a", "texto": "Título participativo" },
+                  { "id": "b", "texto": "Título de deuda" },
+                  { "id": "c", "texto": "Cuenta de ahorro" }
+                ],
+                "correcta": "a",
+                "retroalimentacion": {
+                  "correcto": "Muy bien. Una acción representa una participación en la propiedad de una empresa.",
+                  "incorrecto": "Recuerda que una acción no promete un interés fijo; representa una parte de una empresa."
+                }
+              }
             },
             {
-              "id": "b",
-              "texto": "Título de deuda"
+              "tipo": "I02",
+              "datos": {
+                "id": "u1-p05-diagnostico-2",
+                "enunciado": "Una acción preferencial normalmente no otorga voto en asamblea.",
+                "intentos": 2,
+                "respuestaCorrecta": true,
+                "retroalimentacion": {
+                  "correcto": "Correcto. La preferencial suele priorizar derechos económicos y no el voto.",
+                  "incorrecto": "Recuerda: la preferencial suele sacrificar voto a cambio de preferencias económicas."
+                }
+              }
             },
             {
-              "id": "c",
-              "texto": "Cuenta de ahorro"
+              "tipo": "I01",
+              "datos": {
+                "id": "u1-p05-diagnostico-3",
+                "enunciado": "¿Cuál es la principal diferencia entre renta fija y renta variable?",
+                "intentos": 2,
+                "opciones": [
+                  { "id": "a", "texto": "La renta fija siempre gana más" },
+                  { "id": "b", "texto": "En renta fija se conoce la rentabilidad pactada desde el inicio" },
+                  { "id": "c", "texto": "La renta variable no tiene riesgo" }
+                ],
+                "correcta": "b",
+                "retroalimentacion": {
+                  "correcto": "Excelente. En renta variable no sabes de antemano cuánto ganarás o perderás.",
+                  "incorrecto": "La clave es la certeza inicial: renta fija pacta condiciones; renta variable depende del mercado."
+                }
+              }
+            },
+            {
+              "tipo": "I02",
+              "datos": {
+                "id": "u1-p05-diagnostico-4",
+                "enunciado": "Un dividendo permite recibir una porción de las utilidades distribuidas por la empresa.",
+                "intentos": 2,
+                "respuestaCorrecta": true,
+                "retroalimentacion": {
+                  "correcto": "Muy bien. El dividendo proviene de utilidades distribuidas.",
+                  "incorrecto": "Recuerda que el dividendo es un pago al accionista cuando la empresa decide repartir utilidades."
+                }
+              }
+            },
+            {
+              "tipo": "I01",
+              "datos": {
+                "id": "u1-p05-diagnostico-5",
+                "enunciado": "Para comprar acciones necesitas hacerlo mediante un intermediario o una plataforma autorizada.",
+                "intentos": 2,
+                "opciones": [
+                  { "id": "a", "texto": "Verdadero" },
+                  { "id": "b", "texto": "Falso" },
+                  { "id": "c", "texto": "Solo si inviertes grandes montos" }
+                ],
+                "correcta": "a",
+                "retroalimentacion": {
+                  "correcto": "Correcto. Debes usar una entidad o plataforma autorizada.",
+                  "incorrecto": "No se compra directamente “por fuera” del mercado; se usan intermediarios autorizados."
+                }
+              }
             }
           ],
-          "correcta": "a",
-          "retroalimentacion": {
-            "correcto": "Muy bien. Una acción representa una participación en la propiedad de una empresa.",
-            "incorrecto": "Recuerda que una acción no promete un interés fijo; representa una parte de una empresa."
-          },
-          "variable": {
-            "nombre": "aciertos_diagnostico"
-          }
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p06",
-      "layout": "L07",
-      "titulo": "Diagnóstico 2",
-      "unidad": "Unidad 1",
-      "capsula": "Apertura",
-      "kicker": "Unidad 1 · Apertura",
-      "interaccion": {
-        "tipo": "I02",
-        "datos": {
-          "id": "u1-p06-diagnostico-2",
-          "enunciado": "Una acción preferencial normalmente no otorga voto en asamblea.",
-          "intentos": 2,
-          "respuestaCorrecta": true,
-          "retroalimentacion": {
-            "correcto": "Correcto. La preferencial suele priorizar derechos económicos y no el voto.",
-            "incorrecto": "Recuerda: la preferencial suele sacrificar voto a cambio de preferencias económicas."
-          },
-          "variable": {
-            "nombre": "aciertos_diagnostico"
-          }
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p07",
-      "layout": "L07",
-      "titulo": "Diagnóstico 3",
-      "unidad": "Unidad 1",
-      "capsula": "Apertura",
-      "kicker": "Unidad 1 · Apertura",
-      "interaccion": {
-        "tipo": "I01",
-        "datos": {
-          "id": "u1-p07-diagnostico-3",
-          "enunciado": "¿Cuál es la principal diferencia entre renta fija y renta variable?",
-          "intentos": 2,
-          "opciones": [
-            {
-              "id": "a",
-              "texto": "La renta fija siempre gana más"
+          "resultado": {
+            "variable": "aciertos_diagnostico",
+            "reglas": [
+              {
+                "minimo": 5,
+                "cifra": { "etiqueta": "respuestas correctas de 5" },
+                "retro": {
+                  "tipo": "brand",
+                  "titulo": "Aprovecha para ordenar y aplicar",
+                  "texto": "Aprovecha la unidad para ordenar y aplicar lo que ya sabes."
+                }
+              },
+              {
+                "minimo": 3,
+                "cifra": { "etiqueta": "respuestas correctas de 5" },
+                "retro": {
+                  "tipo": "nota",
+                  "titulo": "Buena base inicial",
+                  "texto": "Tienes una buena base inicial."
+                }
+              },
+              {
+                "minimo": 0,
+                "cifra": { "etiqueta": "respuestas correctas de 5" },
+                "retro": {
+                  "tipo": "alerta",
+                  "titulo": "Empieza con calma",
+                  "texto": "Empieza con calma y toma nota de los conceptos base."
+                }
+              }
+            ],
+            "cifra": {
+              "valor": "—",
+              "etiqueta": "todavía no respondiste el diagnóstico"
             },
-            {
-              "id": "b",
-              "texto": "En renta fija se conoce la rentabilidad pactada desde el inicio"
-            },
-            {
-              "id": "c",
-              "texto": "La renta variable no tiene riesgo"
+            "retro": {
+              "tipo": "nota",
+              "titulo": "Responde el diagnóstico",
+              "texto": "Responde las cinco preguntas del diagnóstico para ver tu resultado aquí."
             }
-          ],
-          "correcta": "b",
-          "retroalimentacion": {
-            "correcto": "Excelente. En renta variable no sabes de antemano cuánto ganarás o perderás.",
-            "incorrecto": "La clave es la certeza inicial: renta fija pacta condiciones; renta variable depende del mercado."
-          },
-          "variable": {
-            "nombre": "aciertos_diagnostico"
           }
         }
       },
       "progreso": true
     },
     {
-      "id": "p08",
-      "layout": "L07",
-      "titulo": "Diagnóstico 4",
-      "unidad": "Unidad 1",
-      "capsula": "Apertura",
-      "kicker": "Unidad 1 · Apertura",
-      "interaccion": {
-        "tipo": "I02",
-        "datos": {
-          "id": "u1-p08-diagnostico-4",
-          "enunciado": "Un dividendo permite recibir una porción de las utilidades distribuidas por la empresa.",
-          "intentos": 2,
-          "respuestaCorrecta": true,
-          "retroalimentacion": {
-            "correcto": "Muy bien. El dividendo proviene de utilidades distribuidas.",
-            "incorrecto": "Recuerda que el dividendo es un pago al accionista cuando la empresa decide repartir utilidades."
-          },
-          "variable": {
-            "nombre": "aciertos_diagnostico"
-          }
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p09",
-      "layout": "L07",
-      "titulo": "Diagnóstico 5",
-      "unidad": "Unidad 1",
-      "capsula": "Apertura",
-      "kicker": "Unidad 1 · Apertura",
-      "interaccion": {
-        "tipo": "I01",
-        "datos": {
-          "id": "u1-p09-diagnostico-5",
-          "enunciado": "Para comprar acciones necesitas hacerlo mediante un intermediario o una plataforma autorizada.",
-          "intentos": 2,
-          "opciones": [
-            {
-              "id": "a",
-              "texto": "Verdadero"
-            },
-            {
-              "id": "b",
-              "texto": "Falso"
-            },
-            {
-              "id": "c",
-              "texto": "Solo si inviertes grandes montos"
-            }
-          ],
-          "correcta": "a",
-          "retroalimentacion": {
-            "correcto": "Correcto. Debes usar una entidad o plataforma autorizada.",
-            "incorrecto": "No se compra directamente “por fuera” del mercado; se usan intermediarios autorizados."
-          },
-          "variable": {
-            "nombre": "aciertos_diagnostico"
-          }
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p10",
-      "layout": "L08",
-      "titulo": "Tu punto de partida",
+      "id": "p10-tutor",
+      "layout": "L03",
+      "titulo": "Pendiente de guion",
       "unidad": "Unidad 1",
       "capsula": "Apertura",
       "kicker": "Unidad 1 · Apertura",
       "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-2.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "transcripcion": "Tu resultado no te encasilla. Solo te ayuda a estudiar mejor. Si algunas respuestas no fueron correctas, perfecto: esta unidad está diseñada para explicar los conceptos desde cero y llevarlos a ejemplos prácticos."
-      },
-      "resultado": {
-        "variable": "aciertos_diagnostico",
-        "reglas": [
-          {
-            "minimo": 5,
-            "cifra": {
-              "etiqueta": "respuestas correctas de 5"
-            },
-            "retro": {
-              "tipo": "brand",
-              "titulo": "Aprovecha para ordenar y aplicar",
-              "texto": "Aprovecha la unidad para ordenar y aplicar lo que ya sabes."
-            }
-          },
-          {
-            "minimo": 3,
-            "cifra": {
-              "etiqueta": "respuestas correctas de 5"
-            },
-            "retro": {
-              "tipo": "nota",
-              "titulo": "Buena base inicial",
-              "texto": "Tienes una buena base inicial."
-            }
-          },
-          {
-            "minimo": 0,
-            "cifra": {
-              "etiqueta": "respuestas correctas de 5"
-            },
-            "retro": {
-              "tipo": "alerta",
-              "titulo": "Empieza con calma",
-              "texto": "Empieza con calma y toma nota de los conceptos base."
-            }
-          }
-        ],
-        "cifra": {
-          "valor": "—",
-          "etiqueta": "todavía no respondiste el diagnóstico"
-        },
-        "retro": {
-          "tipo": "nota",
-          "titulo": "Responde el diagnóstico",
-          "texto": "Vuelve atrás y responde las cinco preguntas del diagnóstico para ver tu resultado aquí."
-        }
+        "tipo": "video",
+        "src": "../public/videos/tutor/p10-tutor-pendiente.mp4"
       },
       "progreso": true
     },
@@ -523,38 +442,36 @@ window.OVA_CONTENIDO = {
       "tarjetas": [
         {
           "titulo": "Cápsula 1",
-          "texto": "¿En qué mercado estás entrando?"
+          "texto": "Contexto del mercado"
         },
         {
           "titulo": "Cápsula 2",
-          "texto": "Qué es una acción"
+          "texto": "Valorización en acciones"
         },
         {
           "titulo": "Cápsula 3",
-          "texto": "Valorización y dividendo"
+          "texto": "El dividendo"
         },
         {
           "titulo": "Cápsula 4",
-          "texto": "Ordinarias, preferenciales y tu perfil"
+          "texto": "El perfil de riesgo"
         }
       ],
       "progreso": true
     },
     {
-      "id": "p12",
-      "layout": "L02",
-      "titulo": "Cápsula 1: ¿En qué mercado estás entrando?",
+      "id": "c1-video",
+      "layout": "L03",
+      "titulo": "Contexto del mercado",
       "unidad": "Unidad 1",
-      "capsula": "¿En qué mercado estás entrando?",
+      "capsula": "Cápsula 1",
       "kicker": "Unidad 1 · Cápsula 1",
       "cuerpo": [
-        "Primero ubicaremos las acciones dentro del mercado de capitales y diferenciaremos tres grandes familias: renta variable, renta fija y derivados."
+        "Video pendiente de producción (Jonás). Guion, cuerpo y transcripción pendientes de Jose (DI) — ver PLAN-ESTRUCTURA.md §6."
       ],
       "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-medio-confondo-1.webp",
-        "audio": "../public/audio/loc1_objetivos.mp3",
-        "transcripcion": "Antes de hablar de acciones, necesitas ver el mapa general. En el mercado de capitales se negocian instrumentos que conectan a quienes necesitan financiación con quienes buscan invertir. Las acciones hacen parte de la renta variable."
+        "tipo": "video",
+        "src": "../public/videos/capsulas/c1-contexto-mercado.mp4"
       },
       "progreso": true
     },
@@ -563,7 +480,7 @@ window.OVA_CONTENIDO = {
       "layout": "L05",
       "titulo": "Tres familias del mercado",
       "unidad": "Unidad 1",
-      "capsula": "¿En qué mercado estás entrando?",
+      "capsula": "Cápsula 1",
       "kicker": "Unidad 1 · Cápsula 1",
       "interaccion": {
         "tipo": "I07",
@@ -590,28 +507,11 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
-      "id": "p14",
-      "layout": "L03",
-      "titulo": "Dónde encaja la inversión en acciones",
-      "unidad": "Unidad 1",
-      "capsula": "¿En qué mercado estás entrando?",
-      "kicker": "Unidad 1 · Cápsula 1",
-      "cuerpo": [
-        "Las acciones son el instrumento característico de la renta variable. Puedes ganar por valorización o dividendos, pero también puedes perder si el precio baja o si la empresa no distribuye utilidades."
-      ],
-      "media": {
-        "tipo": "imagen",
-        "src": "../public/img/infografia/p14-renta-variable.svg",
-        "alt": ""
-      },
-      "progreso": true
-    },
-    {
       "id": "p15",
       "layout": "L07",
       "titulo": "Comprobación cápsula 1",
       "unidad": "Unidad 1",
-      "capsula": "¿En qué mercado estás entrando?",
+      "capsula": "Cápsula 1",
       "kicker": "Unidad 1 · Cápsula 1",
       "interaccion": {
         "tipo": "I01",
@@ -643,117 +543,18 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
-      "id": "p16",
-      "layout": "L02",
-      "titulo": "Cápsula 2: Qué es una acción",
+      "id": "c2-video",
+      "layout": "L03",
+      "titulo": "Valorización en acciones",
       "unidad": "Unidad 1",
-      "capsula": "Qué es una acción",
+      "capsula": "Cápsula 2",
       "kicker": "Unidad 1 · Cápsula 2",
       "cuerpo": [
-        "Ahora veremos por qué una acción te convierte en propietario de una fracción de una empresa y qué implica ser accionista."
-      ],
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-medio-confondo-2.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "transcripcion": "Una acción es un título participativo. Cuando compras una acción, compras una fracción muy pequeña de una empresa emisora. Esa participación puede darte derechos económicos y, según el tipo de acción, derechos políticos."
-      },
-      "progreso": true
-    },
-    {
-      "id": "p17",
-      "layout": "L02",
-      "titulo": "Propiedad fraccionada",
-      "unidad": "Unidad 1",
-      "capsula": "Qué es una acción",
-      "kicker": "Unidad 1 · Cápsula 2",
-      "cuerpo": [
-        "Ejemplo: si Andina Cementos emite 1.000.000 de acciones y tú compras 100, tienes una participación pequeña, pero real, en la compañía."
+        "Video pendiente de producción (Jonás). Guion, cuerpo y transcripción pendientes de Jose (DI) — ver PLAN-ESTRUCTURA.md §6."
       ],
       "media": {
         "tipo": "video",
-        "src": "../public/videos/motion/p17-propiedad-fraccionada.mp4",
-        "transcripcion": "Imagina que Andina Cementos está dividida en un millón de partes iguales llamadas acciones. Si compras cien, tu participación es pequeña, pero existe. Esa propiedad fraccionada es la base de los derechos del accionista."
-      },
-      "progreso": true
-    },
-    {
-      "id": "p18",
-      "layout": "L05",
-      "titulo": "Tres ventajas de ser accionista",
-      "unidad": "Unidad 1",
-      "capsula": "Qué es una acción",
-      "kicker": "Unidad 1 · Cápsula 2",
-      "tarjetas": [
-        {
-          "titulo": "Valorización",
-          "texto": "Participar en valorizaciones si el precio sube."
-        },
-        {
-          "titulo": "Dividendos",
-          "texto": "Recibir dividendos cuando se reparten utilidades."
-        },
-        {
-          "titulo": "Derechos políticos",
-          "texto": "Acceder a derechos políticos en ciertos tipos de acciones."
-        }
-      ],
-      "progreso": true
-    },
-    {
-      "id": "p19",
-      "layout": "L07",
-      "titulo": "Comprobación cápsula 2",
-      "unidad": "Unidad 1",
-      "capsula": "Qué es una acción",
-      "kicker": "Unidad 1 · Cápsula 2",
-      "interaccion": {
-        "tipo": "I02",
-        "datos": {
-          "id": "u1-p19-comprobacion-capsula2",
-          "enunciado": "Comprar una acción equivale a prestar dinero a una empresa con interés fijo.",
-          "intentos": 2,
-          "respuestaCorrecta": false,
-          "retroalimentacion": {
-            "correcto": "Correcto. La acción es participación, no deuda con interés fijo.",
-            "incorrecto": "Recuerda: una acción te vuelve accionista; un bono se parece más a un préstamo."
-          }
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p20",
-      "layout": "L02",
-      "titulo": "Cápsula 3: Valorización y dividendo",
-      "unidad": "Unidad 1",
-      "capsula": "Valorización y dividendo",
-      "kicker": "Unidad 1 · Cápsula 3",
-      "cuerpo": [
-        "Esta cápsula explica las dos fuentes básicas de retorno en acciones: vender a mayor precio y recibir parte de utilidades distribuidas."
-      ],
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-medio-confondo-3.webp",
-        "audio": "../public/audio/loc1_objetivos.mp3",
-        "transcripcion": "Ahora entraremos a la pieza más práctica de la unidad. Aprenderás a calcular una valorización simple y un dividendo por acción. Estos cálculos no predicen el futuro, pero ayudan a entender de dónde viene la rentabilidad."
-      },
-      "progreso": true
-    },
-    {
-      "id": "p21",
-      "layout": "L02",
-      "titulo": "El caso Petrocaribe: de $1.000 a $1.500",
-      "unidad": "Unidad 1",
-      "capsula": "Valorización y dividendo",
-      "kicker": "Unidad 1 · Cápsula 3",
-      "cuerpo": [
-        "Compras 500 acciones de Petrocaribe a $1.000 cada una. Ocho meses después, el precio sube a $1.500. La diferencia por acción es $500 y la valorización es 50%."
-      ],
-      "media": {
-        "tipo": "video",
-        "src": "../public/videos/motion/p21-caso-petrocaribe.mp4",
-        "transcripcion": "Supongamos que compras acciones de Petrocaribe a mil pesos cada una. Más adelante, el precio sube a mil quinientos. La diferencia es quinientos por acción. Al dividir quinientos entre mil, la valorización es cincuenta por ciento."
+        "src": "../public/videos/capsulas/c2-valorizacion-acciones.mp4"
       },
       "progreso": true
     },
@@ -762,8 +563,8 @@ window.OVA_CONTENIDO = {
       "layout": "L06",
       "titulo": "Calcula tú la valorización",
       "unidad": "Unidad 1",
-      "capsula": "Valorización y dividendo",
-      "kicker": "Unidad 1 · Cápsula 3",
+      "capsula": "Cápsula 2",
+      "kicker": "Unidad 1 · Cápsula 2",
       "interaccion": {
         "tipo": "I10",
         "datos": {
@@ -844,19 +645,45 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
-      "id": "p23",
-      "layout": "L02",
-      "titulo": "El dividendo: reparto de utilidades",
+      "id": "c2-comprobacion",
+      "layout": "L07",
+      "titulo": "Comprobación cápsula 2",
       "unidad": "Unidad 1",
-      "capsula": "Valorización y dividendo",
+      "capsula": "Cápsula 2",
+      "kicker": "Unidad 1 · Cápsula 2",
+      "interaccion": {
+        "tipo": "I01",
+        "datos": {
+          "id": "u1-c2-comprobacion",
+          "enunciado": "Contenido provisional — enunciado pendiente de Jose (DI). Este marcador se reemplaza cuando llegue el guion real.",
+          "intentos": 2,
+          "opciones": [
+            { "id": "a", "texto": "Opción provisional A" },
+            { "id": "b", "texto": "Opción provisional B" },
+            { "id": "c", "texto": "Opción provisional C" }
+          ],
+          "correcta": "a",
+          "retroalimentacion": {
+            "correcto": "Contenido provisional.",
+            "incorrecto": "Contenido provisional."
+          }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "c3-video",
+      "layout": "L03",
+      "titulo": "El dividendo",
+      "unidad": "Unidad 1",
+      "capsula": "Cápsula 3",
       "kicker": "Unidad 1 · Cápsula 3",
       "cuerpo": [
-        "Banco del Sur genera utilidades. La asamblea decide qué porcentaje se reparte. El dividendo por acción se calcula dividiendo el monto a repartir entre el número de acciones."
+        "Video pendiente de producción (Jonás). Guion, cuerpo y transcripción pendientes de Jose (DI) — ver PLAN-ESTRUCTURA.md §6."
       ],
       "media": {
         "tipo": "video",
-        "src": "../public/videos/motion/p23-dividendo-reparto.mp4",
-        "transcripcion": "El dividendo depende de utilidades y de la decisión de repartirlas. Si una empresa gana dinero, puede distribuir una parte entre sus accionistas. Pero también puede decidir repartir menos o no repartir, por ejemplo para fortalecer la operación."
+        "src": "../public/videos/capsulas/c3-dividendo.mp4"
       },
       "progreso": true
     },
@@ -865,7 +692,7 @@ window.OVA_CONTENIDO = {
       "layout": "L06",
       "titulo": "Calcula el dividendo por acción",
       "unidad": "Unidad 1",
-      "capsula": "Valorización y dividendo",
+      "capsula": "Cápsula 3",
       "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {
         "tipo": "I10",
@@ -949,7 +776,7 @@ window.OVA_CONTENIDO = {
       "layout": "L07",
       "titulo": "Comprobación cápsula 3",
       "unidad": "Unidad 1",
-      "capsula": "Valorización y dividendo",
+      "capsula": "Cápsula 3",
       "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {
         "tipo": "I01",
@@ -985,80 +812,18 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
-      "id": "p26",
-      "layout": "L02",
-      "titulo": "Cápsula 4: Tipos de acciones y perfil",
-      "unidad": "Unidad 1",
-      "capsula": "Tipos de acciones y perfil",
-      "kicker": "Unidad 1 · Cápsula 4",
-      "cuerpo": [
-        "Ahora conectaremos los derechos de las acciones con tu perfil de riesgo y tus objetivos de inversión."
-      ],
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-medio-confondo-4.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "transcripcion": "No todas las acciones otorgan exactamente los mismos derechos. Además, no todos los inversionistas toleran el riesgo de la misma manera. Por eso, antes de invertir debes conocer el instrumento y conocerte como inversionista."
-      },
-      "progreso": true
-    },
-    {
-      "id": "p27",
+      "id": "c4-video",
       "layout": "L03",
-      "titulo": "Derechos políticos y económicos",
+      "titulo": "El perfil de riesgo",
       "unidad": "Unidad 1",
-      "capsula": "Tipos de acciones y perfil",
+      "capsula": "Cápsula 4",
       "kicker": "Unidad 1 · Cápsula 4",
       "cuerpo": [
-        "Derechos políticos: participación y voto cuando aplica.",
-        "Derechos económicos: dividendos y beneficios patrimoniales cuando se generan y aprueban."
+        "Video pendiente de producción (Jonás). Guion, cuerpo y transcripción pendientes de Jose (DI) — ver PLAN-ESTRUCTURA.md §6."
       ],
       "media": {
-        "tipo": "imagen",
-        "src": "../public/img/infografia/p27-derechos-politicos-economicos.svg",
-        "alt": ""
-      },
-      "progreso": true
-    },
-    {
-      "id": "p28",
-      "layout": "L05",
-      "titulo": "Ordinarias frente a preferenciales",
-      "unidad": "Unidad 1",
-      "capsula": "Tipos de acciones y perfil",
-      "kicker": "Unidad 1 · Cápsula 4",
-      "interaccion": {
-        "tipo": "I08",
-        "datos": {
-          "id": "u1-p28-ordinarias-preferenciales",
-          "enunciado": "Ordinarias: suelen incluir voto y participación en dividendos.\nPreferenciales: suelen priorizar derechos económicos y limitar el voto.\nAmbas pueden comprarse y venderse en el mercado si están listadas.",
-          "columnas": [
-            "Acciones ordinarias",
-            "Acciones preferenciales"
-          ],
-          "filas": [
-            {
-              "etiqueta": "Voto",
-              "izquierda": "normalmente sí",
-              "derecha": "normalmente no"
-            },
-            {
-              "etiqueta": "Dividendos",
-              "izquierda": "proporcionales",
-              "derecha": "preferencia económica"
-            },
-            {
-              "etiqueta": "Prioridad en liquidación",
-              "izquierda": "menor",
-              "derecha": "mayor después de acreedores"
-            },
-            {
-              "etiqueta": "Enfoque",
-              "izquierda": "participación",
-              "derecha": "ingreso preferente"
-            }
-          ]
-        }
+        "tipo": "video",
+        "src": "../public/videos/capsulas/c4-perfil-riesgo.mp4"
       },
       "progreso": true
     },
@@ -1067,7 +832,7 @@ window.OVA_CONTENIDO = {
       "layout": "L05",
       "titulo": "Los tres perfiles de riesgo",
       "unidad": "Unidad 1",
-      "capsula": "Tipos de acciones y perfil",
+      "capsula": "Cápsula 4",
       "kicker": "Unidad 1 · Cápsula 4",
       "tarjetas": [
         {
@@ -1091,7 +856,7 @@ window.OVA_CONTENIDO = {
       "layout": "L06",
       "titulo": "¿Cuál es tu perfil?",
       "unidad": "Unidad 1",
-      "capsula": "Tipos de acciones y perfil",
+      "capsula": "Cápsula 4",
       "kicker": "Unidad 1 · Cápsula 4",
       "interaccion": {
         "tipo": "I13",
@@ -1102,69 +867,33 @@ window.OVA_CONTENIDO = {
             {
               "enunciado": "Si tu inversión baja 10% en un mes, ¿qué harías?",
               "opciones": [
-                {
-                  "texto": "Vender para evitar más pérdida",
-                  "puntos": 1
-                },
-                {
-                  "texto": "Revisar y esperar si el objetivo sigue vigente",
-                  "puntos": 2
-                },
-                {
-                  "texto": "Comprar más si el análisis lo justifica",
-                  "puntos": 3
-                }
+                { "texto": "Vender para evitar más pérdida", "puntos": 1 },
+                { "texto": "Revisar y esperar si el objetivo sigue vigente", "puntos": 2 },
+                { "texto": "Comprar más si el análisis lo justifica", "puntos": 3 }
               ]
             },
             {
               "enunciado": "¿Cuál es tu horizonte principal?",
               "opciones": [
-                {
-                  "texto": "Menos de un año",
-                  "puntos": 1
-                },
-                {
-                  "texto": "Entre uno y tres años",
-                  "puntos": 2
-                },
-                {
-                  "texto": "Más de tres años",
-                  "puntos": 3
-                }
+                { "texto": "Menos de un año", "puntos": 1 },
+                { "texto": "Entre uno y tres años", "puntos": 2 },
+                { "texto": "Más de tres años", "puntos": 3 }
               ]
             },
             {
               "enunciado": "¿Qué tan importante es tener liquidez inmediata?",
               "opciones": [
-                {
-                  "texto": "Muy importante",
-                  "puntos": 1
-                },
-                {
-                  "texto": "Medianamente importante",
-                  "puntos": 2
-                },
-                {
-                  "texto": "Poco importante para este capital",
-                  "puntos": 3
-                }
+                { "texto": "Muy importante", "puntos": 1 },
+                { "texto": "Medianamente importante", "puntos": 2 },
+                { "texto": "Poco importante para este capital", "puntos": 3 }
               ]
             },
             {
               "enunciado": "¿Qué prefieres al invertir?",
               "opciones": [
-                {
-                  "texto": "Preservar capital",
-                  "puntos": 1
-                },
-                {
-                  "texto": "Equilibrar riesgo y retorno",
-                  "puntos": 2
-                },
-                {
-                  "texto": "Buscar mayor retorno aceptando volatilidad",
-                  "puntos": 3
-                }
+                { "texto": "Preservar capital", "puntos": 1 },
+                { "texto": "Equilibrar riesgo y retorno", "puntos": 2 },
+                { "texto": "Buscar mayor retorno aceptando volatilidad", "puntos": 3 }
               ]
             }
           ],
@@ -1198,50 +927,28 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
-      "id": "p31",
-      "layout": "L08",
-      "titulo": "Tu resultado",
+      "id": "c4-comprobacion",
+      "layout": "L07",
+      "titulo": "Comprobación cápsula 4",
       "unidad": "Unidad 1",
-      "capsula": "Tipos de acciones y perfil",
+      "capsula": "Cápsula 4",
       "kicker": "Unidad 1 · Cápsula 4",
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-3.webp",
-        "audio": "../public/audio/loc1_objetivos.mp3",
-        "transcripcion": "Tu resultado resume tu tolerancia inicial al riesgo. Úsalo como punto de partida, no como sentencia. En inversiones reales, tu perfil debe confirmarse con una entidad autorizada y actualizarse si cambian tus objetivos o circunstancias."
-      },
-      "resultado": {
-        "variable": "perfil_riesgo",
-        "reglas": [
-          {
-            "valor": "conservador",
-            "retro": {
-              "tipo": "nota",
-              "titulo": "Perfil conservador",
-              "texto": "Prioriza estabilidad y liquidez. Este resultado es orientativo y no reemplaza asesoría profesional."
-            }
-          },
-          {
-            "valor": "moderado",
-            "retro": {
-              "tipo": "nota",
-              "titulo": "Perfil moderado",
-              "texto": "Busca equilibrio entre riesgo y retorno. Este resultado es orientativo y no reemplaza asesoría profesional."
-            }
-          },
-          {
-            "valor": "agresivo",
-            "retro": {
-              "tipo": "nota",
-              "titulo": "Perfil agresivo",
-              "texto": "Acepta volatilidad alta por mayor retorno potencial. Este resultado es orientativo y no reemplaza asesoría profesional."
-            }
+      "interaccion": {
+        "tipo": "I01",
+        "datos": {
+          "id": "u1-c4-comprobacion",
+          "enunciado": "Contenido provisional — enunciado pendiente de Jose (DI). Este marcador se reemplaza cuando llegue el guion real.",
+          "intentos": 2,
+          "opciones": [
+            { "id": "a", "texto": "Opción provisional A" },
+            { "id": "b", "texto": "Opción provisional B" },
+            { "id": "c", "texto": "Opción provisional C" }
+          ],
+          "correcta": "a",
+          "retroalimentacion": {
+            "correcto": "Contenido provisional.",
+            "incorrecto": "Contenido provisional."
           }
-        ],
-        "retro": {
-          "tipo": "nota",
-          "titulo": "Responde el test de perfil",
-          "texto": "Vuelve a la pantalla anterior y responde el test de perfil de riesgo para ver tu resultado aquí."
         }
       },
       "progreso": true
@@ -1257,28 +964,9 @@ window.OVA_CONTENIDO = {
         "Las acciones pertenecen a la renta variable.",
         "Una acción representa propiedad fraccionada.",
         "El retorno puede venir de precio y dividendos.",
-        "Ordinarias y preferenciales otorgan derechos distintos.",
+        "Existen perfiles conservador, moderado y agresivo, cada uno con distinta tolerancia al riesgo.",
         "Invertir exige objetivos, información y perfil de riesgo."
       ],
-      "progreso": true
-    },
-    {
-      "id": "p33",
-      "layout": "L02",
-      "titulo": "Las tres bolsas de nuam",
-      "unidad": "Unidad 1",
-      "capsula": "Cierre",
-      "kicker": "Unidad 1 · Cierre",
-      "cuerpo": [
-        "Colombia: Bolsa de Valores de Colombia | Supervisor: SFC | Depósito: Deceval.",
-        "Perú: Bolsa de Valores de Lima | Supervisor: SMV | Depósito: CAVALI.",
-        "Chile: Bolsa de Santiago | Supervisor: CMF | Depósito: DCV."
-      ],
-      "media": {
-        "tipo": "imagen",
-        "src": "../public/img/infografia/p33-tres-bolsas-nuam.svg",
-        "alt": ""
-      },
       "progreso": true
     },
     {
@@ -1320,169 +1008,17 @@ window.OVA_CONTENIDO = {
       "progreso": true
     },
     {
-      "id": "p35",
-      "layout": "L10",
-      "titulo": "Qué sigue después de esta unidad",
-      "unidad": "Unidad 1",
-      "capsula": "Cierre",
-      "kicker": "Unidad 1 · Cierre",
-      "cuerpo": [
-        "En la siguiente unidad profundizarás en conceptos del mercado bursátil: mercado primario y secundario, operaciones de contado, repos, transferencia temporal de valores y actores del ecosistema."
-      ],
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-4.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "transcripcion": "Ya tienes la base. En adelante podrás estudiar cómo se ejecutan operaciones, quiénes participan en el mercado y qué debes verificar antes de enviar una orden. El siguiente paso es pasar del concepto a la operación."
-      },
-      "logro": {
-        "titulo": "¡Completaste la Unidad 1!",
-        "texto": "Contexto sobre el mercado, la bolsa y las acciones."
-      },
-      "progreso": true
-    },
-    {
-      "id": "p36",
-      "layout": "L13",
-      "titulo": "Vista previa Unidad 2: Anatomía de un Repo",
-      "unidad": "Unidad 2",
-      "capsula": "Anatomía de un Repo",
-      "kicker": "Unidad 2 · Pieza insignia Repo",
-      "cuerpo": [
-        "Objetivo: convertir una explicación densa en una línea de tiempo recorrible de tres momentos: inicio, plazo y regreso."
-      ],
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-abierto-confondo-2.webp",
-        "audio": "../public/audio/loc1_objetivos.mp3",
-        "transcripcion": "Esta pieza funciona como una vista previa de la unidad dos. Un repo puede entenderse como una venta de acciones con pacto de recompra. La interacción mostrará qué cambia de manos al inicio, durante el plazo y al cierre."
-      },
-      "progreso": true
-    },
-    {
-      "id": "p37",
-      "layout": "L06",
-      "titulo": "Repo paso a paso",
-      "unidad": "Unidad 2",
-      "capsula": "Anatomía de un Repo",
-      "kicker": "Unidad 2 · Pieza insignia Repo",
-      "interaccion": {
-        "tipo": "I09",
-        "datos": {
-          "id": "u1-p37-repo-recorrido",
-          "enunciado": "Recorre la operación y mira qué entrega cada parte en cada momento.",
-          "estadoInicial": "Inversionista A necesita liquidez y posee acciones. Inversionista B tiene dinero disponible.",
-          "momentos": [
-            {
-              "titulo": "Operación inicial",
-              "descripcion": "A entrega acciones y B entrega dinero.",
-              "cambia": "acciones de A a B; dinero de B a A",
-              "resultado": "A obtiene liquidez; B recibe acciones bajo pacto."
-            },
-            {
-              "titulo": "Durante el plazo",
-              "descripcion": "Las acciones quedan inmovilizadas bajo condiciones pactadas.",
-              "cambia": "no hay nueva entrega; se mantiene obligación de regreso",
-              "resultado": "Las partes esperan vencimiento."
-            },
-            {
-              "titulo": "Operación de regreso",
-              "descripcion": "A recompra y B recibe dinero más rendimiento pactado.",
-              "cambia": "acciones vuelven a A; dinero+rendimento va a B",
-              "resultado": "La operación se cierra."
-            }
-          ],
-          "estadoFinal": "Las acciones retornan al vendedor inicial y el comprador recibe el pago acordado.",
-          "retro": "El rasgo esencial es el pacto de recompra, no la venta definitiva."
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p38",
-      "layout": "L07",
-      "titulo": "Comprobación Repo",
-      "unidad": "Unidad 2",
-      "capsula": "Anatomía de un Repo",
-      "kicker": "Unidad 2 · Pieza insignia Repo",
-      "interaccion": {
-        "tipo": "I02",
-        "datos": {
-          "id": "u1-p38-comprobacion-repo",
-          "enunciado": "En un repo, las acciones se entregan con un pacto de recompra futura.",
-          "intentos": 2,
-          "respuestaCorrecta": true,
-          "retroalimentacion": {
-            "correcto": "Correcto. El pacto de recompra diferencia el repo de una venta definitiva.",
-            "incorrecto": "Revisa la secuencia: entrega inicial y recompra pactada al regreso."
-          }
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p39",
-      "layout": "L09",
-      "titulo": "Cierre pieza Repo",
-      "unidad": "Unidad 2",
-      "capsula": "Anatomía de un Repo",
-      "kicker": "Unidad 2 · Pieza insignia Repo",
-      "cuerpo": [
-        "El repo busca liquidez.",
-        "Las acciones sirven como activo de respaldo.",
-        "Hay operación inicial y de regreso.",
-        "El precio de regreso incorpora el rendimiento acordado."
-      ],
-      "progreso": true
-    },
-    {
-      "id": "p40",
-      "layout": "L13",
-      "titulo": "Vista previa Unidad 3: Tu primera orden",
-      "unidad": "Unidad 3",
-      "capsula": "Tu primera orden",
-      "kicker": "Unidad 3 · Pieza insignia Orden",
-      "cuerpo": [
-        "Objetivo: practicar la diferencia entre orden a mercado y orden límite antes de enviar una instrucción real."
-      ],
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-abierto-confondo-3.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "transcripcion": "La tercera unidad debe llevar al estudiante de la teoría a la acción. Esta vista previa propone una boleta simulada para entender qué ocurre cuando eliges precio de mercado o precio límite."
-      },
-      "progreso": true
-    },
-    {
-      "id": "p41",
-      "layout": "L03",
-      "titulo": "Mercado vs límite",
-      "unidad": "Unidad 3",
-      "capsula": "Tu primera orden",
-      "kicker": "Unidad 3 · Pieza insignia Orden",
-      "cuerpo": [
-        "Orden a mercado: busca ejecución rápida al mejor precio disponible.",
-        "Orden límite: fija el precio máximo de compra o mínimo de venta; puede no ejecutarse."
-      ],
-      "media": {
-        "tipo": "imagen",
-        "src": "../public/img/infografia/p41-mercado-vs-limite.svg",
-        "alt": ""
-      },
-      "progreso": true
-    },
-    {
       "id": "p42",
       "layout": "L06",
       "titulo": "Simula tu primera orden",
-      "unidad": "Unidad 3",
-      "capsula": "Tu primera orden",
-      "kicker": "Unidad 3 · Pieza insignia Orden",
+      "unidad": "Unidad 1",
+      "capsula": "Simulador",
+      "kicker": "Unidad 1 · Simulador",
       "interaccion": {
         "tipo": "I11",
         "datos": {
           "id": "u1-p42-boleta-orden",
-          "enunciado": "Completa la boleta y observa el resultado: ejecutada o expuesta.",
+          "enunciado": "Una orden a mercado se ejecuta al mejor precio disponible; una orden límite fija el precio máximo de compra (o mínimo de venta) y puede quedar expuesta si el mercado no lo alcanza. Completa la boleta y observa el resultado: ejecutada o expuesta.",
           "emisor": "Banco del Sur",
           "escenario": {
             "saldo": 10000,
@@ -1515,250 +1051,6 @@ window.OVA_CONTENIDO = {
           "variable": {
             "nombre": "resultado_boleta"
           }
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p43",
-      "layout": "L08",
-      "titulo": "Resultado de la orden",
-      "unidad": "Unidad 3",
-      "capsula": "Tu primera orden",
-      "kicker": "Unidad 3 · Pieza insignia Orden",
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-5.webp",
-        "audio": "../public/audio/loc1_objetivos.mp3",
-        "transcripcion": "El resultado de una orden depende de sus condiciones. Lo importante es revisar cantidad, precio, vigencia, costos y saldo antes de confirmar. En la vida real, una orden confirmada tiene trazabilidad."
-      },
-      "resultado": {
-        "variable": "resultado_boleta",
-        "campo": "estado",
-        "reglas": [
-          {
-            "valor": "ejecutada",
-            "retro": {
-              "tipo": "nota",
-              "titulo": "Ejecutada",
-              "texto": "tu instrucción encontró condiciones de mercado."
-            }
-          },
-          {
-            "valor": "expuesta",
-            "retro": {
-              "tipo": "nota",
-              "titulo": "Expuesta",
-              "texto": "queda vigente hasta que el precio llegue o venza."
-            }
-          },
-          {
-            "valor": "rechazada",
-            "retro": {
-              "tipo": "alerta",
-              "titulo": "Rechazada",
-              "texto": "faltan datos o no hay saldo/títulos suficientes."
-            }
-          }
-        ],
-        "retro": {
-          "tipo": "nota",
-          "titulo": "Envía tu boleta",
-          "texto": "Vuelve a la pantalla anterior y envía tu boleta para ver el resultado aquí."
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p44",
-      "layout": "L13",
-      "titulo": "Vista previa Unidad 5: Arma tu portafolio",
-      "unidad": "Unidad 5",
-      "capsula": "Arma tu portafolio",
-      "kicker": "Unidad 5 · Pieza insignia Portafolio",
-      "cuerpo": [
-        "Objetivo: repartir capital entre tres emisores ficticios y recibir retroalimentación según el perfil obtenido en P30."
-      ],
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-abierto-confondo-4.webp",
-        "audio": "../public/audio/demo-avatar.mp3",
-        "transcripcion": "La quinta unidad debe cerrar con práctica. Esta pieza permite repartir capital entre tres emisores ficticios. La retroalimentación usará el perfil obtenido antes para sugerir si la distribución es coherente con tu tolerancia al riesgo."
-      },
-      "progreso": true
-    },
-    {
-      "id": "p45",
-      "layout": "L03",
-      "titulo": "Tres emisores ficticios",
-      "unidad": "Unidad 5",
-      "capsula": "Arma tu portafolio",
-      "kicker": "Unidad 5 · Pieza insignia Portafolio",
-      "cuerpo": [
-        "Petrocaribe: alto riesgo, sensible a precios de energía.",
-        "Andina Cementos: riesgo medio, ligado a infraestructura y construcción.",
-        "Banco del Sur: riesgo medio-bajo, negocio financiero diversificado."
-      ],
-      "media": {
-        "tipo": "imagen",
-        "src": "../public/img/infografia/p45-tres-emisores.svg",
-        "alt": ""
-      },
-      "progreso": true
-    },
-    {
-      "id": "p46",
-      "layout": "L06",
-      "titulo": "Distribuye $10.000",
-      "unidad": "Unidad 5",
-      "capsula": "Arma tu portafolio",
-      "kicker": "Unidad 5 · Pieza insignia Portafolio",
-      "interaccion": {
-        "tipo": "I12",
-        "datos": {
-          "id": "u1-p46-portafolio",
-          "enunciado": "Asigna porcentajes a Petrocaribe, Andina Cementos y Banco del Sur. La suma debe ser 100%.",
-          "categorias": [
-            {
-              "id": "petrocaribe",
-              "etiqueta": "Petrocaribe",
-              "riesgo": "alto",
-              "valorInicial": 34
-            },
-            {
-              "id": "andinaCementos",
-              "etiqueta": "Andina Cementos",
-              "riesgo": "medio",
-              "valorInicial": 33
-            },
-            {
-              "id": "bancoDelSur",
-              "etiqueta": "Banco del Sur",
-              "riesgo": "medio-bajo",
-              "valorInicial": 33
-            }
-          ],
-          "reglas": [
-            {
-              "perfil": "conservador",
-              "condiciones": [
-                {
-                  "emisor": "petrocaribe",
-                  "operador": ">",
-                  "valor": 40
-                }
-              ],
-              "retro": "La distribución luce agresiva para un perfil conservador; revisa concentración y pérdida tolerable."
-            },
-            {
-              "perfil": "conservador",
-              "condiciones": [
-                {
-                  "emisor": "bancoDelSur",
-                  "operador": ">=",
-                  "valor": 50
-                },
-                {
-                  "tipo": "ningunoSupera",
-                  "valor": 60
-                }
-              ],
-              "retro": "La distribución es más coherente con preservación relativa, aunque sigue expuesta a renta variable."
-            },
-            {
-              "perfil": "moderado",
-              "condiciones": [
-                {
-                  "tipo": "ningunoSupera",
-                  "valor": 60
-                }
-              ],
-              "retro": "La distribución muestra diversificación básica compatible con un perfil moderado."
-            },
-            {
-              "perfil": "moderado",
-              "condiciones": [
-                {
-                  "tipo": "algunoSupera",
-                  "valor": 60
-                }
-              ],
-              "retro": "Revisa concentración; un perfil moderado suele buscar equilibrio."
-            },
-            {
-              "perfil": "agresivo",
-              "condiciones": [
-                {
-                  "emisor": "petrocaribe",
-                  "operador": "entre",
-                  "min": 30,
-                  "max": 60
-                }
-              ],
-              "retro": "La exposición a riesgo alto puede ser coherente, siempre que haya análisis y límites."
-            },
-            {
-              "perfil": "agresivo",
-              "condiciones": [
-                {
-                  "emisor": "petrocaribe",
-                  "operador": ">",
-                  "valor": 60
-                }
-              ],
-              "retro": "Alta concentración: incluso un perfil agresivo debería justificar y monitorear ese riesgo."
-            }
-          ],
-          "aviso": "No constituye recomendación de inversión."
-        }
-      },
-      "progreso": true
-    },
-    {
-      "id": "p47",
-      "layout": "L08",
-      "titulo": "Retro de portafolio",
-      "unidad": "Unidad 5",
-      "capsula": "Arma tu portafolio",
-      "kicker": "Unidad 5 · Pieza insignia Portafolio",
-      "media": {
-        "tipo": "avatar",
-        "imagen": "../public/img/avatar/avatar-primerplano-sinfondo-6.webp",
-        "audio": "../public/audio/loc1_objetivos.mp3",
-        "transcripcion": "La retroalimentación del portafolio debe educar, no recomendar. El estudiante aprende a revisar coherencia entre perfil y asignación. En inversiones reales se requiere información adicional, costos, horizonte, asesoría y reglas aplicables."
-      },
-      "resultado": {
-        "variable": "perfil_riesgo",
-        "reglas": [
-          {
-            "valor": "conservador",
-            "retro": {
-              "tipo": "nota",
-              "titulo": "Perfil conservador",
-              "texto": "Cuida concentración y liquidez. Ninguna retroalimentación equivale a una recomendación de inversión."
-            }
-          },
-          {
-            "valor": "moderado",
-            "retro": {
-              "tipo": "nota",
-              "titulo": "Perfil moderado",
-              "texto": "Busca equilibrio y diversificación. Ninguna retroalimentación equivale a una recomendación de inversión."
-            }
-          },
-          {
-            "valor": "agresivo",
-            "retro": {
-              "tipo": "nota",
-              "titulo": "Perfil agresivo",
-              "texto": "Tolera más volatilidad, pero no ignora concentración. Ninguna retroalimentación equivale a una recomendación de inversión."
-            }
-          }
-        ],
-        "retro": {
-          "tipo": "nota",
-          "titulo": "Arma tu portafolio",
-          "texto": "Vuelve a la pantalla anterior y reparte tu capital para ver la retroalimentación aquí."
         }
       },
       "progreso": true

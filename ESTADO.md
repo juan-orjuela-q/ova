@@ -3798,13 +3798,15 @@ toca el motor salvo lo que E1/E2 necesitan.
 - [x] **E1 · I15 cuestionario (+ `OVA.resultado` compartido, + kitchen
       sink)** — completada 10 sep. Detalle abajo.
 - [x] **E2 · `bloqueaAvance`** — completada 10 sep. Detalle abajo.
-- [ ] E3 · etiquetas como agrupador — pendiente.
-- [ ] E4 · contenido nuevo (`content/ova-u1.js` con el orden de §1) —
-      pendiente. **E1 no tocó `content/ova-u1.js`** a propósito: las
-      pantallas p05–p10 del diagnóstico siguen siendo las cinco de
-      siempre (L07 × 5 + L08) hasta que E4 las funda en `p05-diagnostico`
-      (L06 · I15) — el motor ya sabe construir I15, pero nada del
-      contenido real lo usa todavía.
+- [x] **E3 · etiquetas como agrupador** — completada 10 sep (commit
+      `821b6ac`, sin entrada propia en este archivo cuando se hizo —
+      confirmada por el comentario de `actualizarMigas()` en
+      `router.js`: "Desde E3, las etiquetas de agrupación... son
+      valores reales de `capsula`"). `capsula` deja de ser `null` en
+      Antes de empezar/Apertura/Cierre y `router.js` ajusta la rama de
+      migas que ocultaba el ítem de cápsula.
+- [x] **E4 · contenido nuevo** (`content/ova-u1.js` reescrito con el
+      orden de §1) — completada 10 sep. Detalle abajo.
 - [ ] E5–E7 · pendientes.
 
 **10 sep — E1 cerrada: catálogo I15 (cuestionario) en `quiz.js`, con
@@ -4087,3 +4089,120 @@ que quien lo lea sepa que el original vive en `router.js`.
 **No se tocó `CLAUDE.md`.** El campo `bloqueaAvance` se documenta ahí
 en E7, junto con el resto de reglas que este plan cambia — mismo
 criterio que E1 dejó sin tocar `CLAUDE.md` para I15.
+
+---
+
+**10 sep — E4 cerrada: `src/content/ova-u1.js` reescrito con las 26
+pantallas de PLAN-ESTRUCTURA.md §1, verificado de punta a punta con
+Playwright (recorrido completo, no solo lectura de JSON).**
+
+**Qué se construyó:**
+
+- **Recorte de 50 a 26 pantallas**, en el orden exacto de la tabla de
+  §1. Las 26 que salen (p12, p14, p16–p21, p23, p26–p28, p31, p33,
+  p35–p41, p43–p47) se quitaron del array — **no están archivadas
+  todavía**: E5 (pendiente) es quien las mueve a
+  `ova-u1-archivo.js`. Hasta entonces solo existen en el historial de
+  git.
+- **`p05-diagnostico` (I15)** funde los antiguos p05–p10: cinco
+  preguntas (ids `u1-p05-diagnostico-1..5` sin tocar, Pablo ya los
+  tiene mapeados) más el bloque de resultado de p10 (mismas reglas,
+  movidas a `interaccion.datos.resultado`). `bloqueaAvance: true` —
+  la única pantalla del recorrido que lo usa. Verificado con
+  Playwright: "Siguiente" arranca con `aria-disabled="true"`,
+  responder las cinco (incluida una intencionalmente mal al primer
+  intento, para probar Reintentar) lo desbloquea y revela el bloque
+  de resultado.
+- **`p10-tutor` — bug real encontrado y corregido antes de cerrar la
+  tarea.** El bullet de PLAN-ESTRUCTURA.md §5 pedía "título y cuerpo
+  en blanco". Un `titulo: ""` literal tumba el arranque completo de
+  la OVA: `app.js` valida `pantalla.titulo` como obligatorio y no
+  vacío para las 26 pantallas, no solo para esta — confirmado con
+  Playwright (`"La pantalla en la posición 8 no tiene 'id', 'layout'
+  o 'titulo'."`, estado de error visible, ninguna pantalla cargaba).
+  Se cambió a `titulo: "Pendiente de guion"` — un marcador real, no
+  una cadena vacía — que cumple la misma intención (no hay copy
+  todavía, y queda marcado para que no se confunda con un olvido) sin
+  romper la validación de arranque. `cuerpo` sí queda ausente del
+  todo (opcional en L03).
+- **Cuatro pantallas de video** (`c1-video`..`c4-video`, L03) con los
+  nombres de cápsula de Jonás (Contexto del mercado / Valorización en
+  acciones / El dividendo / El perfil de riesgo — decisión 0.1, no
+  las cuatro del DI viejo). Sin guion de Jose todavía: en vez de
+  inventar cuerpo/transcripción, cada una lleva un aviso explícito de
+  "pendiente de producción" como único `cuerpo`, visible en pantalla
+  — la misma idea que ya aplicaba a motion/infografía sin producir,
+  extendida a cuando ni el texto de apoyo existe.
+- **`c2-comprobacion` / `c4-comprobacion`** (L07 · I01) con enunciado
+  y las tres opciones marcados como "provisional" de forma explícita
+  en el propio texto — no una pregunta inventada que parezca
+  definitiva, tal como pide PLAN-ESTRUCTURA.md §5.
+- **`capsula` uniforme a "Cápsula 1".."Cápsula 4"** en las tres
+  pantallas retenidas de cada cápsula (antes tenían el nombre largo
+  del DI de Jose: "¿En qué mercado estás entrando?", "Valorización y
+  dividendo", "Tipos de acciones y perfil"). p22 además cambia de
+  kicker: pasa de "Cápsula 3" (agrupación vieja) a "Cápsula 2" — es
+  la única pantalla retenida cuyo número de cápsula cambia, porque la
+  vieja Cápsula 3 ("Valorización y dividendo") se parte en dos
+  cápsulas nuevas (2: valorización, 3: dividendo).
+- **P11** — las cuatro tarjetas pasan a nombrar las cápsulas de
+  Jonás en vez de las preguntas del DI viejo.
+- **P42 (Simulador), dos cambios:**
+  - `unidad`/`capsula`/`kicker` de "Unidad 3 · Pieza insignia Orden"
+    a "Unidad 1 · Simulador" — Repo y Portafolio (las otras dos
+    piezas insignia) salen del OVA, esta es la única que queda,
+    dentro de la Unidad 1 (decisión 0.5).
+  - **Enunciado autosuficiente.** P41 ("mercado vs. límite"), que
+    explicaba la distinción que la boleta pide aplicar, se va al
+    banco. PLAN-ESTRUCTURA.md §5 punto 2 deja dos salidas: traer P41
+    de vuelta (rompe el conteo fijo de 26) o hacer el enunciado de la
+    interacción autosuficiente. Se tomó la segunda: el `enunciado` de
+    I11 ahora explica mercado vs. límite en dos frases antes de pedir
+    completar la boleta.
+- **P32 (Ideas clave) corregida**, no solo recortada. La idea
+  "Ordinarias y preferenciales otorgan derechos distintos" se
+  reemplazó por una sobre los tres perfiles de riesgo — P27/P28 (que
+  enseñaban ordinarias/preferenciales) se van al banco y la Cápsula 4
+  ya no es "tipos de acciones", es "perfil de riesgo" (P29/P30, que
+  sí se quedan). PLAN-ESTRUCTURA.md §5 punto 1 pedía "reemplazar o
+  eliminar"; se reemplazó para no perder una idea de cierre.
+- **Bump de contenido** a `u1-contexto-mercado-v2` — un progreso
+  guardado contra las 50 pantallas viejas no debe convivir a medias
+  con las 26 nuevas (mismo mecanismo de `storage.js` namespaced por
+  `contenidoId` que ya documentaba C7).
+
+**Decisión dejada abierta a propósito, sin resolver en esta
+sesión.** PLAN-ESTRUCTURA.md §5 punto 3 (`perfil_riesgo` sin lector:
+P31/P46/P47 se van, y "el Cierre puede volver a nombrarlo, con poco
+costo — decisión de Juan") **no se implementó.** Ninguna de las dos
+pantallas de Cierre que quedan (P32 L09, P34 L11) tiene hoy una
+ranura de resultado — añadirla es una decisión de producto, no una
+mecánica ya resuelta por el motor, y el propio plan la marca
+pendiente de Juan en vez de especificarla. Queda igual que la dejó
+E1/E2: el diagnóstico es lo único que sostiene el argumento
+"adaptativo" del demo.
+
+**Verificado con Playwright, abriendo `src/index.html` por
+`file://`:** recorrido completo de clic desde la portada
+(`.boton--portada`, no "Siguiente" — L01 no tiene barra inferior)
+hasta p42, pie de página 1/26..26/26 sin saltos; `p05-diagnostico`
+arranca con "Siguiente" `aria-disabled="true"`, las cinco preguntas
+respondidas (una con Reintentar de por medio) lo dejan en `"false"` y
+revelan el bloque de resultado (`hidden` pasa a `false`); `p10-tutor`
+monta con título "Pendiente de guion" en vez de tumbar el arranque;
+drawer con los nueve encabezados exactos de la decisión 0.4 (`Unidad
+1`, `Antes de empezar`, `Apertura`, `Cápsula 1`..`Cápsula 4`,
+`Cierre`, `Simulador`) y 26 ítems navegables. Cero errores de consola
+de JavaScript en toda la corrida — los cinco `ERR_FILE_NOT_FOUND` que
+sí aparecen son los archivos de video/tutor todavía sin producir
+(degradación esperada, no un bug). `node --check` limpio y un script
+de validación aparte confirmó: 26 ids únicos, 23 con
+`progreso:true` (coincide con el denominador de §1), y que ninguna
+pantalla L01–L07 quedó sin el campo que su layout exige.
+
+**Sin tocar todavía:** E5 (banco archivado, las 26 pantallas
+retiradas no viven en ningún archivo del proyecto por ahora), E6
+(verificación completa contra Moodle/SCORM real) y E7
+(documentación/avisos). `CLAUDE.md` no se tocó — el catálogo I15 y
+`bloqueaAvance` ya quedaron documentados en `quiz.js`/`router.js`
+desde E1/E2, y esta tarea no cambia ninguna regla dura.
