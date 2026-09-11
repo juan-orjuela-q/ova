@@ -10,16 +10,23 @@ sirve como sitio estático en URL directa. Entrega: 8 de septiembre de 2026.
 - `PLAN.md` — cómo se construyó el motor (T1–T9). Cerrado el 29 de agosto.
 - `PLAN-CONTENIDO.md` — montar el diseño instruccional de Jose (47 pantallas)
   sobre el motor. Tareas C0–C9; C0–C7 cerradas, C8 y C9 pendientes.
-- `PLAN-REDISENO.md` — **el plan vigente** (5 sep): jerarquía Unidad › Cápsula ›
-  Tema, barra superior inverse, progreso en %, preferencias del curso,
-  autolocución, dos pantallas nuevas y movimiento. Tareas D0–D10. Su sección 0
-  lleva las decisiones ya tomadas: no se re-discuten.
+- `PLAN-REDISENO.md` — jerarquía Unidad › Cápsula › Tema, barra superior
+  inverse, progreso en %, preferencias del curso, autolocución, dos pantallas
+  nuevas y movimiento. Tareas D0–D10; D0–D6 cerradas, D7/D9/D10 pendientes y
+  **pausadas** hasta cerrar `PLAN-ESTRUCTURA.md`.
+- `PLAN-ESTRUCTURA.md` — **el plan vigente** (10 sep): reestructura del
+  recorrido de 50 a 26 pantallas alrededor de las cuatro cápsulas de video.
+  Tareas E0–E7, todas cerradas menos avisos externos pendientes (§6). Su
+  sección 0 lleva las decisiones ya tomadas: no se re-discuten.
 - `ESTADO.md` — qué está hecho y qué se decidió. Se actualiza al cerrar cada sesión.
 - `disenoInstruccional/` — el paquete de Jose (v2, 3 sep). Es la fuente del
-  contenido: no se reescribe, no se recorta, no se sustituye una interacción
-  por otra más barata. Donde el motor no llega, se amplía el motor.
+  contenido, pero quedó **superado** por `PLAN-ESTRUCTURA.md`: 26 de sus 47
+  pantallas se archivaron (`src/content/ova-u1-archivo.js`) y faltan guion
+  para tres pantallas nuevas. Donde siga vigente: no se reescribe, no se
+  recorta, no se sustituye una interacción por otra más barata. Donde el
+  motor no llega, se amplía el motor.
 
-Lee `ESTADO.md` y `PLAN-REDISENO.md` al empezar cualquier sesión (y
+Lee `ESTADO.md` y `PLAN-ESTRUCTURA.md` al empezar cualquier sesión (y
 `PLAN-CONTENIDO.md` si tocas contenido, catálogos o empaquetado).
 
 ## Reglas duras
@@ -45,7 +52,9 @@ Estas no se negocian ni se re-discuten en cada sesión.
 8. **Los catálogos L01–L13 e I01–I14 son los de `BRIEF-DI.md`**, que es contra
    lo que Jose escribió las 47 pantallas. El código tuvo otros hasta el 4 de
    septiembre; C0 los renumeró. Ver la tabla de equivalencias en
-   `PLAN-CONTENIDO.md` §2 antes de tocar `layouts.css` o `quiz.js`.
+   `PLAN-CONTENIDO.md` §2 antes de tocar `layouts.css` o `quiz.js`. **I15 es
+   la excepción:** no está en `BRIEF-DI.md`, lo agregó `PLAN-ESTRUCTURA.md`
+   (E1) para la batería de diagnóstico — ver "El contrato de contenido".
 9. **Marco fijo, scroll en el medio.** El documento no scrollea: `body` mide
    `100dvh` con `overflow: hidden`, las dos barras quedan fijas y el scroll
    vive en `#app`. La portada (L01) es la excepción: va sin barras, a sangre.
@@ -140,14 +149,30 @@ se genere sin escribir HTML pantalla por pantalla.
 ```
 
 Reglas del contrato: `layout` sale del catálogo L01..L13. `interaccion.tipo`
-sale del catálogo I01..I14. Si el JSON pide algo que no existe en el catálogo,
+sale del catálogo I01..I15. Si el JSON pide algo que no existe en el catálogo,
 el motor falla ruidosamente en consola — nunca renderiza a medias en silencio.
-Cada `interaccion` sigue siendo una pregunta por pantalla (layout L10):
-"banco de preguntas" es el catálogo de tipos, no varias preguntas en una sola
-pantalla. El catálogo I01–I08 (preguntas) e I14 (bloque de retroalimentación
-compartido) y la forma exacta de `interaccion.datos` por tipo están
-documentados en el encabezado de `quiz.js`, no aquí — mismo criterio que el
-catálogo de layouts vive en `layouts.css`.
+Cada `interaccion` es una pregunta por pantalla (layout L10), con una sola
+excepción: **I15 cuestionario** empaqueta varias preguntas gradables del
+catálogo (I01–I05, completar, numerica, autoevaluacion) más un bloque de
+resultado compartido al terminar, para el caso de una batería de diagnóstico.
+No es una forma genérica de meter "varias preguntas en una pantalla" —
+"banco de preguntas" sigue siendo el catálogo de tipos, no un lugar para
+acumular preguntas sueltas fuera de ese caso. El catálogo I01–I08 (preguntas),
+I14 (bloque de retroalimentación compartido) e I15 (cuestionario) y la forma
+exacta de `interaccion.datos` por tipo están documentados en el encabezado de
+`quiz.js`, no aquí — mismo criterio que el catálogo de layouts vive en
+`layouts.css`.
+
+Una pantalla puede llevar además `bloqueaAvance: true`: el botón Siguiente
+queda `aria-disabled` (nunca `disabled`: tiene que seguir alcanzable por
+teclado y anunciar por qué) hasta que la interacción avise que terminó. Es un
+campo genérico del contrato — cualquier interacción puede usarlo si su
+constructor sabe decidir cuándo está "completa" — no un caso especial escrito
+a mano para el diagnóstico. No tiene efecto en L01: la portada no pinta la
+barra inferior donde vive "Siguiente" (regla dura 9), así que pedirlo ahí es
+motor fallando ruidosamente, no una combinación silenciosamente ignorada.
+Detalle completo (canal `alCompletar`, candado blando desde el drawer) en los
+encabezados de `quiz.js` y `router.js`.
 
 **El archivo físico es `.js`, no `.json`.** `fetch()` y `XMLHttpRequest` no
 pueden leer un archivo local bajo `file://` (Chromium lo bloquea por CORS,

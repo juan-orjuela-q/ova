@@ -3808,7 +3808,8 @@ toca el motor salvo lo que E1/E2 necesitan.
 - [x] **E4 · contenido nuevo** (`content/ova-u1.js` reescrito con el
       orden de §1) — completada 10 sep. Detalle abajo.
 - [x] **E5 · banco archivado** — completada 11 sep. Detalle abajo.
-- [ ] E6–E7 · pendientes.
+- [x] **E6 · verificación** — completada 11 sep. Detalle abajo.
+- [x] **E7 · documentación y avisos** — completada 11 sep. Detalle abajo.
 
 **10 sep — E1 cerrada: catálogo I15 (cuestionario) en `quiz.js`, con
 una extracción compartida `OVA.resultado` (archivo nuevo) que también
@@ -4373,3 +4374,44 @@ I15/`bloqueaAvance`; ESTADO.md se actualiza en esta misma entrada;
 falta la nota de encabezado en PLAN-CONTENIDO.md y BRIEF-DI.md). La
 verificación contra el Moodle real de Pablo queda pendiente de que él
 suba `build/out/ova-u1-scorm.zip` — no es una tarea de código.
+
+---
+
+**11 sep — E7 cerrada: documentación.**
+
+- **`CLAUDE.md`.** "El contrato de contenido" ya no dice "una pregunta
+  por pantalla" sin excepción: documenta I15 (varias preguntas
+  gradables + resultado compartido, para el caso puntual de batería de
+  diagnóstico, no una forma genérica de acumular preguntas) y
+  `bloqueaAvance` (campo genérico del contrato, `aria-disabled` no
+  `disabled`, sin efecto en L01 por regla dura 9). La regla dura 8 suma
+  la nota de que I15 no viene de `BRIEF-DI.md` — lo agregó
+  `PLAN-ESTRUCTURA.md` (E1), es la única excepción a "los catálogos son
+  los del brief". "Archivos del proyecto" ahora nombra
+  `PLAN-ESTRUCTURA.md` como el plan vigente (antes decía
+  `PLAN-REDISENO.md`, que quedó pausado en D7/D9/D10 desde el 10 sep y
+  nunca se reflejó ahí) y marca `disenoInstruccional/` como superado en
+  parte por la reestructura.
+- **`PLAN-CONTENIDO.md`.** Nota al inicio: superado por
+  `PLAN-ESTRUCTURA.md`, con qué partes siguen vigentes (catálogos L01–
+  L13/I01–I14 de §2, caja 16:9 de §4) y cuáles no (la tabla de 47
+  pantallas de §1).
+- **`BRIEF-DI.md` — no se pudo tocar, y es un hallazgo, no un olvido.**
+  El archivo no existe en el repo (`git log --all -- BRIEF-DI.md` no
+  devuelve nada) pese a que `CLAUDE.md` (regla dura 8),
+  `PLAN-CONTENIDO.md` §2 y el encabezado de `quiz.js` lo citan como si
+  fuera un archivo del proyecto. Es el documento externo de Jose contra
+  el que se validaron los catálogos — vive fuera de este repositorio.
+  El aviso que le corresponde ("tu lista de 47 pantallas quedó
+  superada") es el mismo que ya pedía PLAN-ESTRUCTURA.md §6 ("Jose (DI):
+  el paquete v2 de 47 pantallas queda superado... una hoja delta contra
+  esta tabla alcanza") — sigue siendo una conversación con Jose, no una
+  edición de archivo. No se inventó un `BRIEF-DI.md` en el repo para
+  poder tacharlo: habría quedado desincronizado del documento real de
+  Jose la primera vez que él lo edite. Juan decide si vale la pena
+  empezar a trackear una copia en el repo; por ahora sigue siendo un
+  documento externo.
+
+**PLAN-ESTRUCTURA.md queda cerrado (E0–E7).** Sin tocar: los tres avisos
+externos de §6 (propuesta comercial, Jose, Pablo) y la verificación
+contra el Moodle real — ninguno es una tarea de código.
