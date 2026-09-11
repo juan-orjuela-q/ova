@@ -4260,3 +4260,116 @@ monta en pantalla).
 **Sin tocar todavía:** E6 (verificación completa contra Moodle/SCORM
 real) y E7 (documentación/avisos — CLAUDE.md sigue sin el catálogo
 I15/`bloqueaAvance` como regla del contrato de contenido).
+
+---
+
+**11 sep — E6 cerrada: verificación de punta a punta del recorrido de
+26 pantallas, con Playwright real (disponible esta sesión — las notas
+de E1/E2 que decían "no disponible" quedan superadas).**
+
+**Cómo se verificó.** Un script de Playwright (`playwright-core`
+instalado ad hoc en el scratchpad de la sesión, no es dependencia del
+proyecto — el OVA sigue sin build step, regla dura 4) abrió
+`src/index.html` por `file://` real y recorrió los siete puntos de
+PLAN-ESTRUCTURA.md §7 más los cinco criterios de siempre. 43
+verificaciones, 0 fallos tras corregir un hallazgo real (abajo).
+
+**Qué se confirmó:**
+
+- **Recorrido de las 26 pantallas.** Pie consecutivo 2/26..26/26 (la
+  portada, 1/26, no tiene barra inferior — regla dura 9 — así que el
+  primer paso con pie visible es p01-bienvenida); progreso final
+  100 % con "23 de 23 pantallas" en el `aria-valuetext` (denominador
+  de D3, confirmado en runtime, no solo leído del JSON).
+- **Diagnóstico (`p05-diagnostico`, I15).** Siguiente arranca
+  `aria-disabled="true"` con el aviso visible; una pregunta respondida
+  mal a propósito (agotando los 2 intentos) deja retro + "Incorrecto"
+  sin romper nada; **F5 a media batería** no encierra al estudiante —
+  Siguiente sigue bloqueado (correcto: la batería no está completa) y
+  el drawer se sigue abriendo (candado blando, trampa 2 de E2);
+  completar las 5 preguntas (4 aciertos de 5, tras la falla a
+  propósito) desbloquea Siguiente, revela el resultado, y el texto
+  coincide con la regla que corresponde ("Buena base inicial",
+  mínimo:3 — la primera regla que aplica con 4/5). **Trampa 1
+  verificada con una API SCORM simulada** (no hay Moodle real
+  disponible esta sesión, ver más abajo): `cmi.core.score.raw` queda
+  en `80` (4/5, calculado una sola vez al cerrar la batería, no en
+  cada pregunta) y `cmi.interactions` recibió 6 filas para 5 preguntas
+  únicas (la pregunta reintentada agrega una fila extra) — mismo
+  patrón de "una fila por intento" que ya usa `crear()` para una sola
+  pregunta (quiz.js, confirmado leyendo el código: no es un caso
+  especial de I15, es el comportamiento existente del motor).
+- **Migas y drawer en las nueve etiquetas.** Portada sin barra (sin
+  etiqueta); las ocho etiquetas de agrupación (Antes de empezar,
+  Apertura, Cápsula 1–4, Cierre, Simulador) aparecen tanto en las
+  migas como los ocho `<h4>` del drawer; un solo `<h3>` "Unidad 1";
+  26 ítems navegables.
+- **Reflow 320 px y zoom de texto 200 %** en las seis pantallas nuevas
+  o más cargadas (`p05-diagnostico`, `p10-tutor`, `c1-video`,
+  `c2-comprobacion`, `c4-comprobacion`, `p42`): sin scroll horizontal
+  en ningún caso, incluido el documento completo con `html{font-size:
+  200%}` (las barras fijas no generan overflow, el scroll queda en
+  `#app`, regla dura 9).
+- **`prefers-reduced-motion`**: `--dur-slow`/`--dur-base` colapsan a
+  1 ms y `--shift-sm` a 0 en runtime (no solo leído en `tokens.css`).
+- **Cero hex nuevo** fuera de `tokens.css` (barrido sobre `src/` y
+  `dev/` completos, no solo los archivos tocados en E1–E5) y
+  `node --check` limpio en los siete archivos centrales del motor y
+  el contenido.
+- **Kitchen sink**: I15 y el bloque de barra inferior bloqueada siguen
+  presentes y sin errores de JS. Los `ERR_FILE_NOT_FOUND` que aparecen
+  son assets con nombre `demo-inexistente`/`demo-tres-familias` — la
+  propia demo de degradación a placeholder (regla dura 10), no un bug.
+
+**Hallazgo real, corregido en esta tarea — `imsmanifest.xml` estaba
+desactualizado.** `build/package-scorm.sh` (el propio guardarraíl que
+T9 dejó para esto) abortó el empaquetado: `src/content/ova-u1-archivo.js`
+(E5), `src/js/preferencias.js` y `src/js/resultado.js` (D5 y E1, ya
+cerradas) existen en disco y nunca se sumaron al manifiesto. Sin este
+empaquetado no hay forma de generar el zip que sube a Moodle — es
+exactamente el escenario que la verificación de E6 está para atrapar.
+Se agregaron las tres entradas `<file>` (orden alfabético, mismo
+criterio que el resto de la lista) y el zip se generó limpio después:
+`build/out/ova-u1-scorm.zip` (7.5 MB, 19 archivos de `src/` + el video
+de `public/`) y `build/out/standalone/src/index.html`, este último
+verificado con Playwright — abre, navega, cero errores de JS (los
+`ERR_FILE_NOT_FOUND` de siempre por media sin producir).
+
+**Lo único de E6 que no se pudo verificar esta sesión: Moodle real.**
+No hay acceso al Moodle de Pablo desde este entorno. La API SCORM
+simulada confirma que el *código* hace lo correcto (trampa 1
+resuelta), pero `cmi.interactions`, `score.raw` y `lesson_status`
+contra una LMS real — con su propio parser de manifiesto, sus propias
+reglas de sesión — quedan pendientes de que Pablo suba
+`build/out/ova-u1-scorm.zip` y confirme. Esto es explícito en
+PLAN-ESTRUCTURA.md §7 y no es una tarea que el motor pueda cerrar solo.
+
+**Hallazgo fuera de alcance de este plan, no corregido — anotado para
+no perderlo.** Al comprobar una pregunta (I01/I02/… en cualquier
+pantalla, no solo I15), el botón "Comprobar" se oculta
+(`botonComprobar.hidden = true`) inmediatamente después de recibir el
+foco por teclado; como el elemento enfocado desaparece del DOM
+visible, el foco cae a `<body>` en vez de quedarse visible en algún
+control cercano. Confirmado que es preexistente y no algo que E1
+introdujo: el mismo comportamiento aparece en `p15` (L07 · I01,
+pantalla sin tocar por esta reestructura). Contradice el espíritu de
+la trampa 4 de E1 ("revelar sin robar el foco") pero ahí sí se cumple
+—el foco no se mueve activamente a ningún sitio, simplemente el
+control que lo tenía deja de existir—, así que no es una regresión de
+esta tarea. Se deja documentado, no se toca `quiz.js` para esto: es un
+cambio que afecta a las ocho preguntas del catálogo, no algo que
+PLAN-ESTRUCTURA.md pida resolver.
+
+**Verificado:** los siete puntos de PLAN-ESTRUCTURA.md §7 (26
+pantallas/pie/progreso, diagnóstico con F5 y respuesta mala a
+propósito, migas/drawer en las nueve etiquetas, empaquetado SCORM) más
+los cinco criterios de siempre (kitchen sink, teclado con foco
+visible, 320 px, zoom 200 %, cero hex, reduced-motion). `node --check`
+limpio. Cero errores de consola JS en ningún recorrido (solo 404 de
+media sin producir, esperados).
+
+**Sin tocar todavía:** E7 (CLAUDE.md sigue sin documentar el catálogo
+I15/`bloqueaAvance`; ESTADO.md se actualiza en esta misma entrada;
+falta la nota de encabezado en PLAN-CONTENIDO.md y BRIEF-DI.md). La
+verificación contra el Moodle real de Pablo queda pendiente de que él
+suba `build/out/ova-u1-scorm.zip` — no es una tarea de código.
