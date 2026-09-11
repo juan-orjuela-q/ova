@@ -2610,6 +2610,19 @@ a.cap-tarjeta:hover {
   font-size: 1.5rem;
   color: var(--text-tertiary);
 }
+/* Ajustes tanda 14 (I13, p30): ilustración del perfil de riesgo en la
+   vista de solo-resultado, en vez del ícono de siempre — mismo criterio
+   de tamaño fijo y recorte que .tarjeta-comparativa__ilustracion (p29),
+   pero cuadrada y más chica porque aquí comparte fila con el texto en
+   vez de encabezar la tarjeta. */
+.calc-calculadora__resultado-imagen {
+  display: block;
+  flex-shrink: 0;
+  width: 4.5rem;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--r-md);
+}
 .calc-calculadora__resultado-texto {
   display: flex;
   flex-direction: column;

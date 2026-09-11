@@ -896,15 +896,18 @@ window.OVA_CONTENIDO = {
       "tarjetas": [
         {
           "titulo": "Conservador",
-          "texto": "Prioriza preservar capital y liquidez."
+          "texto": "Prioriza preservar capital y liquidez.",
+          "imagen": "../public/img/ilustraciones/conservador.webp"
         },
         {
           "titulo": "Moderado",
-          "texto": "Acepta fluctuaciones razonables y diversifica."
+          "texto": "Acepta fluctuaciones razonables y diversifica.",
+          "imagen": "../public/img/ilustraciones/moderado.webp"
         },
         {
           "titulo": "Agresivo",
-          "texto": "Tolera mayor volatilidad por potencial de retorno."
+          "texto": "Tolera mayor volatilidad por potencial de retorno.",
+          "imagen": "../public/img/ilustraciones/agresivo.webp"
         }
       ],
       "nota": "Es un perfil orientativo, no regulatorio.",
@@ -962,21 +965,24 @@ window.OVA_CONTENIDO = {
               "maximo": 6,
               "categoria": "conservador",
               "etiqueta": "Perfil conservador",
-              "texto": "Prioriza preservar capital y reducir pérdidas; debe cuidar concentración y liquidez."
+              "texto": "Prioriza preservar capital y reducir pérdidas; debe cuidar concentración y liquidez.",
+              "imagen": "../public/img/ilustraciones/conservador.webp"
             },
             {
               "minimo": 7,
               "maximo": 9,
               "categoria": "moderado",
               "etiqueta": "Perfil moderado",
-              "texto": "Acepta fluctuaciones razonables y busca equilibrio entre crecimiento y control de riesgo."
+              "texto": "Acepta fluctuaciones razonables y busca equilibrio entre crecimiento y control de riesgo.",
+              "imagen": "../public/img/ilustraciones/moderado.webp"
             },
             {
               "minimo": 10,
               "maximo": 12,
               "categoria": "agresivo",
               "etiqueta": "Perfil agresivo",
-              "texto": "Tolera mayor volatilidad por potencial de retorno, pero necesita análisis y límites de concentración."
+              "texto": "Tolera mayor volatilidad por potencial de retorno, pero necesita análisis y límites de concentración.",
+              "imagen": "../public/img/ilustraciones/agresivo.webp"
             }
           ],
           "variable": "perfil_riesgo",

@@ -313,7 +313,7 @@
          mismo criterio de "completar la exploración" que I07.
        - Sin arrastre, sin evaluación, `datos.id` opcional.
 
-     I13 test_perfil { enunciado?, preguntas:[{enunciado,opciones:[{texto,puntos}]}], resultados:[{minimo,maximo?,categoria,etiqueta,texto}], variable?, aviso? }
+     I13 test_perfil { enunciado?, preguntas:[{enunciado,opciones:[{texto,puntos}]}], resultados:[{minimo,maximo?,categoria,etiqueta,texto,imagen?,alt?}], variable?, aviso? }
        - Reusa la cáscara `.calc-calculadora` (I10–I12): un
          `<fieldset>`/`<legend>` con radios (`.calc-opcion`, mismo grupo
          nativo que el selector de tipo de orden de I11) por pregunta,
@@ -348,6 +348,23 @@
        - Reporte a SCORM igual a I10–I12: tipoScorm 'other', sin
          correct_responses (no hay una única respuesta "correcta" en un
          test de autopercepción).
+       - Ajustes tanda 14 (11 sep): al pulsar «Ver resultado» las
+         preguntas (`entradas`) y ese mismo botón se ocultan — la vista
+         pasa a ser SOLO el resultado, mismo criterio que
+         `construirCuestionario` (I15) de arriba, no un bloque que se
+         agrega debajo de las preguntas ya respondidas. El resultado
+         gana el foco (`tabIndex=-1` + `.focus()`, mismo patrón que
+         `OVA.a11y.enfocarEncabezado()` entre pantallas) porque el
+         botón que lo tenía desaparece. `resultados[].imagen`/`.alt`
+         (opcionales) ilustran el perfil obtenido — mismo mecanismo de
+         degradación que `crearIlustracionTarjeta` de router.js (si la
+         imagen falla al cargar, se quita y el ícono de siempre
+         (task_alt/error) vuelve a ser lo único que marca el estado).
+         Un botón «Volver a tomar el test» (`boton--outline`, mismo
+         estilo que «Reintentar») reaparece las preguntas, limpia todas
+         las respuestas (radios incluidos) y devuelve el foco a
+         `entradas` — reenviable cuantas veces se quiera, igual que el
+         resto de I13.
 
    ---------------------------------------------------------------------
    C6 (PLAN-CONTENIDO.md) — I09, I10, I11, I12 ampliadas contra los
@@ -2311,12 +2328,17 @@
     var resultados = datos.resultados || [];
 
     var raiz = crear_('div', 'calc-calculadora');
-    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
+    var enunciadoEl = datos.enunciado
+      ? crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado)
+      : null;
+    if (enunciadoEl) raiz.appendChild(enunciadoEl);
 
     var entradas = crear_('div', 'calc-calculadora__entradas');
+    entradas.tabIndex = -1;
     raiz.appendChild(entradas);
 
     var respuestas = new Array(preguntas.length).fill(null);
+    var todasLasEntradas = [];
 
     var grupos = preguntas.map(function (pregunta, indice) {
       var nombre = idBase + '-perfil-' + indice;
@@ -2329,6 +2351,7 @@
         input.type = 'radio';
         input.name = nombre;
         input.id = nombre + '-' + indiceOpcion;
+        todasLasEntradas.push(input);
         var label = crear_('label', 'calc-opcion');
         label.setAttribute('for', input.id);
         label.appendChild(input);
@@ -2346,8 +2369,21 @@
 
     var resultado = crear_('div', 'calc-calculadora__resultado');
     resultado.hidden = true;
+    resultado.tabIndex = -1;
     var resultadoIcono = crear_('span', 'icono calc-calculadora__resultado-icono');
     resultadoIcono.setAttribute('aria-hidden', 'true');
+    // Ajustes tanda 14: ilustración del perfil, mismo mecanismo de
+    // degradación que crearIlustracionTarjeta (router.js) — si
+    // resultados[].imagen falta o la carga falla, se quita y el ícono
+    // de siempre vuelve a ser lo único que marca el estado.
+    var resultadoImagen = document.createElement('img');
+    resultadoImagen.className = 'calc-calculadora__resultado-imagen';
+    resultadoImagen.hidden = true;
+    resultadoImagen.loading = 'lazy';
+    resultadoImagen.addEventListener('error', function () {
+      resultadoImagen.hidden = true;
+      resultadoIcono.hidden = false;
+    });
     var resultadoTexto = crear_('div', 'calc-calculadora__resultado-texto');
     var resultadoEtiqueta = crear_('p', 'calc-calculadora__resultado-etiqueta');
     var resultadoValor = document.createElement('output');
@@ -2357,6 +2393,7 @@
     resultadoTexto.appendChild(resultadoEtiqueta);
     resultadoTexto.appendChild(resultadoValor);
     resultadoTexto.appendChild(resultadoAviso);
+    resultado.appendChild(resultadoImagen);
     resultado.appendChild(resultadoIcono);
     resultado.appendChild(resultadoTexto);
     raiz.appendChild(resultado);
@@ -2365,7 +2402,11 @@
     var botonVer = crear_('button', 'boton', 'Ver resultado');
     botonVer.type = 'button';
     botonVer.disabled = true;
+    var botonReiniciar = crear_('button', 'boton boton--outline', 'Volver a tomar el test');
+    botonReiniciar.type = 'button';
+    botonReiniciar.hidden = true;
     acciones.appendChild(botonVer);
+    acciones.appendChild(botonReiniciar);
     raiz.appendChild(acciones);
 
     var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
@@ -2390,9 +2431,25 @@
       var match = buscarResultado(total);
       resultado.hidden = false;
 
+      // Ajustes tanda 14: la vista pasa a ser solo el resultado — las
+      // preguntas y este mismo botón se ocultan en vez de dejar el
+      // resultado colgando debajo de un cuestionario ya respondido.
+      entradas.hidden = true;
+      if (enunciadoEl) enunciadoEl.hidden = true;
+      botonVer.hidden = true;
+      botonReiniciar.hidden = false;
+
       if (match) {
         resultado.dataset.estado = 'ok';
+        resultadoIcono.hidden = !!match.imagen;
         resultadoIcono.textContent = 'task_alt';
+        if (match.imagen) {
+          resultadoImagen.src = match.imagen;
+          resultadoImagen.alt = match.alt || '';
+          resultadoImagen.hidden = false;
+        } else {
+          resultadoImagen.hidden = true;
+        }
         resultadoEtiqueta.textContent = match.etiqueta || match.categoria;
         resultadoValor.textContent = match.texto || '';
         if (datos.aviso) {
@@ -2403,11 +2460,18 @@
         resumen.textContent = 'Resultado registrado: perfil ' + (match.categoria || match.etiqueta) + '.';
       } else {
         resultado.dataset.estado = 'error';
+        resultadoImagen.hidden = true;
+        resultadoIcono.hidden = false;
         resultadoIcono.textContent = 'error';
         resultadoEtiqueta.textContent = 'No se pudo calcular tu perfil';
         resultadoValor.textContent = 'El puntaje obtenido no coincide con ningún resultado configurado.';
         resumen.textContent = 'No se registró resultado: revisa el contenido de esta pregunta.';
       }
+
+      // El botón que tenía el foco (botonVer) acaba de ocultarse — el
+      // resultado lo recoge, mismo criterio que
+      // OVA.a11y.enfocarEncabezado() entre pantallas.
+      resultado.focus();
 
       reportarSCORM({
         idScorm: idScorm,
@@ -2417,7 +2481,23 @@
       }, 'neutral');
     }
 
+    function reiniciar() {
+      respuestas = respuestas.map(function () { return null; });
+      todasLasEntradas.forEach(function (input) { input.checked = false; });
+      resultado.hidden = true;
+      resultado.dataset.estado = '';
+      resultadoAviso.hidden = true;
+      entradas.hidden = false;
+      if (enunciadoEl) enunciadoEl.hidden = false;
+      botonReiniciar.hidden = true;
+      botonVer.hidden = false;
+      recalcularValidez();
+      resumen.textContent = '';
+      entradas.focus();
+    }
+
     botonVer.addEventListener('click', verResultado);
+    botonReiniciar.addEventListener('click', reiniciar);
 
     return raiz;
   }
