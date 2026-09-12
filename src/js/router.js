@@ -400,8 +400,12 @@
     // la fila siguiente se estiraría a todo el ancho y su imagen con
     // ella. Modificador y no `:has()` por el mismo criterio que
     // `.layout--l09--tarjetas`: quien arma el nodo ya sabe la respuesta.
+    // Tanda 18: además del modificador base se añade `--ilustrado-N` con
+    // la cantidad exacta de tarjetas, porque a partir de 64em cada
+    // cantidad necesita su propio número de columnas (layouts.css) — 3
+    // tarjetas en una grilla pensada para 4 dejaba un hueco.
     var ilustradas = tarjetas.some(function (t) { return !!t.imagen; });
-    contenedor.className = 'layout__cuerpo' + (ilustradas ? ' layout__cuerpo--ilustrado' : '');
+    contenedor.className = 'layout__cuerpo' + (ilustradas ? ' layout__cuerpo--ilustrado layout__cuerpo--ilustrado-' + tarjetas.length : '');
     tarjetas.forEach(function (tarjeta) {
       var div = document.createElement('div');
       var titulo = document.createElement('p');

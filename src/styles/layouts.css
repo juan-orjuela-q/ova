@@ -586,9 +586,11 @@
    tarjetas en un ancho intermedio se reparten 3 + 1 y la que queda sola
    se estira a todo el ancho de la fila — con texto se notaba apenas, con
    una ilustración de 6/5 encima la tarjeta huérfana medía media pantalla
-   de alto. 2×2 hasta 64em y las cuatro en fila a partir de ahí: son
-   cuatro cápsulas comparables, así que las particiones que se leen bien
-   son 4×1 y 2×2, nunca 3+1. `min-width: 0` anula el mínimo de 14rem que
+   de alto. 2×2 hasta 64em para cualquier cantidad; a partir de ahí cada
+   cantidad tiene su propia fila (ver modificadores --ilustrado-N más
+   abajo) porque forzar todas las cantidades a 4 columnas deja huecos o
+   una tarjeta huérfana cuando son menos de 4 (tanda 18, p29: 3 tarjetas
+   en una grilla de 4). `min-width: 0` anula el mínimo de 14rem que
    `.layout__cuerpo > *` pone para el flex: en grilla el reparto ya lo
    fija `1fr` y ese mínimo solo podría desbordar la fila. */
 @media (min-width: 40em) {
@@ -600,8 +602,21 @@
     min-width: 0;
   }
 }
+/* Tanda 18: modificador por cantidad de tarjetas en vez de fijar 4
+   columnas para todas. `crearTarjetasComparativas` (router.js) ya sabe
+   cuántas tarjetas está montando, así que añade `--ilustrado-N` con ese
+   número — mismo criterio que el resto de este archivo (modificador, no
+   `:has()`, "quien arma el nodo ya sabe la respuesta"). Con 2 tarjetas
+   el 2×2 de arriba ya es correcto (no hay fila de 4 que definir aquí).
+   p29 (3 tarjetas, "Los tres perfiles de riesgo") pasa a 3 columnas; p11
+   (4 tarjetas, "Las cuatro cápsulas de la unidad") sigue en 4 — la razón
+   original de la tanda 11 (4×1 y 2×2, nunca 3+1) seguía siendo válida
+   para p11, así que no se tocó su caso. */
 @media (min-width: 64em) {
-  .layout--l05 .layout__cuerpo--ilustrado {
+  .layout--l05 .layout__cuerpo--ilustrado-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .layout--l05 .layout__cuerpo--ilustrado-4 {
     grid-template-columns: repeat(4, 1fr);
   }
 }

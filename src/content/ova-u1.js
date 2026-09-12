@@ -623,7 +623,7 @@ window.OVA_CONTENIDO = {
       "capsula": "Cápsula 2",
       "kicker": "Unidad 1 · Cápsula 2",
       "cuerpo": [
-        "Video pendiente de producción (Jonás). Guion, cuerpo y transcripción pendientes de Jose (DI) — ver PLAN-ESTRUCTURA.md §6."
+        "Ya sabes que como accionista puedes ganar por dos caminos: la valorización del precio y los dividendos. En esta cápsula profundizas en el primero: qué es la valorización, cómo se calcula y qué hace que el precio de una acción suba o baje."
       ],
       "media": {
         "tipo": "video",
@@ -760,7 +760,7 @@ window.OVA_CONTENIDO = {
       "capsula": "Cápsula 3",
       "kicker": "Unidad 1 · Cápsula 3",
       "cuerpo": [
-        "Video pendiente de producción (Jonás). Guion, cuerpo y transcripción pendientes de Jose (DI) — ver PLAN-ESTRUCTURA.md §6."
+        "El segundo camino para ganar como accionista es el dividendo: la parte de las utilidades que una empresa decide repartir entre quienes son sus dueños. En esta cápsula ves cómo se calcula el dividendo por acción y qué implica que una empresa reparta —o retenga— sus ganancias."
       ],
       "media": {
         "tipo": "video",
@@ -931,7 +931,7 @@ window.OVA_CONTENIDO = {
       "capsula": "Cápsula 4",
       "kicker": "Unidad 1 · Cápsula 4",
       "cuerpo": [
-        "Video pendiente de producción (Jonás). Guion, cuerpo y transcripción pendientes de Jose (DI) — ver PLAN-ESTRUCTURA.md §6."
+        "Antes de decidir en qué invertir, es clave que reconozcas cuánto riesgo estás dispuesto a asumir. En esta cápsula conoces los tres perfiles de riesgo —conservador, moderado y agresivo— y qué tipo de decisiones tiende a tomar cada uno."
       ],
       "media": {
         "tipo": "video",
