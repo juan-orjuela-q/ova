@@ -54,10 +54,11 @@
      es el "en blanco" que puede existir sin romper la validación.
      `cuerpo` sí queda ausente (opcional en L03). `media` igual de
      pendiente que las cuatro de video, mismo criterio.
-   - **`c2-comprobacion` / `c4-comprobacion`** — L07 · I01 con
-     enunciado y opciones marcados como provisionales de forma
-     visible (no una pregunta inventada que parezca real): Jose
-     todavía no entregó el enunciado real de estas dos comprobaciones.
+   - **`c2-comprobacion` / `c4-comprobacion`** — L07 · I01. Ambas ya
+     tienen enunciado real (`c2` desde el 12 sep con el ejercicio de
+     valorización de la acción Alpha; `c4` desde el 12 sep con el
+     ejercicio de perfil de riesgo del inversor de 28 años), sin
+     marcador de "provisional" pendiente.
    - **P11 rebautizada**: las cuatro tarjetas ahora nombran las
      cápsulas de Jonás en vez de las preguntas del DI viejo.
    - **P42 (Simulador) autosuficiente.** P41 ("mercado vs. límite"),
@@ -743,88 +744,113 @@ window.OVA_CONTENIDO = {
     {
       "id": "p24",
       "layout": "L06",
+      "ancho": "amplio",
       "titulo": "Calcula el dividendo por acción",
       "unidad": "Unidad 1",
       "capsula": "Cápsula 3",
       "kicker": "Unidad 1 · Cápsula 3",
       "interaccion": {
-        "tipo": "I10",
+        "tipo": "I16",
         "datos": {
-          "id": "u1-p24-dividendo-por-accion",
-          "variante": "dashboard-3col",
-          "mostrarAccion": false,
-          "enunciado": "Ajusta utilidad neta, porcentaje a repartir y número de acciones. Observa el dividendo estimado por acción.",
-          "formula": "dividendo_por_accion",
-          "entradas": [
+          "id": "u1-p24-simulador-dividendos",
+          "enunciado": "Explora cómo las ganancias de una empresa y la decisión de cuánto repartir entre los accionistas determinan el dividendo que recibes.",
+          "contexto": [
+            { "etiqueta": "Empresa", "valor": "La Pizzería S.A." },
+            { "etiqueta": "Tu participación", "valor": "100 de 1.000 acciones = 10 % del negocio" }
+          ],
+          "acciones": { "totales": 1000, "estudiante": 100 },
+          "pasos": [
             {
-              "id": "utilidad_neta",
-              "etiqueta": "Utilidad neta",
-              "unidad": " COP",
-              "min": 0,
-              "max": 1000000000,
-              "paso": 100000,
-              "valorInicial": 20000000,
-              "decimales": 0
+              "titulo": "¿Cuánto ganó la empresa?",
+              "descripcion": "Modifica las ganancias netas obtenidas durante el año.",
+              "control": {
+                "etiqueta": "Ganancias netas de la empresa",
+                "prefijo": "$",
+                "min": 0,
+                "max": 100000,
+                "paso": 1000,
+                "valorInicial": 50000,
+                "decimales": 0
+              }
             },
             {
-              "id": "porcentaje_repartir",
-              "etiqueta": "Porcentaje a repartir",
-              "unidad": " %",
-              "min": 0,
-              "max": 100,
-              "paso": 1,
-              "valorInicial": 50,
-              "decimales": 1
-            },
-            {
-              "id": "acciones_totales",
-              "etiqueta": "Acciones totales",
-              "unidad": " acciones",
-              "min": 1,
-              "max": 10000000,
-              "paso": 1,
-              "valorInicial": 1500,
-              "decimales": 0
-            },
-            {
-              "id": "acciones_estudiante",
-              "etiqueta": "Acciones que posees",
-              "unidad": " acciones",
-              "min": 0,
-              "max": 1000000,
-              "paso": 1,
-              "valorInicial": 100,
-              "decimales": 0
+              "titulo": "¿Cuánto decide repartir la empresa?",
+              "descripcion": "El porcentaje a repartir es la parte de las ganancias que se distribuye entre los accionistas.",
+              "control": {
+                "etiqueta": "Porcentaje de ganancias a repartir",
+                "sufijo": " %",
+                "min": 0,
+                "max": 100,
+                "paso": 1,
+                "valorInicial": 60,
+                "decimales": 0
+              },
+              "reparto": {
+                "titulo": "Destino de las ganancias",
+                "etiquetaRepartido": "Dividendos",
+                "etiquetaRetenido": "Ganancias retenidas"
+              }
             }
           ],
+          "resultados": {
+            "titulo": "Resultado de tu decisión",
+            "descripcion": "Los cálculos cambian automáticamente."
+          },
           "salidas": [
             {
               "id": "monto_a_repartir",
-              "etiqueta": "Monto a repartir",
-              "unidad": " COP",
+              "etiqueta": "Monto total a repartir",
               "decimales": 0,
               "acento": "gris"
             },
             {
               "id": "dividendo_por_accion",
               "etiqueta": "Dividendo por acción",
-              "unidad": " COP",
-              "decimales": 2,
-              "acento": "naranja"
+              "decimales": 0,
+              "decimalesMax": 2,
+              "acento": "gris"
             },
             {
               "id": "dividendo_estudiante",
-              "etiqueta": "Dividendo estimado del estudiante",
-              "unidad": " COP",
-              "decimales": 2,
-              "acento": "gris"
+              "etiqueta": "Tus ganancias en el bolsillo",
+              "decimales": 0,
+              "decimalesMax": 2,
+              "acento": "naranja"
             }
           ],
-          "mensajes": {
-            "positivo": "El ejercicio genera dividendo estimado.",
-            "cero": "No hay dividendo si la utilidad o el porcentaje a repartir es cero.",
-            "negativo": "No aplica; los inputs válidos no deben producir dividendos negativos."
-          }
+          "umbrales": { "alto": 80, "bajo": 20 },
+          "retro": {
+            "cero": {
+              "icono": "block",
+              "titulo": "Sin ganancias, no hay dividendos",
+              "texto": "La empresa no generó ganancias este año, así que no hay nada que repartir: el dividendo es $0."
+            },
+            "alto": {
+              "icono": "balance",
+              "titulo": "Un pago alto hoy",
+              "texto": "Gran pago para los accionistas. Pero ojo: la empresa se queda con poco dinero reservado para abrir nuevos locales o crecer."
+            },
+            "sinReparto": {
+              "icono": "savings",
+              "titulo": "Este año no se reparte nada",
+              "texto": "La empresa decidió no repartir dividendos y conservar el 100 % de las ganancias. No recibes dinero hoy; tu ganancia dependerá de que ese dinero reinvertido haga subir el precio de la acción."
+            },
+            "bajo": {
+              "icono": "potted_plant",
+              "titulo": "Más recursos para reinvertir",
+              "texto": "Recibes poco dinero hoy, pero la empresa guarda el {retenido} % para reinvertir y buscar generar más ganancias en el futuro."
+            },
+            "equilibrio": {
+              "icono": "lightbulb",
+              "titulo": "Busca el equilibrio",
+              "texto": "La empresa reparte el {repartido} % de sus ganancias y conserva el {retenido} %. Así combina un pago a los accionistas con recursos que pueden usarse para crecer."
+            }
+          },
+          "idea": {
+            "titulo": "Idea clave:",
+            "texto": "tu dividendo depende de tres cosas: cuánto gana la empresa, qué porcentaje decide repartir y cuántas acciones posees. Como tienes el 10 % de las acciones, recibes el 10 % del monto total distribuido."
+          },
+          "nota": "Actividad educativa — valores expresados en unidades monetarias ficticias."
         }
       },
       "progreso": true
@@ -1002,17 +1028,17 @@ window.OVA_CONTENIDO = {
         "tipo": "I01",
         "datos": {
           "id": "u1-c4-comprobacion",
-          "enunciado": "Contenido provisional — enunciado pendiente de Jose (DI). Este marcador se reemplaza cuando llegue el guion real.",
+          "enunciado": "Un inversor de 28 años declara que su principal objetivo financiero es maximizar el crecimiento de su capital a largo plazo (15 a 20 años). Expresa que comprende que los mercados financieros sufren caídas periódicas y está dispuesto a asumir altas volatilidades en el valor de sus inversiones a cambio de buscar mayores rendimientos. Según estas características, ¿cuál es el perfil de riesgo que mejor describe a este inversionista?",
           "intentos": 2,
           "opciones": [
-            { "id": "a", "texto": "Opción provisional A" },
-            { "id": "b", "texto": "Opción provisional B" },
-            { "id": "c", "texto": "Opción provisional C" }
+            { "id": "a", "texto": "Perfil Conservador" },
+            { "id": "b", "texto": "Perfil Moderado" },
+            { "id": "c", "texto": "Perfil Agresivo" }
           ],
-          "correcta": "a",
+          "correcta": "c",
           "retroalimentacion": {
-            "correcto": "Contenido provisional.",
-            "incorrecto": "Contenido provisional."
+            "correcto": "Correcto. El inversor combina un horizonte de inversión a largo plazo (15 a 20 años), tolerancia comprobada a las caídas del mercado (volatilidad) y el objetivo explícito de maximizar el crecimiento de su capital aceptando mayores riesgos: son las características del perfil agresivo.",
+            "incorrecto": "Recuerda: un horizonte de largo plazo, la disposición a asumir altas volatilidades y el objetivo de maximizar el crecimiento del capital son las características que definen al perfil agresivo, no al conservador ni al moderado."
           }
         }
       },

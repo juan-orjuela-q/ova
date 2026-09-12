@@ -677,7 +677,10 @@
 /* Ajustes tanda 13 (p22, "Calcula tú la valorización" — pantalla 15 de
    26): variante ancha de L06 para la calculadora en modo tablero
    (quiz.js, .calc-calculadora--dashboard, activada por router.js cuando
-   datos.variante === "dashboard"). 56rem alcanza para una interacción
+   datos.variante === "dashboard"). Ajustes tanda 15 la comparte el
+   simulador de dividendos de p24 (.calc-dividendos, I16), que la pide
+   con el campo explícito `ancho: "amplio"` de la pantalla en vez de
+   derivarla de la interacción. 56rem alcanza para una interacción
    apilada en una columna, pero se queda corto para controles+resultados
    en dos columnas lado a lado — el mismo criterio de "el ancho va en
    los hijos" de la nota de AJUSTES.md #2 de arriba, solo que con un

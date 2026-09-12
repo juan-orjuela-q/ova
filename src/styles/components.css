@@ -2944,6 +2944,416 @@ a.cap-tarjeta:hover {
   }
 }
 
+/* ---- I16 · Simulador de dividendos (ajustes tanda 15) ---------------
+   Pantalla 18 (p24). Familia `.calc-` como el resto de las insignia,
+   pero bloque propio y no `.calc-calculadora`: la cáscara de I10 es
+   "enunciado + sliders + salidas" y esta pieza es un escenario fijo, dos
+   pasos numerados, una barra de reparto y una retroalimentación con
+   estado — reusar la cáscara habría obligado a redefinir casi todas sus
+   reglas. Lo único que sí se reusa tal cual es `.calc-campo` (etiqueta +
+   valor + slider), que es exactamente el mismo control.
+
+   Misma estrategia responsive que las variantes tablero de ajustes tanda
+   13: apilado por defecto (mobile y anchos angostos, sin una sola regla
+   extra) y retícula de dos columnas recién desde 64em, donde router.js
+   ya le dio a L06 su variante ancha. */
+.calc-dividendos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+  /* A 320 px con zoom de texto 200 % una palabra larga de un título
+     ("¿Cuánto…") mide más que la columna disponible: sin esto, empuja
+     scroll horizontal (regla dura 7). */
+  overflow-wrap: break-word;
+}
+.calc-dividendos__enunciado {
+  color: var(--text-secondary);
+}
+
+/* Marco fijo del ejercicio: empresa y participación. No cambian con los
+   sliders, así que se leen como ficha y no como resultado. */
+.calc-dividendos__contexto {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  /* min() en el minmax: sin él, a zoom de texto 200 % los 14rem valen
+     448 px y la ficha desborda una pantalla de 320 px (regla dura 7). */
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  gap: var(--sp-3);
+}
+.calc-dividendos__contexto-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+}
+/* `.eyebrow` es inline-flex con `white-space: nowrap`: como ítem flex
+   estirado dentro de la ficha no baja de su max-content y a zoom 200 %
+   "TU PARTICIPACIÓN" desborda. Aquí el eyebrow es una etiqueta de una
+   ficha, no un chip de una línea, así que pasa a bloque y puede partir. */
+.calc-dividendos__contexto-etiqueta,
+.calc-dividendos__reparto-titulo {
+  display: block;
+  white-space: normal;
+}
+.calc-dividendos__contexto-etiqueta {
+  color: var(--text-brand);
+}
+
+/* ---- Columna de decisiones ---------------------------------------- */
+.calc-dividendos__controles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  padding: var(--sp-5);
+}
+.calc-dividendos__paso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.calc-dividendos__paso + .calc-dividendos__paso {
+  border-block-start: 1px solid var(--border-default);
+  padding-block-start: var(--sp-6);
+}
+.calc-dividendos__paso-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+/* Círculo inverse con el número en naranja-300: el mismo tratamiento
+   que ya usa `.lista-enriquecida` para los pasos numerados de p02 —no un
+   badge nuevo—, en tamaño chico porque aquí acompaña a un h3, no encabeza
+   una pantalla. Naranja-300 es el naranja que tokens.css reserva para
+   texto sobre superficie inverse. */
+.calc-dividendos__paso-numero {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--r-pill);
+  background: var(--surface-inverse);
+  color: var(--nuam-orange-300);
+  font: var(--text-h5);
+  font-variant-numeric: tabular-nums;
+}
+/* flex-basis explícita (y no `auto`): con `auto` el ancho de referencia
+   es el max-content del párrafo de descripción, que en escritorio supera
+   la columna y hace que el bloque de texto baje debajo del número por el
+   flex-wrap de la cabecera. Con una base chica encoge en vez de saltar
+   de línea, y el wrap queda reservado para los anchos donde de verdad
+   hace falta (320 px con zoom de texto al 200 %). */
+.calc-dividendos__paso-texto {
+  display: flex;
+  flex: 1 1 10rem;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.calc-dividendos__paso-descripcion {
+  color: var(--text-secondary);
+}
+.calc-dividendos__campo-valor {
+  color: var(--text-brand);
+}
+/* La cabecera compartida de .calc-campo es un flex sin wrap y su valor
+   es `white-space: nowrap`: a zoom de texto 200 % en 320 px la etiqueta
+   no puede encogerse más y el valor empuja fuera de la pantalla. Se
+   arregla acotado a este componente (no en la regla compartida, que
+   monta también p22 y p42 y no se pidió tocar): si no caben en la misma
+   línea, el valor baja. */
+.calc-dividendos .calc-campo__cabecera {
+  flex-wrap: wrap;
+}
+/* Extremos del recorrido del slider. aria-hidden en el JS: min y max ya
+   viajan en los atributos del <input type="range">, un lector de pantalla
+   los anuncia solo y repetirlos sería duplicar. */
+.calc-dividendos__rango {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  color: var(--text-tertiary);
+}
+
+/* ---- Barra de destino de las ganancias ----------------------------- */
+.calc-dividendos__reparto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-block-start: var(--sp-2);
+}
+.calc-dividendos__reparto-titulo {
+  color: var(--text-secondary);
+}
+.calc-dividendos__barra {
+  display: flex;
+  height: 12px;
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  background: var(--surface-muted);
+}
+/* inline-size por JS, no width: la barra crece en el eje de escritura y
+   no se anima (el cambio es instantáneo con el arrastre del slider, no
+   una transición — inventario de movimiento de CLAUDE.md). Naranja-500
+   contra gris-950: 5,2:1, muy por encima del 3:1 de gráfico
+   significativo, y ninguno de los dos queda naranja sobre gris 200–600. */
+.calc-dividendos__barra-segmento {
+  display: block;
+  height: 100%;
+}
+.calc-dividendos__barra-segmento--repartido {
+  background: var(--surface-brand);
+}
+.calc-dividendos__barra-segmento--retenido {
+  background: var(--surface-inverse);
+}
+.calc-dividendos__leyenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+}
+.calc-dividendos__leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.calc-dividendos__leyenda-texto {
+  font: var(--text-body-sm);
+  color: var(--text-secondary);
+}
+.calc-dividendos__punto {
+  flex-shrink: 0;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: var(--r-pill);
+}
+.calc-dividendos__punto--repartido {
+  background: var(--surface-brand);
+}
+.calc-dividendos__punto--retenido {
+  background: var(--surface-inverse);
+}
+
+/* ---- Columna de resultados ----------------------------------------- */
+.calc-dividendos__resultados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.calc-dividendos__resultados-cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin-block-end: var(--sp-1);
+}
+/* Etiqueta y operación a la izquierda, cifra a la derecha: el DOM va en
+   orden de lectura (etiqueta → cifra → operación) y la retícula es la
+   que mueve la cifra de lugar, sin tocar ese orden. */
+.calc-dividendos__resultado {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "etiqueta"
+    "valor"
+    "operacion";
+  row-gap: var(--sp-1);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+}
+/* Desde 40em la tarjeta se parte en dos: etiqueta y operación a la
+   izquierda, cifra a la derecha. Por debajo se apila —a 390 px la
+   columna de texto queda tan angosta que "Monto total a repartir"
+   rompía en tres líneas al lado de la cifra—. El DOM no cambia en
+   ninguno de los dos casos: sigue siendo etiqueta → cifra → operación,
+   que es el orden de lectura. */
+@media (min-width: 40em) {
+  .calc-dividendos__resultado {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "etiqueta valor"
+      "operacion valor";
+    align-items: center;
+    column-gap: var(--sp-4);
+  }
+  .calc-dividendos__resultado-valor {
+    text-align: end;
+  }
+}
+.calc-dividendos__resultado-etiqueta {
+  grid-area: etiqueta;
+  color: var(--text-secondary);
+}
+.calc-dividendos__resultado-valor {
+  grid-area: valor;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.calc-dividendos__resultado-operacion {
+  grid-area: operacion;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+/* Acentos: mismo vocabulario de ajustes tanda 13 —"gris" es superficie
+   inverse y "naranja" es la superficie de marca—, para que las tarjetas
+   de esta pantalla y las del tablero de p22/p24 se lean como el mismo
+   sistema. Aquí el naranja va en la tercera (lo que le llega al
+   estudiante), que es la que el DI destaca. */
+.calc-dividendos__resultado--gris {
+  background: var(--surface-inverse);
+  border-color: var(--surface-inverse);
+}
+.calc-dividendos__resultado--gris .calc-dividendos__resultado-etiqueta,
+.calc-dividendos__resultado--gris .calc-dividendos__resultado-operacion {
+  color: var(--text-on-inverse-2);
+}
+.calc-dividendos__resultado--gris .calc-dividendos__resultado-valor {
+  color: var(--text-on-inverse);
+}
+/* Naranja-500 de relleno, misma restricción de siempre (CLAUDE.md y la
+   nota de --text-on-brand-display en tokens.css): blanco sobre
+   naranja-500 mide 3,48:1 y solo cumple como texto grande. La cifra es
+   `tipo-h3` —24px/700 en :root y 28px/700 desde 48em—, texto grande en
+   todos los anchos, así que va en blanco siempre. La etiqueta y la
+   operación son texto normal: se quedan en --text-on-brand (gris 950) a
+   todo ancho, sin excepción por breakpoint. */
+.calc-dividendos__resultado--naranja {
+  background: var(--surface-brand);
+  border-color: var(--surface-brand);
+}
+.calc-dividendos__resultado--naranja .calc-dividendos__resultado-etiqueta,
+.calc-dividendos__resultado--naranja .calc-dividendos__resultado-operacion {
+  color: var(--text-on-brand);
+}
+.calc-dividendos__resultado--naranja .calc-dividendos__resultado-valor {
+  color: var(--text-on-brand-display);
+}
+
+/* ---- Retroalimentación contextual ---------------------------------- */
+/* Cuatro estados (cero/alto/bajo/equilibrio). El color nunca va solo
+   (regla dura 3): cada estado cambia además de ícono y de texto —el
+   título y el cuerpo se reescriben enteros en cada recálculo—, así que el
+   borde y el ícono son refuerzo, no el código del estado. min-height fijo
+   para que la columna no salte al cambiar de estado mientras se arrastra
+   un slider. */
+.calc-dividendos__retro {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  margin-block-start: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-subtle);
+  border-inline-start: 3px solid var(--border-strong);
+  min-height: 6rem;
+}
+.calc-dividendos__retro-icono {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  color: var(--text-tertiary);
+}
+.calc-dividendos__retro-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.calc-dividendos__retro-titulo {
+  color: var(--text-primary);
+}
+.calc-dividendos__retro[data-estado="cero"] {
+  border-inline-start-color: var(--nuam-red-500);
+}
+.calc-dividendos__retro[data-estado="cero"] .calc-dividendos__retro-icono {
+  color: var(--nuam-red-500);
+}
+.calc-dividendos__retro[data-estado="cero"] .calc-dividendos__retro-titulo {
+  color: var(--nuam-red-700);
+}
+.calc-dividendos__retro[data-estado="alto"] {
+  border-inline-start-color: var(--border-brand);
+}
+.calc-dividendos__retro[data-estado="alto"] .calc-dividendos__retro-icono {
+  color: var(--nuam-orange-500);
+}
+.calc-dividendos__retro[data-estado="alto"] .calc-dividendos__retro-titulo {
+  color: var(--text-brand);
+}
+/* "bajo" y "sinReparto" comparten el tratamiento verde: los dos dicen
+   "la empresa se queda con la plata para crecer", solo cambia el grado.
+   El verde aquí no es "correcto" —esta interacción no evalúa nada— sino
+   el verde de reinversión; lo que separa a los dos estados es el ícono y
+   el texto, que es lo que de verdad codifica el estado. */
+.calc-dividendos__retro[data-estado="bajo"],
+.calc-dividendos__retro[data-estado="sinReparto"] {
+  border-inline-start-color: var(--nuam-green-500);
+}
+.calc-dividendos__retro[data-estado="bajo"] .calc-dividendos__retro-icono,
+.calc-dividendos__retro[data-estado="sinReparto"] .calc-dividendos__retro-icono {
+  color: var(--nuam-green-500);
+}
+.calc-dividendos__retro[data-estado="bajo"] .calc-dividendos__retro-titulo,
+.calc-dividendos__retro[data-estado="sinReparto"] .calc-dividendos__retro-titulo {
+  color: var(--nuam-green-700);
+}
+
+/* ---- Cierre --------------------------------------------------------- */
+.calc-dividendos__idea {
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+.calc-dividendos__idea strong {
+  color: var(--text-primary);
+}
+.calc-dividendos__nota {
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+/* Dos columnas desde 64em, el mismo corte que las variantes tablero de
+   ajustes tanda 13 y el mismo ancho de L06 (layout--l06--ancho, que
+   router.js activa con pantalla.ancho === "amplio"). Proporción
+   1,1 / 0,9 como el artefacto del DI: la columna de decisiones necesita
+   algo más de aire que la de lectura. */
+@media (min-width: 64em) {
+  .calc-dividendos {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    grid-template-areas:
+      "enunciado enunciado"
+      "contexto contexto"
+      "controles resultados"
+      "idea idea"
+      "nota nota";
+    align-items: start;
+    column-gap: var(--sp-8);
+    row-gap: var(--sp-6);
+  }
+  .calc-dividendos__enunciado { grid-area: enunciado; }
+  .calc-dividendos__contexto { grid-area: contexto; }
+  .calc-dividendos__controles { grid-area: controles; }
+  .calc-dividendos__resultados { grid-area: resultados; }
+  .calc-dividendos__idea { grid-area: idea; }
+  .calc-dividendos__nota { grid-area: nota; }
+}
+
 /* ---- Línea de tiempo recorrible (I09, C6) --------------------------
    Reemplaza la versión ordenable de T8 (ver el bloque C6 en el
    encabezado de quiz.js): un panel único que muestra un paso a la vez

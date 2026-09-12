@@ -52,9 +52,14 @@ Estas no se negocian ni se re-discuten en cada sesión.
 8. **Los catálogos L01–L13 e I01–I14 son los de `BRIEF-DI.md`**, que es contra
    lo que Jose escribió las 47 pantallas. El código tuvo otros hasta el 4 de
    septiembre; C0 los renumeró. Ver la tabla de equivalencias en
-   `PLAN-CONTENIDO.md` §2 antes de tocar `layouts.css` o `quiz.js`. **I15 es
-   la excepción:** no está en `BRIEF-DI.md`, lo agregó `PLAN-ESTRUCTURA.md`
-   (E1) para la batería de diagnóstico — ver "El contrato de contenido".
+   `PLAN-CONTENIDO.md` §2 antes de tocar `layouts.css` o `quiz.js`. **I15 e
+   I16 son las excepciones:** no están en `BRIEF-DI.md`. I15 lo agregó
+   `PLAN-ESTRUCTURA.md` (E1) para la batería de diagnóstico; I16 (simulador
+   de dividendos) lo agregó el rediseño del ejercicio de p24 que entregó el
+   DI el 12 de septiembre — ver "El contrato de contenido". Sumar un tipo al
+   catálogo es la excepción, no el camino por defecto: solo cuando el DI
+   entrega una interacción nueva que ningún tipo existente monta sin
+   deformarse.
 9. **Marco fijo, scroll en el medio.** El documento no scrollea: `body` mide
    `100dvh` con `overflow: hidden`, las dos barras quedan fijas y el scroll
    vive en `#app`. La portada (L01) es la excepción: va sin barras, a sangre.
@@ -149,7 +154,7 @@ se genere sin escribir HTML pantalla por pantalla.
 ```
 
 Reglas del contrato: `layout` sale del catálogo L01..L13. `interaccion.tipo`
-sale del catálogo I01..I15. Si el JSON pide algo que no existe en el catálogo,
+sale del catálogo I01..I16. Si el JSON pide algo que no existe en el catálogo,
 el motor falla ruidosamente en consola — nunca renderiza a medias en silencio.
 Cada `interaccion` es una pregunta por pantalla (layout L10), con una sola
 excepción: **I15 cuestionario** empaqueta varias preguntas gradables del
@@ -158,10 +163,17 @@ resultado compartido al terminar, para el caso de una batería de diagnóstico.
 No es una forma genérica de meter "varias preguntas en una pantalla" —
 "banco de preguntas" sigue siendo el catálogo de tipos, no un lugar para
 acumular preguntas sueltas fuera de ese caso. El catálogo I01–I08 (preguntas),
-I14 (bloque de retroalimentación compartido) e I15 (cuestionario) y la forma
-exacta de `interaccion.datos` por tipo están documentados en el encabezado de
-`quiz.js`, no aquí — mismo criterio que el catálogo de layouts vive en
+I14 (bloque de retroalimentación compartido), I15 (cuestionario) e I16
+(simulador de dividendos de p24) y la forma exacta de `interaccion.datos` por
+tipo están documentados en el encabezado de `quiz.js` —I16 junto a su
+constructor—, no aquí — mismo criterio que el catálogo de layouts vive en
 `layouts.css`.
+
+Una pantalla de L06 puede pedir además `ancho: "amplio"`: el layout sube su
+ancho máximo de 56 rem a 88 rem desde 64 em, para interacciones que se
+disponen en dos columnas (el tablero de la calculadora en p22, el simulador de
+dividendos en p24). El ancho es del layout, no del componente, por eso viaja en
+la pantalla y no en `interaccion.datos`.
 
 Una pantalla puede llevar además `bloqueaAvance: true`: el botón Siguiente
 queda `aria-disabled` (nunca `disabled`: tiene que seguir alcanzable por

@@ -741,6 +741,19 @@
        constructor decide su propio momento, no se inventa uno aquí.
    Sin `opciones` (el caso de siempre, sin bloqueaAvance), alCompletar
    es un no-op — ninguna interacción existente cambia de comportamiento.
+
+   ---------------------------------------------------------------------
+   Ajustes tanda 15 (12 sep) — I16 simulador_dividendos. Segundo tipo
+   fuera de BRIEF-DI.md, después de I15: el DI rehízo el ejercicio de p24
+   (pantalla 18) porque la calculadora paramétrica no cumplía el objetivo
+   pedagógico. Reemplaza a I10/`dividendo_por_accion` SOLO en esa
+   pantalla — I10 y su fórmula quedan intactas (p22 las sigue usando, y
+   la kitchen sink conserva las tres instancias de I10). Despacha por
+   CONSTRUCTORES_INSIGNIA como I07–I13/I15. El contrato completo y el
+   porqué de un tipo propio en vez de cuatro campos opcionales nuevos en
+   I10 están documentados junto a su constructor
+   (construirSimuladorDividendos), no aquí — mismo criterio que el resto
+   de las insignia.
    ============================================================ */
 (function () {
   'use strict';
@@ -765,12 +778,18 @@
       .replace(/\s+/g, ' ');
   }
 
-  function formatearNumero(valor, decimales) {
+  // `decimalesMax` (ajustes tanda 15, opcional): permite "0 decimales si
+  // la cifra es redonda, hasta N si no" —lo que necesita I16 para que
+  // $30 se lea $30 y $16,65 no se redondee a $17 y deje de cuadrar con
+  // la operación que la cita—. Sin el tercer argumento, idéntica a
+  // siempre: mínimo y máximo son el mismo número.
+  function formatearNumero(valor, decimales, decimalesMax) {
     var n = Number(valor);
     var d = decimales == null ? 0 : decimales;
+    var dMax = decimalesMax == null ? d : decimalesMax;
     return new Intl.NumberFormat('es-CO', {
       minimumFractionDigits: d,
-      maximumFractionDigits: d
+      maximumFractionDigits: Math.max(d, dMax)
     }).format(n);
   }
 
@@ -2785,11 +2804,362 @@
     return raiz;
   }
 
+
+  /* ---- I16 · Simulador de dividendos (ajustes tanda 15) --------------
+     Reemplaza a I10/`dividendo_por_accion` en p24 (pantalla 18). El DI
+     rehízo el ejercicio porque la calculadora paramétrica no cumplía el
+     objetivo pedagógico: cuatro sliders sueltos dejaban al estudiante
+     moviendo números sin entender de dónde sale su dividendo. La versión
+     nueva fija el escenario (una empresa, 1.000 acciones, 100 tuyas =
+     10 %) y deja solo las dos decisiones que enseñan el concepto —cuánto
+     gana la empresa y qué porcentaje reparte—, muestra la operación
+     debajo de cada cifra y explica con texto qué significa el reparto
+     elegido.
+
+     No es una variante de I10 sino un tipo propio, misma decisión que
+     I11/I12/I13: su DOM no es "sliders + salidas" sino escenario fijo +
+     dos pasos numerados + barra de reparto + retroalimentación
+     contextual + idea de cierre. Meterlo en I10 habría sido cuatro
+     campos opcionales nuevos usados por una sola pantalla (el mismo
+     argumento que ya cerró la discusión de "N columnas genéricas" en
+     ajustes tanda 13). I10 queda intacta y la sigue usando p22.
+
+     La fórmula es fija —no sale de FORMULAS_CALCULADORA—: este tipo ES
+     el reparto de utilidades, igual que I11 ES la tabla de verdad de una
+     boleta de orden.
+
+     I16 simulador_dividendos { enunciado?, contexto?, acciones, pasos,
+                                resultados?, salidas, umbrales?, retro?,
+                                idea?, nota? }
+       - `acciones`: { totales, estudiante } — el escenario fijo. No son
+         sliders a propósito: la participación del estudiante tiene que
+         quedarse quieta para que se lea que su dividendo es siempre el
+         mismo porcentaje del monto repartido.
+       - `contexto`: [{ etiqueta, valor }, …] — las tarjetas de marco del
+         ejercicio (empresa, participación). Solo texto, sin cálculo.
+       - `pasos`: exactamente dos, en este orden: [0] utilidad de la
+         empresa, [1] porcentaje a repartir. Cada uno { titulo,
+         descripcion?, control: { etiqueta, min, max, paso, valorInicial,
+         prefijo?, sufijo?, decimales? } }. El paso [1] acepta además
+         `reparto: { titulo, etiquetaRepartido, etiquetaRetenido }` y
+         pinta la barra de destino de las ganancias. El orden importa
+         porque la fórmula es fija; si `pasos` no trae dos entradas el
+         motor falla ruidosamente, no renderiza a medias.
+       - `salidas`: exactamente tres { id, etiqueta, decimales?,
+         decimalesMax?, acento? }
+         con los ids fijos `monto_a_repartir`, `dividendo_por_accion` y
+         `dividendo_estudiante`. `acento` es el mismo vocabulario de
+         ajustes tanda 13 ("gris" = superficie inverse, "naranja" =
+         superficie de marca); aquí el naranja va en la tercera, que es
+         la que el DI destaca (lo que le llega al estudiante).
+       - `umbrales`: { alto, bajo } — cortes de porcentaje repartido para
+         la retroalimentación. Por defecto 80 y 20, los del artefacto.
+       - `retro`: { cero, alto, bajo, equilibrio, sinReparto? }, cada uno
+         { icono, titulo, texto }. `texto` admite los marcadores `{repartido}` y
+         `{retenido}` con el porcentaje vivo. El estado se comunica por
+         ícono + título + texto además del color (regla dura 3): el color
+         nunca va solo.
+       - `idea` / `nota`: cierre pedagógico y pie del ejercicio.
+
+     Sin botón de registro ni reporte a SCORM: es exploratoria, igual que
+     quedó p24 con `mostrarAccion: false` en ajustes tanda 13. Un único
+     <output> envolvente para las tres cifras, el mensaje y la barra —el
+     mismo criterio de "menos interrupciones" que I10 (ver el bloque C6):
+     tres regiones vivas anunciando en cada arrastre serían ruido. */
+  function construirSimuladorDividendos(idBase, idScorm, datos) {
+    var pasos = datos.pasos || [];
+    var salidas = datos.salidas || [];
+    if (pasos.length !== 2) {
+      throw new Error('I16 (simulador de dividendos) necesita exactamente dos pasos: utilidad y porcentaje a repartir.');
+    }
+    if (salidas.length !== 3) {
+      throw new Error('I16 (simulador de dividendos) necesita exactamente tres salidas: monto_a_repartir, dividendo_por_accion y dividendo_estudiante.');
+    }
+    var acciones = datos.acciones || {};
+    var accionesTotales = Number(acciones.totales);
+    var accionesEstudiante = Number(acciones.estudiante);
+    if (!(accionesTotales > 0)) {
+      throw new Error('I16 (simulador de dividendos) necesita "acciones.totales" mayor que cero.');
+    }
+    var umbrales = datos.umbrales || {};
+    var umbralAlto = umbrales.alto == null ? 80 : Number(umbrales.alto);
+    var umbralBajo = umbrales.bajo == null ? 20 : Number(umbrales.bajo);
+    var retro = datos.retro || {};
+
+    function formatearControl(control, valor) {
+      return (control.prefijo || '') + formatearNumero(valor, control.decimales) + (control.sufijo || '');
+    }
+
+    var raiz = crear_('div', 'calc-dividendos');
+    if (datos.enunciado) {
+      raiz.appendChild(crear_('p', 'calc-dividendos__enunciado tipo-cuerpo', datos.enunciado));
+    }
+
+    // Marco fijo del ejercicio. <ul> real: son datos hermanos, no prosa
+    // suelta, y un lector de pantalla anuncia "lista de 2 elementos".
+    if (datos.contexto && datos.contexto.length) {
+      var contexto = crear_('ul', 'calc-dividendos__contexto');
+      datos.contexto.forEach(function (item) {
+        var li = crear_('li', 'calc-dividendos__contexto-item');
+        li.appendChild(crear_('p', 'eyebrow calc-dividendos__contexto-etiqueta', item.etiqueta));
+        li.appendChild(crear_('p', 'tipo-h5 calc-dividendos__contexto-valor', item.valor));
+        contexto.appendChild(li);
+      });
+      raiz.appendChild(contexto);
+    }
+
+    var columnaControles = crear_('div', 'calc-dividendos__controles');
+    raiz.appendChild(columnaControles);
+
+    var campos = [];
+    var barra = null;
+    pasos.forEach(function (paso, indice) {
+      var control = paso.control || {};
+      var controlId = idBase + '-sim-' + indice;
+      var valorId = controlId + '-valor';
+
+      var bloque = crear_('div', 'calc-dividendos__paso');
+      var cabecera = crear_('div', 'calc-dividendos__paso-cabecera');
+      // El número es decorativo: el orden ya lo da el propio texto de
+      // cada título ("¿Cuánto ganó…?" / "¿Cuánto reparte…?") y no hay
+      // nada que contar para un lector de pantalla.
+      var numero = crear_('span', 'calc-dividendos__paso-numero', String(indice + 1));
+      numero.setAttribute('aria-hidden', 'true');
+      var textoPaso = crear_('div', 'calc-dividendos__paso-texto');
+      // h3 real: la pantalla monta su título en h2 (router.js,
+      // crearTitulo), así que estos dos son el nivel siguiente.
+      textoPaso.appendChild(crear_('h3', 'tipo-h4 calc-dividendos__paso-titulo', paso.titulo || ''));
+      if (paso.descripcion) {
+        textoPaso.appendChild(crear_('p', 'tipo-cuerpo-sm calc-dividendos__paso-descripcion', paso.descripcion));
+      }
+      cabecera.appendChild(numero);
+      cabecera.appendChild(textoPaso);
+      bloque.appendChild(cabecera);
+
+      var campo = crear_('div', 'calc-campo');
+      var filaEtiqueta = crear_('div', 'calc-campo__cabecera');
+      var etiqueta = crear_('label', 'calc-campo__etiqueta', control.etiqueta || '');
+      etiqueta.setAttribute('for', controlId);
+      var salidaValor = document.createElement('output');
+      salidaValor.className = 'calc-campo__valor calc-dividendos__campo-valor';
+      salidaValor.id = valorId;
+      salidaValor.setAttribute('for', controlId);
+      filaEtiqueta.appendChild(etiqueta);
+      filaEtiqueta.appendChild(salidaValor);
+      campo.appendChild(filaEtiqueta);
+
+      // input[type="range"] nativo por el mismo motivo que I10: teclado
+      // y rol de slider vienen del navegador, no de un div a medida.
+      var input = document.createElement('input');
+      input.type = 'range';
+      input.id = controlId;
+      input.min = String(control.min);
+      input.max = String(control.max);
+      input.step = String(control.paso);
+      input.value = String(control.valorInicial);
+      input.className = 'calc-campo__control';
+      input.setAttribute('aria-describedby', valorId);
+      campo.appendChild(input);
+
+      var rango = crear_('p', 'tipo-caption calc-dividendos__rango');
+      rango.setAttribute('aria-hidden', 'true');
+      rango.appendChild(crear_('span', null, formatearControl(control, Number(control.min))));
+      rango.appendChild(crear_('span', null, formatearControl(control, Number(control.max))));
+      campo.appendChild(rango);
+      bloque.appendChild(campo);
+
+      if (paso.reparto) {
+        var reparto = crear_('div', 'calc-dividendos__reparto');
+        reparto.appendChild(crear_('p', 'eyebrow calc-dividendos__reparto-titulo', paso.reparto.titulo || 'Destino de las ganancias'));
+        var pista = crear_('div', 'calc-dividendos__barra');
+        pista.setAttribute('aria-hidden', 'true');
+        var segRepartido = crear_('span', 'calc-dividendos__barra-segmento calc-dividendos__barra-segmento--repartido');
+        var segRetenido = crear_('span', 'calc-dividendos__barra-segmento calc-dividendos__barra-segmento--retenido');
+        pista.appendChild(segRepartido);
+        pista.appendChild(segRetenido);
+        reparto.appendChild(pista);
+        // La leyenda lleva el porcentaje en texto, no solo el color del
+        // segmento: la barra es aria-hidden y el dato vive aquí (regla
+        // dura 3 — el color nunca es el único código).
+        var leyenda = crear_('ul', 'calc-dividendos__leyenda');
+        var itemRepartido = crear_('li', 'calc-dividendos__leyenda-item');
+        var puntoRepartido = crear_('span', 'calc-dividendos__punto calc-dividendos__punto--repartido');
+        puntoRepartido.setAttribute('aria-hidden', 'true');
+        var textoRepartido = crear_('span', 'calc-dividendos__leyenda-texto');
+        itemRepartido.appendChild(puntoRepartido);
+        itemRepartido.appendChild(textoRepartido);
+        var itemRetenido = crear_('li', 'calc-dividendos__leyenda-item');
+        var puntoRetenido = crear_('span', 'calc-dividendos__punto calc-dividendos__punto--retenido');
+        puntoRetenido.setAttribute('aria-hidden', 'true');
+        var textoRetenido = crear_('span', 'calc-dividendos__leyenda-texto');
+        itemRetenido.appendChild(puntoRetenido);
+        itemRetenido.appendChild(textoRetenido);
+        leyenda.appendChild(itemRepartido);
+        leyenda.appendChild(itemRetenido);
+        reparto.appendChild(leyenda);
+        bloque.appendChild(reparto);
+        barra = {
+          repartido: segRepartido,
+          retenido: segRetenido,
+          textoRepartido: textoRepartido,
+          textoRetenido: textoRetenido,
+          etiquetaRepartido: paso.reparto.etiquetaRepartido || 'Dividendos',
+          etiquetaRetenido: paso.reparto.etiquetaRetenido || 'Ganancias retenidas'
+        };
+      }
+
+      columnaControles.appendChild(bloque);
+      campos.push({ input: input, output: salidaValor, control: control });
+    });
+
+    var columnaResultados = document.createElement('output');
+    columnaResultados.className = 'calc-dividendos__resultados';
+    raiz.appendChild(columnaResultados);
+
+    if (datos.resultados && datos.resultados.titulo) {
+      var cabeceraResultados = crear_('div', 'calc-dividendos__resultados-cabecera');
+      cabeceraResultados.appendChild(crear_('h3', 'tipo-h4', datos.resultados.titulo));
+      if (datos.resultados.descripcion) {
+        cabeceraResultados.appendChild(crear_('p', 'tipo-cuerpo-sm calc-dividendos__paso-descripcion', datos.resultados.descripcion));
+      }
+      columnaResultados.appendChild(cabeceraResultados);
+    }
+
+    // Tres hijos sueltos y no un envoltorio de texto: el orden del DOM
+    // (etiqueta → cifra → operación) es el orden de lectura que quiere un
+    // lector de pantalla, y la retícula de components.css es la que pone
+    // la cifra a la derecha sin alterarlo.
+    var tarjetas = salidas.map(function (salida) {
+      var tarjeta = crear_('div', 'calc-dividendos__resultado' + (salida.acento ? ' calc-dividendos__resultado--' + salida.acento : ''));
+      tarjeta.appendChild(crear_('p', 'calc-dividendos__resultado-etiqueta', salida.etiqueta || ''));
+      var valor = crear_('p', 'tipo-h3 calc-dividendos__resultado-valor');
+      var operacion = crear_('p', 'tipo-cuerpo-sm calc-dividendos__resultado-operacion');
+      tarjeta.appendChild(valor);
+      tarjeta.appendChild(operacion);
+      columnaResultados.appendChild(tarjeta);
+      return { valor: valor, operacion: operacion, cfg: salida };
+    });
+
+    var panelRetro = crear_('div', 'calc-dividendos__retro');
+    var iconoRetro = crear_('span', 'icono calc-dividendos__retro-icono');
+    iconoRetro.setAttribute('aria-hidden', 'true');
+    var textoRetro = crear_('div', 'calc-dividendos__retro-texto');
+    var tituloRetro = crear_('p', 'tipo-h5 calc-dividendos__retro-titulo');
+    var detalleRetro = crear_('p', 'tipo-cuerpo-sm');
+    textoRetro.appendChild(tituloRetro);
+    textoRetro.appendChild(detalleRetro);
+    panelRetro.appendChild(iconoRetro);
+    panelRetro.appendChild(textoRetro);
+    columnaResultados.appendChild(panelRetro);
+
+    if (datos.idea) {
+      var idea = crear_('p', 'tipo-cuerpo calc-dividendos__idea');
+      idea.appendChild(crear_('strong', null, datos.idea.titulo || 'Idea clave:'));
+      idea.appendChild(document.createTextNode(' ' + datos.idea.texto));
+      raiz.appendChild(idea);
+    }
+    if (datos.nota) {
+      raiz.appendChild(crear_('p', 'tipo-caption calc-dividendos__nota', datos.nota));
+    }
+
+    // Cada operación cita la cifra de la tarjeta anterior: se formatea
+    // con los decimales de ESA salida, no con los de la propia, para que
+    // el número escrito en la operación sea idéntico al que se ve arriba.
+    function salidaPorId(id) {
+      for (var i = 0; i < salidas.length; i++) {
+        if (salidas[i].id === id) return salidas[i];
+      }
+      return {};
+    }
+
+    function formatearSalida(id, valor) {
+      var cfg = salidaPorId(id);
+      return (campos[0].control.prefijo || '') + formatearNumero(valor, cfg.decimales, cfg.decimalesMax);
+    }
+
+    function interpolar(texto, repartido, retenido) {
+      return String(texto == null ? '' : texto)
+        .replace(/\{repartido\}/g, formatearNumero(repartido, 0))
+        .replace(/\{retenido\}/g, formatearNumero(retenido, 0));
+    }
+
+    function recalcular() {
+      var utilidad = parseFloat(campos[0].input.value);
+      var repartido = parseFloat(campos[1].input.value);
+      var retenido = 100 - repartido;
+
+      campos.forEach(function (campo) {
+        campo.output.textContent = formatearControl(campo.control, parseFloat(campo.input.value));
+      });
+
+      var montoARepartir = utilidad * (repartido / 100);
+      var dividendoPorAccion = montoARepartir / accionesTotales;
+      var dividendoEstudiante = dividendoPorAccion * accionesEstudiante;
+      var moneda = campos[0].control.prefijo || '';
+      var totalesTexto = formatearNumero(accionesTotales, 0);
+      var propiasTexto = formatearNumero(accionesEstudiante, 0);
+
+      var valores = {
+        monto_a_repartir: montoARepartir,
+        dividendo_por_accion: dividendoPorAccion,
+        dividendo_estudiante: dividendoEstudiante
+      };
+      // La operación se arma con las cifras vivas, no con un texto del
+      // contenido: es la parte que el DI pidió mostrar —"de dónde sale
+      // este número"— y tiene que cambiar con cada arrastre.
+      var operaciones = {
+        monto_a_repartir: moneda + formatearNumero(utilidad, 0) + ' × ' + formatearNumero(repartido, 0) + ' %',
+        dividendo_por_accion: formatearSalida('monto_a_repartir', montoARepartir) + ' ÷ ' + totalesTexto + ' acciones',
+        dividendo_estudiante: formatearSalida('dividendo_por_accion', dividendoPorAccion) + ' × ' + propiasTexto + ' acciones'
+      };
+
+      tarjetas.forEach(function (t) {
+        t.valor.textContent = formatearSalida(t.cfg.id, valores[t.cfg.id]);
+        t.operacion.textContent = operaciones[t.cfg.id];
+      });
+
+      if (barra) {
+        barra.repartido.style.inlineSize = repartido + '%';
+        barra.retenido.style.inlineSize = retenido + '%';
+        barra.textoRepartido.textContent = barra.etiquetaRepartido + ' · ' + formatearNumero(repartido, 0) + ' %';
+        barra.textoRetenido.textContent = barra.etiquetaRetenido + ' · ' + formatearNumero(retenido, 0) + ' %';
+      }
+
+      // "sinReparto" (repartió 0 % de una utilidad que sí existe) es un
+      // caso distinto de "cero" (no hubo utilidad): en el primero la
+      // empresa decidió reinvertir todo, en el segundo no había nada que
+      // decidir, y el texto de uno no sirve para el otro. Es opcional —
+      // sin `retro.sinReparto` en el contenido cae en el tramo bajo, que
+      // es el comportamiento del artefacto del DI.
+      var estado;
+      if (utilidad === 0) estado = 'cero';
+      else if (repartido === 0 && retro.sinReparto) estado = 'sinReparto';
+      else if (repartido >= umbralAlto) estado = 'alto';
+      else if (repartido <= umbralBajo) estado = 'bajo';
+      else estado = 'equilibrio';
+
+      var cfgRetro = retro[estado] || {};
+      panelRetro.dataset.estado = estado;
+      iconoRetro.textContent = cfgRetro.icono || 'lightbulb';
+      tituloRetro.textContent = cfgRetro.titulo || '';
+      detalleRetro.textContent = interpolar(cfgRetro.texto, repartido, retenido);
+    }
+
+    campos.forEach(function (campo) {
+      campo.input.addEventListener('input', recalcular);
+    });
+    recalcular();
+
+    return raiz;
+  }
+
   // A pesar del nombre (heredado de T8, cuando solo cubría I09–I12), esta
   // tabla es "constructores de widget autónomo, sin fieldset/Comprobar/
   // Reintentar" — C5 sumó I07/I08/I13 aquí por la misma razón que I09–I12,
   // no porque sean piezas insignia de unidad; E1 suma I15 por la misma
-  // razón otra vez. Ver el bloque C5/E1 en el encabezado del archivo.
+  // razón otra vez, y ajustes tanda 15 suma I16 (simulador de dividendos,
+  // p24) por tercera vez. Ver el bloque C5/E1 en el encabezado del
+  // archivo y el bloque de I16 junto a su constructor.
   var CONSTRUCTORES_INSIGNIA = {
     I07: construirTarjetasVolteables,
     I08: construirComparadorColumnas,
@@ -2798,7 +3168,8 @@
     I11: construirBoletaOrden,
     I12: construirDistribucionCapital,
     I13: construirTestPerfil,
-    I15: construirCuestionario
+    I15: construirCuestionario,
+    I16: construirSimuladorDividendos
   };
 
   // Numeración del brief tras C0 (ver la nota al inicio del archivo):
@@ -2849,7 +3220,7 @@
 
     var constructor = CONSTRUCTORES[interaccion.tipo];
     if (!constructor) {
-      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I05 (ni en completar/numerica/autoevaluacion) ni en I07/I08/I09–I13/I15.');
+      throw new Error('El tipo de interacción "' + interaccion.tipo + '" no existe en el catálogo I01–I05 (ni en completar/numerica/autoevaluacion) ni en I07/I08/I09–I13/I15/I16.');
     }
     var pregunta = constructor(idBase, idScorm, datos);
 

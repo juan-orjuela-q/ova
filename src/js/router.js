@@ -871,8 +871,18 @@
     // contrato de contenido, no de pantalla.id, para no acoplar el
     // motor a una pantalla concreta (misma lógica que el resto de
     // PLANTILLAS: reacciona a datos, no a ids).
+    //
+    // Ajustes tanda 15 (p24, I16): el simulador de dividendos necesita el
+    // mismo marco ancho pero no tiene `variante` —no es una calculadora
+    // paramétrica—, así que el contrato gana un campo explícito de
+    // pantalla, `ancho: "amplio"`. Es más honesto que seguir derivándolo
+    // de un campo de la interacción: el ancho es del layout, como ya
+    // decía la nota de arriba. La derivación por `variante` se conserva
+    // para p22, que no declara `ancho`.
     var datosInteraccion = pantalla.interaccion && pantalla.interaccion.datos;
-    if (datosInteraccion && /^dashboard/.test(datosInteraccion.variante || '')) {
+    var pideAncho = pantalla.ancho === 'amplio'
+      || (datosInteraccion && /^dashboard/.test(datosInteraccion.variante || ''));
+    if (pideAncho) {
       raiz.classList.add('layout--l06--ancho');
     }
     if (pantalla.kicker) raiz.appendChild(crearKicker(pantalla.kicker));
