@@ -711,6 +711,20 @@
    I10 están documentados junto a su constructor
    (construirSimuladorDividendos), no aquí — mismo criterio que el resto
    de las insignia.
+
+   ---------------------------------------------------------------------
+   Ajustes tanda 17 (12 sep) — I17 simulador_portafolio. Tercer tipo
+   fuera de BRIEF-DI.md, por la misma vía que los dos anteriores: el DI
+   entregó un artefacto nuevo (`Recursos/Nuevos simuladores/
+   simulador_portafolios.html`) y Juan pidió montarlo al final del
+   recorrido conservando su lógica. Pantalla nueva (27,
+   `p46-portafolio`), no reemplazo: no hay ninguna pantalla viva de
+   distribución de capital —p46/I12 está en el banco desde E4—. I12
+   queda intacta por si vuelve. Despacha por CONSTRUCTORES_INSIGNIA como
+   I07–I13/I15/I16; el contrato completo, la lógica heredada del
+   artefacto y las cuatro cosas que sí cambiaron (Chart.js fuera,
+   tablero oscuro, rombo del portafolio, `aria-valuetext`) están
+   documentados junto a su constructor (construirSimuladorPortafolio).
    ============================================================ */
 (function () {
   'use strict';
@@ -723,6 +737,20 @@
     var el = document.createElement(tag);
     if (className) el.className = className;
     if (texto != null) el.textContent = texto;
+    return el;
+  }
+
+  // Ajustes tanda 17 (I17): primer SVG armado dentro de quiz.js. Mismo
+  // helper que charts.js —createElementNS y atributos sueltos—; no se
+  // importa de allá porque charts.js no exporta utilidades, solo tipos
+  // de dato, y duplicar seis líneas es más barato que abrir su API.
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function svg_(tag, attrs) {
+    var el = document.createElementNS(SVG_NS, tag);
+    for (var k in attrs) {
+      if (Object.prototype.hasOwnProperty.call(attrs, k)) el.setAttribute(k, attrs[k]);
+    }
     return el;
   }
 
@@ -3409,12 +3437,508 @@
     return raiz;
   }
 
+  /* ---- I17 · Simulador de portafolio (ajustes tanda 17) ---------------
+     Pantalla 27 (p46-portafolio), última del recorrido. Tercer tipo
+     fuera de BRIEF-DI.md, después de I15 e I16, y por la misma razón:
+     el DI entregó un artefacto nuevo
+     (`Recursos/Nuevos simuladores/simulador_portafolios.html`) con una
+     interacción que ningún tipo del catálogo monta sin deformarse.
+
+     No es I12 ampliada. I12 (distribucion_capital, p46 archivada) es
+     "tres sliders que deben sumar 100 % + matriz de retro por perfil de
+     riesgo": valida una suma y consulta `perfil_riesgo` del estado.
+     Esta pieza no valida nada —normaliza sola— y su objeto de
+     enseñanza no es la suma sino la **frontera riesgo/rentabilidad**:
+     dos métricas calculadas como promedio ponderado y dos gráficos que
+     muestran de dónde salen. Meterla en I12 habría sido rentabilidad,
+     volatilidad, dos gráficos y una retro distinta como campos
+     opcionales usados por una sola pantalla — el mismo argumento que
+     cerró "N columnas genéricas" en ajustes tanda 13 y que separó I16
+     de I10 en la tanda 15. I12 queda intacta en el catálogo por si
+     vuelve p46 desde el banco.
+
+     La lógica es la del artefacto del DI, sin cambios:
+       - Los tres sliders son pesos crudos; la participación se obtiene
+         normalizando (`peso / suma × 100`), así que mover uno cambia la
+         participación de los tres. Con los tres en cero cae al reparto
+         igual (33,3 / 33,3 / 33,4), igual que el artefacto.
+       - `rentabilidad` y `riesgo` del portafolio son el promedio
+         ponderado de los tres activos. El riesgo así calculado ignora
+         la correlación entre activos (un portafolio real diversifica y
+         su volatilidad queda por debajo del promedio): es una
+         simplificación deliberada del DI para un curso introductorio y
+         `nota` la declara en pantalla.
+       - Tres estados de retro: el activo de perfil alto por encima del
+         umbral → `agresivo`; el de perfil bajo por encima del umbral →
+         `conservador`; en medio → `equilibrio`.
+
+     Lo que sí cambió respecto del artefacto, y por qué:
+       - **Chart.js sale** (regla dura 5: sin dependencias externas en
+         tiempo de ejecución). Los dos gráficos se dibujan en SVG a
+         mano, con el mismo criterio de charts.js: SVG decorativo en
+         `aria-hidden` + alternativa textual real —aquí la leyenda con
+         las participaciones vivas y un `<details>` con la tabla
+         completa—.
+       - **Tablero oscuro**, como la boleta de I11 (ajustes tanda 16):
+         no es decoración, es lo que hace legibles las series. Los
+         colores secundarios de tokens.css son rellenos para superficie
+         oscura —cyan mide 1,45:1 contra blanco y no llega al 3:1 que
+         WCAG 1.4.11 exige a un elemento gráfico significativo—. Sobre
+         gris 950 las cuatro series miden 5,2:1 (naranja), 13,5:1
+         (cyan), 17,5:1 (amarillo) y 19,7:1 (blanco). Ninguna es verde
+         ni roja: en el OVA esos dos son acierto y error, y esta
+         interacción no evalúa nada.
+       - **El punto del portafolio es un rombo, no un círculo.** El
+         color no es el único código (regla dura 3) tampoco dentro de un
+         gráfico: la forma distingue "tu portafolio" de los tres
+         activos aunque no se distinga el color.
+       - **`aria-valuetext` en cada slider.** El valor crudo del control
+         (0–100) no es lo que el estudiante ve: ve la participación
+         normalizada. Sin `aria-valuetext` un lector de pantalla
+         anunciaría un número que no está en ninguna parte de la
+         pantalla. Es la traducción del modelo del DI, no un cambio de
+         modelo.
+
+     I17 simulador_portafolio { enunciado?, ayuda?, activos, metricas?,
+                                graficos?, tabla?, umbral?, retro,
+                                idea?, nota? }
+       - `activos`: exactamente tres { id, etiqueta, perfil, rentabilidad,
+         volatilidad, valorInicial, descripcion? }. `perfil` es
+         'alto' | 'medio' | 'bajo' y decide la retro, no el color: el
+         color sale del orden del arreglo (serie 1, 2 y 3). Tres y no N
+         porque hay tres colores verificados contra el tablero oscuro;
+         un cuarto activo necesita un color con su medición, así que el
+         motor falla ruidosamente en vez de ciclar la paleta.
+       - `metricas`: { rentabilidad: { etiqueta, descripcion? }, riesgo:
+         { … } } — los dos promedios ponderados.
+       - `graficos`: { composicion: { titulo }, dispersion: { titulo,
+         ejeX, ejeY, descripcion?, maxX?, maxY? } }. `maxX`/`maxY`
+         fijan la escala del plano; sin ellos se derivan de los activos
+         con un 20 % de aire.
+       - `tabla`: { titulo?, columnas?, etiquetaPortafolio? } — la
+         alternativa textual del par de gráficos.
+       - `umbral`: corte de participación de los estados de retro (50
+         por defecto, el del artefacto).
+       - `retro`: { agresivo, conservador, equilibrio }, cada uno
+         { icono, titulo, texto }. `texto` admite los marcadores
+         `{rentabilidad}`, `{riesgo}` y `{<id de activo>}` con las
+         cifras vivas. Ícono + título + texto además del color (regla
+         dura 3).
+
+     Sin botón de registro ni reporte a SCORM, igual que I16: es
+     exploratoria. Un único <output> envolvente (tablero + retro) por el
+     criterio de "menos interrupciones" de I10/I16; la tabla de
+     `<details>` queda FUERA de ese <output> a propósito —se actualiza
+     con cada arrastre y anunciarla entera sería ruido, teniendo la
+     leyenda las mismas cifras—. */
+  function construirSimuladorPortafolio(idBase, idScorm, datos) {
+    var activos = datos.activos || [];
+    if (activos.length !== 3) {
+      throw new Error('I17 (simulador de portafolio) necesita exactamente tres activos: hay tres colores de serie verificados contra el tablero oscuro.');
+    }
+    var metricas = datos.metricas || {};
+    var graficos = datos.graficos || {};
+    var cfgComposicion = graficos.composicion || {};
+    var cfgDispersion = graficos.dispersion || {};
+    var cfgTabla = datos.tabla || {};
+    var retro = datos.retro || {};
+    var umbral = datos.umbral == null ? 50 : Number(datos.umbral);
+
+    var activoAlto = null;
+    var activoBajo = null;
+    activos.forEach(function (activo) {
+      if (activo.perfil === 'alto') activoAlto = activo;
+      if (activo.perfil === 'bajo') activoBajo = activo;
+    });
+    if (!activoAlto || !activoBajo) {
+      throw new Error('I17 (simulador de portafolio) necesita un activo con perfil "alto" y otro con perfil "bajo": son los dos que deciden la retroalimentación.');
+    }
+
+    // Escala del plano. Con 20 % de aire por encima del activo más
+    // extremo para que ningún punto quede pegado al borde.
+    var maxX = cfgDispersion.maxX == null
+      ? Math.max.apply(null, activos.map(function (a) { return Number(a.volatilidad); })) * 1.2
+      : Number(cfgDispersion.maxX);
+    var maxY = cfgDispersion.maxY == null
+      ? Math.max.apply(null, activos.map(function (a) { return Number(a.rentabilidad); })) * 1.2
+      : Number(cfgDispersion.maxY);
+
+    function pct(valor, decimales) {
+      return formatearNumero(valor, decimales == null ? 1 : decimales) + ' %';
+    }
+
+    var raiz = crear_('div', 'calc-portafolio');
+    if (datos.enunciado) {
+      raiz.appendChild(crear_('p', 'calc-portafolio__enunciado tipo-cuerpo', datos.enunciado));
+    }
+
+    /* ---- Columna de decisiones ---------------------------------- */
+    var columnaControles = crear_('div', 'calc-portafolio__controles');
+    raiz.appendChild(columnaControles);
+
+    var campos = [];
+    activos.forEach(function (activo, indice) {
+      var controlId = idBase + '-peso-' + indice;
+      var valorId = controlId + '-valor';
+
+      var bloque = crear_('div', 'calc-portafolio__activo');
+      bloque.setAttribute('data-serie', String(indice + 1));
+
+      var cabecera = crear_('div', 'calc-portafolio__activo-cabecera');
+      // La muestra de color es decorativa: el nombre del activo está al
+      // lado en texto y la relación color↔activo la establece la
+      // leyenda de los gráficos, que sí es contenido.
+      var muestra = crear_('span', 'calc-portafolio__muestra');
+      muestra.setAttribute('aria-hidden', 'true');
+      var textoActivo = crear_('div', 'calc-portafolio__activo-texto');
+      // h3 real: la pantalla monta su título en h2 (router.js), estos
+      // son el nivel siguiente. Mismo criterio que I16.
+      textoActivo.appendChild(crear_('h3', 'tipo-h5 calc-portafolio__activo-titulo', activo.etiqueta || ''));
+      var ficha = crear_('p', 'tipo-caption calc-portafolio__activo-ficha',
+        (activo.descripcion ? activo.descripcion + ' · ' : '')
+        + 'rentabilidad esperada ' + pct(activo.rentabilidad, 0)
+        + ' · volatilidad ' + pct(activo.volatilidad, 0));
+      textoActivo.appendChild(ficha);
+      cabecera.appendChild(muestra);
+      cabecera.appendChild(textoActivo);
+      bloque.appendChild(cabecera);
+
+      var campo = crear_('div', 'calc-campo');
+      var filaEtiqueta = crear_('div', 'calc-campo__cabecera');
+      var etiqueta = crear_('label', 'calc-campo__etiqueta', 'Peso de ' + (activo.etiqueta || ''));
+      etiqueta.setAttribute('for', controlId);
+      var salidaValor = document.createElement('output');
+      salidaValor.className = 'calc-campo__valor calc-portafolio__campo-valor';
+      salidaValor.id = valorId;
+      salidaValor.setAttribute('for', controlId);
+      // `<output>` es región viva por defecto, y aquí el mismo texto ya
+      // viaja en el `aria-valuetext` del slider que lo produce: sin esto
+      // cada golpe de flecha se anuncia dos veces. Es el criterio de
+      // "menos interrupciones" de I10/I16 aplicado al control, no al
+      // resultado — el valor sigue siendo texto real y visible.
+      salidaValor.setAttribute('aria-live', 'off');
+      filaEtiqueta.appendChild(etiqueta);
+      filaEtiqueta.appendChild(salidaValor);
+      campo.appendChild(filaEtiqueta);
+
+      // input[type="range"] nativo, mismo motivo que I10/I16: el rol de
+      // slider y el manejo de teclado los da el navegador.
+      var input = document.createElement('input');
+      input.type = 'range';
+      input.id = controlId;
+      input.min = '0';
+      input.max = '100';
+      input.step = '1';
+      input.value = String(activo.valorInicial == null ? 33 : activo.valorInicial);
+      input.className = 'calc-campo__control';
+      input.setAttribute('aria-describedby', valorId);
+      campo.appendChild(input);
+      bloque.appendChild(campo);
+
+      columnaControles.appendChild(bloque);
+      campos.push({ input: input, output: salidaValor, activo: activo });
+    });
+
+    if (datos.ayuda) {
+      columnaControles.appendChild(crear_('p', 'tipo-caption calc-portafolio__ayuda', datos.ayuda));
+    }
+
+    /* ---- Zona viva: tablero + retroalimentación ------------------ */
+    var resultados = document.createElement('output');
+    resultados.className = 'calc-portafolio__resultados';
+    raiz.appendChild(resultados);
+
+    var tablero = crear_('div', 'calc-portafolio__tablero');
+    resultados.appendChild(tablero);
+
+    var cifras = crear_('div', 'calc-portafolio__cifras');
+    tablero.appendChild(cifras);
+
+    function crearCifra(cfg, modificador) {
+      var bloque = crear_('div', 'calc-portafolio__cifra calc-portafolio__cifra--' + modificador);
+      bloque.appendChild(crear_('p', 'eyebrow calc-portafolio__cifra-etiqueta', (cfg && cfg.etiqueta) || ''));
+      var valor = crear_('p', 'tipo-h2 calc-portafolio__cifra-valor');
+      bloque.appendChild(valor);
+      if (cfg && cfg.descripcion) {
+        bloque.appendChild(crear_('p', 'tipo-caption calc-portafolio__cifra-descripcion', cfg.descripcion));
+      }
+      cifras.appendChild(bloque);
+      return valor;
+    }
+    var valorRentabilidad = crearCifra(metricas.rentabilidad, 'rentabilidad');
+    var valorRiesgo = crearCifra(metricas.riesgo, 'riesgo');
+
+    var zonaGraficos = crear_('div', 'calc-portafolio__graficos');
+    tablero.appendChild(zonaGraficos);
+
+    /* Composición: anillo. Los arcos se dibujan con stroke-dasharray
+       sobre un círculo, no con paths de sector: un arco de trazo se
+       recalcula cambiando dos números, no reescribiendo una ruta. */
+    var figComposicion = crear_('figure', 'calc-portafolio__grafico');
+    if (cfgComposicion.titulo) {
+      figComposicion.appendChild(crear_('figcaption', 'eyebrow calc-portafolio__grafico-titulo', cfgComposicion.titulo));
+    }
+    var RADIO = 44;
+    var CIRCUNFERENCIA = 2 * Math.PI * RADIO;
+    var svgAnillo = svg_('svg', { viewBox: '0 0 120 120', 'aria-hidden': 'true', class: 'calc-portafolio__anillo' });
+    svgAnillo.appendChild(svg_('circle', {
+      cx: 60, cy: 60, r: RADIO, class: 'calc-portafolio__anillo-pista'
+    }));
+    var arcos = activos.map(function (activo, indice) {
+      var arco = svg_('circle', {
+        cx: 60, cy: 60, r: RADIO,
+        class: 'calc-portafolio__anillo-arco',
+        'data-serie': String(indice + 1)
+      });
+      svgAnillo.appendChild(arco);
+      return arco;
+    });
+    figComposicion.appendChild(svgAnillo);
+    zonaGraficos.appendChild(figComposicion);
+
+    /* Dispersión: riesgo (x) contra rentabilidad (y). */
+    var figDispersion = crear_('figure', 'calc-portafolio__grafico');
+    if (cfgDispersion.titulo) {
+      figDispersion.appendChild(crear_('figcaption', 'eyebrow calc-portafolio__grafico-titulo', cfgDispersion.titulo));
+    }
+    var PLANO = { izq: 10, der: 98, arriba: 6, abajo: 62 };
+    function planoX(v) {
+      return PLANO.izq + (Math.max(0, Math.min(maxX, v)) / maxX) * (PLANO.der - PLANO.izq);
+    }
+    function planoY(v) {
+      return PLANO.abajo - (Math.max(0, Math.min(maxY, v)) / maxY) * (PLANO.abajo - PLANO.arriba);
+    }
+    var svgPlano = svg_('svg', { viewBox: '0 0 104 70', 'aria-hidden': 'true', class: 'calc-portafolio__plano' });
+    [0.25, 0.5, 0.75, 1].forEach(function (fraccion) {
+      svgPlano.appendChild(svg_('line', {
+        x1: PLANO.izq, x2: PLANO.der,
+        y1: planoY(maxY * fraccion), y2: planoY(maxY * fraccion),
+        class: 'calc-portafolio__plano-guia'
+      }));
+    });
+    svgPlano.appendChild(svg_('line', {
+      x1: PLANO.izq, x2: PLANO.der, y1: PLANO.abajo, y2: PLANO.abajo,
+      class: 'calc-portafolio__plano-eje'
+    }));
+    svgPlano.appendChild(svg_('line', {
+      x1: PLANO.izq, x2: PLANO.izq, y1: PLANO.arriba, y2: PLANO.abajo,
+      class: 'calc-portafolio__plano-eje'
+    }));
+    activos.forEach(function (activo, indice) {
+      svgPlano.appendChild(svg_('circle', {
+        cx: planoX(Number(activo.volatilidad)),
+        cy: planoY(Number(activo.rentabilidad)),
+        r: 3.4,
+        class: 'calc-portafolio__plano-punto',
+        'data-serie': String(indice + 1)
+      }));
+    });
+    // Rombo y no círculo: la forma distingue el portafolio de los tres
+    // activos sin depender del color (regla dura 3).
+    var puntoPortafolio = svg_('rect', {
+      x: -3.4, y: -3.4, width: 6.8, height: 6.8,
+      class: 'calc-portafolio__plano-portafolio'
+    });
+    svgPlano.appendChild(puntoPortafolio);
+    figDispersion.appendChild(svgPlano);
+
+    var ejes = crear_('div', 'calc-portafolio__ejes');
+    ejes.appendChild(crear_('span', 'tipo-caption', cfgDispersion.ejeY || 'Rentabilidad esperada ↑'));
+    ejes.appendChild(crear_('span', 'tipo-caption', cfgDispersion.ejeX || 'Riesgo →'));
+    figDispersion.appendChild(ejes);
+    zonaGraficos.appendChild(figDispersion);
+
+    /* Leyenda única para los dos gráficos: es la alternativa textual de
+       ambos y lleva la participación viva en texto, no solo el color. */
+    var leyenda = crear_('ul', 'calc-portafolio__leyenda');
+    var itemsLeyenda = activos.map(function (activo, indice) {
+      var li = crear_('li', 'calc-portafolio__leyenda-item');
+      li.setAttribute('data-serie', String(indice + 1));
+      var punto = crear_('span', 'calc-portafolio__muestra');
+      punto.setAttribute('aria-hidden', 'true');
+      var texto = crear_('span', 'calc-portafolio__leyenda-texto');
+      li.appendChild(punto);
+      li.appendChild(texto);
+      leyenda.appendChild(li);
+      return texto;
+    });
+    var itemPortafolio = crear_('li', 'calc-portafolio__leyenda-item');
+    var muestraPortafolio = crear_('span', 'calc-portafolio__muestra calc-portafolio__muestra--portafolio');
+    muestraPortafolio.setAttribute('aria-hidden', 'true');
+    var textoPortafolio = crear_('span', 'calc-portafolio__leyenda-texto');
+    itemPortafolio.appendChild(muestraPortafolio);
+    itemPortafolio.appendChild(textoPortafolio);
+    leyenda.appendChild(itemPortafolio);
+    tablero.appendChild(leyenda);
+
+    /* ---- Retroalimentación -------------------------------------- */
+    var panelRetro = crear_('div', 'calc-portafolio__retro');
+    var iconoRetro = crear_('span', 'icono calc-portafolio__retro-icono');
+    iconoRetro.setAttribute('aria-hidden', 'true');
+    var textoRetro = crear_('div', 'calc-portafolio__retro-texto');
+    var tituloRetro = crear_('p', 'tipo-h5 calc-portafolio__retro-titulo');
+    var detalleRetro = crear_('p', 'tipo-cuerpo-sm');
+    textoRetro.appendChild(tituloRetro);
+    textoRetro.appendChild(detalleRetro);
+    panelRetro.appendChild(iconoRetro);
+    panelRetro.appendChild(textoRetro);
+    resultados.appendChild(panelRetro);
+
+    /* ---- Alternativa textual completa --------------------------- */
+    // Fuera del <output> a propósito: se actualiza en cada arrastre y
+    // anunciar la tabla entera sería ruido (la leyenda ya lleva las
+    // mismas participaciones).
+    var detalle = crear_('details', 'dato-grafico__alternativa calc-portafolio__alternativa');
+    detalle.appendChild(crear_('summary', null, 'Ver datos en tabla'));
+    // Misma envoltura enfocable que construirTablaNodo en charts.js: con
+    // `overflow-x: auto` a secas la tabla no se puede desplazar con
+    // teclado, y a zoom de texto 200 % estas cuatro columnas desbordan.
+    var envoltura = crear_('div', 'dato-tabla__envoltura');
+    envoltura.setAttribute('tabindex', '0');
+    envoltura.setAttribute('role', 'region');
+    envoltura.setAttribute('aria-label', cfgTabla.titulo || 'Tabla de datos del portafolio');
+    var tabla = crear_('table', 'dato-tabla');
+    if (cfgTabla.titulo) tabla.appendChild(crear_('caption', null, cfgTabla.titulo));
+    var columnas = cfgTabla.columnas || ['Activo', 'Participación', 'Rentabilidad esperada', 'Riesgo'];
+    var thead = crear_('thead');
+    var filaCabecera = crear_('tr');
+    columnas.forEach(function (columna) {
+      var th = crear_('th', null, columna);
+      th.setAttribute('scope', 'col');
+      filaCabecera.appendChild(th);
+    });
+    thead.appendChild(filaCabecera);
+    tabla.appendChild(thead);
+    var tbody = crear_('tbody');
+    var celdasTabla = activos.map(function (activo) {
+      var tr = crear_('tr');
+      var th = crear_('th', null, activo.etiqueta || '');
+      th.setAttribute('scope', 'row');
+      tr.appendChild(th);
+      var participacion = crear_('td');
+      tr.appendChild(participacion);
+      tr.appendChild(crear_('td', null, pct(activo.rentabilidad, 0)));
+      tr.appendChild(crear_('td', null, pct(activo.volatilidad, 0)));
+      tbody.appendChild(tr);
+      return participacion;
+    });
+    var filaPortafolio = crear_('tr', 'calc-portafolio__fila-total');
+    var thPortafolio = crear_('th', null, cfgTabla.etiquetaPortafolio || 'Tu portafolio');
+    thPortafolio.setAttribute('scope', 'row');
+    filaPortafolio.appendChild(thPortafolio);
+    filaPortafolio.appendChild(crear_('td', null, '100 %'));
+    var celdaRentabilidad = crear_('td');
+    var celdaRiesgo = crear_('td');
+    filaPortafolio.appendChild(celdaRentabilidad);
+    filaPortafolio.appendChild(celdaRiesgo);
+    tbody.appendChild(filaPortafolio);
+    tabla.appendChild(tbody);
+    envoltura.appendChild(tabla);
+    detalle.appendChild(envoltura);
+    raiz.appendChild(detalle);
+
+    /* ---- Cierre -------------------------------------------------- */
+    if (datos.idea) {
+      var idea = crear_('p', 'tipo-cuerpo calc-portafolio__idea');
+      idea.appendChild(crear_('strong', null, datos.idea.titulo || 'Idea clave:'));
+      idea.appendChild(document.createTextNode(' ' + datos.idea.texto));
+      raiz.appendChild(idea);
+    }
+    if (datos.nota) {
+      raiz.appendChild(crear_('p', 'tipo-caption calc-portafolio__nota', datos.nota));
+    }
+
+    function interpolar(texto, participaciones, rentabilidad, riesgo) {
+      var salida = String(texto == null ? '' : texto)
+        .replace(/\{rentabilidad\}/g, pct(rentabilidad, 2))
+        .replace(/\{riesgo\}/g, pct(riesgo, 2));
+      activos.forEach(function (activo, indice) {
+        salida = salida.split('{' + activo.id + '}').join(pct(participaciones[indice], 1));
+      });
+      return salida;
+    }
+
+    function recalcular() {
+      var pesos = campos.map(function (campo) { return parseFloat(campo.input.value); });
+      var suma = pesos.reduce(function (acumulado, peso) { return acumulado + peso; }, 0);
+      // Los tres en cero: reparto igual, igual que el artefacto del DI.
+      // No es un caso de error —es una distribución vacía, y la única
+      // lectura sensata de "nada asignado" es "todo por igual"—.
+      var participaciones = suma === 0
+        ? [33.3, 33.3, 33.4]
+        : pesos.map(function (peso) { return (peso / suma) * 100; });
+
+      var rentabilidad = 0;
+      var riesgo = 0;
+      participaciones.forEach(function (participacion, indice) {
+        rentabilidad += (participacion / 100) * Number(activos[indice].rentabilidad);
+        riesgo += (participacion / 100) * Number(activos[indice].volatilidad);
+      });
+
+      campos.forEach(function (campo, indice) {
+        var texto = pct(participaciones[indice], 1);
+        campo.output.textContent = texto;
+        // El valor crudo del control no es lo que se muestra: sin esto
+        // un lector de pantalla anunciaría un número que no aparece en
+        // ninguna parte de la pantalla.
+        campo.input.setAttribute('aria-valuetext', texto + ' del portafolio');
+      });
+
+      valorRentabilidad.textContent = pct(rentabilidad, 2);
+      valorRiesgo.textContent = pct(riesgo, 2);
+
+      var recorrido = 0;
+      arcos.forEach(function (arco, indice) {
+        var largo = (participaciones[indice] / 100) * CIRCUNFERENCIA;
+        arco.setAttribute('stroke-dasharray', largo.toFixed(2) + ' ' + (CIRCUNFERENCIA - largo).toFixed(2));
+        arco.setAttribute('stroke-dashoffset', (-recorrido).toFixed(2));
+        recorrido += largo;
+      });
+
+      puntoPortafolio.setAttribute('transform',
+        'translate(' + planoX(riesgo).toFixed(2) + ' ' + planoY(rentabilidad).toFixed(2) + ') rotate(45)');
+
+      itemsLeyenda.forEach(function (texto, indice) {
+        texto.textContent = activos[indice].etiqueta + ' — ' + pct(participaciones[indice], 1);
+      });
+      textoPortafolio.textContent = (cfgTabla.etiquetaPortafolio || 'Tu portafolio')
+        + ' — ' + pct(rentabilidad, 2) + ' de rentabilidad, ' + pct(riesgo, 2) + ' de riesgo';
+
+      celdasTabla.forEach(function (celda, indice) {
+        celda.textContent = pct(participaciones[indice], 1);
+      });
+      celdaRentabilidad.textContent = pct(rentabilidad, 2);
+      celdaRiesgo.textContent = pct(riesgo, 2);
+
+      var indiceAlto = activos.indexOf(activoAlto);
+      var indiceBajo = activos.indexOf(activoBajo);
+      var estado;
+      if (participaciones[indiceAlto] > umbral) estado = 'agresivo';
+      else if (participaciones[indiceBajo] > umbral) estado = 'conservador';
+      else estado = 'equilibrio';
+
+      var cfgRetro = retro[estado] || {};
+      panelRetro.dataset.estado = estado;
+      iconoRetro.textContent = cfgRetro.icono || 'lightbulb';
+      tituloRetro.textContent = cfgRetro.titulo || '';
+      detalleRetro.textContent = interpolar(cfgRetro.texto, participaciones, rentabilidad, riesgo);
+    }
+
+    campos.forEach(function (campo) {
+      campo.input.addEventListener('input', recalcular);
+    });
+    recalcular();
+
+    return raiz;
+  }
+
   // A pesar del nombre (heredado de T8, cuando solo cubría I09–I12), esta
   // tabla es "constructores de widget autónomo, sin fieldset/Comprobar/
   // Reintentar" — C5 sumó I07/I08/I13 aquí por la misma razón que I09–I12,
   // no porque sean piezas insignia de unidad; E1 suma I15 por la misma
   // razón otra vez, y ajustes tanda 15 suma I16 (simulador de dividendos,
-  // p24) por tercera vez. Ver el bloque C5/E1 en el encabezado del
+  // p24) por tercera vez. Ajustes tanda 17 suma I17 (simulador de
+  // portafolio, pantalla 27) por cuarta vez. Ver el bloque C5/E1 en el encabezado del
   // archivo y el bloque de I16 junto a su constructor.
   var CONSTRUCTORES_INSIGNIA = {
     I07: construirTarjetasVolteables,
@@ -3425,7 +3949,8 @@
     I12: construirDistribucionCapital,
     I13: construirTestPerfil,
     I15: construirCuestionario,
-    I16: construirSimuladorDividendos
+    I16: construirSimuladorDividendos,
+    I17: construirSimuladorPortafolio
   };
 
   // Numeración del brief tras C0 (ver la nota al inicio del archivo):

@@ -134,6 +134,22 @@
      (120) están calibrados para que los tres estados de la tabla de
      verdad se alcancen en las dos operaciones sin salirse de los
      rangos de los campos.
+   - **`p46-portafolio` (ajustes tanda 17, 12 sep)** — pantalla 27,
+     nueva y última del recorrido. Juan pidió montar al final del curso
+     el segundo artefacto que entregó el DI
+     (`Recursos/Nuevos simuladores/simulador_portafolios.html`)
+     conservando su lógica. Es el único punto donde el conteo de 26 de
+     PLAN-ESTRUCTURA.md cambia, y a pedido explícito. No revive p46 (que
+     sigue en el banco con I12, otra interacción): de ahí el id
+     compuesto, misma convención que `p05-diagnostico` y
+     `p01-bienvenida`. Los tres emisores son los de p45/p46 del DI
+     —Petrocaribe, Andina Cementos y Banco del Sur, ya presentados como
+     riesgo alto / medio / medio-bajo—, no los del artefacto (TechNova /
+     Global Retail / SafeEnergy): Petrocaribe ya aparece en la boleta de
+     la pantalla 26 y el curso no gana nada estrenando tres nombres en
+     la última pantalla. Las cifras (18/25, 10/12, 5/4) sí son las del
+     artefacto, sin tocar. Volver a los nombres del DI es cambiar tres
+     `etiqueta` en este archivo, no código.
    - **`p01-bienvenida`**: L03 con `media.tipo:'retrato'` en vez de
      video/avatar dispara la variante `.layout--l03--retrato`;
      `progreso:false` porque es arranque, igual que p01a/p01b.
@@ -1171,6 +1187,100 @@ window.OVA_CONTENIDO = {
           "variable": {
             "nombre": "resultado_boleta"
           }
+        }
+      },
+      "progreso": true
+    },
+    {
+      "id": "p46-portafolio",
+      "layout": "L06",
+      "titulo": "Arma tu portafolio",
+      "unidad": "Unidad 1",
+      "capsula": "Simulador",
+      "kicker": "Unidad 1 \u00b7 Simulador",
+      "ancho": "amplio",
+      "interaccion": {
+        "tipo": "I17",
+        "datos": {
+          "id": "u1-p46-simulador-portafolio",
+          "enunciado": "Ning\u00fan activo es bueno o malo por s\u00ed solo: lo que decide tu resultado es la mezcla. Ajusta el peso de cada acci\u00f3n y observa c\u00f3mo se mueven a la vez la rentabilidad esperada y el riesgo de todo el portafolio.",
+          "ayuda": "Los tres pesos se reparten proporcionalmente hasta sumar 100 %: al subir uno, bajan los otros dos. No hay una combinaci\u00f3n correcta.",
+          "activos": [
+            {
+              "id": "petrocaribe",
+              "etiqueta": "Petrocaribe",
+              "descripcion": "Riesgo alto, sensible a los precios de la energ\u00eda",
+              "perfil": "alto",
+              "rentabilidad": 18,
+              "volatilidad": 25,
+              "valorInicial": 33
+            },
+            {
+              "id": "andinaCementos",
+              "etiqueta": "Andina Cementos",
+              "descripcion": "Riesgo medio, ligado a infraestructura y construcci\u00f3n",
+              "perfil": "medio",
+              "rentabilidad": 10,
+              "volatilidad": 12,
+              "valorInicial": 33
+            },
+            {
+              "id": "bancoDelSur",
+              "etiqueta": "Banco del Sur",
+              "descripcion": "Riesgo bajo, negocio financiero diversificado",
+              "perfil": "bajo",
+              "rentabilidad": 5,
+              "volatilidad": 4,
+              "valorInicial": 34
+            }
+          ],
+          "metricas": {
+            "rentabilidad": {
+              "etiqueta": "Rentabilidad esperada",
+              "descripcion": "Lo que el portafolio rendir\u00eda al a\u00f1o si cada acci\u00f3n se comporta como se espera."
+            },
+            "riesgo": {
+              "etiqueta": "Riesgo estimado",
+              "descripcion": "Cu\u00e1nto puede alejarse el resultado real de esa expectativa, hacia arriba o hacia abajo."
+            }
+          },
+          "graficos": {
+            "composicion": { "titulo": "Composici\u00f3n del portafolio" },
+            "dispersion": {
+              "titulo": "Riesgo frente a rentabilidad",
+              "ejeY": "\u2191 M\u00e1s rentabilidad esperada",
+              "ejeX": "M\u00e1s riesgo \u2192",
+              "maxX": 30,
+              "maxY": 22
+            }
+          },
+          "tabla": {
+            "titulo": "Tu portafolio y los tres emisores",
+            "etiquetaPortafolio": "Tu portafolio"
+          },
+          "umbral": 50,
+          "retro": {
+            "agresivo": {
+              "icono": "trending_up",
+              "titulo": "Enfoque agresivo",
+              "texto": "Con {petrocaribe} en Petrocaribe apuntas a la rentabilidad m\u00e1s alta ({rentabilidad}), pero tambi\u00e9n al riesgo m\u00e1s alto ({riesgo}): en un a\u00f1o malo, la ca\u00edda se siente en casi todo el portafolio."
+            },
+            "conservador": {
+              "icono": "shield",
+              "titulo": "Enfoque conservador",
+              "texto": "Con {bancoDelSur} en Banco del Sur el portafolio se mueve poco ({riesgo} de riesgo), a cambio de un retorno esperado m\u00e1s bajo ({rentabilidad}). Es la mezcla que prioriza dormir tranquilo."
+            },
+            "equilibrio": {
+              "icono": "balance",
+              "titulo": "Enfoque equilibrado",
+              "texto": "La mezcla queda en el punto medio: {rentabilidad} de rentabilidad esperada frente a {riesgo} de riesgo. Ni el emisor m\u00e1s vol\u00e1til ni el m\u00e1s estable dominan la decisi\u00f3n, que es la forma m\u00e1s simple de no depender de uno solo."
+            }
+          },
+          "idea": {
+            "titulo": "Idea clave:",
+            "texto": "rentabilidad y riesgo suben juntos. No existe la mezcla \u00f3ptima para todo el mundo: existe la que corresponde a tu objetivo, tu horizonte y el perfil de riesgo que identificaste en la C\u00e1psula 4."
+          },
+          "nota": "Petrocaribe, Andina Cementos y Banco del Sur son emisores de ejemplo y todas las cifras son ficticias. El riesgo del portafolio se calcula aqu\u00ed como promedio ponderado para mantener visible la relaci\u00f3n entre mezcla y riesgo; un c\u00e1lculo real tiene en cuenta adem\u00e1s c\u00f3mo se mueven los emisores entre s\u00ed. Actividad educativa: no constituye recomendaci\u00f3n de inversi\u00f3n."
         }
       },
       "progreso": true

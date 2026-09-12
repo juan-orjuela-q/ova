@@ -4118,3 +4118,388 @@ a.cap-tarjeta:hover {
 .pref-aviso__cerrar .icono {
   font-size: 1rem;
 }
+
+/* ---- I17 · Simulador de portafolio (ajustes tanda 17) ---------------
+   Pantalla 27 (p46-portafolio), última del recorrido. Familia `.calc-`
+   como el resto de las insignia y bloque propio por lo mismo que I16 no
+   reusó `.calc-calculadora`: la cáscara de esta pieza es "tres pesos +
+   tablero de mercado + retro", no "sliders y salidas". Lo que sí se
+   reusa tal cual es `.calc-campo` (etiqueta + valor + slider) y
+   `.dato-tabla` / `.dato-grafico__alternativa` de T7 para la tabla.
+
+   Misma estrategia responsive que las variantes tablero de ajustes
+   tanda 13 y que I16: apilado por defecto y retícula de dos columnas
+   desde 64em, donde router.js ya le dio a L06 su variante ancha. */
+.calc-portafolio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+  /* Igual que I16: a 320 px con zoom de texto 200 % una palabra larga
+     mide más que la columna y empuja scroll horizontal (regla dura 7). */
+  overflow-wrap: break-word;
+}
+.calc-portafolio__enunciado {
+  color: var(--text-secondary);
+}
+
+/* ---- Series -------------------------------------------------------
+   El color de cada activo sale del ORDEN del arreglo (serie 1, 2 y 3),
+   no de su perfil de riesgo: el perfil decide la retroalimentación y el
+   color solo separa tres cosas que no son ni acierto ni error —el caso
+   que tokens.css abre explícitamente para la paleta secundaria—.
+
+   Las tres viven sobre el tablero oscuro y ahí miden 5,2:1 (naranja
+   500), 13,5:1 (cyan) y 17,5:1 (amarillo) contra gris 950: por encima
+   del 3:1 que WCAG 1.4.11 exige a un elemento gráfico significativo.
+   Sobre superficie clara el cyan mide 1,45:1 y el amarillo 1,12:1 — por
+   eso el tablero es oscuro y no al revés. Ninguna es verde ni roja:
+   en el OVA esos dos codifican acierto y error.
+
+   La única muestra que vive sobre superficie clara es la de la columna
+   de decisiones. Ahí el color es redundante (el nombre del activo está
+   al lado, la muestra es aria-hidden), así que lleva borde gris 950 de
+   1 px: la forma queda legible aunque el relleno no contraste. */
+.calc-portafolio [data-serie="1"] { --serie: var(--nuam-orange-500); }
+.calc-portafolio [data-serie="2"] { --serie: var(--nuam-cyan-500); }
+.calc-portafolio [data-serie="3"] { --serie: var(--nuam-amarillo-500); }
+
+.calc-portafolio__muestra {
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: var(--r-pill);
+  background: var(--serie, var(--surface-inverse));
+}
+.calc-portafolio__muestra--portafolio {
+  background: var(--surface-inverse);
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+
+/* ---- Columna de decisiones ----------------------------------------- */
+.calc-portafolio__controles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  padding: var(--sp-5);
+}
+.calc-portafolio__activo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.calc-portafolio__activo + .calc-portafolio__activo {
+  border-block-start: 1px solid var(--border-default);
+  padding-block-start: var(--sp-5);
+}
+.calc-portafolio__activo-cabecera {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+.calc-portafolio__activo .calc-portafolio__muestra {
+  margin-block-start: 0.3em;
+  border: 1px solid var(--nuam-grey-950);
+}
+.calc-portafolio__activo-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.calc-portafolio__activo-ficha {
+  color: var(--text-secondary);
+}
+.calc-portafolio__campo-valor {
+  color: var(--text-brand);
+}
+/* Misma corrección acotada que I16: la cabecera compartida de
+   `.calc-campo` es un flex sin wrap y su valor es `white-space: nowrap`,
+   así que a zoom de texto 200 % en 320 px el valor empuja fuera de la
+   pantalla. Aquí el valor baja de línea en vez de desbordar. */
+.calc-portafolio .calc-campo__cabecera {
+  flex-wrap: wrap;
+}
+.calc-portafolio__ayuda {
+  color: var(--text-tertiary);
+}
+
+/* ---- Zona viva ------------------------------------------------------ */
+.calc-portafolio__resultados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* Tablero oscuro: el uso puntual de --surface-inverse que permite
+   CLAUDE.md (igual que la boleta de I11), no un tema oscuro. Enunciado,
+   controles, retro, tabla y nota se quedan sobre superficie clara. */
+.calc-portafolio__tablero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+}
+.calc-portafolio__cifras {
+  display: grid;
+  /* min() en el minmax por lo mismo que en I16: sin él, a zoom de texto
+     200 % los 12rem valen 384 px y desbordan una pantalla de 320 px. */
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+  gap: var(--sp-4);
+}
+.calc-portafolio__cifra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  border-radius: var(--r-sm);
+  background: var(--nuam-grey-900);
+}
+/* `.eyebrow` es inline-flex con `white-space: nowrap`; como ítem flex
+   estirado no baja de su max-content y a zoom 200 % desborda. Misma
+   corrección que en I16 (ajustes tanda 15). */
+.calc-portafolio__cifra-etiqueta,
+.calc-portafolio__grafico-titulo {
+  display: block;
+  white-space: normal;
+}
+.calc-portafolio__cifra-etiqueta {
+  color: var(--nuam-orange-300);
+}
+.calc-portafolio__cifra-valor {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-on-inverse);
+}
+.calc-portafolio__cifra-descripcion {
+  color: var(--text-on-inverse-2);
+}
+/* La rentabilidad es la cifra que el ejercicio destaca; el riesgo es su
+   contrapeso y por eso comparten tamaño. La distinción no es de color:
+   cada una lleva su etiqueta en texto. */
+.calc-portafolio__cifra--rentabilidad {
+  border-inline-start: 3px solid var(--nuam-orange-500);
+}
+.calc-portafolio__cifra--riesgo {
+  border-inline-start: 3px solid var(--nuam-cyan-500);
+}
+
+/* ---- Gráficos ------------------------------------------------------- */
+.calc-portafolio__graficos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+@media (min-width: 40em) {
+  .calc-portafolio__graficos {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+}
+.calc-portafolio__grafico {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin: 0;
+}
+.calc-portafolio__grafico-titulo {
+  color: var(--text-on-inverse-2);
+}
+/* Los dos SVG son aria-hidden: la leyenda de abajo y el <details> con la
+   tabla son la alternativa textual real. Los colores van por la
+   propiedad CSS `fill`/`stroke`, nunca por el atributo de presentación
+   —los atributos SVG no leen custom properties de forma consistente
+   entre navegadores (hallazgo de T5 con `.anillo`)—. */
+.calc-portafolio__anillo {
+  inline-size: 100%;
+  max-inline-size: 13rem;
+  block-size: auto;
+  margin-inline: auto;
+}
+.calc-portafolio__anillo-pista {
+  fill: none;
+  stroke: var(--nuam-grey-800);
+  stroke-width: 22;
+}
+/* Sin transición: el arco cambia con el arrastre del slider, que ya es
+   continuo — animarlo lo dejaría siempre un paso atrás del control
+   (inventario de movimiento de CLAUDE.md). */
+.calc-portafolio__anillo-arco {
+  fill: none;
+  stroke: var(--serie);
+  stroke-width: 22;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+.calc-portafolio__plano {
+  inline-size: 100%;
+  block-size: auto;
+}
+.calc-portafolio__plano-guia {
+  stroke: var(--nuam-grey-800);
+  stroke-width: 0.4;
+}
+.calc-portafolio__plano-eje {
+  stroke: var(--border-inverse);
+  stroke-width: 0.6;
+}
+.calc-portafolio__plano-punto {
+  fill: var(--serie);
+}
+/* Blanco sobre gris 950: 19,7:1, y con forma propia (rombo) para no
+   depender del color — el punto del portafolio es el que el estudiante
+   sigue mientras mueve los pesos. */
+.calc-portafolio__plano-portafolio {
+  fill: var(--nuam-grey-0);
+  stroke: var(--surface-inverse);
+  stroke-width: 1;
+}
+.calc-portafolio__ejes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-4);
+  color: var(--text-on-inverse-2);
+}
+
+/* ---- Leyenda -------------------------------------------------------- */
+/* Lleva la participación en texto, no solo el color: es la alternativa
+   textual de los dos gráficos y el cumplimiento de la regla dura 3. */
+.calc-portafolio__leyenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+}
+.calc-portafolio__leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.calc-portafolio__leyenda-texto {
+  font: var(--text-body-sm);
+  color: var(--text-on-inverse);
+}
+/* El rombo del portafolio sobre el tablero va blanco, no gris 950: es la
+   única muestra que vive sobre superficie oscura. */
+.calc-portafolio__leyenda .calc-portafolio__muestra--portafolio {
+  background: var(--nuam-grey-0);
+}
+
+/* ---- Retroalimentación ---------------------------------------------- */
+/* Tres estados (agresivo / conservador / equilibrio). Ninguno es acierto
+   ni error —esta interacción no evalúa nada—, así que no hay verde ni
+   rojo: naranja para la exposición alta, azul para la conservadora y
+   neutro para el punto medio. El color nunca va solo (regla dura 3):
+   cada estado cambia además de ícono, de título y de texto. min-height
+   fijo para que la columna no salte al cambiar de estado mientras se
+   arrastra un slider. */
+.calc-portafolio__retro {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-subtle);
+  border-inline-start: 3px solid var(--border-strong);
+  min-height: 6rem;
+}
+.calc-portafolio__retro-icono {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  color: var(--text-tertiary);
+}
+.calc-portafolio__retro-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.calc-portafolio__retro-titulo {
+  color: var(--text-primary);
+}
+.calc-portafolio__retro[data-estado="agresivo"] {
+  border-inline-start-color: var(--border-brand);
+}
+.calc-portafolio__retro[data-estado="agresivo"] .calc-portafolio__retro-icono {
+  color: var(--nuam-orange-500);
+}
+.calc-portafolio__retro[data-estado="agresivo"] .calc-portafolio__retro-titulo {
+  color: var(--text-brand);
+}
+/* Azul 500 es el único de los cuatro secundarios que tokens.css habilita
+   como texto sobre superficie clara (10,44:1). */
+.calc-portafolio__retro[data-estado="conservador"] {
+  border-inline-start-color: var(--nuam-azul-500);
+}
+.calc-portafolio__retro[data-estado="conservador"] .calc-portafolio__retro-icono,
+.calc-portafolio__retro[data-estado="conservador"] .calc-portafolio__retro-titulo {
+  color: var(--nuam-azul-500);
+}
+.calc-portafolio__retro[data-estado="equilibrio"] {
+  border-inline-start-color: var(--nuam-grey-950);
+}
+.calc-portafolio__retro[data-estado="equilibrio"] .calc-portafolio__retro-icono {
+  color: var(--text-primary);
+}
+
+/* ---- Alternativa y cierre ------------------------------------------- */
+.calc-portafolio__alternativa .dato-tabla {
+  margin-block-start: var(--sp-3);
+}
+.calc-portafolio__fila-total th,
+.calc-portafolio__fila-total td {
+  font-weight: 700;
+}
+.calc-portafolio__idea {
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--surface-default);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+.calc-portafolio__idea strong {
+  color: var(--text-primary);
+}
+.calc-portafolio__nota {
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+/* Dos columnas desde 64em, el mismo corte y el mismo ancho de L06 que
+   I16 y las variantes tablero de ajustes tanda 13. La proporción se
+   invierte respecto de I16: aquí la columna que necesita aire es la del
+   tablero (dos gráficos uno al lado del otro), no la de decisiones. */
+@media (min-width: 64em) {
+  .calc-portafolio {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    /* `resultados` ocupa dos filas: el tablero es bastante más alto que
+       la columna de decisiones y, sin esto, la tabla plegada quedaba
+       sola al pie de un hueco vertical del alto de los dos gráficos. */
+    grid-template-areas:
+      "enunciado enunciado"
+      "controles resultados"
+      "alternativa resultados"
+      "idea idea"
+      "nota nota";
+    grid-template-rows: auto auto 1fr auto auto;
+    align-items: start;
+    column-gap: var(--sp-8);
+    row-gap: var(--sp-6);
+  }
+  .calc-portafolio__enunciado { grid-area: enunciado; }
+  .calc-portafolio__controles { grid-area: controles; }
+  .calc-portafolio__resultados { grid-area: resultados; }
+  .calc-portafolio__alternativa { grid-area: alternativa; }
+  .calc-portafolio__idea { grid-area: idea; }
+  .calc-portafolio__nota { grid-area: nota; }
+}

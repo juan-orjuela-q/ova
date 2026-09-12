@@ -1266,6 +1266,27 @@
           </p>
           <div class="ks-layout-marco ks-ancho-marco" id="c-insignia-i16-simulador"></div>
         </div>
+        <div class="ks-layout-bloque" id="c-insignia-i17">
+          <span class="ks-layout-bloque__etiqueta">I17 · Simulador de portafolio — tres pesos, tablero oscuro (pantalla 27 / P46-portafolio, ajustes tanda 17)</span>
+          <p class="ks-intro">
+            Segundo artefacto del DI, montado al final del recorrido con
+            su lógica intacta: los tres sliders son pesos crudos y la
+            participación se normaliza sola, así que mover uno cambia los
+            tres. Rentabilidad y riesgo son el promedio ponderado de los
+            tres emisores. Tres estados de retroalimentación, todos a un
+            arrastre: <strong>Petrocaribe por encima de 50 %</strong> →
+            <em>agresivo</em>; <strong>Banco del Sur por encima de
+            50 %</strong> → <em>conservador</em>; ninguno de los dos →
+            <em>equilibrio</em>, que es donde arranca (33/33/34 → 10,99 %
+            de rentabilidad y 13,63 % de riesgo). Los dos gráficos son
+            SVG propio, sin Chart.js (regla dura 5), y viven sobre
+            tablero oscuro porque el cyan y el amarillo de la paleta
+            secundaria no llegan a 3:1 sobre superficie clara. Con los
+            tres sliders en cero cae al reparto igual (33,3/33,3/33,4),
+            igual que el artefacto.
+          </p>
+          <div class="ks-layout-marco ks-ancho-marco" id="c-insignia-i17-simulador"></div>
+        </div>
         <div class="ks-layout-bloque" id="c-insignia-i11">
           <span class="ks-layout-bloque__etiqueta">I11 · Boleta de orden — ficha oscura, Petrocaribe (pantalla 26 / P42)</span>
           <p class="ks-intro">
@@ -2922,6 +2943,48 @@
           },
           idea: { titulo: 'Idea clave:', texto: 'tu dividendo depende de tres cosas: cuánto gana la empresa, qué porcentaje decide repartir y cuántas acciones posees. Como tienes el 10 % de las acciones, recibes el 10 % del monto total distribuido.' },
           nota: 'Actividad educativa — valores expresados en unidades monetarias ficticias.'
+        }
+      });
+      if (contenedor && nodo) contenedor.appendChild(nodo);
+    })();
+  </script>
+
+  <!-- I17, simulador de portafolio (ajustes tanda 17, pantalla 27).
+       Mismos datos que el contenido: los tres emisores de P45/P46 con
+       las cifras del artefacto del DI. Los valores iniciales (33/33/34)
+       caen en "equilibrio" sin tocar nada; los otros dos estados quedan
+       anotados arriba, a un arrastre. -->
+  <script>
+    (function () {
+      var contenedor = document.getElementById('c-insignia-i17-simulador');
+      var nodo = OVA.quiz.crear({
+        tipo: 'I17',
+        datos: {
+          id: 'ks-p46-simulador-portafolio',
+          enunciado: 'Ajusta el peso de cada acción y observa cómo se mueven a la vez la rentabilidad esperada y el riesgo de todo el portafolio.',
+          ayuda: 'Los tres pesos se reparten proporcionalmente hasta sumar 100 %: al subir uno, bajan los otros dos. No hay una combinación correcta.',
+          activos: [
+            { id: 'petrocaribe', etiqueta: 'Petrocaribe', descripcion: 'Riesgo alto, sensible a los precios de la energía', perfil: 'alto', rentabilidad: 18, volatilidad: 25, valorInicial: 33 },
+            { id: 'andinaCementos', etiqueta: 'Andina Cementos', descripcion: 'Riesgo medio, ligado a infraestructura y construcción', perfil: 'medio', rentabilidad: 10, volatilidad: 12, valorInicial: 33 },
+            { id: 'bancoDelSur', etiqueta: 'Banco del Sur', descripcion: 'Riesgo bajo, negocio financiero diversificado', perfil: 'bajo', rentabilidad: 5, volatilidad: 4, valorInicial: 34 }
+          ],
+          metricas: {
+            rentabilidad: { etiqueta: 'Rentabilidad esperada', descripcion: 'Lo que el portafolio rendiría al año si cada acción se comporta como se espera.' },
+            riesgo: { etiqueta: 'Riesgo estimado', descripcion: 'Cuánto puede alejarse el resultado real de esa expectativa, hacia arriba o hacia abajo.' }
+          },
+          graficos: {
+            composicion: { titulo: 'Composición del portafolio' },
+            dispersion: { titulo: 'Riesgo frente a rentabilidad', ejeY: '↑ Más rentabilidad esperada', ejeX: 'Más riesgo →', maxX: 30, maxY: 22 }
+          },
+          tabla: { titulo: 'Tu portafolio y los tres emisores', etiquetaPortafolio: 'Tu portafolio' },
+          umbral: 50,
+          retro: {
+            agresivo: { icono: 'trending_up', titulo: 'Enfoque agresivo', texto: 'Con {petrocaribe} en Petrocaribe apuntas a la rentabilidad más alta ({rentabilidad}), pero también al riesgo más alto ({riesgo}): en un año malo, la caída se siente en casi todo el portafolio.' },
+            conservador: { icono: 'shield', titulo: 'Enfoque conservador', texto: 'Con {bancoDelSur} en Banco del Sur el portafolio se mueve poco ({riesgo} de riesgo), a cambio de un retorno esperado más bajo ({rentabilidad}). Es la mezcla que prioriza dormir tranquilo.' },
+            equilibrio: { icono: 'balance', titulo: 'Enfoque equilibrado', texto: 'La mezcla queda en el punto medio: {rentabilidad} de rentabilidad esperada frente a {riesgo} de riesgo. Ni el emisor más volátil ni el más estable dominan la decisión, que es la forma más simple de no depender de uno solo.' }
+          },
+          idea: { titulo: 'Idea clave:', texto: 'rentabilidad y riesgo suben juntos. No existe la mezcla óptima para todo el mundo: existe la que corresponde a tu objetivo, tu horizonte y el perfil de riesgo que identificaste en la Cápsula 4.' },
+          nota: 'Emisores de ejemplo y cifras ficticias. El riesgo del portafolio se calcula como promedio ponderado para mantener visible la relación entre mezcla y riesgo.'
         }
       });
       if (contenedor && nodo) contenedor.appendChild(nodo);
