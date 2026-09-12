@@ -119,9 +119,21 @@
      una variable de contenido — mecanismo de C4/E1, resuelto por
      `OVA.resultado` (resultado.js) desde E1.
    - **Intentos de las preguntas I01/I02**: `2`, uniforme.
-   - **I10/I11**: entradas/salidas y sus `unidad` con el criterio de
+   - **I10**: entradas/salidas y sus `unidad` con el criterio de
      `quiz.js` ("unidad" es sufijo con espacio inicial: `" COP"`,
      `" %"`, `" acciones"`).
+   - **I11 (ajustes tanda 16)**: contrato nuevo, ya no lleva `unidad`
+     sino `moneda` ("$", neutro para los tres países, mismo criterio
+     que I16 adoptó en la tanda 15). Las cifras del ejercicio salen de
+     las capturas de boleta real que entregó Jose: Petrocaribe,
+     demanda 980, oferta 1000. **Pendiente**: `costos.comision.
+     porcentaje` (1 %) y `costos.impuesto.porcentaje` (19 %) son
+     provisionales —Juan los confirma con Jose—; en la captura la
+     comisión era la misma cifra comprando y vendiendo, así que no se
+     podía deducir la regla. Saldo (150.000) y títulos disponibles
+     (120) están calibrados para que los tres estados de la tabla de
+     verdad se alcancen en las dos operaciones sin salirse de los
+     rangos de los campos.
    - **`p01-bienvenida`**: L03 con `media.tipo:'retrato'` en vez de
      video/avatar dispara la variante `.layout--l03--retrato`;
      `progreso:false` porque es arranque, igual que p01a/p01b.
@@ -1111,41 +1123,51 @@ window.OVA_CONTENIDO = {
       "titulo": "Simula tu primera orden",
       "unidad": "Unidad 1",
       "capsula": "Simulador",
-      "kicker": "Unidad 1 · Simulador",
+      "kicker": "Unidad 1 \u00b7 Simulador",
+      "ancho": "amplio",
       "interaccion": {
         "tipo": "I11",
         "datos": {
           "id": "u1-p42-boleta-orden",
-          "enunciado": "Una orden a mercado se ejecuta al mejor precio disponible; una orden límite fija el precio máximo de compra (o mínimo de venta) y puede quedar expuesta si el mercado no lo alcanza. Completa la boleta y observa el resultado: ejecutada o expuesta.",
-          "emisor": "Banco del Sur",
+          "enunciado": "As\u00ed se ve una boleta de orden. La demanda es el mejor precio al que alguien compra hoy y la oferta, el mejor precio al que alguien vende: entre esas dos cifras se decide todo. Una orden a mercado se ejecuta contra la punta contraria; una orden l\u00edmite fija tu precio y puede quedar expuesta si el mercado no lo alcanza. Cambia de operaci\u00f3n, de tipo, de cantidad y de precio, y mira c\u00f3mo cambian el total y el estado de tu orden.",
+          "instrumento": "Petrocaribe",
+          "moneda": "$",
+          "mercado": {
+            "demanda": 980,
+            "oferta": 1000
+          },
           "escenario": {
-            "saldo": 10000,
-            "titulosDisponibles": 8
-          },
-          "precioActual": {
-            "etiqueta": "Precio actual (mercado)",
-            "unidad": " COP",
-            "min": 800,
-            "max": 1800,
-            "paso": 10,
-            "valorInicial": 1200
-          },
-          "precioLimite": {
-            "etiqueta": "Tu precio límite",
-            "unidad": " COP",
-            "min": 800,
-            "max": 1800,
-            "paso": 10,
-            "valorInicial": 1100
+            "saldo": 150000,
+            "titulosDisponibles": 120
           },
           "cantidad": {
             "etiqueta": "Cantidad",
-            "unidad": " acciones",
             "min": 1,
-            "max": 50,
+            "max": 500,
             "paso": 1,
-            "valorInicial": 5
+            "valorInicial": 100
           },
+          "precio": {
+            "etiqueta": "Precio",
+            "min": 800,
+            "max": 1200,
+            "paso": 10,
+            "valorInicial": 990
+          },
+          "costos": {
+            "comision": {
+              "etiqueta": "Comisi\u00f3n estimada",
+              "porcentaje": 1
+            },
+            "impuesto": {
+              "etiqueta": "Impuesto estimado",
+              "porcentaje": 19
+            }
+          },
+          "fecha": {
+            "etiqueta": "Fecha de la orden"
+          },
+          "nota": "Petrocaribe es un emisor de ejemplo y todas las cifras son ficticias. La comisi\u00f3n (1 % del valor) y el impuesto (19 % sobre la comisi\u00f3n) son tarifas ilustrativas: cada comisionista publica las suyas.",
           "variable": {
             "nombre": "resultado_boleta"
           }

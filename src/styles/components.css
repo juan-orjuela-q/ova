@@ -2769,10 +2769,355 @@ a.cap-tarjeta:hover {
 .calc-calculadora__resultado[data-estado="rechazada"] .calc-calculadora__resultado-valor {
   color: var(--nuam-red-700);
 }
-/* Línea de contexto fijo del escenario de la boleta (I11, C6): emisor,
-   saldo, títulos disponibles — no son sliders, solo el marco del
-   ejercicio. */
-.calc-boleta__escenario {
+/* `.calc-boleta__tipo`, `.calc-boleta__opciones` y `.calc-opcion` se
+   quedan aquí pese al nombre: ajustes tanda 16 rehizo I11 con ficha
+   propia y ya no los usa, pero I13 (test de perfil) sí —renombrarlos
+   tocaría un componente que nadie pidió cambiar. `.calc-boleta__
+   escenario` sí se fue con el rediseño: el escenario ahora vive en la
+   cabecera y en los campos de la ficha. */
+
+/* ============================================================
+   I11 · Boleta de orden — ficha oscura (ajustes tanda 16)
+   ============================================================
+   Pantalla 26 (p42, "Simula tu primera orden"). Jose entregó capturas
+   de una boleta real con indicaciones: instrumento Petrocaribe,
+   demanda/oferta fijas en la cabecera, fuera cliente/cierre/variación,
+   y la columna derecha como cadena de cálculo (valor → comisión →
+   impuesto → total). Juan pidió montarla **oscura, como la real**: la
+   ficha entera va sobre --surface-inverse, no solo un acento.
+
+   Bloque propio y no `.calc-calculadora` por la misma razón que I16
+   (ajustes tanda 15): la cáscara de I10 es "enunciado + sliders +
+   salidas" y esto es una cabecera de color, dos columnas de campos y un
+   estado —reusarla habría obligado a redefinir casi todas sus reglas.
+
+   Superficie inverse en una pantalla clara: es el uso puntual que
+   permite CLAUDE.md ("el sistema es claro con superficies inverse
+   puntuales"), no un tema oscuro. El enunciado, las acciones y la nota
+   de pie se quedan sobre la superficie clara del OVA. */
+.calc-boleta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+  /* A 320 px con zoom de texto 200 % una etiqueta larga mide más que la
+     columna: sin esto empuja scroll horizontal (regla dura 7). */
+  overflow-wrap: break-word;
+}
+.calc-boleta__enunciado {
+  color: var(--text-secondary);
+}
+
+.calc-boleta__ficha {
+  background: var(--surface-inverse);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  /* Los controles nativos de la ficha (number, date y su selector de
+     calendario) los pinta el navegador: sin `color-scheme: dark` el
+     ícono del calendario sale negro sobre negro y el spinner del number
+     queda invisible. Es la forma soportada de decirle al navegador "esta
+     zona es oscura" —no hay manera de tematizar ese ícono con CSS. */
+  color-scheme: dark;
+}
+
+/* ---- Cabecera: operación, instrumento y precios de mercado --------- */
+/* El color de la cabecera es el código de la operación, pero no el
+   único (regla dura 3): cambia además la etiqueta del segmento marcado,
+   el radio nativo, el texto del botón de envío y el nombre de la
+   operación en el resumen. */
+.calc-boleta__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface-comprar);
+  color: var(--text-on-secondary);
+  /* La cabecera es clara aunque la ficha sea oscura: sin revertir el
+     color-scheme heredado, un control nativo que cayera aquí se
+     pintaría para fondo oscuro. */
+  color-scheme: light;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.calc-boleta[data-operacion="vender"] .calc-boleta__cabecera {
+  background: var(--surface-vender);
+}
+/* El anillo de foco del proyecto es naranja 500. Sobre la cabecera de
+   venta (naranja 500) desaparece, y sobre la de compra mide 2,39:1
+   contra el cyan —por debajo del 3:1 de WCAG 1.4.11—. Dentro de
+   cualquier relleno secundario o de marca el anillo pasa a gris 950
+   (13,5:1 sobre cyan, 5,65:1 sobre naranja). Único lugar del proyecto
+   donde el anillo cambia de color, y cambia de color, nunca se apaga
+   (regla dura 6). */
+.calc-boleta__cabecera :focus-visible,
+.calc-boleta__enviar:focus-visible {
+  outline: 3px solid var(--nuam-grey-950);
+  outline-offset: var(--focus-offset);
+}
+
+.calc-boleta__operacion {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.calc-boleta__segmentos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+/* El radio nativo se queda visible dentro de la píldora en vez de
+   convertir esto en un switch como el de la captura: el switch de la
+   plataforma real no dice a un lector de pantalla cuál está elegido sin
+   ARIA a mano, y un grupo de radios sí lo dice solo. El relleno oscuro
+   del marcado es refuerzo, no el código del estado. */
+.calc-boleta__segmento {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border: 1.5px solid var(--nuam-grey-950);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  font: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.calc-boleta__segmento--activo {
+  background: var(--nuam-grey-950);
+  color: var(--text-on-inverse);
+}
+.calc-boleta__segmento input {
+  accent-color: var(--nuam-grey-950);
+  flex-shrink: 0;
+  width: 1.15em;
+  height: 1.15em;
+}
+.calc-boleta__segmento--activo input {
+  accent-color: var(--nuam-grey-0);
+}
+
+.calc-boleta__identidad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.calc-boleta__instrumento {
+  font-variant-numeric: tabular-nums;
+}
+.calc-boleta__mercado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-5);
+  margin: 0;
+}
+.calc-boleta__mercado-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.calc-boleta__mercado dt {
+  font: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.calc-boleta__mercado dd {
+  margin: 0;
+  font: var(--text-h5);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- Cuerpo: entradas a la izquierda, cálculo a la derecha --------- */
+/* Misma estrategia responsive que las variantes tablero (ajustes tanda
+   13) y que I16: apilado por defecto, dos columnas desde 48em. Apilado,
+   el orden del DOM es el de lectura —primero lo que se decide, después
+   lo que resulta—, por eso son dos columnas y no filas intercaladas. */
+.calc-boleta__cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-6) var(--sp-8);
+  padding: var(--sp-5);
+  color: var(--text-on-inverse);
+}
+@media (min-width: 48em) {
+  .calc-boleta__cuerpo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.calc-boleta__columna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  min-width: 0;
+}
+
+.calc-boleta__campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.calc-boleta__campo-etiqueta {
+  font: var(--text-caption);
+  color: var(--text-on-inverse-2);
+}
+.calc-boleta__campo-linea {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-block-end: var(--sp-2);
+  /* Gris 400 y no gris 700: esta línea es el límite visible de un
+     control de formulario, así que le aplica el 3:1 de WCAG 1.4.11
+     (gris 700 sobre gris 950 mide 1,81:1; gris 400, 7,8:1). La misma
+     medición que obligó a `.boton--outline.boton--inverse` a usar gris
+     400 en vez de --border-inverse. */
+  border-block-end: 1px solid var(--nuam-grey-400);
+}
+/* Las filas calculadas no son controles: ahí la línea sí puede ser
+   discreta, es separación y no borde de control. */
+.calc-boleta__campo--calculado .calc-boleta__campo-linea {
+  border-block-end-color: var(--nuam-grey-700);
+}
+.calc-boleta__campo-simbolo {
+  color: var(--text-on-inverse-2);
+  flex-shrink: 0;
+}
+.calc-boleta__campo-dato,
+.calc-boleta__campo-cifra {
+  font: var(--text-h5);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-on-inverse);
+  min-width: 0;
+}
+.calc-boleta__campo-cifra {
+  flex: 1;
+  text-align: end;
+  white-space: nowrap;
+}
+.calc-boleta__campo-dato {
+  flex: 1;
+}
+.calc-boleta__entrada,
+.calc-boleta__select {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text-on-inverse);
+  font: var(--text-h5);
+  font-variant-numeric: tabular-nums;
+}
+.calc-boleta__entrada[type="number"] {
+  text-align: end;
+}
+.calc-boleta__entrada:disabled {
+  color: var(--text-on-inverse-2);
+  cursor: not-allowed;
+}
+/* Precio en una orden a mercado: deshabilitado, no oculto —sigue en el
+   árbol de accesibilidad, mismo criterio que traía I11 desde C6—. La
+   línea punteada y la ayuda de abajo dicen por qué, para que el estado
+   no dependa solo del gris del texto. */
+.calc-boleta__campo--inactivo .calc-boleta__campo-linea {
+  border-block-end-style: dashed;
+}
+.calc-boleta__campo-ayuda {
+  font: var(--text-caption);
+  color: var(--text-on-inverse-2);
+}
+
+/* ---- Estado de la orden ------------------------------------------- */
+/* Vive dentro del <output> de la columna calculada: es el último
+   eslabón de la misma cadena (valor → comisión → impuesto → total →
+   estado) y así el lector de pantalla recibe un solo anuncio por
+   cambio, no dos regiones vivas compitiendo —mismo criterio de "menos
+   interrupciones" de I10 e I16.
+
+   Los tres estados usan verde/rojo/gris **300 y 400**, no 500/700: aquí
+   el fondo es gris 900 sobre gris 950, y los 500 están calibrados para
+   superficies claras. Verde 300 mide 7,43:1 aquí, rojo 300 6,29:1 y
+   gris 400 6,9:1. El color sigue sin ser el único código: cambian el
+   ícono y la oración completa. */
+.calc-boleta__estado {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--nuam-grey-900);
+  border-inline-start: 3px solid var(--nuam-grey-400);
+  /* Alto mínimo para que la columna no salte al cambiar de estado
+     mientras se escribe una cantidad —misma razón que en I16. */
+  min-height: 7rem;
+}
+.calc-boleta__estado-icono {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  color: var(--nuam-grey-400);
+}
+.calc-boleta__estado-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.calc-boleta__estado-etiqueta {
+  color: var(--text-on-inverse-2);
+}
+.calc-boleta__estado-titulo {
+  color: var(--text-on-inverse);
+}
+.calc-boleta__estado-detalle {
+  color: var(--text-on-inverse-2);
+}
+.calc-boleta__estado[data-estado="ejecutada"] {
+  border-inline-start-color: var(--nuam-green-300);
+}
+.calc-boleta__estado[data-estado="ejecutada"] .calc-boleta__estado-icono,
+.calc-boleta__estado[data-estado="ejecutada"] .calc-boleta__estado-titulo {
+  color: var(--nuam-green-300);
+}
+.calc-boleta__estado[data-estado="rechazada"] {
+  border-inline-start-color: var(--nuam-red-300);
+}
+.calc-boleta__estado[data-estado="rechazada"] .calc-boleta__estado-icono,
+.calc-boleta__estado[data-estado="rechazada"] .calc-boleta__estado-titulo {
+  color: var(--nuam-red-300);
+}
+/* "expuesta" no lleva color propio: no es acierto ni error, es una
+   orden viva esperando precio. Se queda con el gris neutro de la regla
+   base —misma decisión que traía C6, ahora en la escala inverse. */
+
+/* ---- Pie de la ficha ----------------------------------------------- */
+.calc-boleta__pie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  padding-block-start: 0;
+}
+/* El botón toma el color de la operación, como en la boleta real. Texto
+   gris 950 y no blanco: blanco sobre naranja 500 mide 3,48:1 y solo
+   pasa como texto grande (CLAUDE.md), mientras que gris 950 mide 5,65:1
+   sobre naranja y 13,54:1 sobre cyan —cumple a cualquier tamaño, que es
+   lo que deja usar el mismo par de reglas para las dos operaciones. */
+.calc-boleta__enviar {
+  background: var(--surface-comprar);
+  border-color: var(--surface-comprar);
+  color: var(--text-on-secondary);
+}
+.calc-boleta[data-operacion="vender"] .calc-boleta__enviar {
+  background: var(--surface-vender);
+  border-color: var(--surface-vender);
+}
+
+.calc-boleta__nota {
   color: var(--text-secondary);
 }
 

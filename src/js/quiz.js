@@ -154,7 +154,7 @@
          familias de componentes distintas aunque compartan el mismo
          punto de entrada en JS.
 
-     I11 boleta_compra { enunciado?, mercado, limite }
+     I11 boleta_compra { enunciado?, mercado, limite }   (superado: ver C6 y ajustes tanda 16)
        (contrato de T8; C6 lo reemplaza por completo —comprar/vender,
        escenario con saldo/títulos, precioActual/precioLimite/cantidad,
        tres resultados— ver el bloque "C6" más abajo, es el contrato
@@ -505,63 +505,20 @@
          por caso, para que el primer render ya muestre el resultado
          esperado.
 
-   I11 — tabla de verdad de ocho filas, no solo "compra". Hasta C6 solo
-   existía comprar/mercado/límite con dos resultados (ejecutada/
-   pendiente); P42 pide comprar y vender, con saldo/títulos disponibles
-   como restricción adicional, y tres resultados (ejecutada/expuesta/
-   rechazada). `construirBoletaCompra` queda reemplazada por
-   `construirBoletaOrden`, misma cáscara `.calc-calculadora`.
+   I11 — tabla de verdad de ocho filas, no solo "compra". C6 reemplazó
+   `construirBoletaCompra` por `construirBoletaOrden`: comprar y vender,
+   saldo y títulos disponibles como restricción, y tres resultados
+   (ejecutada/expuesta/rechazada) en vez de dos.
 
-     I11 boleta_compra { enunciado?, emisor?, escenario:{saldo,titulosDisponibles}, precioActual, precioLimite, cantidad, variable? }
-       - `precioActual`/`precioLimite`/`cantidad`: el mismo objeto
-         slider de siempre (`{etiqueta?, unidad?, min,max,paso,
-         valorInicial, decimales?}`); `escenario.saldo`/
-         `escenario.titulosDisponibles` son datos fijos del ejercicio
-         (no sliders —el "campo" real de Jose que sí varía es la
-         cantidad, no el saldo disponible—), mostrados en una línea de
-         contexto encima de los controles junto con `emisor` si viene.
-       - Selector de operación (Comprar/Vender), además del de tipo
-         (Mercado/Límite) que ya existía —mismo `<fieldset>` con radios
-         nativos, comprar marcado por defecto.
-       - `datos.vigencia` NO se construyó: ninguna fila de la tabla de
-         verdad de Jose ni ningún caso_prueba distingue por vigencia
-         —solo aparece en el texto de "expuesta" ("vigente hasta que el
-         precio llegue o venza", texto fijo, igual que lo describe P43.
-         Añadir un campo que no cambia ningún resultado sería
-         decoración, no la interacción que pide el cierre de C6. Si el
-         storyboard real termina necesitando que la vigencia sí afecte
-         el resultado, hay que decirlo explícitamente —lectura propia,
-         documentada para poder corregirla sin arqueología de código,
-         mismo criterio que el botón de reanudar en T3.
-       - Regla de ejecución, la tabla de verdad completa de P42:
-         comprar prioriza el saldo sobre el precio (saldo insuficiente
-         → rechazada siempre, sin mirar el tipo de orden); con saldo
-         suficiente, mercado siempre ejecuta, límite ejecuta solo si
-         límite ≥ precio actual (si no, expuesta). Vender es el espejo:
-         títulos insuficientes → rechazada siempre; con títulos
-         suficientes, mercado siempre ejecuta, límite ejecuta solo si
-         límite ≤ precio actual (si no, expuesta). El costo/producto de
-         la operación es `precioActual × cantidad` (se ejecuta "al
-         precio disponible estimado", el texto de Jose) —el precio
-         límite nunca es el precio de ejecución, solo la condición que
-         decide si se ejecuta.
-       - Estados nuevos de `.calc-calculadora__resultado`: `rechazada`
-         (rojo, ícono `block` —mismo tratamiento de color que
-         `incorrecto`, con su propia regla CSS porque significa algo
-         distinto) y `expuesta` (neutro, ícono `schedule` —el mismo
-         "pendiente" de antes, renombrado a la palabra que usa Jose).
-         `ejecutada` no cambió.
-       - `datos.variable`: mismo mecanismo que antes (fija el objeto
-         completo del resultado en `enviar()`), con un campo más:
-         `{ operacion, tipo, estado, cantidad, precioActual,
-         precioLimite }` —sigue siendo la base de resultado_boleta.
-       - Casos de prueba de Jose, verificados a mano: comprar/mercado/
-         5 acciones con saldo 10.000 y precio 1.200 (costo 6.000 ≤
-         saldo) → ejecutada; comprar/límite $1.100 con precio actual
-         1.200 (límite < precio) → expuesta; vender 20 acciones con
-         solo 8 títulos disponibles → rechazada (títulos insuficientes,
-         sin importar el tipo). Los tres quedan como los valores
-         iniciales de tres instancias en la kitchen sink.
+   **Ajustes tanda 16 (12 sep) rehízo el componente entero** contra las
+   capturas de boleta real que entregó Jose: ficha oscura con cabecera de
+   color, demanda y oferta fijas en vez de un slider de "precio actual",
+   campos numéricos en vez de sliders, y la cadena comisión → impuesto →
+   total. La tabla de verdad conserva sus ocho filas y su orden de
+   evaluación; lo que cambió es contra qué precio se decide (oferta al
+   comprar, demanda al vender) y el DOM completo. El contrato de `datos`,
+   la tabla de verdad y las decisiones de esa tanda viven **junto al
+   constructor**, no aquí — mismo criterio que I16.
 
    I12 — matriz de retroalimentación por perfil de riesgo. Hasta C6
    solo validaba que la suma diera 100 %; P46 pide que, además, la
@@ -1622,223 +1579,522 @@
     return raiz;
   }
 
-  /* I11, boleta de orden (comprar/vender contra la tabla de verdad de
-     ocho filas de P42, C6). Reusa la cáscara `.calc-calculadora` que
-     T8 dejó (enunciado, `.calc-calculadora__entradas`, resultado,
-     acciones, resumen); ver el bloque C6 en el encabezado del archivo
-     para el contrato completo de `datos` y la tabla de verdad. */
-  function construirBoletaOrden(idBase, idScorm, datos) {
+  /* I11, boleta de orden — ficha oscura sobre Petrocaribe (ajustes
+     tanda 16, pantalla 26 / p42).
+
+     Jose entregó capturas de una boleta real con indicaciones escritas
+     encima: cambiar el instrumento a Petrocaribe, demanda $980 y oferta
+     $1.000, quitar cierre, variación y cliente, y dejar explícita la
+     cadena de cálculo —valor = precio × cantidad; total = valor +
+     comisión + impuesto al comprar, − comisión − impuesto al vender—.
+     Juan pidió montarla oscura, como la real. El DOM y el CSS de la
+     versión de C6 (cáscara `.calc-calculadora` con tres sliders) se
+     reemplazan enteros; el tipo sigue siendo I11 porque p42 es su única
+     pantalla, viva o archivada —no hay nada más que migrar—.
+
+     Lo que cambia respecto de C6, y por qué:
+
+     - **El precio de mercado deja de ser un slider.** Ahora son dos
+       cifras fijas en la cabecera, demanda y oferta, que es como se
+       lee un libro de órdenes de verdad. Eso además arregla algo que
+       la versión vieja simplificaba de más: con un solo "precio
+       actual", comprar y vender se decidían contra el mismo número.
+       Con spread, comprar a mercado ejecuta contra la **oferta** y
+       vender a mercado ejecuta contra la **demanda**, que es la
+       diferencia que el estudiante tiene que ver.
+
+     - **Cantidad y precio pasan de slider a campo numérico.** Una
+       boleta se llena escribiendo. Siguen siendo controles nativos
+       (`input[type="number"]`, con min/max/step), así que teclado y rol
+       de spinbutton vienen del navegador igual que venían del slider.
+
+     - **La tabla de verdad conserva sus ocho filas y sus tres
+       estados.** Orden de evaluación, sin cambios respecto de C6: la
+       restricción de recursos manda sobre el precio.
+         comprar → total requerido > saldo ....... rechazada
+         vender  → cantidad > títulos disponibles  rechazada
+         mercado ................................. ejecutada
+         comprar límite → límite >= oferta ....... ejecutada, si no expuesta
+         vender  límite → límite <= demanda ...... ejecutada, si no expuesta
+       Se suma un cuarto estado que no es de la tabla, `incompleta`:
+       un campo numérico admite vacío y "-" mientras se escribe, cosa
+       que un slider no podía. Es un estado de formulario, no de orden.
+
+     - **Comisión e impuesto entran al modelo.** `costos.comision.
+       porcentaje` sobre el valor y `costos.impuesto.porcentaje` sobre
+       la comisión. Cada renglón se **redondea a la precisión con la que
+       se muestra antes de sumarse**, no después: es la trampa que ya
+       apareció en I16 (ajustes tanda 15) —una cadena de cálculo visible
+       tiene que cuadrar sumando lo que el estudiante lee, no lo que el
+       float guarda—. Las tarifas son provisionales: Juan las va a
+       confirmar con Jose, por eso viven en el contenido y no aquí.
+
+     - **"Valor requerido" deja de ser un eco de "Total estimado"** (en
+       la captura son la misma cifra, dos veces). Aquí es el renglón que
+       hace el trabajo del estado `rechazada`: al comprar muestra el
+       total contra el saldo disponible, al vender muestra los títulos
+       pedidos contra los disponibles. Lectura propia, anotada para
+       poder corregirla sin arqueología —mismo criterio con que C6
+       documentó por qué no construyó `vigencia`.
+
+     - **La fecha sí se construye**, aunque no cambie ningún resultado
+       —y por eso mismo hay que decirlo aquí—. Juan la conservó del
+       referente: es la fecha de registro de la boleta, viaja en la
+       variable de estado y en el reporte SCORM. Es el único campo del
+       componente que no entra en la tabla de verdad.
+
+     Contrato de `datos`:
+
+       { enunciado?, instrumento, moneda?,
+         mercado:{ demanda, oferta },
+         escenario:{ saldo, titulosDisponibles },
+         cantidad:{ etiqueta?, min, max, paso, valorInicial },
+         precio:{ etiqueta?, min, max, paso, valorInicial },
+         costos:{ comision:{ etiqueta?, porcentaje },
+                  impuesto:{ etiqueta?, porcentaje } },
+         fecha?:{ etiqueta? },
+         nota?, variable? }
+
+     `alCompletar` se llama al enviar la boleta, así que la pantalla
+     puede pedir `bloqueaAvance` el día que se quiera (hoy no lo pide).
+  */
+  function construirBoletaOrden(idBase, idScorm, datos, alCompletar) {
+    alCompletar = typeof alCompletar === 'function' ? alCompletar : function () {};
+
+    var mercado = datos.mercado || {};
     var escenario = datos.escenario || {};
+    var costos = datos.costos || {};
+    var cfgComision = costos.comision || {};
+    var cfgImpuesto = costos.impuesto || {};
+    var cfgCantidad = datos.cantidad || {};
+    var cfgPrecio = datos.precio || {};
+    var moneda = datos.moneda == null ? '$' : datos.moneda;
+    var demanda = Number(mercado.demanda);
+    var oferta = Number(mercado.oferta);
+
+    var raiz = crear_('div', 'calc-boleta');
+    raiz.dataset.operacion = 'comprar';
+    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-boleta__enunciado tipo-cuerpo', datos.enunciado));
+
+    var ficha = crear_('div', 'calc-boleta__ficha');
+    raiz.appendChild(ficha);
+
+    /* ---- Cabecera ------------------------------------------------- */
+    var cabecera = crear_('div', 'calc-boleta__cabecera');
+    ficha.appendChild(cabecera);
+
+    var fieldsetOperacion = document.createElement('fieldset');
+    fieldsetOperacion.className = 'calc-boleta__operacion';
+    var leyenda = crear_('legend', 'u-oculto-visualmente', 'Operación');
+    fieldsetOperacion.appendChild(leyenda);
+    var segmentos = crear_('div', 'calc-boleta__segmentos');
+    fieldsetOperacion.appendChild(segmentos);
+    cabecera.appendChild(fieldsetOperacion);
+
     var nombreOperacion = idBase + '-boleta-operacion';
-    var nombreTipo = idBase + '-boleta-tipo';
+    var operacionInputs = {};
+    var operacionEtiquetas = {};
+    [{ valor: 'comprar', texto: 'Comprar' }, { valor: 'vender', texto: 'Vender' }].forEach(function (opcion) {
+      var input = document.createElement('input');
+      input.type = 'radio';
+      input.name = nombreOperacion;
+      input.value = opcion.valor;
+      input.id = nombreOperacion + '-' + opcion.valor;
+      input.checked = opcion.valor === 'comprar';
+      var label = crear_('label', 'calc-boleta__segmento');
+      label.setAttribute('for', input.id);
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(opcion.texto));
+      segmentos.appendChild(label);
+      operacionInputs[opcion.valor] = input;
+      operacionEtiquetas[opcion.valor] = label;
+    });
 
-    var raiz = crear_('div', 'calc-calculadora');
-    if (datos.enunciado) raiz.appendChild(crear_('p', 'calc-calculadora__enunciado tipo-cuerpo', datos.enunciado));
+    // Solo el nombre, sin etiqueta: el campo "Instrumento" de la columna
+    // de entradas ya la lleva dos líneas más abajo y repetirla aquí
+    // tartamudea. Es además lo que hace la boleta real de la captura.
+    var identidad = crear_('div', 'calc-boleta__identidad');
+    identidad.appendChild(crear_('p', 'tipo-h5 calc-boleta__instrumento', datos.instrumento || ''));
+    cabecera.appendChild(identidad);
 
-    if (datos.emisor || escenario.saldo != null || escenario.titulosDisponibles != null) {
-      var partes = [];
-      if (datos.emisor) partes.push('Emisor: ' + datos.emisor + '.');
-      if (escenario.saldo != null) partes.push('Saldo disponible: ' + formatearNumero(escenario.saldo, 0) + ' COP.');
-      if (escenario.titulosDisponibles != null) partes.push('Títulos disponibles para vender: ' + formatearNumero(escenario.titulosDisponibles, 0) + '.');
-      raiz.appendChild(crear_('p', 'tipo-cuerpo-sm calc-boleta__escenario', partes.join(' ')));
+    // Demanda y oferta son datos del ejercicio, no resultados: <dl> y no
+    // <output>, para que no entren en la región viva de la derecha.
+    var listaMercado = document.createElement('dl');
+    listaMercado.className = 'calc-boleta__mercado';
+    [
+      { termino: 'Demanda', valor: demanda },
+      { termino: 'Oferta', valor: oferta }
+    ].forEach(function (item) {
+      var grupo = crear_('div', 'calc-boleta__mercado-grupo');
+      grupo.appendChild(crear_('dt', null, item.termino));
+      grupo.appendChild(crear_('dd', null, moneda + formatearNumero(item.valor, 0)));
+      listaMercado.appendChild(grupo);
+    });
+    cabecera.appendChild(listaMercado);
+
+    /* ---- Cuerpo: entradas | cálculo -------------------------------- */
+    var cuerpo = crear_('div', 'calc-boleta__cuerpo');
+    ficha.appendChild(cuerpo);
+
+    var columnaEntradas = crear_('div', 'calc-boleta__columna');
+    cuerpo.appendChild(columnaEntradas);
+
+    // Un solo <output> para toda la cadena calculada (valor → comisión →
+    // impuesto → total → requerido → estado). Misma decisión de "menos
+    // interrupciones" que I10 e I16: una región viva, no seis.
+    var columnaCalculo = document.createElement('output');
+    columnaCalculo.className = 'calc-boleta__columna';
+    cuerpo.appendChild(columnaCalculo);
+
+    function campoDato(etiqueta, texto) {
+      var campo = crear_('div', 'calc-boleta__campo');
+      campo.appendChild(crear_('span', 'calc-boleta__campo-etiqueta', etiqueta));
+      var linea = crear_('div', 'calc-boleta__campo-linea');
+      linea.appendChild(crear_('span', 'calc-boleta__campo-dato', texto));
+      campo.appendChild(linea);
+      columnaEntradas.appendChild(campo);
+      return campo;
     }
 
-    function construirGrupoRadio(nombre, etiquetaLeyenda, opciones, valorInicial) {
-      var fieldset = document.createElement('fieldset');
-      fieldset.className = 'calc-boleta__tipo';
-      fieldset.appendChild(crear_('legend', 'calc-campo__etiqueta', etiquetaLeyenda));
-      var contenedor = crear_('div', 'calc-boleta__opciones');
-      var inputs = {};
-      opciones.forEach(function (opcion) {
-        var input = document.createElement('input');
-        input.type = 'radio';
-        input.name = nombre;
-        input.value = opcion.valor;
-        input.id = idBase + '-' + nombre + '-' + opcion.valor;
-        input.checked = opcion.valor === valorInicial;
-        var label = crear_('label', 'calc-opcion');
-        label.setAttribute('for', input.id);
-        label.appendChild(input);
-        label.appendChild(document.createTextNode(opcion.texto));
-        contenedor.appendChild(label);
-        inputs[opcion.valor] = input;
-      });
-      fieldset.appendChild(contenedor);
-      raiz.appendChild(fieldset);
-      return inputs;
-    }
-
-    var operacionInputs = construirGrupoRadio(nombreOperacion, 'Operación', [
-      { valor: 'comprar', texto: 'Comprar' },
-      { valor: 'vender', texto: 'Vender' }
-    ], 'comprar');
-    // Límite por defecto: es el caso que de verdad enseña la diferencia
-    // (a mercado siempre se ejecuta, no hay nada que explorar ahí).
-    var tipoInputs = construirGrupoRadio(nombreTipo, 'Tipo de orden', [
-      { valor: 'mercado', texto: 'A mercado' },
-      { valor: 'limite', texto: 'Límite' }
-    ], 'limite');
-
-    var campos = crear_('div', 'calc-calculadora__entradas');
-    raiz.appendChild(campos);
-
-    function construirCampo(id, cfg) {
+    function campoEntrada(id, etiquetaTexto, construirControl) {
       var controlId = idBase + '-boleta-' + id;
-      var valorId = controlId + '-valor';
-      var campo = crear_('div', 'calc-campo');
-      var cabecera = crear_('div', 'calc-campo__cabecera');
-      var etiqueta = crear_('label', 'calc-campo__etiqueta', cfg.etiqueta);
+      var campo = crear_('div', 'calc-boleta__campo');
+      var etiqueta = crear_('label', 'calc-boleta__campo-etiqueta', etiquetaTexto);
       etiqueta.setAttribute('for', controlId);
-      var salida = document.createElement('output');
-      salida.className = 'calc-campo__valor';
-      salida.id = valorId;
-      salida.setAttribute('for', controlId);
-      cabecera.appendChild(etiqueta);
-      cabecera.appendChild(salida);
-      campo.appendChild(cabecera);
-      var control = document.createElement('input');
-      control.type = 'range';
-      control.id = controlId;
-      control.min = String(cfg.min);
-      control.max = String(cfg.max);
-      control.step = String(cfg.paso);
-      control.value = String(cfg.valorInicial);
-      control.className = 'calc-campo__control';
-      control.setAttribute('aria-describedby', valorId);
-      campo.appendChild(control);
-      campos.appendChild(campo);
-      return { input: control, output: salida, cfg: cfg };
+      campo.appendChild(etiqueta);
+      var linea = crear_('div', 'calc-boleta__campo-linea');
+      var control = construirControl(controlId);
+      linea.appendChild(control);
+      campo.appendChild(linea);
+      columnaEntradas.appendChild(campo);
+      return { campo: campo, linea: linea, control: control };
     }
 
-    var precioActual = construirCampo('precioActual', datos.precioActual || {});
-    var precioLimite = construirCampo('precioLimite', datos.precioLimite || {});
-    var cantidad = construirCampo('cantidad', datos.cantidad || {});
-
-    function textoValor(cfg, num) {
-      return formatearNumero(num, cfg.decimales) + (cfg.unidad || '');
+    function campoCalculado(id, etiquetaTexto, conSimbolo) {
+      var campo = crear_('div', 'calc-boleta__campo calc-boleta__campo--calculado');
+      var etiqueta = crear_('span', 'calc-boleta__campo-etiqueta', etiquetaTexto);
+      campo.appendChild(etiqueta);
+      var linea = crear_('div', 'calc-boleta__campo-linea');
+      var simbolo = crear_('span', 'calc-boleta__campo-simbolo', moneda);
+      simbolo.setAttribute('aria-hidden', 'true');
+      simbolo.hidden = conSimbolo === false;
+      var cifra = crear_('span', 'calc-boleta__campo-cifra', '');
+      linea.appendChild(simbolo);
+      linea.appendChild(cifra);
+      campo.appendChild(linea);
+      columnaCalculo.appendChild(campo);
+      return { campo: campo, etiqueta: etiqueta, simbolo: simbolo, cifra: cifra };
     }
 
-    var resultado = crear_('div', 'calc-calculadora__resultado');
-    var resultadoIcono = crear_('span', 'icono calc-calculadora__resultado-icono');
-    resultadoIcono.setAttribute('aria-hidden', 'true');
-    var resultadoTexto = crear_('div', 'calc-calculadora__resultado-texto');
-    var resultadoEtiqueta = crear_('p', 'calc-calculadora__resultado-etiqueta', 'Estado de tu orden');
-    var resultadoValor = document.createElement('output');
-    // tipo-h5, no tipo-display-2 como en I10: aquí el resultado es una
-    // oración explicativa ("Queda expuesta: …"), no un número corto.
-    resultadoValor.className = 'tipo-h5 calc-calculadora__resultado-valor';
-    resultadoTexto.appendChild(resultadoEtiqueta);
-    resultadoTexto.appendChild(resultadoValor);
-    resultado.appendChild(resultadoIcono);
-    resultado.appendChild(resultadoTexto);
-    raiz.appendChild(resultado);
+    campoDato('Instrumento', datos.instrumento || '');
 
-    var acciones = crear_('div', 'calc-acciones');
-    var botonEnviar = crear_('button', 'boton', 'Enviar boleta');
+    var cfgFecha = datos.fecha || {};
+    var hoy = new Date();
+    function iso(d) {
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+    var fecha = campoEntrada('fecha', cfgFecha.etiqueta || 'Fecha de la orden', function (controlId) {
+      var input = document.createElement('input');
+      input.type = 'date';
+      input.id = controlId;
+      input.className = 'calc-boleta__entrada';
+      input.value = iso(hoy);
+      return input;
+    });
+
+    var tipo = campoEntrada('tipo', 'Tipo de orden', function (controlId) {
+      var select = document.createElement('select');
+      select.id = controlId;
+      select.className = 'calc-boleta__select';
+      [
+        { valor: 'limite', texto: 'Límite' },
+        { valor: 'mercado', texto: 'Mercado' }
+      ].forEach(function (opcion) {
+        var option = document.createElement('option');
+        option.value = opcion.valor;
+        option.textContent = opcion.texto;
+        select.appendChild(option);
+      });
+      // Límite por defecto: es el caso que de verdad enseña la
+      // diferencia (a mercado siempre se ejecuta, no hay nada que
+      // explorar ahí). Se conserva de C6.
+      select.value = 'limite';
+      return select;
+    });
+
+    function campoNumero(id, cfg, etiquetaPorDefecto) {
+      return campoEntrada(id, cfg.etiqueta || etiquetaPorDefecto, function (controlId) {
+        var input = document.createElement('input');
+        input.type = 'number';
+        input.id = controlId;
+        input.className = 'calc-boleta__entrada';
+        input.inputMode = 'numeric';
+        if (cfg.min != null) input.min = String(cfg.min);
+        if (cfg.max != null) input.max = String(cfg.max);
+        if (cfg.paso != null) input.step = String(cfg.paso);
+        input.value = String(cfg.valorInicial);
+        return input;
+      });
+    }
+
+    var cantidad = campoNumero('cantidad', cfgCantidad, 'Cantidad');
+    var precio = campoNumero('precio', cfgPrecio, 'Precio');
+    var precioAyuda = crear_('p', 'calc-boleta__campo-ayuda', '');
+    precioAyuda.id = idBase + '-boleta-precio-ayuda';
+    precio.campo.appendChild(precioAyuda);
+    precio.control.setAttribute('aria-describedby', precioAyuda.id);
+
+    var salidaValor = campoCalculado('valor', 'Valor (precio × cantidad)', true);
+    var salidaComision = campoCalculado('comision', cfgComision.etiqueta || 'Comisión estimada', true);
+    var salidaImpuesto = campoCalculado('impuesto', cfgImpuesto.etiqueta || 'Impuesto estimado', true);
+    var salidaTotal = campoCalculado('total', 'Total estimado', true);
+    var salidaRequerido = campoCalculado('requerido', 'Valor requerido', true);
+    var requeridoAyuda = crear_('p', 'calc-boleta__campo-ayuda', '');
+    salidaRequerido.campo.appendChild(requeridoAyuda);
+
+    /* ---- Estado ---------------------------------------------------- */
+    var estado = crear_('div', 'calc-boleta__estado');
+    var estadoIcono = crear_('span', 'icono calc-boleta__estado-icono');
+    estadoIcono.setAttribute('aria-hidden', 'true');
+    var estadoTexto = crear_('div', 'calc-boleta__estado-texto');
+    estadoTexto.appendChild(crear_('p', 'tipo-cuerpo-sm calc-boleta__estado-etiqueta', 'Estado de tu orden'));
+    var estadoTitulo = crear_('p', 'tipo-h5 calc-boleta__estado-titulo', '');
+    var estadoDetalle = crear_('p', 'tipo-cuerpo-sm calc-boleta__estado-detalle', '');
+    estadoTexto.appendChild(estadoTitulo);
+    estadoTexto.appendChild(estadoDetalle);
+    estado.appendChild(estadoIcono);
+    estado.appendChild(estadoTexto);
+    columnaCalculo.appendChild(estado);
+
+    /* ---- Pie ------------------------------------------------------- */
+    var pie = crear_('div', 'calc-boleta__pie');
+    var botonEnviar = crear_('button', 'boton calc-boleta__enviar', 'Comprar');
     botonEnviar.type = 'button';
-    acciones.appendChild(botonEnviar);
-    raiz.appendChild(acciones);
+    var botonReiniciar = crear_('button', 'boton boton--outline boton--inverse', 'Reiniciar boleta');
+    botonReiniciar.type = 'button';
+    pie.appendChild(botonEnviar);
+    pie.appendChild(botonReiniciar);
+    ficha.appendChild(pie);
 
     var resumen = crear_('p', 'tipo-cuerpo-sm calc-resumen');
     resumen.setAttribute('role', 'status');
     raiz.appendChild(resumen);
 
+    if (datos.nota) raiz.appendChild(crear_('p', 'tipo-cuerpo-sm calc-boleta__nota', datos.nota));
+
+    /* ---- Cálculo ---------------------------------------------------- */
     var ultimoResultado = null;
 
     function operacionElegida() {
       return operacionInputs.vender.checked ? 'vender' : 'comprar';
     }
     function tipoElegido() {
-      return tipoInputs.limite.checked ? 'limite' : 'mercado';
+      return tipo.control.value === 'mercado' ? 'mercado' : 'limite';
+    }
+    function numero(input) {
+      var n = parseFloat(input.value);
+      return isFinite(n) ? n : null;
+    }
+    function dinero(n) {
+      return moneda + formatearNumero(n, 0);
     }
 
-    // La tabla de verdad de ocho filas de P42 (ver el bloque C6 en el
-    // encabezado del archivo): comprar prioriza el saldo sobre el
-    // precio, vender prioriza los títulos disponibles sobre el precio;
-    // con esa restricción cumplida, mercado siempre ejecuta y límite
-    // ejecuta solo si el precio de mercado no deja al límite "peor
-    // parado" que el precio vigente.
-    function evaluarOrden(operacion, tipo, precioActualNum, precioLimiteNum, cantidadNum) {
+    // Cada renglón se redondea a la precisión con la que se muestra
+    // ANTES de entrar en la suma siguiente: la cadena que lee el
+    // estudiante tiene que cuadrar sumando lo que ve (trampa 1 de
+    // ajustes tanda 15, ahora como regla del modelo y no del formateo).
+    function calcular(operacion, tipoOrden, precioNum, cantidadNum) {
+      var precioEjecucion = tipoOrden === 'mercado'
+        ? (operacion === 'comprar' ? oferta : demanda)
+        : precioNum;
+      var valor = Math.round(precioEjecucion * cantidadNum);
+      var comision = Math.round(valor * (Number(cfgComision.porcentaje) || 0) / 100);
+      var impuesto = Math.round(comision * (Number(cfgImpuesto.porcentaje) || 0) / 100);
+      var total = operacion === 'comprar' ? valor + comision + impuesto : valor - comision - impuesto;
+      return {
+        precioEjecucion: precioEjecucion, valor: valor,
+        comision: comision, impuesto: impuesto, total: total
+      };
+    }
+
+    function evaluarOrden(operacion, tipoOrden, precioNum, cantidadNum, cuentas) {
       if (operacion === 'comprar') {
-        var costo = precioActualNum * cantidadNum;
-        if (escenario.saldo != null && costo > escenario.saldo) return 'rechazada';
-        if (tipo === 'mercado') return 'ejecutada';
-        return precioLimiteNum >= precioActualNum ? 'ejecutada' : 'expuesta';
+        if (escenario.saldo != null && cuentas.total > escenario.saldo) return 'rechazada';
+        if (tipoOrden === 'mercado') return 'ejecutada';
+        return precioNum >= oferta ? 'ejecutada' : 'expuesta';
       }
       if (escenario.titulosDisponibles != null && cantidadNum > escenario.titulosDisponibles) return 'rechazada';
-      if (tipo === 'mercado') return 'ejecutada';
-      return precioLimiteNum <= precioActualNum ? 'ejecutada' : 'expuesta';
+      if (tipoOrden === 'mercado') return 'ejecutada';
+      return precioNum <= demanda ? 'ejecutada' : 'expuesta';
     }
 
+    var TEXTOS_ESTADO = {
+      incompleta: { icono: 'edit', titulo: 'Boleta incompleta' },
+      ejecutada: { icono: 'check_circle', titulo: 'Ejecutada' },
+      expuesta: { icono: 'schedule', titulo: 'Expuesta' },
+      rechazada: { icono: 'block', titulo: 'Rechazada' }
+    };
+
     function recalcular() {
-      precioActual.output.textContent = textoValor(precioActual.cfg, parseFloat(precioActual.input.value));
-      precioLimite.output.textContent = textoValor(precioLimite.cfg, parseFloat(precioLimite.input.value));
-      cantidad.output.textContent = textoValor(cantidad.cfg, parseFloat(cantidad.input.value));
-
       var operacion = operacionElegida();
-      var tipo = tipoElegido();
-      // El precio límite solo importa para una orden límite: deshabilitado
-      // (no oculto, sigue en el árbol de accesibilidad) cuando no aplica —
-      // mismo criterio que .boton:disabled ya establecido en T2.
-      precioLimite.input.disabled = tipo !== 'limite';
+      var tipoOrden = tipoElegido();
+      var esCompra = operacion === 'comprar';
 
-      var precioActualNum = parseFloat(precioActual.input.value);
-      var precioLimiteNum = parseFloat(precioLimite.input.value);
-      var cantidadNum = parseFloat(cantidad.input.value);
-      var estado = evaluarOrden(operacion, tipo, precioActualNum, precioLimiteNum, cantidadNum);
+      raiz.dataset.operacion = operacion;
+      operacionEtiquetas.comprar.classList.toggle('calc-boleta__segmento--activo', esCompra);
+      operacionEtiquetas.vender.classList.toggle('calc-boleta__segmento--activo', !esCompra);
+      botonEnviar.textContent = esCompra ? 'Comprar' : 'Vender';
+
+      // El precio solo manda en una orden límite: deshabilitado, no
+      // oculto —sigue en el árbol de accesibilidad, criterio de C6—, y
+      // la ayuda de abajo dice contra qué precio se ejecutaría.
+      var esLimite = tipoOrden === 'limite';
+      precio.control.disabled = !esLimite;
+      precio.campo.classList.toggle('calc-boleta__campo--inactivo', !esLimite);
+      precioAyuda.textContent = esLimite
+        ? (esCompra
+          ? 'Se ejecuta si tu precio alcanza la oferta (' + dinero(oferta) + ').'
+          : 'Se ejecuta si tu precio no supera la demanda (' + dinero(demanda) + ').')
+        : 'A mercado se ejecuta al mejor precio disponible: ' +
+          dinero(esCompra ? oferta : demanda) + '.';
+
+      salidaRequerido.etiqueta.textContent = esCompra ? 'Valor requerido' : 'Títulos requeridos';
+      salidaRequerido.simbolo.hidden = !esCompra;
+
+      var cantidadNum = numero(cantidad.control);
+      var precioNum = numero(precio.control);
+      var faltaPrecio = esLimite && (precioNum == null || precioNum <= 0);
+      if (cantidadNum == null || cantidadNum <= 0 || faltaPrecio) {
+        ultimoResultado = null;
+        [salidaValor, salidaComision, salidaImpuesto, salidaTotal, salidaRequerido].forEach(function (s) {
+          s.cifra.textContent = '—';
+          // Sin cifra no hay moneda que anteponer: "$—" se lee como un
+          // importe roto, no como un campo vacío.
+          s.simbolo.hidden = true;
+        });
+        requeridoAyuda.textContent = '';
+        estado.dataset.estado = 'incompleta';
+        estadoIcono.textContent = TEXTOS_ESTADO.incompleta.icono;
+        estadoTitulo.textContent = TEXTOS_ESTADO.incompleta.titulo;
+        estadoDetalle.textContent = cantidadNum == null || cantidadNum <= 0
+          ? 'Escribe cuántas acciones quieres ' + (esCompra ? 'comprar' : 'vender') + '.'
+          : 'Escribe el precio límite al que quieres operar.';
+        botonEnviar.setAttribute('aria-disabled', 'true');
+        return;
+      }
+      botonEnviar.removeAttribute('aria-disabled');
+
+      var cuentas = calcular(operacion, tipoOrden, precioNum, cantidadNum);
+      var estadoOrden = evaluarOrden(operacion, tipoOrden, precioNum, cantidadNum, cuentas);
+
+      [salidaValor, salidaComision, salidaImpuesto, salidaTotal].forEach(function (s) {
+        s.simbolo.hidden = false;
+      });
+      salidaRequerido.simbolo.hidden = !esCompra;
+      salidaValor.cifra.textContent = formatearNumero(cuentas.valor, 0);
+      salidaComision.cifra.textContent = formatearNumero(cuentas.comision, 0);
+      salidaImpuesto.cifra.textContent = formatearNumero(cuentas.impuesto, 0);
+      salidaTotal.cifra.textContent = formatearNumero(cuentas.total, 0);
+      salidaRequerido.cifra.textContent = esCompra
+        ? formatearNumero(cuentas.total, 0)
+        : formatearNumero(cantidadNum, 0);
+      requeridoAyuda.textContent = esCompra
+        ? (escenario.saldo != null ? 'Saldo disponible: ' + dinero(escenario.saldo) + '.' : '')
+        : (escenario.titulosDisponibles != null
+          ? 'Títulos disponibles: ' + formatearNumero(escenario.titulosDisponibles, 0) + '.' : '');
+
       ultimoResultado = {
-        operacion: operacion, tipo: tipo, estado: estado,
-        cantidad: cantidadNum, precioActual: precioActualNum, precioLimite: precioLimiteNum
+        operacion: operacion, tipo: tipoOrden, estado: estadoOrden,
+        instrumento: datos.instrumento || null,
+        fecha: fecha.control.value || null,
+        cantidad: cantidadNum,
+        precioLimite: esLimite ? precioNum : null,
+        precioEjecucion: cuentas.precioEjecucion,
+        demanda: demanda, oferta: oferta,
+        valor: cuentas.valor, comision: cuentas.comision,
+        impuesto: cuentas.impuesto, total: cuentas.total
       };
 
-      resultado.dataset.estado = estado;
-      if (estado === 'ejecutada') {
-        resultadoIcono.textContent = 'check_circle';
-        resultadoValor.textContent = 'Ejecutada: tu instrucción encontró condiciones de mercado, a ' +
-          textoValor(precioActual.cfg, precioActualNum) + '.';
-      } else if (estado === 'expuesta') {
-        resultadoIcono.textContent = 'schedule';
-        resultadoValor.textContent = 'Expuesta: queda vigente hasta que el precio llegue a tu límite (' +
-          textoValor(precioLimite.cfg, precioLimiteNum) + ') o venza.';
+      estado.dataset.estado = estadoOrden;
+      estadoIcono.textContent = TEXTOS_ESTADO[estadoOrden].icono;
+      estadoTitulo.textContent = TEXTOS_ESTADO[estadoOrden].titulo;
+      if (estadoOrden === 'ejecutada') {
+        estadoDetalle.textContent = 'Tu orden encontró contraparte: ' +
+          formatearNumero(cantidadNum, 0) + ' acciones a ' + dinero(cuentas.precioEjecucion) +
+          '. ' + (esCompra ? 'Se descuentan ' : 'Se abonan ') + dinero(Math.abs(cuentas.total)) + '.';
+      } else if (estadoOrden === 'expuesta') {
+        estadoDetalle.textContent = 'Queda vigente hasta que el precio llegue a tu límite (' +
+          dinero(precioNum) + ') o venza. Hoy la ' +
+          (esCompra ? 'oferta está en ' + dinero(oferta) : 'demanda está en ' + dinero(demanda)) + '.';
       } else {
-        resultadoIcono.textContent = 'block';
-        resultadoValor.textContent = operacion === 'comprar'
-          ? 'Rechazada: no hay saldo suficiente para esta cantidad al precio actual.'
-          : 'Rechazada: no dispones de la cantidad de títulos indicada.';
+        estadoDetalle.textContent = esCompra
+          ? 'Necesitas ' + dinero(cuentas.total) + ' y tu saldo es de ' + dinero(escenario.saldo) +
+            '. La comisión y el impuesto también se reservan.'
+          : 'Pediste vender ' + formatearNumero(cantidadNum, 0) + ' acciones y solo tienes ' +
+            formatearNumero(escenario.titulosDisponibles, 0) + '.';
       }
     }
 
-    precioActual.input.addEventListener('input', recalcular);
-    precioLimite.input.addEventListener('input', recalcular);
-    cantidad.input.addEventListener('input', recalcular);
+    // Los `min`/`max` de un campo numérico no impiden escribir fuera de
+    // rango, solo marcan el valor como inválido: se ajusta al soltar el
+    // campo (change), no mientras se escribe, para no pelearse con quien
+    // está a mitad de teclear un número.
+    function ajustarARango(entrada, cfg) {
+      var n = parseFloat(entrada.value);
+      if (!isFinite(n)) return;
+      if (cfg.min != null && n < cfg.min) entrada.value = String(cfg.min);
+      if (cfg.max != null && n > cfg.max) entrada.value = String(cfg.max);
+    }
+
+    cantidad.control.addEventListener('input', recalcular);
+    precio.control.addEventListener('input', recalcular);
+    cantidad.control.addEventListener('change', function () { ajustarARango(cantidad.control, cfgCantidad); recalcular(); });
+    precio.control.addEventListener('change', function () { ajustarARango(precio.control, cfgPrecio); recalcular(); });
+    fecha.control.addEventListener('change', recalcular);
+    tipo.control.addEventListener('change', recalcular);
     operacionInputs.comprar.addEventListener('change', recalcular);
     operacionInputs.vender.addEventListener('change', recalcular);
-    tipoInputs.mercado.addEventListener('change', recalcular);
-    tipoInputs.limite.addEventListener('change', recalcular);
     recalcular();
 
     function enviar() {
+      if (!ultimoResultado) {
+        resumen.textContent = 'Completa la cantidad y el precio antes de enviar la boleta.';
+        return;
+      }
       var r = ultimoResultado;
       var pregunta = {
         idScorm: idScorm,
         tipoScorm: 'other',
         textoRespuesta: function () {
           return 'operacion=' + r.operacion + ',tipo=' + r.tipo + ',estado=' + r.estado +
-            ',cantidad=' + r.cantidad + ',precioActual=' + r.precioActual + ',precioLimite=' + r.precioLimite;
+            ',cantidad=' + r.cantidad + ',precioEjecucion=' + r.precioEjecucion +
+            ',precioLimite=' + r.precioLimite + ',total=' + r.total + ',fecha=' + r.fecha;
         },
         textoCorrecta: function () { return null; }
       };
       reportarSCORM(pregunta, 'neutral');
       if (datos.variable && datos.variable.nombre) {
-        OVA.state.establecerVariable(datos.variable.nombre, {
-          operacion: r.operacion, tipo: r.tipo, estado: r.estado,
-          cantidad: r.cantidad, precioActual: r.precioActual, precioLimite: r.precioLimite
-        });
+        OVA.state.establecerVariable(datos.variable.nombre, r);
       }
-      resumen.textContent = 'Boleta enviada: ' + r.estado + '.';
+      resumen.textContent = 'Boleta enviada: ' + (r.operacion === 'comprar' ? 'compra' : 'venta') +
+        ' de ' + formatearNumero(r.cantidad, 0) + ' acciones de ' + (r.instrumento || 'el instrumento') +
+        ' — ' + r.estado + '. ' + estadoDetalle.textContent;
+      alCompletar();
+    }
+
+    function reiniciar() {
+      operacionInputs.comprar.checked = true;
+      tipo.control.value = 'limite';
+      cantidad.control.value = String(cfgCantidad.valorInicial);
+      precio.control.value = String(cfgPrecio.valorInicial);
+      fecha.control.value = iso(new Date());
+      resumen.textContent = 'Boleta reiniciada.';
+      recalcular();
     }
 
     botonEnviar.addEventListener('click', enviar);
+    botonReiniciar.addEventListener('click', reiniciar);
 
     return raiz;
   }

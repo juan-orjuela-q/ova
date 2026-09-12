@@ -1267,19 +1267,24 @@
           <div class="ks-layout-marco ks-ancho-marco" id="c-insignia-i16-simulador"></div>
         </div>
         <div class="ks-layout-bloque" id="c-insignia-i11">
-          <span class="ks-layout-bloque__etiqueta">I11 · Boleta de orden — tabla de verdad de ocho filas (P42)</span>
+          <span class="ks-layout-bloque__etiqueta">I11 · Boleta de orden — ficha oscura, Petrocaribe (pantalla 26 / P42)</span>
           <p class="ks-intro">
-            Comprar o vender, a mercado o límite, contra el saldo y los
-            títulos disponibles del escenario — tres resultados
-            (ejecutada/expuesta/rechazada), no solo dos. Arranca en el
-            caso de prueba de Jose: comprar 5 acciones a mercado, con
-            saldo 10.000 y precio 1.200 → <strong>ejecutada</strong>.
-            Otros casos: cambia a "Límite" y baja el precio límite a
-            1.100 (precio actual 1.200) → <strong>expuesta</strong>; pon
-            "Vender" y sube la cantidad a 20 (solo hay 8 títulos
-            disponibles) → <strong>rechazada</strong>.
+            Rehecha en ajustes tanda 16 contra las capturas de boleta real
+            que entregó Jose: ficha sobre superficie inverse, cabecera que
+            cambia de <strong>cyan (comprar)</strong> a
+            <strong>naranja (vender)</strong>, demanda y oferta fijas en
+            vez de un slider de precio, y la cadena valor → comisión →
+            impuesto → total. Arranca en <strong>comprar / límite $990</strong>
+            con oferta en $1.000 → <strong>expuesta</strong>. Los otros
+            estados, a un cambio de distancia: sube el precio a
+            <strong>$1.000</strong> → <em>ejecutada</em>; pon cantidad
+            <strong>200</strong> (saldo $150.000) → <em>rechazada</em>;
+            pasa a <strong>Vender</strong> con cantidad <strong>150</strong>
+            (solo hay 120 títulos) → <em>rechazada</em> por títulos; y
+            borra la cantidad → <em>incompleta</em>, el cuarto estado, que
+            es de formulario y no de la tabla de verdad.
           </p>
-          <div class="ks-layout-marco ks-ancho-marco" style="max-width: 32rem;"></div>
+          <div class="ks-layout-marco ks-ancho-marco"></div>
         </div>
         <div class="ks-layout-bloque" id="c-insignia-i09">
           <span class="ks-layout-bloque__etiqueta">I09 · Línea de tiempo recorrible — operación repo (P37)</span>
@@ -2923,27 +2928,34 @@
     })();
   </script>
 
-  <!-- I11, boleta de orden (C6, tabla de verdad de P42). Valores
-       iniciales = caso de prueba 2 de Jose (comprar, límite $1.100,
-       precio actual $1.200 → expuesta): el tipo "Límite" ya viene
-       marcado por defecto (el caso que enseña la diferencia), así que
-       el primer render ya cae en ese caso sin tocar nada. Los otros
-       dos casos (mercado → ejecutada; vender 20 con solo 8
-       disponibles → rechazada) quedan anotados arriba, a un clic/
-       arrastre de distancia. -->
+  <!-- I11, boleta de orden (ajustes tanda 16). Mismos datos que la
+       pantalla 26 del contenido: Petrocaribe, demanda 980 / oferta
+       1000, saldo 150.000, 120 títulos. Los valores iniciales caen en
+       "expuesta" sin tocar nada (comprar / límite 990 contra una oferta
+       de 1.000), que es el caso que enseña la diferencia entre mercado
+       y límite; los otros tres estados quedan anotados arriba, a un
+       cambio de distancia. Sin `variable` a propósito: la kitchen sink
+       no debe escribir `resultado_boleta` en el estado compartido. -->
   <script>
     (function () {
       var contenedor = document.getElementById('c-insignia-i11');
       var nodo = OVA.quiz.crear({
         tipo: 'I11',
         datos: {
-          id: 'u1-p42-boleta-orden',
-          enunciado: 'Completa la boleta y observa el resultado: ejecutada, expuesta o rechazada.',
-          emisor: 'Banco del Sur',
-          escenario: { saldo: 10000, titulosDisponibles: 8 },
-          precioActual: { etiqueta: 'Precio actual (mercado)', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 1200 },
-          precioLimite: { etiqueta: 'Tu precio límite', unidad: ' COP', min: 800, max: 1800, paso: 10, valorInicial: 1100 },
-          cantidad: { etiqueta: 'Cantidad', unidad: ' acciones', min: 1, max: 50, paso: 1, valorInicial: 5 }
+          id: 'ks-p42-boleta-orden',
+          enunciado: 'Cambia de operación, de tipo, de cantidad y de precio, y mira cómo cambian el total y el estado de tu orden.',
+          instrumento: 'Petrocaribe',
+          moneda: '$',
+          mercado: { demanda: 980, oferta: 1000 },
+          escenario: { saldo: 150000, titulosDisponibles: 120 },
+          cantidad: { etiqueta: 'Cantidad', min: 1, max: 500, paso: 1, valorInicial: 100 },
+          precio: { etiqueta: 'Precio', min: 800, max: 1200, paso: 10, valorInicial: 990 },
+          costos: {
+            comision: { etiqueta: 'Comisión estimada', porcentaje: 1 },
+            impuesto: { etiqueta: 'Impuesto estimado', porcentaje: 19 }
+          },
+          fecha: { etiqueta: 'Fecha de la orden' },
+          nota: 'Petrocaribe es un emisor de ejemplo y todas las cifras son ficticias. La comisión (1 % del valor) y el impuesto (19 % sobre la comisión) son tarifas ilustrativas: cada comisionista publica las suyas.'
         }
       });
       if (contenedor && nodo) contenedor.appendChild(nodo);

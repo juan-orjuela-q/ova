@@ -98,6 +98,24 @@ El naranja de marca tiene la luminancia de un gris 450. De ahí sale todo esto:
   inverse sí.
 - Sobre superficie naranja: cuerpo en gris 950, blanco solo en display.
 
+**Secundarios (ajustes tanda 16).** `tokens.css` tiene cuatro colores
+expresivos —cyan, verde 91, amarillo y azul— que Juan abrió para
+simuladores y piezas de datos. Tres reglas, en el mismo archivo junto a
+su declaración: **no codifican estado** (acierto sigue siendo verde
+500/700 y error rojo 500/700); cyan, verde 91 y amarillo son **rellenos
+con texto gris 950**, nunca texto sobre claro (miden entre 1,1:1 y
+1,5:1 contra blanco), y el azul es el espejo —relleno con texto blanco,
+y el único que además sirve de texto sobre superficie clara—; y **el
+naranja sigue mandando**: entran donde hay que distinguir dos cosas que
+no son acierto ni error, no reemplazan la marca ni la escala neutral.
+
+**El anillo de foco puede cambiar de color, nunca apagarse.** El anillo
+naranja 500 desaparece sobre un relleno naranja y mide 2,39:1 sobre el
+cyan —por debajo del 3:1 de WCAG 1.4.11—. Dentro de un relleno de marca
+o secundario pasa a gris 950. Hoy solo lo hace la cabecera de I11; si
+aparece otro componente con relleno de color, sigue este patrón en vez
+de dejar el anillo por defecto.
+
 ## Estructura
 
 ```
