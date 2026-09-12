@@ -529,19 +529,19 @@ window.OVA_CONTENIDO = {
           "tarjetas": [
             {
               "frente": "Renta variable",
-              "reverso": "Resultado no garantizado, depende del precio y dividendos",
+              "reverso": "Son inversiones donde no conoces de antemano el rendimiento final ni tienes garantizado el capital invertido. Sus ganancias dependen de los resultados de la entidad o mercado en el que inviertes.",
               "imagen": "../public/img/ilustraciones/renta-variable.webp",
               "alt": ""
             },
             {
               "frente": "Renta fija",
-              "reverso": "Condiciones de pago pactadas desde el inicio",
+              "reverso": "Son inversiones donde conoces de antemano las condiciones, el plazo y la rentabilidad esperada (o la fórmula para calcularla). Funcionan como un préstamo que haces a una entidad a cambio de intereses pactados.",
               "imagen": "../public/img/ilustraciones/renta-fija.webp",
               "alt": ""
             },
             {
               "frente": "Derivados",
-              "reverso": "Contratos cuyo valor depende de otro activo",
+              "reverso": "Son instrumentos financieros cuyo precio no es propio, sino que depende (\"deriva\") del valor de otro activo principal, llamado activo subyacente (como el oro, las divisas o el petróleo). Se usan principalmente para cobertura de riesgos o especulación.",
               "imagen": "../public/img/ilustraciones/derivados.webp",
               "alt": ""
             }
@@ -707,17 +707,17 @@ window.OVA_CONTENIDO = {
         "tipo": "I01",
         "datos": {
           "id": "u1-c2-comprobacion",
-          "enunciado": "Contenido provisional — enunciado pendiente de Jose (DI). Este marcador se reemplaza cuando llegue el guion real.",
+          "enunciado": "Compraste la acción de la empresa Alpha por $1.000 hace 6 meses. Ahora la vendes por $1.200 en el mercado secundario. ¿De cuánto fue la valorización de la acción?",
           "intentos": 2,
           "opciones": [
-            { "id": "a", "texto": "Opción provisional A" },
-            { "id": "b", "texto": "Opción provisional B" },
-            { "id": "c", "texto": "Opción provisional C" }
+            { "id": "a", "texto": "$1.200" },
+            { "id": "b", "texto": "20%" },
+            { "id": "c", "texto": "10%" }
           ],
-          "correcta": "a",
+          "correcta": "b",
           "retroalimentacion": {
-            "correcto": "Contenido provisional.",
-            "incorrecto": "Contenido provisional."
+            "correcto": "Correcto. Se resta el precio de venta menos el de compra ($1.200 - $1.000 = $200) y esa ganancia se divide sobre el precio de compra: $200 / $1.000 = 0,2 = 20%.",
+            "incorrecto": "Recuerda: la ganancia se calcula restando el precio de venta menos el de compra ($1.200 - $1.000 = $200) y luego se divide sobre el precio de compra, no sobre el de venta."
           }
         }
       },
