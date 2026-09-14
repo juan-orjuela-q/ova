@@ -1336,6 +1336,43 @@
 .media-video__play:hover {
   opacity: 0.7;
 }
+.media-video__volumen {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+.media-video__volumen-boton {
+  color: var(--text-on-inverse);
+  display: flex;
+  align-items: center;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.media-video__volumen-boton:hover {
+  opacity: 0.7;
+}
+/* Ancho fijo y corto a propósito: es un ajuste secundario junto al botón
+   de mute, no compite por espacio con el scrubber (el control que sí
+   necesita flex: 1 más abajo). Mismo accent-color que .media-video__scrubber.
+
+   Oculto por debajo de 40em: el botón de mute (arriba) ya cubre la
+   función esencial y sigue siendo alcanzable por teclado a cualquier
+   ancho; el slider fino es el que compite por el espacio angosto que
+   .media-video__scrubber necesita para seguir siendo operable a 320px
+   (regla dura 7). Además, en iOS Safari el elemento <video> ignora
+   `.volume` por completo (solo respeta `.muted`) — en el rango de
+   viewport donde vive ese motor, el slider no tendría efecto real de
+   todos modos; el volumen ahí lo controla el hardware del dispositivo. */
+.media-video__volumen-slider {
+  width: 4.5rem;
+  accent-color: var(--nuam-orange-500);
+  cursor: pointer;
+}
+@media (max-width: 39.999em) {
+  .media-video__volumen-slider {
+    display: none;
+  }
+}
 /* input[type="range"] nativo, no un div a medida: el teclado (flechas,
    Inicio/Fin, RePág/AvPág) y el rol de slider para lectores de pantalla
    vienen gratis del navegador — reimplementarlos a mano es la clase de

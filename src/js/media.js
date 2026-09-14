@@ -256,6 +256,24 @@
 
     var play = crearBoton('media-video__play icono', 'play_arrow', 'Reproducir');
 
+    var volumenGrupo = document.createElement('div');
+    volumenGrupo.className = 'media-video__volumen';
+
+    var volumenBoton = crearBoton('media-video__volumen-boton icono', 'volume_up', 'Silenciar');
+
+    var volumenSlider = document.createElement('input');
+    volumenSlider.type = 'range';
+    volumenSlider.className = 'media-video__volumen-slider';
+    volumenSlider.min = '0';
+    volumenSlider.max = '1';
+    volumenSlider.step = '0.05';
+    volumenSlider.value = '1';
+    volumenSlider.setAttribute('aria-label', 'Volumen');
+    volumenSlider.setAttribute('aria-valuetext', '100%');
+
+    volumenGrupo.appendChild(volumenBoton);
+    volumenGrupo.appendChild(volumenSlider);
+
     var scrubber = document.createElement('input');
     scrubber.type = 'range';
     scrubber.className = 'media-video__scrubber';
@@ -291,6 +309,7 @@
     }
 
     controles.appendChild(play);
+    controles.appendChild(volumenGrupo);
     controles.appendChild(scrubber);
     controles.appendChild(tiempo);
     controles.appendChild(velocidad);
@@ -322,6 +341,36 @@
       play.textContent = 'play_arrow';
       play.setAttribute('aria-label', 'Reproducir');
     });
+
+    // Botón + slider de volumen: el botón alterna mute (conserva el nivel
+    // previo, como cualquier reproductor nativo) y el slider fija el nivel
+    // directo. Los dos escuchan "volumechange" en vez de escribirse el
+    // ícono/valor entre sí, así que quedan sincronizados sin importar cuál
+    // de los dos disparó el cambio.
+    function actualizarVolumen() {
+      var silenciado = video.muted || video.volume === 0;
+      var icono = silenciado ? 'volume_off' : (video.volume < 0.5 ? 'volume_down' : 'volume_up');
+      volumenBoton.textContent = icono;
+      // Mismo patrón que el botón play/pausa: el ícono y el aria-label
+      // describen la ACCIÓN siguiente, no el estado actual — por eso no
+      // lleva aria-pressed (a diferencia de CC, cuyo texto visible "CC"
+      // no cambia y sí necesita comunicar el estado por ese atributo).
+      volumenBoton.setAttribute('aria-label', silenciado ? 'Activar sonido' : 'Silenciar');
+      if (document.activeElement !== volumenSlider) {
+        volumenSlider.value = String(silenciado ? 0 : video.volume);
+      }
+      volumenSlider.setAttribute('aria-valuetext', Math.round((silenciado ? 0 : video.volume) * 100) + '%');
+    }
+    volumenBoton.addEventListener('click', function () {
+      video.muted = !video.muted;
+    });
+    volumenSlider.addEventListener('input', function () {
+      var nivel = parseFloat(volumenSlider.value) || 0;
+      video.volume = nivel;
+      video.muted = nivel === 0;
+    });
+    video.addEventListener('volumechange', actualizarVolumen);
+    actualizarVolumen();
 
     // C7: la fuente puede no existir todavía (motion sin producir) —
     // mismo criterio de degradación limpia que la <img> del avatar:
