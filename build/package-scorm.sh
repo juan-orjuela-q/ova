@@ -25,12 +25,73 @@ OUT_DIR="build/out"
 ZIP_NAME="ova-u1-scorm.zip"
 STANDALONE_DIR="$OUT_DIR/standalone"
 
-# Assets de public/ que el contenido de prueba referencia hoy (T4:
-# ../public/videos/... desde src/index.html). Si content/ova-u1.js
-# suma otro asset de public/, agregarlo aquí Y a imsmanifest.xml —
-# la verificación de abajo revienta si solo se hace uno de los dos.
+# Assets de public/ que el contenido activo (content/ova-u1.js, cargado
+# por index.html) y el CSS/JS del motor referencian hoy. ova-u1-archivo.js
+# NO se carga en runtime (ver CLAUDE.md), así que sus assets no van aquí.
+# Los cuatro videos de cápsula viven en un host externo
+# (proyectosappicua.com) por decisión confirmada de Juan (14 sep, ver
+# ESTADO.md) — excepción explícita a la regla dura 5 de CLAUDE.md, no un
+# gap temporal. No hay archivo local que empaquetar para esos cuatro. Si
+# content/ova-u1.js suma otro asset de public/, agregarlo aquí Y a
+# imsmanifest.xml — la verificación de abajo revienta si solo se hace uno
+# de los dos.
 PUBLIC_ASSETS=(
-  "public/videos/woman_Businesswoman_1920x1010.mp4"
+  "public/videos/vid0_introduccion-claudia-mirando-a-camara.mp4"
+  "public/videos/capsulas/capsula-1-cover.webp"
+  "public/videos/capsulas/capsula-2-cover.webp"
+  "public/videos/capsulas/capsula-3-cover.webp"
+  "public/videos/capsulas/capsula-4-cover.webp"
+  "public/audio/a01-bienvenida.mp3"
+  "public/audio/a02-objetivos.mp3"
+  "public/audio/a03-forma-de-ahorrar.mp3"
+  "public/audio/a04-punto-de-partida.mp3"
+  "public/audio/a05-diagnostico-resultado.mp3"
+  "public/audio/a06-tutor.mp3"
+  "public/audio/a07-capsulas.mp3"
+  "public/audio/a08-ideas-cierre.mp3"
+  "public/img/avatar/avatar-sin-fondo-plano-primer-saluda.webp"
+  "public/img/avatar/avatar-medio-confondo-1.webp"
+  "public/img/avatar/avatar-abierto-confondo-5.webp"
+  "public/img/avatar/avatar-medio-confondo-5.webp"
+  "public/img/avatar/avatar-primerplano-confondo-1.webp"
+  "public/img/avatar/avatar-primerplano-confondo-2.webp"
+  "public/img/avatar/avatar-medio-confondo-7.webp"
+  "public/img/tutor-jose-fernando-mejia.webp"
+  "public/img/backgrounds/background-1.webp"
+  "public/img/backgrounds/background-2.webp"
+  "public/img/backgrounds/background-3.webp"
+  "public/img/backgrounds/background-4.webp"
+  "public/img/backgrounds/background-5.webp"
+  "public/img/backgrounds/background-6.webp"
+  "public/img/backgrounds/background-7.webp"
+  "public/img/ilustraciones/capsula-1.webp"
+  "public/img/ilustraciones/capsula-2.webp"
+  "public/img/ilustraciones/capsula-3.webp"
+  "public/img/ilustraciones/capsula-4.webp"
+  "public/img/ilustraciones/renta-variable.webp"
+  "public/img/ilustraciones/renta-fija.webp"
+  "public/img/ilustraciones/derivados.webp"
+  "public/img/ilustraciones/conservador.webp"
+  "public/img/ilustraciones/moderado.webp"
+  "public/img/ilustraciones/agresivo.webp"
+  "public/img/icons/ind-transcripcion.svg"
+  "public/img/icons/ind-contraste.svg"
+  "public/img/icons/ind-teclado.svg"
+  "public/img/icons/ind-responsive.svg"
+  "public/img/icons/ind-zoomtexto.svg"
+  "public/img/icons/ind-animacion.svg"
+  "public/img/icons/muestra-navegacion-1-menu.svg"
+  "public/img/icons/muestra-navegacion-2-ubicacion.svg"
+  "public/img/icons/muestra-navegacion-3-indicador-progreso.svg"
+  "public/img/icons/muestra-navegacion-4-reanudar.svg"
+  "public/img/icons/muestra-navegacion-5-boton-accesibilidad.svg"
+  "public/img/icons/muestra-navegacion-6-boton-locucion.svg"
+  "public/img/icons/muestra-navegacion-7-boton-fullscreen.svg"
+  "public/img/icons/muestra-navegacion-8-anterior.svg"
+  "public/img/icons/muestra-navegacion-9-siguiente.svg"
+  "public/graf/union_graf_nuam.svg"
+  "public/graf/union_graf_nuam_mobile_top.svg"
+  "public/graf/union_graf_nuam_mobile_bottom.svg"
 )
 
 echo "== 1/4 — Verificando imsmanifest.xml contra el disco =="

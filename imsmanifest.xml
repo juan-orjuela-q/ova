@@ -4,18 +4,25 @@
   bolsa y las acciones (Academia Virtual nuam).
 
   Un único SCO: src/index.html es el punto de lanzamiento (el motor
-  recorre las catorce pantallas del contenido por su cuenta, con hash
-  routing — Moodle nunca ve una navegación de LMS entre "páginas", ve un
-  solo SCO abierto de principio a fin).
+  recorre las 26 pantallas del contenido por su cuenta, con hash routing —
+  Moodle nunca ve una navegación de LMS entre "páginas", ve un solo SCO
+  abierto de principio a fin).
 
-  El <resource> lista cada archivo real de src/ más los assets de
-  public/ que el contenido de prueba referencia hoy (el video de
-  s05/s06). build/package-scorm.sh verifica en cada empaquetado que esta
-  lista coincida exactamente con lo que hay en disco — si alguien agrega
-  un archivo a src/ o a un asset referenciado y se olvida de sumarlo
-  aquí, el empaquetado falla ruidoso en vez de subir a Moodle un paquete
-  incompleto en silencio (mismo criterio que "falla ruidoso en consola"
-  del contrato de contenido en CLAUDE.md).
+  El <resource> lista cada archivo real de src/ más los assets de public/
+  que el contenido activo (content/ova-u1.js, el único que index.html
+  carga — ova-u1-archivo.js queda en el repo pero no se sirve) y el
+  CSS/JS del motor referencian hoy. build/package-scorm.sh verifica en
+  cada empaquetado que esta lista coincida exactamente con lo que hay en
+  disco — si alguien agrega un archivo a src/ o a un asset referenciado y
+  se olvida de sumarlo aquí, el empaquetado falla ruidoso en vez de subir
+  a Moodle un paquete incompleto en silencio (mismo criterio que "falla
+  ruidoso en consola" del contrato de contenido en CLAUDE.md).
+
+  Los cuatro videos de cápsula (c1-video..c4-video) apuntan a
+  https://proyectosappicua.com/nuam-media/capsula-N.mp4 en vez de a un
+  archivo local — decisión confirmada por Juan (14 sep), excepción
+  explícita a la regla dura 5 de CLAUDE.md. El zip y la copia standalone
+  necesitan conexión a internet para esas cuatro pantallas.
 -->
 <manifest identifier="com.appicua.nuam.ova-u1-contexto-mercado"
           version="1"
@@ -60,7 +67,62 @@
       <file href="src/styles/components.css"/>
       <file href="src/styles/layouts.css"/>
       <file href="src/styles/tokens.css"/>
-      <file href="public/videos/woman_Businesswoman_1920x1010.mp4"/>
+      <file href="public/videos/vid0_introduccion-claudia-mirando-a-camara.mp4"/>
+      <file href="public/videos/capsulas/capsula-1-cover.webp"/>
+      <file href="public/videos/capsulas/capsula-2-cover.webp"/>
+      <file href="public/videos/capsulas/capsula-3-cover.webp"/>
+      <file href="public/videos/capsulas/capsula-4-cover.webp"/>
+      <file href="public/audio/a01-bienvenida.mp3"/>
+      <file href="public/audio/a02-objetivos.mp3"/>
+      <file href="public/audio/a03-forma-de-ahorrar.mp3"/>
+      <file href="public/audio/a04-punto-de-partida.mp3"/>
+      <file href="public/audio/a05-diagnostico-resultado.mp3"/>
+      <file href="public/audio/a06-tutor.mp3"/>
+      <file href="public/audio/a07-capsulas.mp3"/>
+      <file href="public/audio/a08-ideas-cierre.mp3"/>
+      <file href="public/img/avatar/avatar-sin-fondo-plano-primer-saluda.webp"/>
+      <file href="public/img/avatar/avatar-medio-confondo-1.webp"/>
+      <file href="public/img/avatar/avatar-abierto-confondo-5.webp"/>
+      <file href="public/img/avatar/avatar-medio-confondo-5.webp"/>
+      <file href="public/img/avatar/avatar-primerplano-confondo-1.webp"/>
+      <file href="public/img/avatar/avatar-primerplano-confondo-2.webp"/>
+      <file href="public/img/avatar/avatar-medio-confondo-7.webp"/>
+      <file href="public/img/tutor-jose-fernando-mejia.webp"/>
+      <file href="public/img/backgrounds/background-1.webp"/>
+      <file href="public/img/backgrounds/background-2.webp"/>
+      <file href="public/img/backgrounds/background-3.webp"/>
+      <file href="public/img/backgrounds/background-4.webp"/>
+      <file href="public/img/backgrounds/background-5.webp"/>
+      <file href="public/img/backgrounds/background-6.webp"/>
+      <file href="public/img/backgrounds/background-7.webp"/>
+      <file href="public/img/ilustraciones/capsula-1.webp"/>
+      <file href="public/img/ilustraciones/capsula-2.webp"/>
+      <file href="public/img/ilustraciones/capsula-3.webp"/>
+      <file href="public/img/ilustraciones/capsula-4.webp"/>
+      <file href="public/img/ilustraciones/renta-variable.webp"/>
+      <file href="public/img/ilustraciones/renta-fija.webp"/>
+      <file href="public/img/ilustraciones/derivados.webp"/>
+      <file href="public/img/ilustraciones/conservador.webp"/>
+      <file href="public/img/ilustraciones/moderado.webp"/>
+      <file href="public/img/ilustraciones/agresivo.webp"/>
+      <file href="public/img/icons/ind-transcripcion.svg"/>
+      <file href="public/img/icons/ind-contraste.svg"/>
+      <file href="public/img/icons/ind-teclado.svg"/>
+      <file href="public/img/icons/ind-responsive.svg"/>
+      <file href="public/img/icons/ind-zoomtexto.svg"/>
+      <file href="public/img/icons/ind-animacion.svg"/>
+      <file href="public/img/icons/muestra-navegacion-1-menu.svg"/>
+      <file href="public/img/icons/muestra-navegacion-2-ubicacion.svg"/>
+      <file href="public/img/icons/muestra-navegacion-3-indicador-progreso.svg"/>
+      <file href="public/img/icons/muestra-navegacion-4-reanudar.svg"/>
+      <file href="public/img/icons/muestra-navegacion-5-boton-accesibilidad.svg"/>
+      <file href="public/img/icons/muestra-navegacion-6-boton-locucion.svg"/>
+      <file href="public/img/icons/muestra-navegacion-7-boton-fullscreen.svg"/>
+      <file href="public/img/icons/muestra-navegacion-8-anterior.svg"/>
+      <file href="public/img/icons/muestra-navegacion-9-siguiente.svg"/>
+      <file href="public/graf/union_graf_nuam.svg"/>
+      <file href="public/graf/union_graf_nuam_mobile_top.svg"/>
+      <file href="public/graf/union_graf_nuam_mobile_bottom.svg"/>
     </resource>
   </resources>
 </manifest>

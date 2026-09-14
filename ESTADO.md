@@ -4486,12 +4486,48 @@ nuevos a 198 KB.
   el duplicado en `backgrounds/` y `avatar_1/2/3.jpg`. Son restos de
   prueba; nadie los referencia (salvo los que quedaron citados en
   `ova-u1-archivo.js`, que es el banco archivado).
-- **`build/package-scorm.sh` no empaqueta `public/img` ni
-  `public/audio`.** Copia `src/**` completo pero de `public/` solo lo
-  listado a mano en `PUBLIC_ASSETS`, y hoy esa lista tiene un único
-  archivo: `public/videos/woman_Businesswoman_1920x1010.mp4`. O sea que
-  ni los avatares, ni los fondos, ni los SVG de `graf/`, ni las ocho
-  locuciones entran en el zip SCORM ni en la copia standalone. Agregar
-  un asset obliga a tocar `PUBLIC_ASSETS` **y** `imsmanifest.xml` — el
-  script revienta si se hace solo uno de los dos. Es el pendiente más
-  serio de esta lista.
+- ~~**`build/package-scorm.sh` no empaqueta `public/img` ni
+  `public/audio`.**~~ — resuelto, ver la entrada del 14 sep.
+
+---
+
+## Empaquetado SCORM (14 sep)
+
+**`PUBLIC_ASSETS` e `imsmanifest.xml` estaban desincronizados del
+contenido real desde que arrancó `PLAN-ESTRUCTURA.md`.** La lista traía
+un único archivo (`public/videos/woman_Businesswoman_1920x1010.mp4`, un
+video de prueba de T4) mientras `content/ova-u1.js` ya referenciaba ~50
+assets reales: 8 locuciones (`audio/a01..a08`), 7 fondos por layout
+(`backgrounds/background-1..7.webp`), 7 avatares, 10 ilustraciones
+(cápsulas, tres familias, tres perfiles), 15 iconos de navegación/
+accesibilidad, el tutor y los tres SVG de `graf/` que pinta `router.js`
+a mano (`union_graf_nuam*.svg`). El script no lo detectaba porque su
+verificación solo compara `PUBLIC_ASSETS` contra `imsmanifest.xml`, no
+contra lo que el contenido de verdad usa — así que un zip generado
+antes de hoy habría subido a Moodle sin locución, sin fondos y sin la
+mayoría de imágenes, sin ningún error en consola. Recuento completo:
+`src/**` (17 archivos, sin cambios) + los ~53 assets de `public/`
+listados arriba, comparado a mano contra cada `"...public/..."` del
+contenido activo y cada `url(...)` de `layouts.css`/`components.css`.
+`ova-u1-archivo.js` no se carga en runtime (no hay `<script src>` para
+él en `index.html`), así que sus assets (locuciones `loc1_objetivos`/
+`demo-avatar`, motion de p17/p21/p23, infografías archivadas) quedan
+fuera a propósito.
+
+Con la lista corregida, `bash build/package-scorm.sh` genera
+`build/out/ova-u1-scorm.zip` (8,5 MB, 89 entradas) y
+`build/out/standalone/`. Verificado con `python -m zipfile`: rutas
+relativas correctas (`imsmanifest.xml`, `src/index.html` en la raíz del
+zip), sin el prefijo `_staging/` del directorio de trabajo.
+
+**Los cuatro videos de cápsula quedan fuera del zip a propósito — decisión
+confirmada por Juan, no un gap temporal.** `c1-video`..`c4-video` apuntan
+a `https://proyectosappicua.com/nuam-media/capsula-N.mp4` en vez de a un
+archivo de `public/videos/capsulas/`. Es una dependencia externa en
+tiempo de ejecución: **excepción explícita a la regla dura 5 de
+CLAUDE.md**, que hasta ahora solo eximía a Google Fonts. Falta reflejar
+esta segunda excepción en el texto de la regla dura — pendiente de la
+próxima sesión que toque `CLAUDE.md`. Consecuencia práctica: tanto el
+paquete Moodle como la copia standalone necesitan conexión a internet
+para reproducir esas cuatro pantallas; sin red, el `<video>` falla al
+cargar (no hay lógica de degradación para este caso hoy).

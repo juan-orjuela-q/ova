@@ -43,8 +43,13 @@ Estas no se negocian ni se re-discuten en cada sesión.
 4. **Nada de frameworks.** HTML, CSS y JavaScript nativo. Sin React, sin Vue, sin
    build step de bundler. El OVA tiene que abrir desde `file://` y desde un
    paquete SCORM sin servidor de por medio.
-5. **Sin dependencias externas en tiempo de ejecución**, salvo Google Fonts.
-   Nada de CDN de scripts: el OVA debe funcionar sin red una vez cargado.
+5. **Sin dependencias externas en tiempo de ejecución**, salvo Google Fonts
+   y los cuatro videos de cápsula (`c1-video`..`c4-video`), que cargan
+   desde `https://proyectosappicua.com/nuam-media/capsula-N.mp4` en vez
+   de un archivo de `public/videos/capsulas/` — decisión confirmada por
+   Juan el 14 sep, no un gap temporal (ver ESTADO.md, "Empaquetado SCORM
+   (14 sep)"). Nada de CDN de scripts: el OVA debe funcionar sin red una
+   vez cargado, salvo esas cuatro pantallas.
 6. **`outline: none` está prohibido.** El foco siempre visible.
 7. **Responsive real, no lienzo escalado.** Prohibido `transform: scale()` sobre
    el contenedor de contenido. Debe reflowear a 320 px y aguantar zoom de texto
